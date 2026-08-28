@@ -8,6 +8,7 @@ import type {
   ReaderSession,
   ReaderSessionState,
 } from "@ethical-tech/book-reader-core";
+import { createSemanticBookMode } from "./book-mode.js";
 
 export type ReaderShellOptions = {
   history?: History;
@@ -55,6 +56,9 @@ function locationUrl(
     url.pathname.endsWith("/index.html")
   ) {
     url.pathname = url.pathname.slice(0, -"index.html".length);
+  }
+  if (new URL(fallbackBase).searchParams.get("view") === "book") {
+    url.searchParams.set("view", "book");
   }
   url.hash = encodeURIComponent(location.anchor);
   return url;
@@ -143,7 +147,13 @@ export function mountReaderShell(
   progress.setAttribute("role", "status");
   const next = element("button", "book-reader-control", "Next");
   next.type = "button";
-  toolbar.append(previous, progress, next);
+  const bookView = element(
+    "button",
+    "book-reader-control book-reader-book-view",
+    "Book view",
+  );
+  bookView.type = "button";
+  toolbar.append(previous, progress, next, bookView);
 
   layout.classList.add("book-layout-enhanced");
   layout.prepend(toolbar, sidebar);
@@ -181,19 +191,20 @@ export function mountReaderShell(
   const navigate = async (
     location: SemanticLocation,
     historyMode: "push" | "none" = "push",
-  ): Promise<void> => {
+  ): Promise<boolean> => {
     const result = await session.dispatch({ type: "go-to", location });
     if (destroyed) {
-      return;
+      return false;
     }
     const error = navigationError(result);
     if (error) {
       progress.textContent = error;
-      return;
+      return false;
     }
     if (result.ok && historyMode === "push") {
       writeLocation(location, "push");
     }
+    return result.ok;
   };
 
   const runRelative = async (direction: "previous" | "next") => {
@@ -212,6 +223,31 @@ export function mountReaderShell(
     }
   };
 
+  const updateBookViewUrl = (open: boolean) => {
+    const url = new URL(browserLocation.href);
+    const isBookView = url.searchParams.get("view") === "book";
+    if (open && !isBookView) {
+      url.searchParams.set("view", "book");
+      browserHistory.pushState(
+        { ...browserHistory.state, bookReaderView: "book" },
+        "",
+        url,
+      );
+    } else if (!open && isBookView) {
+      url.searchParams.delete("view");
+      browserHistory.replaceState(
+        { ...browserHistory.state, bookReaderView: undefined },
+        "",
+        url,
+      );
+    }
+  };
+
+  const bookMode = createSemanticBookMode(content, session, {
+    navigate: (location) => navigate(location),
+    onOpenChange: updateBookViewUrl,
+  });
+
   const onContentClick = (event: MouseEvent) => {
     const target =
       event.target instanceof Element
@@ -229,23 +265,45 @@ export function mountReaderShell(
     void navigate(targetLocation);
   };
 
-  const onPopState = () => {
+  const onPopState = async () => {
     if (!publication) {
       return;
     }
+    const url = new URL(browserLocation.href);
+    const wantsBookView = url.searchParams.get("view") === "book";
+    if (!wantsBookView && bookMode.isOpen()) {
+      bookMode.close();
+    }
     const target = locationFromUrl(
       publication,
-      new URL(browserLocation.href),
+      url,
     );
     if (target) {
-      void navigate(target, "none");
+      const accepted = await navigate(target, "none");
+      if (accepted && wantsBookView && !bookMode.isOpen()) {
+        await bookMode.open(bookView);
+      }
     }
+  };
+  const onPopStateEvent = () => {
+    void onPopState().catch((error: unknown) => {
+      progress.textContent =
+        error instanceof Error
+          ? error.message
+          : "Unable to restore reader history";
+    });
   };
 
   previous.addEventListener("click", () => void runRelative("previous"));
   next.addEventListener("click", () => void runRelative("next"));
+  bookView.addEventListener("click", () => {
+    void bookMode.open(bookView).catch((error: unknown) => {
+      progress.textContent =
+        error instanceof Error ? error.message : "Book view failed to open";
+    });
+  });
   content.addEventListener("click", onContentClick);
-  globalThis.addEventListener("popstate", onPopState);
+  globalThis.addEventListener("popstate", onPopStateEvent);
 
   const update = (state: ReaderSessionState) => {
     publication = state.publication;
@@ -321,8 +379,9 @@ export function mountReaderShell(
       }
       destroyed = true;
       unsubscribe();
+      bookMode.destroy();
       content.removeEventListener("click", onContentClick);
-      globalThis.removeEventListener("popstate", onPopState);
+      globalThis.removeEventListener("popstate", onPopStateEvent);
       sidebar.remove();
       toolbar.remove();
       layout.classList.remove("book-layout-enhanced");

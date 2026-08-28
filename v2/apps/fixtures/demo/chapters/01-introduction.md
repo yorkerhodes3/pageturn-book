@@ -2,7 +2,8 @@
 
 Technology becomes ethical through choices that remain open to examination.
 This reader begins with semantic text so people, browsers, and assistive
-technologies share the same source.
+technologies share the same source. Return to [this opening section](#introduction)
+at any time.
 
 ## Why semantic reading matters {#why-semantic-reading-matters}
 
@@ -18,4 +19,3 @@ still encounter the same argument.
 - Stable anchors can survive unrelated edits.
 - Static HTML is useful before enhancement.
 - A headless session can coordinate a renderer without owning the document.
-

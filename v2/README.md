@@ -168,6 +168,9 @@ Implemented now:
 - Semantic renderer adoption/loading and host-aware resize observation.
 - Framework-neutral shell with table of contents, chapter progress,
   previous/next controls, canonical URLs, and browser Back restoration.
+- Switchable semantic book mode with a dark full-screen stage, desktop
+  two-page spreads, mobile single-page sheets, semantic text, screen-page
+  navigation, reduced motion, and focus restoration.
 - Static theme and two-chapter demo.
 
 Still intentionally pending:
@@ -178,7 +181,8 @@ Still intentionally pending:
 - Legacy viewer adapter.
 - React adapter.
 - Full browser and assistive-technology matrix.
-- New bounded facsimile and semantic paged prototypes.
+- New bounded facsimile renderer and production hardening of semantic paged
+  mode.
 
 See [BACKLOG.md](../BACKLOG.md) for dependency-ordered delivery work.
 

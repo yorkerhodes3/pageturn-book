@@ -28,8 +28,10 @@ GitHub Actions builds a Pages artifact containing:
 
 - `/` - comparison overview.
 - `/legacy/` - pinned fixed-page viewer.
-- `/book/demo-book/2026-08/chapters/introduction/` - V2 semantic reader.
-- `/compare/` - side-by-side view.
+- `/book/demo-book/2026-08/chapters/introduction/` - V2 semantic scroll reader.
+- `/book/demo-book/2026-08/chapters/introduction/?view=book` - V2 semantic
+  open-book presentation.
+- `/compare/` - side-by-side view with both book presentations opened.
 
 The Pages deployment workflow is
 [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
@@ -44,4 +46,3 @@ npm run test:unit
 npm run build
 npm run test:browser
 ```
-

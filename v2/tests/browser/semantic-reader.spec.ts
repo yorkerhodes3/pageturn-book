@@ -18,7 +18,15 @@ test("presents both reader versions from the comparison landing page", async ({
     "href",
     "./legacy/",
   );
-  await expect(page.getByRole("link", { name: "Open V2 demo" })).toHaveAttribute(
+  await expect(
+    page.getByRole("link", { name: "Open V2 book view" }),
+  ).toHaveAttribute(
+    "href",
+    "./book/demo-book/2026-08/chapters/introduction/?view=book",
+  );
+  await expect(
+    page.getByRole("link", { name: "Open semantic scroll view" }),
+  ).toHaveAttribute(
     "href",
     "./book/demo-book/2026-08/chapters/introduction/",
   );
@@ -105,6 +113,183 @@ test("enhances the existing semantic chapter through a reader session", async ({
   );
 });
 
+test("opens a semantic spread and keeps scroll navigation in sync", async ({
+  page,
+}) => {
+  await page.route("**/chapters/principles/index.html", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
+  await page.goto(chapterPath);
+  await page.locator("[data-reader-content]").evaluate((article) => {
+    const relation = document.createElement("div");
+    relation.innerHTML =
+      '<label for="book-mode-test-input">Related note</label>' +
+      '<input id="book-mode-test-input" type="text">';
+    article.append(relation);
+  });
+  const trigger = page.getByRole("button", { name: "Book view" });
+  await trigger.click();
+
+  const dialog = page.getByRole("dialog", {
+    name: "A Small Book About Ethical Technology",
+  });
+  await expect(dialog).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close" })).toBeFocused({
+    timeout: 250,
+  });
+  await expect(page).toHaveURL(/\?view=book$/);
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 1–2 / 7",
+  );
+  await expect(page.locator(".book-mode-sheet")).toHaveCount(2);
+  await expect(
+    dialog.getByRole("heading", { level: 1, name: "Introduction" }),
+  ).toBeVisible();
+  const openingLink = dialog.getByRole("link", {
+    name: "this opening section",
+  });
+  await expect(openingLink).toHaveAttribute(
+    "href",
+    "#book-mode-introduction-1-introduction",
+  );
+  await expect(page.locator("main.book-layout")).toHaveAttribute("inert", "");
+
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 3–4 / 7",
+  );
+  await expect(page).toHaveURL(
+    /\/chapters\/introduction\/\?view=book#h-what-this-first-slice-proves$/,
+  );
+  const relatedInput = dialog.getByRole("textbox", { name: "Related note" });
+  const relatedInputId = await relatedInput.getAttribute("id");
+  expect(relatedInputId).toBe(
+    "book-mode-introduction-3-book-mode-test-input",
+  );
+  await expect(dialog.getByText("Related note")).toHaveAttribute(
+    "for",
+    relatedInputId ?? "",
+  );
+
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 5–6 / 7",
+  );
+  await expect(page).toHaveURL(
+    /\/chapters\/principles\/\?view=book#h-preserve-meaning$/,
+  );
+  await expect(
+    dialog.getByRole("heading", { level: 2, name: "Preserve meaning" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 7 / 7");
+  await expect(
+    page.locator(".book-mode-sheet:not(.book-mode-sheet-blank)"),
+  ).toHaveCount(1);
+  await expect(page).toHaveURL(
+    /\/chapters\/principles\/\?view=book#h-keep-a-fallback$/,
+  );
+  await expect(
+    dialog.getByRole("heading", { level: 2, name: "Keep a fallback" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Next screen page" }),
+  ).toBeDisabled();
+
+  await page.goBack();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 5–6 / 7",
+  );
+  await expect(page).toHaveURL(
+    /\/chapters\/principles\/\?view=book#h-preserve-meaning$/,
+  );
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await expect(page).toHaveURL(
+    /\/chapters\/principles\/#h-preserve-meaning$/,
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Principles in Practice" }),
+  ).toBeVisible();
+  await expect(page.locator("main.book-layout")).not.toHaveAttribute("inert", "");
+  await expect(page.locator("body")).not.toHaveClass(/book-mode-active/);
+});
+
+test("uses one semantic sheet on a narrow screen", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(chapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  await expect(page.locator(".book-mode-sheet")).toHaveCount(1);
+  const overlay = page.locator(".book-mode-overlay");
+  await expect
+    .poll(async () =>
+      overlay.evaluate((node) => node.scrollWidth === node.clientWidth),
+    )
+    .toBe(true);
+});
+
+test("restores book view through browser Back and Forward", async ({ page }) => {
+  await page.goto(chapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page).toHaveURL(/\?view=book$/);
+
+  await page.goBack();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/chapters\/introduction\/$/);
+
+  await page.goForward();
+  await expect(
+    page.getByRole("dialog", {
+      name: "A Small Book About Ethical Technology",
+    }),
+  ).toBeVisible();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 1–2 / 7",
+  );
+});
+
+test("realigns a pending mobile turn when the viewport becomes a spread", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(chapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  const next = page.getByRole("button", { name: "Next screen page" });
+
+  await next.click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 2 / 7");
+  const turn = next.click();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await turn;
+
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 3–4 / 7",
+  );
+  await expect(page.locator(".book-mode-sheet")).toHaveCount(2);
+});
+
+test("removes the book-turn delay for reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(chapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await page.getByRole("button", { name: "Next screen page" }).click();
+
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screens 3–4 / 7",
+    { timeout: 250 },
+  );
+  await expect(
+    page.locator(".book-mode-sheet-right"),
+  ).toHaveCSS("animation-name", "none");
+});
+
 test("opens and closes the pinned legacy page-turn viewer", async ({ page }) => {
   await page.goto(route("/legacy/"));
   const open = page.getByRole("button", { name: "Open legacy book viewer" });
@@ -128,12 +313,14 @@ test("loads both versions in the side-by-side comparison", async ({ page }) => {
   const legacy = page.frameLocator('iframe[title="Legacy fixed-page reader"]');
   const semantic = page.frameLocator('iframe[title="V2 semantic reader"]');
   await expect(
-    legacy.getByRole("heading", { level: 1, name: "Fixed-page flipbook" }),
+    legacy.getByRole("dialog", { name: /Legacy fixed-page comparison/ }),
   ).toBeVisible();
   await expect(
-    semantic.getByRole("heading", { level: 1, name: "Introduction" }),
+    semantic.getByRole("dialog", {
+      name: "A Small Book About Ethical Technology",
+    }),
   ).toBeVisible();
-  await expect(semantic.locator(".book-reader-runtime-status")).toHaveText(
-    "Semantic reader ready",
+  await expect(semantic.locator(".book-mode-counter")).toHaveText(
+    "Screen 1 / 7",
   );
 });

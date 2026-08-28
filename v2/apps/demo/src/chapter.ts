@@ -52,6 +52,8 @@ runtimeStatus.className = "book-reader-runtime-status";
 runtimeStatus.setAttribute("role", "status");
 runtimeStatus.textContent = "Enhancing reader";
 document.body.append(runtimeStatus);
+let openRequestedBookView =
+  new URLSearchParams(globalThis.location.search).get("view") === "book";
 
 const unsubscribe = session.subscribe((state) => {
   document.body.dataset.readerStatus = state.status;
@@ -61,6 +63,12 @@ const unsubscribe = session.subscribe((state) => {
       : state.status === "error"
         ? (state.error?.message ?? "Reader error")
         : "Enhancing reader";
+  if (state.status === "ready" && openRequestedBookView) {
+    openRequestedBookView = false;
+    document
+      .querySelector<HTMLButtonElement>(".book-reader-book-view")
+      ?.click();
+  }
 });
 
 globalThis.addEventListener(

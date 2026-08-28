@@ -63,17 +63,33 @@ function waitForPaint(signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
     let firstFrame = 0;
     let secondFrame = 0;
+    let fallback: ReturnType<typeof setTimeout>;
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(fallback);
+      signal?.removeEventListener("abort", abort);
+      resolve();
+    };
     const abort = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
       cancelAnimationFrame(firstFrame);
       cancelAnimationFrame(secondFrame);
+      clearTimeout(fallback);
       reject(new DOMException("Aborted", "AbortError"));
     };
     signal?.addEventListener("abort", abort, { once: true });
+    // Nested/background frames can suspend requestAnimationFrame indefinitely.
+    // The fallback prevents session readiness from hanging in that state.
+    fallback = globalThis.setTimeout(finish, 500);
     firstFrame = requestAnimationFrame(() => {
-      secondFrame = requestAnimationFrame(() => {
-        signal?.removeEventListener("abort", abort);
-        resolve();
-      });
+      secondFrame = requestAnimationFrame(finish);
     });
   });
 }
@@ -214,4 +230,3 @@ export function createSemanticRenderer(
     },
   };
 }
-

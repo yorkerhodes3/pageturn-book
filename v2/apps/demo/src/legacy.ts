@@ -104,3 +104,6 @@ openButton.addEventListener("click", async () => {
   }
 });
 
+if (new URLSearchParams(globalThis.location.search).get("view") === "book") {
+  openButton.click();
+}
