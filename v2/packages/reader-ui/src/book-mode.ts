@@ -23,6 +23,15 @@ type BookSpreadSlot = {
   blank: "none" | "inside-cover" | "end";
 };
 
+type RenderBookOptions = {
+  viewIndex?: number;
+  slots?: BookSpreadSlot[];
+  keepClosed?: boolean;
+  showCover?: boolean;
+  counterText?: string;
+  allowCorner?: boolean;
+};
+
 export type SemanticBookModeOptions = {
   navigate(location: SemanticLocation): Promise<boolean>;
   onOpenChange?(open: boolean): void;
@@ -41,6 +50,7 @@ export type SemanticBookMode = {
 };
 
 export const SEMANTIC_BOOK_SINGLE_PAGE_QUERY = "(max-width: 45rem)";
+const TURN_SEGMENT_COUNT = 9;
 
 function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -485,14 +495,46 @@ export function createSemanticBookMode(
     const decorativeFace = (
       page: BookPage,
       className: string,
+      segmentIndex: number,
     ): HTMLElement => {
       const face = element("div", className);
+      const pageSlice = element("div", "book-mode-turn-face-page");
+      pageSlice.style.setProperty(
+        "--book-turn-segment-index",
+        String(segmentIndex),
+      );
+      pageSlice.style.setProperty(
+        "--book-turn-segment-count",
+        String(TURN_SEGMENT_COUNT),
+      );
       const faceContent = element("div", "book-mode-sheet-content");
       faceContent.append(...page.nodes.map((node) => node.cloneNode(true)));
       for (const identified of faceContent.querySelectorAll("[id]")) {
         identified.removeAttribute("id");
       }
-      face.append(faceContent);
+      pageSlice.append(faceContent);
+      face.append(pageSlice);
+      return face;
+    };
+
+    const blankDecorativeFace = (
+      className: string,
+      segmentIndex: number,
+    ): HTMLElement => {
+      const face = element(
+        "div",
+        `${className} book-mode-turn-face-blank`,
+      );
+      const pageSlice = element("div", "book-mode-turn-face-page");
+      pageSlice.style.setProperty(
+        "--book-turn-segment-index",
+        String(segmentIndex),
+      );
+      pageSlice.style.setProperty(
+        "--book-turn-segment-count",
+        String(TURN_SEGMENT_COUNT),
+      );
+      face.append(pageSlice);
       return face;
     };
 
@@ -574,25 +616,48 @@ export function createSemanticBookMode(
       );
       leaf.setAttribute("aria-hidden", "true");
       leaf.inert = true;
+      for (let index = 0; index < TURN_SEGMENT_COUNT; index += 1) {
+        const segment = element("div", "book-mode-turn-segment");
+        const normalized = index / (TURN_SEGMENT_COUNT - 1);
+        const centered = normalized - 0.5;
+        segment.style.setProperty("--book-turn-segment-index", String(index));
+        segment.style.setProperty(
+          "--book-turn-segment-count",
+          String(TURN_SEGMENT_COUNT),
+        );
+        segment.style.setProperty(
+          "--book-turn-segment-bend",
+          `${centered * 20}deg`,
+        );
+        segment.style.setProperty(
+          "--book-turn-segment-lift",
+          `${(1 - Math.abs(centered) * 2) * 15}px`,
+        );
+        segment.append(
+          turn.front
+            ? decorativeFace(
+                turn.front,
+                "book-mode-turn-face book-mode-turn-front",
+                index,
+              )
+            : blankDecorativeFace(
+                "book-mode-turn-face book-mode-turn-front",
+                index,
+              ),
+          turn.back
+            ? decorativeFace(
+                turn.back,
+                "book-mode-turn-face book-mode-turn-back",
+                index,
+              )
+            : blankDecorativeFace(
+                "book-mode-turn-face book-mode-turn-back",
+                index,
+              ),
+        );
+        leaf.append(segment);
+      }
       leaf.append(
-        turn.front
-          ? decorativeFace(
-              turn.front,
-              "book-mode-turn-face book-mode-turn-front",
-            )
-          : element(
-              "div",
-              "book-mode-turn-face book-mode-turn-front book-mode-turn-face-blank",
-            ),
-        turn.back
-          ? decorativeFace(
-              turn.back,
-              "book-mode-turn-face book-mode-turn-back",
-            )
-          : element(
-              "div",
-              "book-mode-turn-face book-mode-turn-back book-mode-turn-face-blank",
-            ),
         element("span", "book-mode-turn-shadow"),
         element("span", "book-mode-turn-fold"),
       );
@@ -632,15 +697,20 @@ export function createSemanticBookMode(
       });
     };
 
-    const render = () => {
+    const render = (renderOptions: RenderBookOptions = {}) => {
       if (!overlay) {
         return;
       }
       spread.replaceChildren();
-      const coverVisible = pages[pageIndex]?.kind === "cover";
-      book.classList.toggle("book-mode-book-closed", coverVisible);
+      const viewIndex = renderOptions.viewIndex ?? pageIndex;
+      const coverVisible =
+        renderOptions.showCover ?? pages[viewIndex]?.kind === "cover";
+      book.classList.toggle(
+        "book-mode-book-closed",
+        renderOptions.keepClosed ?? coverVisible,
+      );
       spread.classList.toggle("book-mode-spread-cover", coverVisible);
-      const slots = spreadSlots(pageIndex);
+      const slots = renderOptions.slots ?? spreadSlots(viewIndex);
       for (const slot of slots) {
         if (!coverVisible) {
           spread.append(pageFan(slot.side));
@@ -692,6 +762,7 @@ export function createSemanticBookMode(
         sheet.append(contentRoot, folio);
         if (
           slot.side === "right" &&
+          (renderOptions.allowCorner ?? true) &&
           pageStarts().indexOf(pageIndex) < pageStarts().length - 1
         ) {
           const corner = element("button", "book-mode-corner");
@@ -706,7 +777,9 @@ export function createSemanticBookMode(
       const position = starts.indexOf(pageIndex);
       previous.disabled = position <= 0 || navigating;
       next.disabled = position >= starts.length - 1 || navigating;
-      if (coverVisible) {
+      if (renderOptions.counterText !== undefined) {
+        counter.textContent = renderOptions.counterText;
+      } else if (coverVisible) {
         counter.textContent = "Front cover";
       } else {
         const visiblePages = slots.flatMap((slot) =>
@@ -754,6 +827,7 @@ export function createSemanticBookMode(
       render();
       const openingCover =
         direction > 0 && pages[pageIndex]?.kind === "cover";
+      const closingCover = direction < 0 && targetPage.kind === "cover";
       if (openingCover) {
         book.classList.add("book-mode-book-sliding");
         if (
@@ -764,10 +838,7 @@ export function createSemanticBookMode(
         if (!operationActive()) {
           return;
         }
-        book.classList.add(
-          "book-mode-book-opening",
-          "book-mode-book-positioned",
-        );
+        book.classList.add("book-mode-book-positioned");
         book.classList.remove("book-mode-book-sliding");
       }
       const current = session.getState().publication;
@@ -776,8 +847,24 @@ export function createSemanticBookMode(
         render();
         return;
       }
-      pageIndex = boundedIndex(target);
-      render();
+      if (openingCover) {
+        const rightPage = spreadSlots(target).find(
+          (slot) => slot.side === "right",
+        );
+        render({
+          viewIndex: target,
+          slots: rightPage ? [rightPage] : [],
+          keepClosed: true,
+          showCover: false,
+          counterText: "Opening cover",
+          allowCorner: false,
+        });
+      } else if (closingCover) {
+        render({ allowCorner: false });
+      } else {
+        pageIndex = boundedIndex(target);
+        render();
+      }
       const turn = animateTurn(direction, target, fromIndex);
       await turn;
       if (!operationActive()) {
@@ -798,8 +885,11 @@ export function createSemanticBookMode(
       }
       if (!accepted) {
         pageIndex = fromIndex;
-      } else if (targetPage.kind === "cover") {
-        options.onCoverReached?.();
+      } else {
+        pageIndex = boundedIndex(target);
+        if (targetPage.kind === "cover") {
+          options.onCoverReached?.();
+        }
       }
       navigating = false;
       book.classList.remove(
@@ -808,13 +898,13 @@ export function createSemanticBookMode(
         "book-mode-book-positioned",
       );
       applyDeferredLocation();
-      const closingCover =
+      const completedCoverClose =
         accepted && pages[pageIndex]?.kind === "cover";
-      if (closingCover) {
+      if (completedCoverClose) {
         book.classList.add("book-mode-book-closing");
       }
       render();
-      if (closingCover) {
+      if (completedCoverClose) {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             book.classList.remove("book-mode-book-closing");
@@ -879,6 +969,7 @@ export function createSemanticBookMode(
         navigating ||
         !event.isPrimary ||
         event.button !== 0 ||
+        pages[pageIndex]?.kind === "cover" ||
         (event.target instanceof Element &&
           event.target.closest(
             "a, input, textarea, select, button:not(.book-mode-corner)",
@@ -912,10 +1003,14 @@ export function createSemanticBookMode(
       const starts = pageStarts();
       const position = starts.indexOf(pageIndex);
       const target = starts[position + direction];
-      if (target === undefined) {
+      const fromIndex = pageIndex;
+      if (
+        target === undefined ||
+        pages[fromIndex]?.kind === "cover" ||
+        pages[target]?.kind === "cover"
+      ) {
         return false;
       }
-      const fromIndex = pageIndex;
       start.direction = direction;
       start.fromIndex = fromIndex;
       start.target = target;
@@ -973,6 +1068,17 @@ export function createSemanticBookMode(
         "book-mode-turn-past-half",
         progress >= 0.5,
       );
+      for (const [index, segment] of Array.from(
+        start.leaf.querySelectorAll<HTMLElement>(".book-mode-turn-segment"),
+      ).entries()) {
+        const normalized = index / (TURN_SEGMENT_COUNT - 1);
+        const centered = normalized - 0.5;
+        const curve = Math.sin(Math.PI * progress);
+        const directionScale = start.direction > 0 ? 1 : -1;
+        const bend = centered * 28 * curve * directionScale;
+        const lift = (1 - Math.abs(centered) * 2) * 22 * curve;
+        segment.style.transform = `translateZ(${lift}px) rotateY(${bend}deg)`;
+      }
     };
     const settleInteractiveTurn = async (
       start: NonNullable<typeof pointerStart>,
@@ -1000,6 +1106,11 @@ export function createSemanticBookMode(
         `${commit ? direction * -180 : 0}deg`,
       );
       leaf.classList.toggle("book-mode-turn-past-half", commit);
+      for (const segment of leaf.querySelectorAll<HTMLElement>(
+        ".book-mode-turn-segment",
+      )) {
+        segment.style.transform = "translateZ(0) rotateY(0)";
+      }
       await new Promise<void>((resolve) => {
         let settled = false;
         const finish = () => {

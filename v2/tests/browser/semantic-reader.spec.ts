@@ -1,10 +1,24 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 const pagesBase = (process.env.PAGES_BASE_PATH ?? "").replace(/\/$/, "");
 const route = (path: string) => `${pagesBase}${path}`;
 const chapterPath = route(
   "/book/demo-book/2026-08/chapters/introduction/",
 );
+
+async function turnLeafState(leaf: Locator) {
+  return leaf.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return {
+      front: node.querySelector(".book-mode-turn-front")?.textContent ?? "",
+      back: node.querySelector(".book-mode-turn-back")?.textContent ?? "",
+      segments: node.querySelectorAll(".book-mode-turn-segment").length,
+      inert: node.hasAttribute("inert"),
+      width: Number.parseFloat(style.width),
+      left: Number.parseFloat(style.left),
+    };
+  });
+}
 
 test("presents both reader versions from the comparison landing page", async ({
   page,
@@ -156,6 +170,24 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     "#301713",
   );
   await expect(page.locator(".book-mode-binding-hub")).toHaveCount(5);
+  await expect(page.locator(".book-mode-cover")).toHaveCSS(
+    "overflow-y",
+    "hidden",
+  );
+  await expect(page.locator(".book-mode-cover")).toHaveCSS(
+    "scrollbar-width",
+    "none",
+  );
+  await page.locator(".book-mode-overlay").evaluate((node) => {
+    node.style.zoom = "1.25";
+  });
+  await expect(page.locator(".book-mode-cover")).toHaveCSS(
+    "overflow-y",
+    "hidden",
+  );
+  await page.locator(".book-mode-overlay").evaluate((node) => {
+    node.style.removeProperty("zoom");
+  });
   await page.addStyleTag({
     content:
       ".book-mode-turn-leaf-forward,.book-mode-turn-leaf-backward," +
@@ -184,24 +216,37 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   );
   const coverLeaf = page.locator(".book-mode-turn-leaf-from-cover");
   await expect(coverLeaf).toBeVisible();
-  await expect(coverLeaf).toHaveAttribute("inert", "");
-  const turningCoverWidth = await coverLeaf.evaluate((node) =>
-    Number.parseFloat(getComputedStyle(node).width),
-  );
-  const turningCoverLeft = await coverLeaf.evaluate((node) =>
-    Number.parseFloat(getComputedStyle(node).left),
-  );
-  expect(Math.abs(turningCoverWidth - closedCoverBox.width)).toBeLessThan(2);
-  expect(turningCoverLeft).toBeGreaterThan(closedCoverBox.width * 0.8);
-  await expect(coverLeaf.locator(".book-mode-turn-front")).toContainText(
-    "A Small Book About Ethical Technology",
-  );
-  await expect(coverLeaf.locator(".book-mode-turn-back")).not.toContainText(
-    "Introduction",
-  );
+  const coverFaces = await turnLeafState(coverLeaf);
+  expect(coverFaces.segments).toBe(9);
+  expect(coverFaces.front).toContain("A Small Book About Ethical Technology");
+  expect(coverFaces.back).not.toContain("Introduction");
+  expect(coverFaces.inert).toBe(true);
+  expect(Math.abs(coverFaces.width - closedCoverBox.width)).toBeLessThan(2);
+  expect(coverFaces.left).toBeGreaterThan(closedCoverBox.width * 0.8);
+  await expect(page.locator(".book-mode-counter")).toHaveText("Opening cover");
+  await expect(
+    page.locator(".book-mode-spread > .book-mode-sheet-left"),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(".book-mode-spread > .book-mode-cover"),
+  ).toHaveCount(0);
+  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(7);
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
   ).toContainText("Introduction");
+  const openingPageBox = await page
+    .locator(".book-mode-spread > .book-mode-sheet-right")
+    .boundingBox();
+  const openingBookBox = await page.locator(".book-mode-book").boundingBox();
+  if (!openingPageBox || !openingBookBox) {
+    throw new Error("Expected opening page and book bounds");
+  }
+  expect(openingPageBox.x).toBeGreaterThan(
+    openingBookBox.x + openingBookBox.width * 0.45,
+  );
+  expect(openingPageBox.x + openingPageBox.width).toBeLessThanOrEqual(
+    openingBookBox.x + openingBookBox.width + 1,
+  );
   await expect(coverLeaf).toHaveCount(0, { timeout: 3000 });
   await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
   await expect(page.locator(".book-mode-sheet")).toHaveCount(2);
@@ -226,16 +271,44 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(page.locator("main.book-layout")).toHaveAttribute("inert", "");
 
   await page
+    .getByRole("button", { name: "Previous screen page" })
+    .evaluate((button) => (button as HTMLButtonElement).click());
+  const closingLeaf = page.locator(".book-mode-turn-leaf-to-cover");
+  await expect(closingLeaf).toBeVisible();
+  const closingFaces = await turnLeafState(closingLeaf);
+  expect(closingFaces.back).toContain("A Small Book About Ethical Technology");
+  await expect(
+    page.locator(".book-mode-spread > .book-mode-sheet-right"),
+  ).toContainText("Introduction");
+  await expect(
+    page.locator(".book-mode-spread > .book-mode-cover"),
+  ).toHaveCount(0);
+  await expect(closingLeaf).toHaveCount(0, { timeout: 3000 });
+  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
+  await expect(page.locator(".book-mode-cover")).toHaveCount(1);
+  await page.waitForTimeout(450);
+  const reclosedCoverBox = await page.locator(".book-mode-cover").boundingBox();
+  if (!reclosedCoverBox) {
+    throw new Error("Expected reclosed cover bounds");
+  }
+  expect(Math.abs(reclosedCoverBox.x - closedCoverBox.x)).toBeLessThan(3);
+
+  await page
+    .getByRole("button", { name: "Next screen page", exact: true })
+    .evaluate((button) => (button as HTMLButtonElement).click());
+  await expect(page.locator(".book-mode-turn-leaf")).toHaveCount(0, {
+    timeout: 3000,
+  });
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+
+  await page
     .getByRole("button", { name: "Next screen page", exact: true })
     .evaluate((button) => (button as HTMLButtonElement).click());
   const firstPageLeaf = page.locator(".book-mode-turn-leaf-forward");
   await expect(firstPageLeaf).toBeVisible();
-  await expect(firstPageLeaf.locator(".book-mode-turn-front")).toContainText(
-    "Introduction",
-  );
-  await expect(firstPageLeaf.locator(".book-mode-turn-back")).toContainText(
-    "Why semantic reading matters",
-  );
+  const firstPageFaces = await turnLeafState(firstPageLeaf);
+  expect(firstPageFaces.front).toContain("Introduction");
+  expect(firstPageFaces.back).toContain("Why semantic reading matters");
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
   ).toContainText("What this first slice proves");
@@ -260,12 +333,9 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     .evaluate((button) => (button as HTMLButtonElement).click());
   const forwardLeaf = page.locator(".book-mode-turn-leaf-forward");
   await expect(forwardLeaf).toBeVisible();
-  await expect(forwardLeaf.locator(".book-mode-turn-front")).toContainText(
-    "What this first slice proves",
-  );
-  await expect(forwardLeaf.locator(".book-mode-turn-back")).toContainText(
-    "Principles in Practice",
-  );
+  const forwardFaces = await turnLeafState(forwardLeaf);
+  expect(forwardFaces.front).toContain("What this first slice proves");
+  expect(forwardFaces.back).toContain("Principles in Practice");
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
   ).toContainText("Preserve meaning");
@@ -285,12 +355,9 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     .evaluate((button) => (button as HTMLButtonElement).click());
   const backwardLeaf = page.locator(".book-mode-turn-leaf-backward");
   await expect(backwardLeaf).toBeVisible();
-  await expect(backwardLeaf.locator(".book-mode-turn-front")).toContainText(
-    "Principles in Practice",
-  );
-  await expect(backwardLeaf.locator(".book-mode-turn-back")).toContainText(
-    "What this first slice proves",
-  );
+  const backwardFaces = await turnLeafState(backwardLeaf);
+  expect(backwardFaces.front).toContain("Principles in Practice");
+  expect(backwardFaces.back).toContain("What this first slice proves");
   await expect(backwardLeaf).toHaveCount(0, { timeout: 3000 });
   await expect(page.locator(".book-mode-counter")).toHaveText(
     "Screens 2–3 / 7",
@@ -356,6 +423,11 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
     )
     .toBe(true);
 
+  await page
+    .getByRole("button", { name: "Turn page forward" })
+    .click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -376,18 +448,31 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
   });
   const peel = page.locator(".book-mode-turn-leaf-interactive");
   await expect(peel).toBeVisible();
+  await expect(peel.locator(".book-mode-turn-segment")).toHaveCount(9);
   await expect(peel).toHaveClass(/book-mode-turn-past-half/);
-  await expect(peel.locator(".book-mode-turn-front")).toHaveCSS("opacity", "0");
-  await expect(peel.locator(".book-mode-turn-back")).toHaveCSS("opacity", "1");
-  await expect(peel.locator(".book-mode-turn-back")).toContainText(
-    "Introduction",
+  await expect(peel.locator(".book-mode-turn-front").first()).toHaveCSS(
+    "opacity",
+    "0",
   );
+  await expect(peel.locator(".book-mode-turn-back").first()).toHaveCSS(
+    "opacity",
+    "1",
+  );
+  await expect(peel.locator(".book-mode-turn-back").first()).toContainText(
+    "Why semantic reading matters",
+  );
+  const segmentTransforms = await peel
+    .locator(".book-mode-turn-segment")
+    .evaluateAll((segments) =>
+      segments.map((segment) => getComputedStyle(segment).transform),
+    );
+  expect(new Set(segmentTransforms).size).toBeGreaterThan(2);
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
-  ).toContainText("Introduction");
+  ).toContainText("Why semantic reading matters");
   await page.mouse.up();
   await expect(page.locator(".book-mode-turn-leaf-interactive")).toHaveCount(0);
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 2 / 7");
 
   const openedBox = await book.boundingBox();
   if (!openedBox) {
@@ -404,13 +489,22 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
     { steps: 5 },
   );
   const backwardPeel = page.locator(".book-mode-turn-leaf-interactive");
-  await expect(backwardPeel.locator(".book-mode-turn-front")).toContainText(
+  await expect(
+    backwardPeel.locator(".book-mode-turn-front").first(),
+  ).toContainText(
+    "Why semantic reading matters",
+  );
+  await expect(
+    backwardPeel.locator(".book-mode-turn-back").first(),
+  ).toContainText(
     "Introduction",
   );
-  await expect(backwardPeel.locator(".book-mode-turn-back")).toContainText(
-    "A Small Book About Ethical Technology",
-  );
   await page.mouse.up();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+
+  await page
+    .getByRole("button", { name: "Previous screen page" })
+    .click();
   await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
   await expect(page).toHaveURL(/\?view=book$/);
 });
@@ -436,6 +530,10 @@ test("cancels a peel that reverses away from its chosen direction", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
+  await page
+    .getByRole("button", { name: "Turn page forward" })
+    .click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -456,7 +554,7 @@ test("cancels a peel that reverses away from its chosen direction", async ({
   await page.mouse.up();
 
   await expect(page.locator(".book-mode-turn-leaf-interactive")).toHaveCount(0);
-  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
 });
 
 test("does not turn a page when a pointer gesture is cancelled", async ({
@@ -465,6 +563,10 @@ test("does not turn a page when a pointer gesture is cancelled", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
+  await page
+    .getByRole("button", { name: "Turn page forward" })
+    .click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -494,7 +596,7 @@ test("does not turn a page when a pointer gesture is cancelled", async ({
   await page.mouse.up();
 
   await expect(page.locator(".book-mode-turn-leaf-interactive")).toHaveCount(0);
-  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
 });
 
 test("does not navigate after closing during an automatic turn", async ({
@@ -524,6 +626,10 @@ test("does not navigate after closing a committed pointer peel", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
+  await page
+    .getByRole("button", { name: "Turn page forward" })
+    .click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -547,7 +653,7 @@ test("does not navigate after closing a committed pointer peel", async ({
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.waitForTimeout(500);
 
-  await expect(page).toHaveURL(/\/chapters\/introduction\/$/);
+  await expect(page).toHaveURL(/\/chapters\/introduction\/#introduction$/);
 });
 
 test("restores book view through browser Back and Forward", async ({ page }) => {
