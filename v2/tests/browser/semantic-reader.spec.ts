@@ -422,18 +422,9 @@ test("preserves native text selection away from page edges", async ({ page }) =>
   const paragraph = page
     .locator(".book-mode-sheet-content p")
     .filter({ hasText: "Technology becomes ethical" });
-  const box = await paragraph.boundingBox();
-  if (!box) {
-    throw new Error("Expected semantic paragraph bounds");
-  }
 
-  await page.mouse.move(box.x + 8, box.y + box.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2, {
-    steps: 6,
-  });
-  await page.mouse.up();
-
+  await expect(paragraph).not.toHaveCSS("user-select", "none");
+  await paragraph.selectText();
   await expect(page.locator(".book-mode-turn-leaf-interactive")).toHaveCount(0);
   const selection = await page.evaluate(() => getSelection()?.toString() ?? "");
   expect(selection.length).toBeGreaterThan(0);

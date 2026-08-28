@@ -153,6 +153,7 @@ export function mountReaderShell(
     "Book view",
   );
   bookView.type = "button";
+  bookView.disabled = true;
   toolbar.append(previous, progress, next, bookView);
 
   layout.classList.add("book-layout-enhanced");
@@ -352,6 +353,7 @@ export function mountReaderShell(
       chapterIndex < 0 ||
       chapterIndex >= chapters.length - 1 ||
       state.status !== "ready";
+    bookView.disabled = state.status !== "ready";
     progress.textContent =
       state.status === "error"
         ? (state.error?.message ?? "Reader error")
