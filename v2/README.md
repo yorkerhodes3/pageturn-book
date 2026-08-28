@@ -199,6 +199,12 @@ Implemented now:
   cloth, or paper material, thickness, colors, spine hubs, and shelf label.
 - CSS 180-degree turning leaves with distinct outgoing/incoming faces, fold
   lighting, moving shadows, corner-turn affordance, and pointer swipes.
+- Physical recto/verso sequencing: cover, blank inside front board, page 1 on
+  the right, then paired verso/recto spreads.
+- Destination pages rendered beneath the moving leaf, plus live pointer-driven
+  peeling with commit, reverse, and cancellation behavior.
+- Rounded gutter shoulders and page swell with shorter visible leaves and
+  seven fanned fore-edge layers per side.
 - Static theme and two-chapter demo.
 
 Still intentionally pending:
@@ -213,6 +219,25 @@ Still intentionally pending:
   mode.
 
 See [BACKLOG.md](../BACKLOG.md) for dependency-ordered delivery work.
+
+## Physical book model
+
+The visual model follows the hardcover anatomy described by Princeton Public
+Library's [Book Anatomy](https://princetonlibrary.org/book-anatomy/): rigid
+boards, a flexible joint/hinge, endpapers and flyleaf, a sewn text block,
+raised spine bands, and distinct recto/verso leaf faces.
+
+The browser model is still CSS and semantic HTML, not a physics engine. It uses
+bounded visible DOM:
+
+- One destination spread.
+- One temporary turning leaf with separate front and back content.
+- Seven inexpensive decorative fan edges per visible side.
+- One binding structure shared by closed and open states.
+
+Automatic turns and live drags lay down the destination spread first, then move
+the outgoing leaf over it. This keeps the page behind visible throughout the
+peel and avoids the mirrored-screenshot approach used by many page effects.
 
 ## GitHub Pages comparison
 

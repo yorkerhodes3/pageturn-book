@@ -25,9 +25,14 @@ export function publicationAppearanceVariables(
   const cover = appearance?.cover ?? DEFAULT_COVER_APPEARANCE;
   const binding = appearance?.binding ?? DEFAULT_BINDING_APPEARANCE;
   const depth = {
-    slim: "0.45rem",
-    standard: "0.75rem",
-    thick: "1.05rem",
+    slim: "0.65rem",
+    standard: "1rem",
+    thick: "1.45rem",
+  }[binding.depth];
+  const boardThickness = {
+    slim: "0.16rem",
+    standard: "0.25rem",
+    thick: "0.36rem",
   }[binding.depth];
   return {
     "--book-cover-background": cover.background,
@@ -36,6 +41,7 @@ export function publicationAppearanceVariables(
     "--book-binding-color": binding.color,
     "--book-binding-accent": binding.accent,
     "--book-binding-depth": depth,
+    "--book-board-thickness": boardThickness,
   };
 }
 
@@ -53,4 +59,3 @@ export function applyPublicationAppearance(
   host.dataset.bookBindingDepth = binding.depth;
   host.dataset.bookBindingHubs = String(binding.hubs);
 }
-

@@ -25,8 +25,8 @@ describe("publicationAppearanceVariables", () => {
       "--book-cover-accent": "#b9914f",
       "--book-binding-color": "#301713",
       "--book-binding-accent": "#b9914f",
-      "--book-binding-depth": "1.05rem",
+      "--book-binding-depth": "1.45rem",
+      "--book-board-thickness": "0.36rem",
     });
   });
 });
-

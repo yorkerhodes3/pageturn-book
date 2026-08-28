@@ -243,9 +243,22 @@ export function mountReaderShell(
     }
   };
 
+  const pushCoverUrl = () => {
+    const url = new URL(browserLocation.href);
+    url.searchParams.set("view", "book");
+    url.hash = "";
+    browserHistory.pushState(
+      { ...browserHistory.state, bookReaderView: "cover" },
+      "",
+      url,
+    );
+  };
+
   const bookMode = createSemanticBookMode(content, session, {
     navigate: (location) => navigate(location),
     onOpenChange: updateBookViewUrl,
+    onCoverReached: pushCoverUrl,
+    startAtCover: () => new URL(browserLocation.href).hash.length === 0,
   });
 
   const onContentClick = (event: MouseEvent) => {
@@ -273,6 +286,10 @@ export function mountReaderShell(
     const wantsBookView = url.searchParams.get("view") === "book";
     if (!wantsBookView && bookMode.isOpen()) {
       bookMode.close();
+    }
+    if (wantsBookView && url.hash.length === 0 && bookMode.isOpen()) {
+      bookMode.showCover();
+      return;
     }
     const target = locationFromUrl(
       publication,

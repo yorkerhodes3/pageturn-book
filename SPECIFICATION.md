@@ -1279,6 +1279,18 @@ renderer as the supported paths.
 Semantic paged mode is an optional visual organization of semantic content.
 Its screen page number is transient and cannot be used as a citation.
 
+Book presentation models physical leaf order rather than placing page 1 on the
+left: front cover, inside front board/flyleaf, page 1 on the right, then
+verso/recto pairs. A turning leaf has distinct outgoing and incoming semantic
+faces, while the destination spread is already present underneath. Pointer
+dragging changes the peel progressively and can commit, reverse, or cancel
+without changing canonical content until committed.
+
+Binding presentation may use the shared appearance contract to show boards,
+spine, joints, text-block swell, raised bands, and fanned fore-edge layers.
+These layers are decorative and cannot replace semantic reading order or
+increase the active content window without an explicit performance review.
+
 ### 21.2 Prototype requirements
 
 | ID | Requirement |
