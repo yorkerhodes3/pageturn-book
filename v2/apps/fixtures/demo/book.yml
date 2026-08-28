@@ -20,6 +20,7 @@ appearance:
     accent: "#b9914f"
     depth: thick
     hubs: 5
+    pageCount: 7
     shelfLabel: ETHICAL TECHNOLOGY
 chapters:
   - id: introduction

@@ -166,6 +166,7 @@ function renderChapterDocument(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="${escapeHtml(authors)}">
   <title>${escapeHtml(chapter.config.title)} - ${escapeHtml(config.title)}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📖</text></svg>">
   ${theme}
 </head>
 <body data-reader-status="static">

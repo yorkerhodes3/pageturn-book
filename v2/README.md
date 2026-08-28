@@ -91,8 +91,17 @@ The landing page links to:
 The direct semantic chapter is:
 
 ```text
-http://127.0.0.1:4174/book/demo-book/2026-08/chapters/introduction/
+http://127.0.0.1:4174/book/what-is-ethical-ai/2026-07/chapters/executive-summary/
 ```
+
+The comparison uses the actual Ethical Tech CoLab report. Refresh the pinned
+generated source after an approved website revision change with:
+
+```powershell
+npm run sync:production-fixture
+```
+
+The small `demo-book` fixture remains available only for fast mechanics tests.
 
 ## Publication source
 

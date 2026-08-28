@@ -1,0 +1,9 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/what-is-ethical-ai.ts; do not edit by hand. -->
+
+# 16. Conclusion {#conclusion}
+
+This paper set out to answer a question that is asked constantly and defined rarely: what is ethical AI? The answer it has defended is institutional rather than technical. Ethical AI is artificial intelligence governed by the same disciplines humanity has always required of power: deliberation across plural values, accountability to those affected, a floor of universal rights, and the humility to take responsibility when judgment fails. Ethics did not emerge because human beings became virtuous. It emerged because societies learned that power without restraint destroys the communities on which power depends. Artificial intelligence does not change that lesson. It makes the lesson urgent.
+
+The humanitarian sector is where the urgency is greatest and the test is hardest. There, consent collapses, experimentation finds the least protected subjects, accountability runs to people with no vote and no purchase, and the cost of failure is measured in lives. A technology that can be governed ethically there can be governed ethically anywhere. The frameworks now taking shape, from UNESCO's Recommendation to the UN's Scientific Panel and Global Dialogue, from the EU AI Act to the ICRC's precautionary policy, are the scaffolding of that governance. Whether they become an edifice depends on whether institutions, including universities, technology companies, and the collaborations between them, do the slow deliberative work this paper has tried to model.
+
+Societies do not flourish because they possess increasingly powerful tools. They flourish because they develop increasingly trustworthy ways of governing them. That has been the purpose of ethics for four thousand years. It is the purpose of ethical AI now.

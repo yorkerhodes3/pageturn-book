@@ -5,6 +5,12 @@ const route = (path: string) => `${pagesBase}${path}`;
 const chapterPath = route(
   "/book/demo-book/2026-08/chapters/introduction/",
 );
+const productionChapterPath = route(
+  "/book/what-is-ethical-ai/2026-07/chapters/executive-summary/",
+);
+const productionReferencesPath = route(
+  "/book/what-is-ethical-ai/2026-07/chapters/references/",
+);
 
 async function turnLeafState(leaf: Locator) {
   return leaf.evaluate((node) => {
@@ -36,14 +42,111 @@ test("presents both reader versions from the comparison landing page", async ({
     page.getByRole("link", { name: "Open V2 book view" }),
   ).toHaveAttribute(
     "href",
-    "./book/demo-book/2026-08/chapters/introduction/?view=book",
+    "./book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
   );
   await expect(
     page.getByRole("link", { name: "Open semantic scroll view" }),
   ).toHaveAttribute(
     "href",
-    "./book/demo-book/2026-08/chapters/introduction/",
+    "./book/what-is-ethical-ai/2026-07/chapters/executive-summary/",
   );
+});
+
+test("uses the production Ethical Tech CoLab report in V2", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto(productionChapterPath);
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "01. Executive Summary" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Humanity has repeatedly transformed itself through technological innovation.",
+    ),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Conclusion" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Works Cited" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "What Is Ethical AI?" }),
+  ).toBeVisible();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
+  await page
+    .getByRole("button", { name: "Turn page forward" })
+    .click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 56");
+  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(22);
+  await expect(page.locator(".book-mode-overlay")).toHaveCSS(
+    "--book-page-count",
+    "46",
+  );
+});
+
+test("preserves the production references and disclaimer", async ({ page }) => {
+  await page.goto(productionReferencesPath);
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "17. Works Cited" }),
+  ).toBeVisible();
+  await expect(page.locator('[id^="reference-"]')).toHaveCount(122);
+  await expect(
+    page.getByRole("link", {
+      name: /Choking Off China's Access to the Future of AI/,
+    }),
+  ).toHaveAttribute(
+    "href",
+    "https://www.csis.org/analysis/choking-chinas-access-future-ai",
+  );
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Disclaimer" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Views and findings are those of the researchers and do not represent the official positions",
+    ),
+  ).toBeVisible();
+});
+
+test("fits the production cover on a narrow screen", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+
+  const book = page.locator(".book-mode-book");
+  const cover = page.locator(".book-mode-cover");
+  const coverContent = page.locator(".book-mode-cover-content");
+  await expect(book).toBeVisible();
+  await expect(cover).toBeVisible();
+  const [bookBox, coverBox, contentBox] = await Promise.all([
+    book.boundingBox(),
+    cover.boundingBox(),
+    coverContent.boundingBox(),
+  ]);
+  if (!bookBox || !coverBox || !contentBox) {
+    throw new Error("Expected production cover bounds");
+  }
+  expect(coverBox.width / bookBox.width).toBeGreaterThan(0.95);
+  expect(coverBox.width / coverBox.height).toBeCloseTo(0.7727, 2);
+  expect(contentBox.x).toBeGreaterThanOrEqual(coverBox.x);
+  expect(contentBox.x + contentBox.width).toBeLessThanOrEqual(
+    coverBox.x + coverBox.width,
+  );
+  expect(contentBox.y).toBeGreaterThanOrEqual(coverBox.y);
+  expect(contentBox.y + contentBox.height).toBeLessThanOrEqual(
+    coverBox.y + coverBox.height,
+  );
+  const coverContentOverflow = await coverContent.evaluate(
+    (node) => node.scrollHeight - node.clientHeight,
+  );
+  expect(coverContentOverflow).toBeLessThanOrEqual(1);
+  await expect(cover).toHaveCSS("overflow-y", "hidden");
+  await expect(cover).toHaveCSS("scrollbar-width", "none");
 });
 
 test("serves directly readable semantic content without JavaScript", async ({
@@ -152,6 +255,9 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(page.getByRole("button", { name: "Close" })).toBeFocused({
     timeout: 250,
   });
+  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover", {
+    timeout: 250,
+  });
   await expect(page).toHaveURL(/\?view=book$/);
   await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
   await expect(page.locator(".book-mode-cover")).toHaveCount(1);
@@ -196,9 +302,16 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   });
 
   const closedCoverBox = await page.locator(".book-mode-cover").boundingBox();
-  if (!closedCoverBox) {
-    throw new Error("Expected closed cover bounds");
+  const closedPageBlockBox = await page
+    .locator(".book-mode-page-block")
+    .boundingBox();
+  if (!closedCoverBox || !closedPageBlockBox) {
+    throw new Error("Expected closed cover and page-block bounds");
   }
+  expect(closedPageBlockBox.y).toBeGreaterThanOrEqual(closedCoverBox.y);
+  expect(closedPageBlockBox.y + closedPageBlockBox.height).toBeLessThanOrEqual(
+    closedCoverBox.y + closedCoverBox.height,
+  );
   const overlayBackground = await page
     .locator(".book-mode-overlay")
     .evaluate((node) => getComputedStyle(node).backgroundColor);
@@ -230,7 +343,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(
     page.locator(".book-mode-spread > .book-mode-cover"),
   ).toHaveCount(0);
-  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(7);
+  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(5);
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
   ).toContainText("Introduction");
@@ -250,7 +363,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(coverLeaf).toHaveCount(0, { timeout: 3000 });
   await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
   await expect(page.locator(".book-mode-sheet")).toHaveCount(2);
-  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(14);
+  await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(10);
   await expect(
     page.locator(".book-mode-sheet-blank-inside-cover"),
   ).toHaveCount(1);
@@ -416,6 +529,16 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
 
   await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
   await expect(page.locator(".book-mode-sheet")).toHaveCount(1);
+  const closedBook = await page.locator(".book-mode-book").boundingBox();
+  const closedCover = await page.locator(".book-mode-cover").boundingBox();
+  if (!closedBook || !closedCover) {
+    throw new Error("Expected responsive book and cover bounds");
+  }
+  expect(closedCover.width / closedBook.width).toBeGreaterThan(0.95);
+  await expect(page.locator(".book-mode-cover-title")).toHaveCSS(
+    "font-size",
+    /.+/,
+  );
   const overlay = page.locator(".book-mode-overlay");
   await expect
     .poll(async () =>
@@ -725,20 +848,33 @@ test("removes the book-turn delay for reduced motion", async ({ page }) => {
 });
 
 test("opens and closes the pinned legacy page-turn viewer", async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") {
+      runtimeErrors.push(message.text());
+    }
+  });
+  page.on("response", (response) => {
+    if (response.status() >= 400) {
+      runtimeErrors.push(`${response.status()} ${response.url()}`);
+    }
+  });
   await page.goto(route("/legacy/"));
   const open = page.getByRole("button", { name: "Open legacy book viewer" });
   await open.click();
 
   await expect(
-    page.getByRole("dialog", { name: /Legacy fixed-page comparison/ }),
+    page.getByRole("dialog", { name: "What Is Ethical AI? — page view" }),
   ).toBeVisible();
-  await expect(page.locator(".rab-counter")).toHaveText("1 / 6");
+  await expect(page.locator(".rab-counter")).toHaveText("1 / 46");
   await expect(page.getByRole("status")).toHaveText("Legacy viewer open.");
 
   await page.getByRole("button", { name: "Close book view" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByRole("status")).toHaveText("Legacy viewer closed.");
   await expect(open).toBeFocused();
+  expect(runtimeErrors).toEqual([]);
 });
 
 test("loads both versions in the side-by-side comparison", async ({ page }) => {
@@ -747,11 +883,11 @@ test("loads both versions in the side-by-side comparison", async ({ page }) => {
   const legacy = page.frameLocator('iframe[title="Legacy fixed-page reader"]');
   const semantic = page.frameLocator('iframe[title="V2 semantic reader"]');
   await expect(
-    legacy.getByRole("dialog", { name: /Legacy fixed-page comparison/ }),
+    legacy.getByRole("dialog", { name: "What Is Ethical AI? — page view" }),
   ).toBeVisible();
   await expect(
     semantic.getByRole("dialog", {
-      name: "A Small Book About Ethical Technology",
+      name: "What Is Ethical AI?",
     }),
   ).toBeVisible();
   await expect(semantic.locator(".book-mode-counter")).toHaveText(

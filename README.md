@@ -13,6 +13,7 @@ with the Ethical Tech CoLab website:
 - [Architecture review](./ARCHITECTURE-REVIEW.md)
 - [Specification](./SPECIFICATION.md)
 - [Implementation backlog](./BACKLOG.md)
+- [Real-content and Edge investigation](./RUNTIME-INVESTIGATION.md)
 
 ## Implementations
 
@@ -28,10 +29,13 @@ GitHub Actions builds a Pages artifact containing:
 
 - `/` - comparison overview.
 - `/legacy/` - pinned fixed-page viewer.
-- `/book/demo-book/2026-08/chapters/introduction/` - V2 semantic scroll reader.
-- `/book/demo-book/2026-08/chapters/introduction/?view=book` - V2 semantic
+- `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
+  semantic scroll reader using production content.
+- `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book` -
+  V2 semantic
   open-book presentation.
-- `/compare/` - side-by-side view with both book presentations opened.
+- `/compare/` - side-by-side view of the production 46-page legacy book and
+  production semantic report.
 
 The Pages deployment workflow is
 [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).

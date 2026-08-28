@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Legacy fixed-page reader comparison</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📖</text></svg>">
     <link rel="stylesheet" href="/src/demo.css">
   </head>
   <body>
@@ -11,15 +12,13 @@
       <p class="comparison-version">Version 1 - pinned revision d1d1ec6</p>
       <h1>Fixed-page flipbook</h1>
       <p>
-        This route loads the preserved <code>read-as-book</code> package as a
-        separate, lazy comparison. Its sample pages use the same ideas as the
-        semantic fixture, rendered as fixed SVG images.
+        This route loads the preserved <code>read-as-book</code> package with
+        all 46 production pages of <cite>What Is Ethical AI?</cite>.
       </p>
       <ul>
-        <li>Original full-screen page-turn interaction.</li>
-        <li>Raster-image document model.</li>
-        <li>All pages handed to StPageFlip when opened.</li>
-        <li>Retained only as a fallback during V2 review.</li>
+        <li>Exact designed PDF pages from the Ethical Tech CoLab website.</li>
+        <li>Original full-screen page-turn interaction and raster model.</li>
+        <li>Same publication used by the V2 semantic comparison.</li>
       </ul>
       <div class="legacy-demo-actions">
         <button id="open-legacy" type="button">Open legacy book viewer</button>
@@ -32,4 +31,3 @@
     <script type="module" src="/src/legacy.ts"></script>
   </body>
 </html>
-

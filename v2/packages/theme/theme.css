@@ -15,6 +15,32 @@
   --book-shadow-paper: 0 1.5rem 4rem rgb(66 51 31 / 14%);
 }
 
+.book-mode-sheet:not(.book-mode-sheet-cover)::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(255 255 255 / 18%),
+      transparent 18% 72%,
+      rgb(101 75 42 / 4%) 88%,
+      rgb(67 46 25 / 8%)
+    ),
+    radial-gradient(
+      130% 7% at 50% 0,
+      rgb(255 255 255 / 34%),
+      transparent 72%
+    ),
+    radial-gradient(
+      130% 7% at 50% 100%,
+      rgb(68 47 25 / 8%),
+      transparent 74%
+    );
+  content: "";
+  pointer-events: none;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --book-color-bg: #171511;
@@ -292,12 +318,18 @@ a:hover {
 
 .book-mode-book {
   position: relative;
-  width: min(74rem, calc(100vw - 2 * var(--book-mode-gutter)));
+  width: min(
+    74rem,
+    calc(72vh * 1.5454),
+    calc(100vw - 2 * var(--book-mode-gutter))
+  );
   max-width: 100%;
   min-width: 0;
-  height: min(72vh, 49rem);
-  min-height: 30rem;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1.5454;
   perspective: 2200px;
+  container-type: inline-size;
   filter: drop-shadow(0 2rem 2.4rem rgb(0 0 0 / 55%));
   touch-action: pan-y;
 }
@@ -328,7 +360,8 @@ a:hover {
 .book-mode-binding {
   position: absolute;
   z-index: -2;
-  inset: calc(-1 * var(--book-binding-depth));
+  inset-block: -0.35rem;
+  inset-inline: calc(-1 * var(--book-binding-depth));
   transform: translateZ(-1.8rem);
   transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -404,15 +437,18 @@ a:hover {
   box-shadow:
     0 0 0 1px rgb(64 45 27 / 32%),
     inset 1.3rem 0 1.8rem rgb(66 47 28 / 18%),
-    inset -0.45rem 0 0.75rem rgb(255 255 255 / 42%);
+    inset -0.45rem 0 0.75rem rgb(255 255 255 / 42%),
+    0 var(--book-text-block-depth) 0
+      calc(-1 * var(--book-text-block-depth) * 0.82)
+      rgb(74 58 40 / 38%);
   clip-path: polygon(0.5% 1%, 99.4% 0, 100% 98.5%, 0 100%);
 }
 
 .book-mode-binding-spine {
   position: absolute;
   z-index: 5;
-  top: -0.2rem;
-  bottom: -0.2rem;
+  top: 0.35rem;
+  bottom: 0.35rem;
   left: 50%;
   width: calc(1.6rem + var(--book-binding-depth));
   transform: translateX(-50%) translateZ(1rem);
@@ -503,6 +539,7 @@ a:hover {
 }
 
 .book-mode-book-closed .book-mode-binding {
+  inset-block: 0;
   right: 25%;
   left: 25%;
 }
@@ -746,6 +783,18 @@ a:hover {
   display: none;
 }
 
+.book-mode-sheet-cover .book-mode-corner {
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0 48%,
+      color-mix(in srgb, var(--book-cover-accent) 42%, transparent) 49% 51%,
+      color-mix(in srgb, var(--book-cover-background) 82%, #fff) 52% 68%,
+      color-mix(in srgb, var(--book-cover-accent) 50%, transparent) 69% 70%,
+      transparent 71%
+    );
+}
+
 .book-mode-sheet-cover::after {
   position: absolute;
   z-index: -1;
@@ -766,7 +815,7 @@ a:hover {
 .book-mode-cover .book-mode-sheet-content {
   height: 100%;
   min-height: 0;
-  padding: clamp(2.4rem, 6vw, 5.2rem);
+  padding: clamp(1rem, 5cqi, 4rem);
 }
 
 .book-mode-cover-content {
@@ -776,7 +825,8 @@ a:hover {
   align-items: center;
   justify-content: center;
   height: 100%;
-  padding: 2rem;
+  min-height: 0;
+  padding: clamp(0.75rem, 2cqi, 2rem);
   border: 1px solid color-mix(in srgb, var(--book-cover-accent) 76%, transparent);
   color: var(--book-cover-foreground);
   text-align: center;
@@ -813,27 +863,27 @@ a:hover {
 }
 
 .book-mode-sheet-content .book-mode-cover-title {
-  max-width: 12ch;
+  max-width: 11ch;
   margin: 0;
   color: var(--book-cover-foreground);
-  font: 500 clamp(2rem, 5vw, 4.5rem) / 1.04 var(--book-font-body);
+  font: 500 clamp(1.1rem, 8cqi, 4.5rem) / 1.04 var(--book-font-body);
   letter-spacing: -0.025em;
   text-shadow: 0 1px 0 rgb(0 0 0 / 50%);
 }
 
 .book-mode-cover-subtitle {
   max-width: 28ch;
-  margin: 1.5rem auto;
+  margin: clamp(0.45rem, 2.4cqi, 1.5rem) auto;
   color: color-mix(in srgb, var(--book-cover-foreground) 78%, transparent);
-  font: 500 0.82rem/1.6 var(--book-font-ui);
+  font: 500 clamp(0.48rem, 2cqi, 0.82rem) / 1.45 var(--book-font-ui);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .book-mode-cover-authors {
-  margin: 1rem 0 0;
+  margin: clamp(0.35rem, 1.6cqi, 1rem) 0 0;
   color: var(--book-cover-accent);
-  font: 600 0.9rem/1.4 var(--book-font-body);
+  font: 600 clamp(0.65rem, 2cqi, 0.9rem) / 1.3 var(--book-font-body);
 }
 
 .book-mode-sheet-left {
@@ -846,6 +896,16 @@ a:hover {
     inset 0.3rem 0 0.8rem rgb(255 255 255 / 62%);
   transform-origin: right center;
   transform: rotateY(2.35deg) translateZ(0.22rem) scaleX(0.992);
+  clip-path: polygon(
+    0.8% 0.55%,
+    48% 0.12%,
+    99.8% 1.15%,
+    100% 98.85%,
+    48% 99.88%,
+    0.8% 99.45%,
+    0 96%,
+    0 4%
+  );
 }
 
 .book-mode-sheet-left::before {
@@ -870,6 +930,16 @@ a:hover {
     inset -0.3rem 0 0.8rem rgb(255 255 255 / 62%);
   transform-origin: left center;
   transform: rotateY(-2.35deg) translateZ(0.22rem) scaleX(0.992);
+  clip-path: polygon(
+    0.2% 1.15%,
+    52% 0.12%,
+    99.2% 0.55%,
+    100% 4%,
+    100% 96%,
+    99.2% 99.45%,
+    52% 99.88%,
+    0 98.85%
+  );
 }
 
 .book-mode-sheet-right::before {
@@ -1513,13 +1583,31 @@ a:hover {
   }
 
   .book-mode-book {
-    width: min(100%, 32rem);
-    height: min(76vh, 45rem);
-    min-height: 26rem;
+    width: min(100%, 32rem, calc(76vh * 0.7727));
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 0.7727;
   }
 
   .book-mode-spread {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .book-mode-spread-cover {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .book-mode-book-sliding .book-mode-spread-cover,
+  .book-mode-book-closing .book-mode-spread-cover,
+  .book-mode-book-positioned .book-mode-spread-cover {
+    transform: none;
+  }
+
+  .book-mode-book-sliding .book-mode-binding,
+  .book-mode-book-positioned .book-mode-binding,
+  .book-mode-book-closing .book-mode-binding {
+    transform: translateZ(-1.8rem);
   }
 
   .book-mode-spread::before {

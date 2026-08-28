@@ -17,7 +17,18 @@ export const DEFAULT_BINDING_APPEARANCE: Readonly<PublicationBindingAppearance> 
     accent: "#b9914f",
     depth: "standard",
     hubs: 4,
+    pageCount: 64,
   };
+
+export function publicationPageFanCount(
+  appearance?: PublicationAppearance,
+): number {
+  const pageCount =
+    appearance?.binding.pageCount ??
+    DEFAULT_BINDING_APPEARANCE.pageCount ??
+    64;
+  return Math.min(14, Math.max(5, Math.round(Math.sqrt(pageCount) * 1.6)));
+}
 
 export function publicationAppearanceVariables(
   appearance?: PublicationAppearance,
@@ -34,6 +45,11 @@ export function publicationAppearanceVariables(
     standard: "0.25rem",
     thick: "0.36rem",
   }[binding.depth];
+  const pageCount = binding.pageCount ?? 64;
+  const textBlockDepth = Math.min(
+    1.45,
+    Math.max(0.55, 0.42 + Math.sqrt(pageCount) * 0.075),
+  );
   return {
     "--book-cover-background": cover.background,
     "--book-cover-foreground": cover.foreground,
@@ -42,6 +58,8 @@ export function publicationAppearanceVariables(
     "--book-binding-accent": binding.accent,
     "--book-binding-depth": depth,
     "--book-board-thickness": boardThickness,
+    "--book-text-block-depth": `${textBlockDepth.toFixed(2)}rem`,
+    "--book-page-count": String(pageCount),
   };
 }
 

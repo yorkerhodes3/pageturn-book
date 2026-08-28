@@ -5,7 +5,10 @@ import type {
   SemanticLocation,
 } from "@ethical-tech/book-publication-model";
 import type { ReaderSession } from "@ethical-tech/book-reader-core";
-import { applyPublicationAppearance } from "./appearance.js";
+import {
+  applyPublicationAppearance,
+  publicationPageFanCount,
+} from "./appearance.js";
 
 type BookPage = {
   kind: "cover" | "content";
@@ -51,6 +54,7 @@ export type SemanticBookMode = {
 
 export const SEMANTIC_BOOK_SINGLE_PAGE_QUERY = "(max-width: 45rem)";
 const TURN_SEGMENT_COUNT = 9;
+const TARGET_SCREEN_PAGE_CHARACTERS = 1_800;
 
 function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -148,7 +152,30 @@ function pagesFromArticle(
     groups.push(current);
   }
 
-  return groups.map((nodes, index) => {
+  const paginatedGroups = groups.flatMap((group) => {
+    const chunks: Element[][] = [];
+    let chunk: Element[] = [];
+    let characters = 0;
+    for (const node of group) {
+      const length = node.textContent?.trim().length ?? 0;
+      if (
+        chunk.length > 0 &&
+        characters + length > TARGET_SCREEN_PAGE_CHARACTERS
+      ) {
+        chunks.push(chunk);
+        chunk = [];
+        characters = 0;
+      }
+      chunk.push(node);
+      characters += length;
+    }
+    if (chunk.length > 0) {
+      chunks.push(chunk);
+    }
+    return chunks;
+  });
+
+  return paginatedGroups.map((nodes, index) => {
     const anchors = sourceAnchors(nodes);
     const anchor =
       anchors[0] ?? (index === 0 ? chapter.firstAnchor : chapter.lastAnchor);
@@ -230,13 +257,16 @@ function bindingElement(publication: PublicationManifest): HTMLElement {
   return binding;
 }
 
-function pageFan(side: "left" | "right"): HTMLElement {
+function pageFan(
+  side: "left" | "right",
+  layerCount: number,
+): HTMLElement {
   const fan = element(
     "div",
     `book-mode-page-fan book-mode-page-fan-${side}`,
   );
   fan.setAttribute("aria-hidden", "true");
-  for (let index = 0; index < 7; index += 1) {
+  for (let index = 0; index < layerCount; index += 1) {
     const edge = element("i", "book-mode-page-fan-edge");
     edge.style.setProperty("--book-fan-index", String(index));
     fan.append(edge);
@@ -418,6 +448,7 @@ export function createSemanticBookMode(
     };
     const boundedIndex = (index: number) =>
       Math.min(alignedIndex(index), pageStarts().at(-1) ?? 0);
+    const fanLayerCount = publicationPageFanCount(publication.appearance);
 
     const spreadSlots = (startIndex: number): BookSpreadSlot[] => {
       const page = pages[startIndex];
@@ -466,6 +497,48 @@ export function createSemanticBookMode(
         slots.find((slot) => slot.side === "left")?.page ??
         slots.find((slot) => slot.side === "right")?.page
       );
+    };
+
+    const turnUnderlaySlots = (
+      direction: -1 | 1,
+      fromIndex: number,
+      target: number,
+    ): BookSpreadSlot[] => {
+      const current = spreadSlots(fromIndex);
+      const destination = spreadSlots(target);
+      if (media.matches) {
+        return destination;
+      }
+      if (pages[fromIndex]?.kind === "cover") {
+        const right = destination.find((slot) => slot.side === "right");
+        return right ? [right] : [];
+      }
+      if (pages[target]?.kind === "cover") {
+        const right = current.find((slot) => slot.side === "right");
+        return right ? [right] : [];
+      }
+      if (direction > 0) {
+        return [
+          current.find((slot) => slot.side === "left") ?? {
+            side: "left",
+            blank: "end",
+          },
+          destination.find((slot) => slot.side === "right") ?? {
+            side: "right",
+            blank: "end",
+          },
+        ];
+      }
+      return [
+        destination.find((slot) => slot.side === "left") ?? {
+          side: "left",
+          blank: "end",
+        },
+        current.find((slot) => slot.side === "right") ?? {
+          side: "right",
+          blank: "end",
+        },
+      ];
     };
 
     const indexForLocation = (location: SemanticLocation): number =>
@@ -713,7 +786,7 @@ export function createSemanticBookMode(
       const slots = renderOptions.slots ?? spreadSlots(viewIndex);
       for (const slot of slots) {
         if (!coverVisible) {
-          spread.append(pageFan(slot.side));
+          spread.append(pageFan(slot.side, fanLayerCount));
         }
         const page = slot.page;
         if (!page) {
@@ -759,7 +832,10 @@ export function createSemanticBookMode(
           "book-mode-folio",
           page.kind === "cover" ? "" : String(page.screenNumber),
         );
-        sheet.append(contentRoot, folio);
+        sheet.append(contentRoot);
+        if (page.kind !== "cover") {
+          sheet.append(folio);
+        }
         if (
           slot.side === "right" &&
           (renderOptions.allowCorner ?? true) &&
@@ -860,10 +936,19 @@ export function createSemanticBookMode(
           allowCorner: false,
         });
       } else if (closingCover) {
-        render({ allowCorner: false });
+        render({
+          viewIndex: fromIndex,
+          slots: turnUnderlaySlots(direction, fromIndex, target),
+          counterText: "Closing cover",
+          allowCorner: false,
+        });
       } else {
-        pageIndex = boundedIndex(target);
-        render();
+        render({
+          viewIndex: fromIndex,
+          slots: turnUnderlaySlots(direction, fromIndex, target),
+          counterText: "Turning page",
+          allowCorner: false,
+        });
       }
       const turn = animateTurn(direction, target, fromIndex);
       await turn;
@@ -1016,8 +1101,12 @@ export function createSemanticBookMode(
       start.target = target;
       start.operation = ++operationVersion;
       navigating = true;
-      pageIndex = boundedIndex(target);
-      render();
+      render({
+        viewIndex: fromIndex,
+        slots: turnUnderlaySlots(direction, fromIndex, target),
+        counterText: "Turning page",
+        allowCorner: false,
+      });
       const leaf = createTurnLeaf(direction, target, fromIndex, true);
       if (!leaf) {
         pageIndex = fromIndex;
@@ -1154,8 +1243,11 @@ export function createSemanticBookMode(
       leaf.remove();
       if (!commit || !accepted) {
         pageIndex = fromIndex;
-      } else if (targetPage?.kind === "cover") {
-        options.onCoverReached?.();
+      } else {
+        pageIndex = boundedIndex(target);
+        if (targetPage?.kind === "cover") {
+          options.onCoverReached?.();
+        }
       }
       navigating = false;
       applyDeferredLocation();
@@ -1226,6 +1318,10 @@ export function createSemanticBookMode(
     closeButton.focus();
 
     try {
+      pages = [coverPage(publication)];
+      pageIndex = 0;
+      spread.setAttribute("aria-busy", "true");
+      render();
       const loadedPages = await loadBookPages(
         publication,
         content,
@@ -1317,11 +1413,39 @@ async function loadBookPages(
 ): Promise<BookPage[]> {
   const pages: BookPage[] = [coverPage(publication)];
   let screenNumber = 0;
-  for (const chapter of publication.renditions.semantic.chapters) {
-    if (signal.aborted) {
-      throw new DOMException("Aborted", "AbortError");
+  const chapters = publication.renditions.semantic.chapters;
+  const articles = new Array<HTMLElement>(chapters.length);
+  let nextChapter = 0;
+  const loadNext = async () => {
+    while (nextChapter < chapters.length) {
+      const index = nextChapter++;
+      const chapter = chapters[index];
+      if (!chapter) {
+        continue;
+      }
+      if (signal.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
+      articles[index] = await loadArticle(
+        chapter,
+        content,
+        fetcher,
+        signal,
+      );
     }
-    const article = await loadArticle(chapter, content, fetcher, signal);
+  };
+  await Promise.all(
+    Array.from(
+      { length: Math.min(4, Math.max(1, chapters.length)) },
+      () => loadNext(),
+    ),
+  );
+
+  for (const [index, chapter] of chapters.entries()) {
+    const article = articles[index];
+    if (!article) {
+      throw new Error(`Book view did not load ${chapter.title}`);
+    }
     pages.push(
       ...pagesFromArticle(article, chapter).map((page) => ({
         ...page,

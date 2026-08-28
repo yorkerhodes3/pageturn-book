@@ -1,0 +1,95 @@
+# GENERATED from the pinned Ethical Tech CoLab website source.
+# Source: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/what-is-ethical-ai.ts
+bookId: what-is-ethical-ai
+editionId: 2026-07
+title: "What Is Ethical AI?"
+description: "Ethics, Ethical Technology, and Ethical International Relations for the Age of Intelligent Machines"
+authors:
+  - name: Ethical Tech CoLab
+    url: https://ethical-tech-colab.github.io/website/
+language: en
+direction: ltr
+publicationDate: 2026-07-01
+appearance:
+  cover:
+    background: "#17233d"
+    foreground: "#f1ead8"
+    accent: "#b99a5e"
+    subtitle: "Ethics, Ethical Technology, and Ethical International Relations for the Age of Intelligent Machines"
+  binding:
+    material: leather
+    color: "#111b31"
+    accent: "#b99a5e"
+    depth: thick
+    hubs: 5
+    pageCount: 46
+    shelfLabel: "WHAT IS ETHICAL AI?"
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: power
+    title: "Humanity's Relationship with Power"
+    source: chapters/02-power.md
+    slug: power
+  - id: what-is-ethics
+    title: "What Is Ethics?"
+    source: chapters/03-what-is-ethics.md
+    slug: what-is-ethics
+  - id: why-ethics
+    title: "Why Humanity Created Ethics"
+    source: chapters/04-why-ethics.md
+    slug: why-ethics
+  - id: universal-ethics
+    title: "From Custom to Universal Ethics"
+    source: chapters/05-universal-ethics.md
+    slug: universal-ethics
+  - id: ethical-ir
+    title: "What Is Ethical International Relations?"
+    source: chapters/06-ethical-ir.md
+    slug: ethical-ir
+  - id: ethical-tech
+    title: "What Is Ethical Tech?"
+    source: chapters/07-ethical-tech.md
+    slug: ethical-tech
+  - id: what-is-ethical-ai
+    title: "What Is Ethical AI?"
+    source: chapters/08-what-is-ethical-ai.md
+    slug: what-is-ethical-ai
+  - id: responsible-ai
+    title: "The Rise of Responsible AI"
+    source: chapters/09-responsible-ai.md
+    slug: responsible-ai
+  - id: humanitarian-history
+    title: "The Historical Evolution of AI in Humanitarian Work"
+    source: chapters/10-humanitarian-history.md
+    slug: humanitarian-history
+  - id: humanitarian-difference
+    title: "Why Humanitarian AI Is Fundamentally Different"
+    source: chapters/11-humanitarian-difference.md
+    slug: humanitarian-difference
+  - id: international-affairs
+    title: "The International Affairs Context"
+    source: chapters/12-international-affairs.md
+    slug: international-affairs
+  - id: human-rights
+    title: "Human Rights Foundations"
+    source: chapters/13-human-rights.md
+    slug: human-rights
+  - id: un-system
+    title: "The UN System's Evolving Approach to AI"
+    source: chapters/14-un-system.md
+    slug: un-system
+  - id: colab
+    title: "The Ethical Tech CoLab"
+    source: chapters/15-colab.md
+    slug: colab
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/16-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/17-references.md
+    slug: references

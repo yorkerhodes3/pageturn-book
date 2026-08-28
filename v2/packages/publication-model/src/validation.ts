@@ -681,6 +681,14 @@ function parseAppearance(
     "shelfLabel",
     `${path}.binding`,
   );
+  const pageCount =
+    bindingRecord.pageCount === undefined
+      ? undefined
+      : validator.integer(
+          bindingRecord.pageCount,
+          `${path}.binding.pageCount`,
+          1,
+        );
   const binding: PublicationBindingAppearance = {
     material,
     color: parseColor(
@@ -695,6 +703,7 @@ function parseAppearance(
     ),
     depth,
     hubs,
+    ...(pageCount === undefined ? {} : { pageCount }),
     ...(shelfLabel === undefined ? {} : { shelfLabel }),
   };
 

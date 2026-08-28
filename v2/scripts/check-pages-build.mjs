@@ -11,6 +11,9 @@ const required = [
   "book/demo-book/2026-08/build-metadata.json",
   "book/demo-book/2026-08/chapters/introduction/index.html",
   "book/demo-book/2026-08/chapters/principles/index.html",
+  "book/what-is-ethical-ai/2026-07/manifest.json",
+  "book/what-is-ethical-ai/2026-07/chapters/executive-summary/index.html",
+  "book/what-is-ethical-ai/2026-07/chapters/conclusion/index.html",
 ];
 
 for (const path of required) {
@@ -35,4 +38,3 @@ for (const path of required.filter((path) => path.endsWith(".html"))) {
 process.stdout.write(
   `Pages artifact verified at ${root} with base ${base}\n`,
 );
-

@@ -3,6 +3,7 @@ export {
   DEFAULT_COVER_APPEARANCE,
   applyPublicationAppearance,
   publicationAppearanceVariables,
+  publicationPageFanCount,
 } from "./appearance.js";
 export {
   SEMANTIC_BOOK_SINGLE_PAGE_QUERY,

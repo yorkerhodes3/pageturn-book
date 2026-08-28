@@ -163,6 +163,7 @@ export type PublicationBindingAppearance = {
   accent: string;
   depth: "slim" | "standard" | "thick";
   hubs: number;
+  pageCount?: number;
   shelfLabel?: string;
 };
 

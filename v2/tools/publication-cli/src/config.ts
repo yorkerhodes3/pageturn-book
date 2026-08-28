@@ -189,6 +189,18 @@ function parseAppearance(
     binding.shelfLabel,
     "book.appearance.binding.shelfLabel",
   );
+  if (
+    binding.pageCount !== undefined &&
+    (typeof binding.pageCount !== "number" ||
+      !Number.isInteger(binding.pageCount) ||
+      binding.pageCount < 1)
+  ) {
+    throw new Error(
+      "book.appearance.binding.pageCount must be a positive integer",
+    );
+  }
+  const pageCount =
+    binding.pageCount === undefined ? undefined : binding.pageCount;
   return {
     cover: {
       background: parseColor(
@@ -208,6 +220,7 @@ function parseAppearance(
       accent: parseColor(binding.accent, "book.appearance.binding.accent"),
       depth,
       hubs: binding.hubs,
+      ...(pageCount === undefined ? {} : { pageCount }),
       ...(shelfLabel === undefined ? {} : { shelfLabel }),
     },
   };

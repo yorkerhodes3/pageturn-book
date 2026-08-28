@@ -15,13 +15,16 @@
     "build": "npm run build:packages && npm run build:fixture && npm run build:demo",
     "build:pages": "npm run build:packages && npm run build:fixture && npm run build:demo",
     "build:packages": "tsc -b",
-    "build:fixture": "node tools/publication-cli/dist/cli.js build apps/fixtures/demo --out apps/demo/book --theme /src/demo.css --enhance-script /src/chapter.ts",
+    "build:fixture": "npm run build:fixture:demo && npm run build:fixture:production",
+    "build:fixture:demo": "node tools/publication-cli/dist/cli.js build apps/fixtures/demo --out apps/demo/book --theme /src/demo.css --enhance-script /src/chapter.ts",
+    "build:fixture:production": "node tools/publication-cli/dist/cli.js build apps/fixtures/what-is-ethical-ai --out apps/demo/book --theme /src/demo.css --enhance-script /src/chapter.ts",
     "build:demo": "vite build --config apps/demo/vite.config.ts",
     "typecheck": "tsc -b --pretty false && tsc -p tsconfig.tests.json --pretty false",
     "test": "npm run test:unit",
     "test:unit": "vitest run",
     "test:browser": "playwright test",
     "check:pages": "node scripts/check-pages-build.mjs",
+    "sync:production-fixture": "node scripts/sync-production-fixture.mjs",
     "preview:demo": "vite preview --config apps/demo/vite.config.ts --host 127.0.0.1 --port 4174"
   },
   "devDependencies": {
