@@ -9,7 +9,10 @@ import {
   type FixedPageVariant,
   type LegacyFacsimileRendition,
   type PublicationAuthor,
+  type PublicationAppearance,
+  type PublicationBindingAppearance,
   type PublicationCapabilities,
+  type PublicationCoverAppearance,
   type PublicationManifest,
   type SemanticChapter,
   type SemanticLocation,
@@ -580,6 +583,124 @@ function parseCapabilities(
   };
 }
 
+function parseColor(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): string {
+  const color = validator.string(value, path);
+  if (!/^#[a-fA-F0-9]{6}$/.test(color)) {
+    validator.issue(
+      "COLOR_INVALID",
+      path,
+      `${path} must be a six-digit hexadecimal color`,
+    );
+  }
+  return color;
+}
+
+function parseAppearance(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): PublicationAppearance {
+  const record = validator.record(value, path);
+  const coverRecord = validator.record(record.cover, `${path}.cover`);
+  const coverSubtitle = validator.optionalString(
+    coverRecord,
+    "subtitle",
+    `${path}.cover`,
+  );
+  const cover: PublicationCoverAppearance = {
+    background: parseColor(
+      validator,
+      coverRecord.background,
+      `${path}.cover.background`,
+    ),
+    foreground: parseColor(
+      validator,
+      coverRecord.foreground,
+      `${path}.cover.foreground`,
+    ),
+    accent: parseColor(
+      validator,
+      coverRecord.accent,
+      `${path}.cover.accent`,
+    ),
+    ...(coverSubtitle === undefined ? {} : { subtitle: coverSubtitle }),
+  };
+
+  const bindingRecord = validator.record(record.binding, `${path}.binding`);
+  const material =
+    bindingRecord.material === "leather" ||
+    bindingRecord.material === "cloth" ||
+    bindingRecord.material === "paper"
+      ? bindingRecord.material
+      : "paper";
+  if (
+    bindingRecord.material !== "leather" &&
+    bindingRecord.material !== "cloth" &&
+    bindingRecord.material !== "paper"
+  ) {
+    validator.issue(
+      "BINDING_MATERIAL_INVALID",
+      `${path}.binding.material`,
+      'Binding material must be "leather", "cloth", or "paper"',
+    );
+  }
+  const depth =
+    bindingRecord.depth === "slim" ||
+    bindingRecord.depth === "standard" ||
+    bindingRecord.depth === "thick"
+      ? bindingRecord.depth
+      : "standard";
+  if (
+    bindingRecord.depth !== "slim" &&
+    bindingRecord.depth !== "standard" &&
+    bindingRecord.depth !== "thick"
+  ) {
+    validator.issue(
+      "BINDING_DEPTH_INVALID",
+      `${path}.binding.depth`,
+      'Binding depth must be "slim", "standard", or "thick"',
+    );
+  }
+  const hubs = validator.integer(
+    bindingRecord.hubs,
+    `${path}.binding.hubs`,
+  );
+  if (hubs > 8) {
+    validator.issue(
+      "BINDING_HUBS_RANGE",
+      `${path}.binding.hubs`,
+      "Binding hubs must be between 0 and 8",
+    );
+  }
+  const shelfLabel = validator.optionalString(
+    bindingRecord,
+    "shelfLabel",
+    `${path}.binding`,
+  );
+  const binding: PublicationBindingAppearance = {
+    material,
+    color: parseColor(
+      validator,
+      bindingRecord.color,
+      `${path}.binding.color`,
+    ),
+    accent: parseColor(
+      validator,
+      bindingRecord.accent,
+      `${path}.binding.accent`,
+    ),
+    depth,
+    hubs,
+    ...(shelfLabel === undefined ? {} : { shelfLabel }),
+  };
+
+  return { cover, binding };
+}
+
 export function validatePublicationManifest(
   value: unknown,
 ): PublicationManifest {
@@ -664,6 +785,10 @@ export function validatePublicationManifest(
       ...(url === undefined ? {} : { url }),
     };
   }
+  const appearance =
+    record.appearance === undefined
+      ? undefined
+      : parseAppearance(validator, record.appearance, "$.appearance");
 
   const manifest: PublicationManifest = {
     schemaVersion: MANIFEST_SCHEMA_VERSION,
@@ -682,6 +807,7 @@ export function validatePublicationManifest(
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
     ...(license === undefined ? {} : { license }),
+    ...(appearance === undefined ? {} : { appearance }),
     tableOfContents: validator
       .array(record.tableOfContents, "$.tableOfContents")
       .map((entry, index) =>
@@ -779,4 +905,3 @@ export function resolvePublicationManifestUrls(
     },
   };
 }
-

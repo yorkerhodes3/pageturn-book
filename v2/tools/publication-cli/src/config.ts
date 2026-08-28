@@ -8,6 +8,7 @@ import {
   type ChapterId,
   type EditionId,
   type LegacyFacsimileRendition,
+  type PublicationAppearance,
   type PublicationAuthor,
 } from "@ethical-tech/book-publication-model";
 import { parse } from "yaml";
@@ -28,6 +29,7 @@ export type BookConfig = {
   direction: "ltr" | "rtl";
   publicationDate?: string;
   description?: string;
+  appearance?: PublicationAppearance;
   chapters: ChapterConfig[];
   legacyFacsimile?: LegacyFacsimileRendition;
 };
@@ -139,6 +141,78 @@ function parseLegacy(
   };
 }
 
+function parseColor(value: unknown, path: string): string {
+  const color = text(value, path);
+  if (!/^#[a-fA-F0-9]{6}$/.test(color)) {
+    throw new Error(`${path} must be a six-digit hexadecimal color`);
+  }
+  return color;
+}
+
+function parseAppearance(
+  value: unknown,
+): PublicationAppearance | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const appearance = record(value, "book.appearance");
+  const cover = record(appearance.cover, "book.appearance.cover");
+  const binding = record(appearance.binding, "book.appearance.binding");
+  const material = text(
+    binding.material,
+    "book.appearance.binding.material",
+  );
+  if (material !== "leather" && material !== "cloth" && material !== "paper") {
+    throw new Error(
+      'book.appearance.binding.material must be "leather", "cloth", or "paper"',
+    );
+  }
+  const depth = text(binding.depth, "book.appearance.binding.depth");
+  if (depth !== "slim" && depth !== "standard" && depth !== "thick") {
+    throw new Error(
+      'book.appearance.binding.depth must be "slim", "standard", or "thick"',
+    );
+  }
+  if (
+    typeof binding.hubs !== "number" ||
+    !Number.isInteger(binding.hubs) ||
+    binding.hubs < 0 ||
+    binding.hubs > 8
+  ) {
+    throw new Error("book.appearance.binding.hubs must be an integer from 0 to 8");
+  }
+  const subtitle = optionalText(
+    cover.subtitle,
+    "book.appearance.cover.subtitle",
+  );
+  const shelfLabel = optionalText(
+    binding.shelfLabel,
+    "book.appearance.binding.shelfLabel",
+  );
+  return {
+    cover: {
+      background: parseColor(
+        cover.background,
+        "book.appearance.cover.background",
+      ),
+      foreground: parseColor(
+        cover.foreground,
+        "book.appearance.cover.foreground",
+      ),
+      accent: parseColor(cover.accent, "book.appearance.cover.accent"),
+      ...(subtitle === undefined ? {} : { subtitle }),
+    },
+    binding: {
+      material,
+      color: parseColor(binding.color, "book.appearance.binding.color"),
+      accent: parseColor(binding.accent, "book.appearance.binding.accent"),
+      depth,
+      hubs: binding.hubs,
+      ...(shelfLabel === undefined ? {} : { shelfLabel }),
+    },
+  };
+}
+
 export function resolveSourceFile(
   sourceRoot: string,
   relativePath: string,
@@ -170,6 +244,7 @@ export async function readBookConfig(sourceRoot: string): Promise<BookConfig> {
   );
   const description = optionalText(book.description, "book.description");
   const legacyFacsimile = parseLegacy(book.legacyFacsimile);
+  const appearance = parseAppearance(book.appearance);
 
   return {
     bookId: toBookId(text(book.bookId, "book.bookId")),
@@ -180,8 +255,8 @@ export async function readBookConfig(sourceRoot: string): Promise<BookConfig> {
     direction: directionValue,
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
+    ...(appearance === undefined ? {} : { appearance }),
     chapters: parseChapters(book.chapters),
     ...(legacyFacsimile === undefined ? {} : { legacyFacsimile }),
   };
 }
-

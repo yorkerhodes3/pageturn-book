@@ -113,6 +113,30 @@ chapters:
     source: chapters/01-introduction.md
 ```
 
+Cover and binding appearance can be shared with a future shelf view:
+
+```yaml
+appearance:
+  cover:
+    background: "#3d211d"
+    foreground: "#f2dfb0"
+    accent: "#b9914f"
+    subtitle: Field notes for humane and accountable technology
+  binding:
+    material: leather
+    color: "#301713"
+    accent: "#b9914f"
+    depth: thick
+    hubs: 5
+    shelfLabel: ETHICAL TECHNOLOGY
+```
+
+`@ethical-tech/book-reader-ui` exports
+`publicationAppearanceVariables()` and `applyPublicationAppearance()`. Reader
+and shelf components should use the resulting `--book-cover-*`,
+`--book-binding-*`, and `data-book-binding-*` contracts instead of translating
+publication metadata independently.
+
 Heading IDs can be explicit:
 
 ```markdown
@@ -171,6 +195,10 @@ Implemented now:
 - Switchable semantic book mode with a dark full-screen stage, desktop
   two-page spreads, mobile single-page sheets, semantic text, screen-page
   navigation, reduced motion, and focus restoration.
+- Publication-driven front cover and reusable binding metadata with leather,
+  cloth, or paper material, thickness, colors, spine hubs, and shelf label.
+- CSS 180-degree turning leaves with distinct outgoing/incoming faces, fold
+  lighting, moving shadows, corner-turn affordance, and pointer swipes.
 - Static theme and two-chapter demo.
 
 Still intentionally pending:

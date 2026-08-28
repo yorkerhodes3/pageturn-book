@@ -8,6 +8,19 @@ language: en
 direction: ltr
 publicationDate: 2026-08-27
 description: A semantic fixture for the Book Reader V2 vertical slice.
+appearance:
+  cover:
+    background: "#3d211d"
+    foreground: "#f2dfb0"
+    accent: "#b9914f"
+    subtitle: Field notes for humane and accountable technology
+  binding:
+    material: leather
+    color: "#301713"
+    accent: "#b9914f"
+    depth: thick
+    hubs: 5
+    shelfLabel: ETHICAL TECHNOLOGY
 chapters:
   - id: introduction
     title: Introduction
@@ -17,4 +30,3 @@ chapters:
     title: Principles in Practice
     source: chapters/02-principles.md
     slug: principles
-

@@ -502,6 +502,22 @@ type PublicationManifest = {
     name: string;
     url?: string;
   };
+  appearance?: {
+    cover: {
+      background: string;
+      foreground: string;
+      accent: string;
+      subtitle?: string;
+    };
+    binding: {
+      material: "leather" | "cloth" | "paper";
+      color: string;
+      accent: string;
+      depth: "slim" | "standard" | "thick";
+      hubs: number;
+      shelfLabel?: string;
+    };
+  };
   tableOfContents: TocEntry[];
   renditions: {
     semantic: SemanticRendition;
@@ -511,6 +527,12 @@ type PublicationManifest = {
   capabilities: PublicationCapabilities;
 };
 ```
+
+Cover and binding appearance is publication metadata rather than a
+renderer-private theme. The reader and shelf view consume the same safe color,
+material, depth, spine-hub, and shelf-label fields. Schema v1 accepts only
+six-digit hexadecimal colors so values can become CSS custom properties
+without allowing arbitrary CSS injection.
 
 ### 9.3 Semantic rendition
 
@@ -1757,4 +1779,3 @@ R1 is done only when:
 - Legacy fallback remains independently usable and unchanged.
 - Migration, rollback, privacy, security, and accessibility limitations are
   documented.
-

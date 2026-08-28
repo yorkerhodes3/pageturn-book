@@ -16,7 +16,10 @@ export type {
   FixedPageVariant,
   LegacyFacsimileRendition,
   PublicationAuthor,
+  PublicationAppearance,
+  PublicationBindingAppearance,
   PublicationCapabilities,
+  PublicationCoverAppearance,
   PublicationManifest,
   ReaderLocation,
   SemanticChapter,
@@ -33,4 +36,3 @@ export {
 } from "./validation.js";
 
 export type { ValidationIssue } from "./validation.js";
-

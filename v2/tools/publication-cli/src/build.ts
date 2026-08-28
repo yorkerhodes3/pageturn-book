@@ -250,6 +250,7 @@ export async function createBuildPlan(
     direction: config.direction,
     publicationDate: config.publicationDate,
     description: config.description,
+    appearance: config.appearance,
     chapters: chapters.map((chapter) => ({
       chapterId: chapter.config.chapterId,
       title: chapter.config.title,
@@ -293,6 +294,9 @@ export async function createBuildPlan(
     ...(config.description === undefined
       ? {}
       : { description: config.description }),
+    ...(config.appearance === undefined
+      ? {}
+      : { appearance: config.appearance }),
     tableOfContents,
     renditions: {
       semantic: {

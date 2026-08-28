@@ -17,6 +17,22 @@ function validManifest() {
     authors: [{ name: "Ethical Tech CoLab" }],
     language: "en",
     direction: "ltr",
+    appearance: {
+      cover: {
+        background: "#3d211d",
+        foreground: "#f2dfb0",
+        accent: "#b9914f",
+        subtitle: "Field notes",
+      },
+      binding: {
+        material: "leather",
+        color: "#301713",
+        accent: "#b9914f",
+        depth: "thick",
+        hubs: 5,
+        shelfLabel: "ETHICAL TECHNOLOGY",
+      },
+    },
     tableOfContents: [
       {
         title: "Introduction",
@@ -61,6 +77,7 @@ describe("validatePublicationManifest", () => {
     const manifest = validatePublicationManifest(validManifest());
 
     expect(manifest.bookId).toBe("demo-book");
+    expect(manifest.appearance?.binding.material).toBe("leather");
     expect(manifest.renditions.semantic.chapters).toHaveLength(1);
   });
 
@@ -97,5 +114,25 @@ describe("validatePublicationManifest", () => {
       "https://example.org/books/demo/source-map.json",
     );
   });
-});
 
+  it("rejects unsafe appearance colors and excessive spine hubs", () => {
+    const invalid = validManifest();
+    if (!invalid.appearance) {
+      throw new Error("Expected appearance fixture");
+    }
+    invalid.appearance.cover.background = "url(javascript:alert(1))";
+    invalid.appearance.binding.hubs = 9;
+
+    try {
+      validatePublicationManifest(invalid);
+      throw new Error("Expected validation failure");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PublicationValidationError);
+      const codes = (error as PublicationValidationError).issues.map(
+        (issue) => issue.code,
+      );
+      expect(codes).toContain("COLOR_INVALID");
+      expect(codes).toContain("BINDING_HUBS_RANGE");
+    }
+  });
+});

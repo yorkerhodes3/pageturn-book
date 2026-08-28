@@ -150,6 +150,27 @@ export type PublicationCapabilities = {
   required?: string[];
 };
 
+export type PublicationCoverAppearance = {
+  background: string;
+  foreground: string;
+  accent: string;
+  subtitle?: string;
+};
+
+export type PublicationBindingAppearance = {
+  material: "leather" | "cloth" | "paper";
+  color: string;
+  accent: string;
+  depth: "slim" | "standard" | "thick";
+  hubs: number;
+  shelfLabel?: string;
+};
+
+export type PublicationAppearance = {
+  cover: PublicationCoverAppearance;
+  binding: PublicationBindingAppearance;
+};
+
 export type PublicationManifest = {
   schemaVersion: typeof MANIFEST_SCHEMA_VERSION;
   bookId: BookId;
@@ -165,6 +186,7 @@ export type PublicationManifest = {
     name: string;
     url?: string;
   };
+  appearance?: PublicationAppearance;
   tableOfContents: TocEntry[];
   renditions: {
     semantic: SemanticRendition;
@@ -183,4 +205,3 @@ export function isSamePublication(
     location.editionId === manifest.editionId
   );
 }
-

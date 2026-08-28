@@ -1,4 +1,13 @@
-export { createSemanticBookMode } from "./book-mode.js";
+export {
+  DEFAULT_BINDING_APPEARANCE,
+  DEFAULT_COVER_APPEARANCE,
+  applyPublicationAppearance,
+  publicationAppearanceVariables,
+} from "./appearance.js";
+export {
+  SEMANTIC_BOOK_SINGLE_PAGE_QUERY,
+  createSemanticBookMode,
+} from "./book-mode.js";
 export type {
   SemanticBookMode,
   SemanticBookModeOptions,

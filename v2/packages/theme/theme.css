@@ -290,10 +290,8 @@ a:hover {
   padding: 0 var(--book-mode-gutter);
 }
 
-.book-mode-spread {
+.book-mode-book {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   width: min(74rem, calc(100vw - 2 * var(--book-mode-gutter)));
   max-width: 100%;
   min-width: 0;
@@ -301,6 +299,218 @@ a:hover {
   min-height: 30rem;
   perspective: 1800px;
   filter: drop-shadow(0 2rem 2.4rem rgb(0 0 0 / 55%));
+  touch-action: pan-y;
+}
+
+.book-mode-book::after {
+  position: absolute;
+  z-index: -3;
+  right: 4%;
+  bottom: -2.1rem;
+  left: 4%;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 50%);
+  filter: blur(1.1rem);
+  content: "";
+  pointer-events: none;
+}
+
+.book-mode-book-grabbing {
+  cursor: grabbing;
+}
+
+.book-mode-binding {
+  position: absolute;
+  z-index: -2;
+  inset: calc(-1 * var(--book-binding-depth));
+  transform: translateZ(-1.8rem);
+  transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.book-mode-binding-board {
+  position: absolute;
+  inset-block: 0;
+  width: calc(50% + 0.5rem);
+  border: 1px solid color-mix(in srgb, var(--book-binding-accent) 34%, #000);
+  background:
+    linear-gradient(
+      115deg,
+      rgb(255 255 255 / 8%),
+      transparent 25% 72%,
+      rgb(0 0 0 / 22%)
+    ),
+    repeating-linear-gradient(
+      97deg,
+      rgb(255 255 255 / 2%) 0 1px,
+      rgb(0 0 0 / 3%) 1px 3px
+    ),
+    var(--book-binding-color);
+  box-shadow:
+    inset 0 0 0 0.35rem rgb(0 0 0 / 12%),
+    inset 0 0 0 0.45rem color-mix(in srgb, var(--book-binding-accent) 42%, transparent),
+    0 0.75rem 1.1rem rgb(0 0 0 / 40%);
+}
+
+.book-mode-binding-board-left {
+  left: 0;
+  border-radius: 0.45rem 0.15rem 0.15rem 0.45rem;
+}
+
+.book-mode-binding-board-right {
+  right: 0;
+  border-radius: 0.15rem 0.45rem 0.45rem 0.15rem;
+}
+
+.book-mode-page-block {
+  position: absolute;
+  z-index: 1;
+  inset: calc(var(--book-binding-depth) * 0.5);
+  border-radius: 0.15rem 0.3rem 0.3rem 0.15rem;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #ddd4c4 0,
+      #f7f1e6 1px,
+      #c9bfaf 2px,
+      #eee7da 3px
+    );
+  box-shadow:
+    0 0 0 1px rgb(64 45 27 / 32%),
+    inset 0.65rem 0 1rem rgb(66 47 28 / 14%);
+}
+
+.book-mode-binding-spine {
+  position: absolute;
+  z-index: 5;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  left: 50%;
+  width: calc(1.6rem + var(--book-binding-depth));
+  transform: translateX(-50%) translateZ(1rem);
+  border-inline: 1px solid rgb(0 0 0 / 35%);
+  background:
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 35%),
+      rgb(255 255 255 / 7%) 28%,
+      transparent 48%,
+      rgb(0 0 0 / 38%)
+    ),
+    var(--book-binding-color);
+  box-shadow:
+    inset 0.25rem 0 0.45rem rgb(255 255 255 / 7%),
+    inset -0.25rem 0 0.5rem rgb(0 0 0 / 28%);
+}
+
+.book-mode-binding-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  overflow: hidden;
+  max-width: 72%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  color: var(--book-binding-accent);
+  font: 700 0.5rem/1 var(--book-font-body);
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.book-mode-binding-hubs {
+  position: absolute;
+  inset: 3% 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.book-mode-binding-hub {
+  display: block;
+  width: 118%;
+  height: 0.42rem;
+  margin-left: -9%;
+  border-block: 1px solid color-mix(in srgb, var(--book-binding-accent) 24%, #000);
+  border-radius: 45%;
+  background:
+    linear-gradient(
+      180deg,
+      rgb(255 255 255 / 15%),
+      transparent 45%,
+      rgb(0 0 0 / 30%)
+    ),
+    var(--book-binding-color);
+  box-shadow: 0 0.15rem 0.25rem rgb(0 0 0 / 22%);
+}
+
+.book-mode-book-closed .book-mode-binding-board-left {
+  display: none;
+}
+
+.book-mode-book-closed .book-mode-binding {
+  right: 25%;
+  left: 25%;
+}
+
+.book-mode-book-closed .book-mode-binding-board-right {
+  width: 100%;
+}
+
+.book-mode-book-closed .book-mode-binding-spine {
+  left: 0;
+  width: calc(1.35rem + var(--book-binding-depth));
+  transform: translateX(-22%) translateZ(1rem);
+}
+
+.book-mode-book-closed .book-mode-binding-label {
+  display: none;
+}
+
+.book-mode-book-opening .book-mode-binding {
+  right: 0;
+  left: 0;
+}
+
+.book-mode-book-opening .book-mode-binding-board-left {
+  display: block;
+}
+
+.book-mode-book-opening .book-mode-binding-spine {
+  left: 50%;
+  width: calc(1.6rem + var(--book-binding-depth));
+  transform: translateX(-50%) translateZ(1rem);
+}
+
+[data-book-binding-material="cloth"] .book-mode-binding-board,
+[data-book-binding-material="cloth"] .book-mode-binding-spine {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgb(255 255 255 / 4%) 0 1px,
+      rgb(0 0 0 / 4%) 1px 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 3%) 0 1px,
+      transparent 1px 3px
+    ),
+    var(--book-binding-color);
+}
+
+[data-book-binding-material="paper"] .book-mode-binding-hubs,
+[data-book-binding-material="paper"] .book-mode-binding-label {
+  display: none;
+}
+
+.book-mode-spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
 }
 
 .book-mode-spread::before {
@@ -338,6 +548,32 @@ a:hover {
   content: "";
 }
 
+.book-mode-spread-cover {
+  display: block;
+  width: 50%;
+  margin-left: 25%;
+  transform: translateX(0);
+  transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.book-mode-book-opening .book-mode-spread-cover,
+.book-mode-book-closing .book-mode-spread-cover {
+  transform: translateX(50%);
+}
+
+.book-mode-book-positioned .book-mode-spread-cover {
+  transform: translateX(50%);
+  transition: none;
+}
+
+.book-mode-spread-cover::before {
+  display: none;
+}
+
+.book-mode-spread-cover::after {
+  inset: 0.45rem -0.35rem -0.35rem 0.5rem;
+}
+
 .book-mode-sheet {
   position: relative;
   min-width: 0;
@@ -350,6 +586,103 @@ a:hover {
   transform-style: preserve-3d;
   backface-visibility: hidden;
   scrollbar-color: #c5b9a6 transparent;
+}
+
+.book-mode-sheet-cover {
+  width: 100%;
+  border-radius: 0.3rem;
+  background:
+    radial-gradient(
+      ellipse at 20% 10%,
+      rgb(255 255 255 / 9%),
+      transparent 34%
+    ),
+    repeating-radial-gradient(
+      ellipse at 50% 50%,
+      rgb(255 255 255 / 2%) 0 1px,
+      rgb(0 0 0 / 3%) 1px 3px
+    ),
+    var(--book-cover-background);
+  color: var(--book-cover-foreground);
+  box-shadow:
+    inset 0 0 0 1px rgb(0 0 0 / 48%),
+    inset 0 0 0 0.55rem var(--book-cover-background),
+    inset 0 0 0 0.7rem color-mix(in srgb, var(--book-cover-accent) 58%, transparent),
+    inset 0 0 3rem rgb(0 0 0 / 34%);
+  transform-origin: left center;
+}
+
+.book-mode-cover .book-mode-sheet-content {
+  height: 100%;
+  min-height: 0;
+  padding: clamp(2.4rem, 6vw, 5.2rem);
+}
+
+.book-mode-cover-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  border: 1px solid color-mix(in srgb, var(--book-cover-accent) 76%, transparent);
+  color: var(--book-cover-foreground);
+  text-align: center;
+}
+
+.book-mode-cover-content::before,
+.book-mode-cover-content::after {
+  position: absolute;
+  inset: 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--book-cover-accent) 48%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.book-mode-cover-content::after {
+  inset: 1rem;
+  border-style: double;
+  border-width: 3px;
+}
+
+.book-mode-cover-ornament {
+  width: 4.5rem;
+  height: 1.3rem;
+  margin-bottom: 1.8rem;
+  background:
+    radial-gradient(circle, var(--book-cover-accent) 0 22%, transparent 24%),
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--book-cover-accent) 22% 78%,
+      transparent
+    )
+    center / 100% 1px no-repeat;
+}
+
+.book-mode-sheet-content .book-mode-cover-title {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--book-cover-foreground);
+  font: 500 clamp(2rem, 5vw, 4.5rem) / 1.04 var(--book-font-body);
+  letter-spacing: -0.025em;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 50%);
+}
+
+.book-mode-cover-subtitle {
+  max-width: 28ch;
+  margin: 1.5rem auto;
+  color: color-mix(in srgb, var(--book-cover-foreground) 78%, transparent);
+  font: 500 0.82rem/1.6 var(--book-font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.book-mode-cover-authors {
+  margin: 1rem 0 0;
+  color: var(--book-cover-accent);
+  font: 600 0.9rem/1.4 var(--book-font-body);
 }
 
 .book-mode-sheet-left {
@@ -422,6 +755,40 @@ a:hover {
   text-align: center;
 }
 
+.book-mode-corner {
+  position: absolute;
+  z-index: 8;
+  right: 0;
+  bottom: 0;
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border: 0;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0 48%,
+      rgb(111 86 52 / 18%) 49% 51%,
+      #eee5d5 52% 68%,
+      #b8aa95 69% 70%,
+      transparent 71%
+    );
+  cursor: grab;
+  filter: drop-shadow(-0.25rem -0.2rem 0.3rem rgb(0 0 0 / 12%));
+  opacity: 0.72;
+  transition:
+    width 180ms ease,
+    height 180ms ease,
+    opacity 180ms ease;
+}
+
+.book-mode-corner:hover,
+.book-mode-corner:focus-visible {
+  width: 5.4rem;
+  height: 5.4rem;
+  opacity: 1;
+}
+
 .book-mode-arrow {
   position: absolute;
   z-index: 6;
@@ -467,27 +834,138 @@ a:hover {
   font-family: var(--book-font-ui);
 }
 
-.book-mode-turn-forward .book-mode-sheet-right {
-  animation: book-mode-forward 320ms cubic-bezier(0.4, 0, 0.2, 1);
+.book-mode-turn-leaf {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  transform-style: preserve-3d;
+  pointer-events: none;
 }
 
-.book-mode-turn-backward .book-mode-sheet-left {
-  animation: book-mode-backward 320ms cubic-bezier(0.4, 0, 0.2, 1);
+.book-mode-turn-leaf-forward {
+  left: 50%;
+  transform-origin: left center;
+  animation: book-mode-forward 720ms cubic-bezier(0.38, 0.04, 0.2, 1);
+}
+
+.book-mode-turn-leaf-backward {
+  left: 0;
+  transform-origin: right center;
+  animation: book-mode-backward 720ms cubic-bezier(0.38, 0.04, 0.2, 1);
+}
+
+.book-mode-turn-leaf-from-cover {
+  left: 0;
+  width: 100%;
+  transform-origin: left center;
+}
+
+.book-mode-turn-leaf-to-cover {
+  left: 0;
+  width: 50%;
+  transform-origin: right center;
+}
+
+.book-mode-turn-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  background:
+    radial-gradient(circle at 18% 8%, rgb(122 91 49 / 5%), transparent 30%),
+    #fffdf8;
+  color: #29251f;
+  transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+}
+
+.book-mode-turn-front {
+  transform: rotateY(0.01deg);
+  box-shadow: inset 1rem 0 2rem -1.5rem rgb(65 47 27 / 50%);
+  animation: book-mode-front-face 720ms step-end both;
+}
+
+.book-mode-turn-back {
+  transform: rotateY(180deg);
+  box-shadow: inset -1rem 0 2rem -1.5rem rgb(65 47 27 / 50%);
+  animation: book-mode-back-face 720ms step-end both;
+}
+
+.book-mode-turn-leaf-from-cover .book-mode-turn-front {
+  background:
+    radial-gradient(
+      ellipse at 20% 10%,
+      rgb(255 255 255 / 9%),
+      transparent 34%
+    ),
+    var(--book-cover-background);
+  color: var(--book-cover-foreground);
+}
+
+.book-mode-turn-shadow {
+  position: absolute;
+  z-index: 4;
+  inset-block: 0;
+  width: 40%;
+  background: linear-gradient(90deg, rgb(0 0 0 / 44%), transparent);
+  filter: blur(0.45rem);
+  opacity: 0;
+  transform: translateX(-25%);
+}
+
+.book-mode-turn-leaf-backward .book-mode-turn-shadow {
+  right: 0;
+  transform: scaleX(-1) translateX(-25%);
+}
+
+.book-mode-turn-fold {
+  position: absolute;
+  z-index: 5;
+  inset-block: 0;
+  right: -0.2rem;
+  width: 1.2rem;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 24%),
+      rgb(255 255 255 / 55%) 52%,
+      rgb(0 0 0 / 18%)
+    );
+  filter: blur(0.08rem);
+  opacity: 0;
+}
+
+.book-mode-turn-leaf-backward .book-mode-turn-fold {
+  right: auto;
+  left: -0.2rem;
+}
+
+.book-mode-turn-leaf-forward .book-mode-turn-shadow,
+.book-mode-turn-leaf-backward .book-mode-turn-shadow {
+  animation: book-mode-shadow 720ms ease-in-out;
+}
+
+.book-mode-turn-leaf-forward .book-mode-turn-fold,
+.book-mode-turn-leaf-backward .book-mode-turn-fold {
+  animation: book-mode-fold 720ms ease-in-out;
 }
 
 @keyframes book-mode-forward {
   0% {
     transform: rotateY(0);
-    filter: brightness(1);
+    filter: brightness(1) drop-shadow(0 0 0 rgb(0 0 0 / 0%));
   }
 
-  48% {
-    filter: brightness(0.78);
+  42% {
+    transform: rotateY(-82deg) translateX(-1.5%);
+    filter: brightness(0.78) drop-shadow(-1rem 0.6rem 0.8rem rgb(0 0 0 / 28%));
   }
 
   100% {
-    transform: rotateY(-32deg);
-    filter: brightness(0.64);
+    transform: rotateY(-180deg);
+    filter: brightness(0.92) drop-shadow(0 0 0 rgb(0 0 0 / 0%));
   }
 }
 
@@ -497,13 +975,62 @@ a:hover {
     filter: brightness(1);
   }
 
-  48% {
-    filter: brightness(0.78);
+  42% {
+    transform: rotateY(82deg) translateX(1.5%);
+    filter: brightness(0.78) drop-shadow(1rem 0.6rem 0.8rem rgb(0 0 0 / 28%));
   }
 
   100% {
-    transform: rotateY(32deg);
-    filter: brightness(0.64);
+    transform: rotateY(180deg);
+    filter: brightness(0.92) drop-shadow(0 0 0 rgb(0 0 0 / 0%));
+  }
+}
+
+@keyframes book-mode-shadow {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  42%,
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes book-mode-fold {
+  0%,
+  100% {
+    opacity: 0;
+  }
+
+  35%,
+  70% {
+    opacity: 0.92;
+  }
+}
+
+@keyframes book-mode-front-face {
+  0%,
+  49.99% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes book-mode-back-face {
+  0%,
+  49.99% {
+    opacity: 0;
+  }
+
+  50%,
+  100% {
+    opacity: 1;
   }
 }
 
@@ -674,11 +1201,14 @@ a:hover {
     padding-inline: var(--book-mode-gutter);
   }
 
-  .book-mode-spread {
-    grid-template-columns: minmax(0, 1fr);
+  .book-mode-book {
     width: min(100%, 32rem);
     height: min(76vh, 45rem);
     min-height: 26rem;
+  }
+
+  .book-mode-spread {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .book-mode-spread::before {
@@ -703,6 +1233,23 @@ a:hover {
     font-size: clamp(1.5rem, 7vw, 2.1rem);
   }
 
+  .book-mode-turn-leaf,
+  .book-mode-turn-leaf-forward,
+  .book-mode-turn-leaf-backward,
+  .book-mode-turn-leaf-from-cover,
+  .book-mode-turn-leaf-to-cover {
+    left: 0;
+    width: 100%;
+  }
+
+  .book-mode-turn-leaf-forward {
+    transform-origin: left center;
+  }
+
+  .book-mode-turn-leaf-backward {
+    transform-origin: right center;
+  }
+
   .book-mode-hint {
     padding-block: 0.6rem;
     font-size: 0.64rem;
@@ -719,8 +1266,11 @@ a:hover {
     transition-duration: 0.01ms !important;
   }
 
-  .book-mode-turn-forward .book-mode-sheet-right,
-  .book-mode-turn-backward .book-mode-sheet-left {
+  .book-mode-turn-leaf,
+  .book-mode-turn-front,
+  .book-mode-turn-back,
+  .book-mode-turn-shadow,
+  .book-mode-turn-fold {
     animation: none;
   }
 }
