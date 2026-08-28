@@ -1,0 +1,20 @@
+bookId: demo-book
+editionId: 2026-08
+title: A Small Book About Ethical Technology
+authors:
+  - name: Ethical Tech CoLab
+    url: https://ethicaltechcolab.org/
+language: en
+direction: ltr
+publicationDate: 2026-08-27
+description: A semantic fixture for the Book Reader V2 vertical slice.
+chapters:
+  - id: introduction
+    title: Introduction
+    source: chapters/01-introduction.md
+    slug: introduction
+  - id: principles
+    title: Principles in Practice
+    source: chapters/02-principles.md
+    slug: principles
+

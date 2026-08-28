@@ -1,0 +1,10 @@
+node_modules/
+*.tsbuildinfo
+packages/*/dist/
+tools/*/dist/
+apps/demo/book/
+apps/demo/dist/
+test-results/
+playwright-report/
+coverage/
+

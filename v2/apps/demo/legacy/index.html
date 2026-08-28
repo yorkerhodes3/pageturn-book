@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy fixed-page reader comparison</title>
+    <link rel="stylesheet" href="/src/demo.css">
+  </head>
+  <body>
+    <main class="legacy-demo">
+      <p class="comparison-version">Version 1 - pinned revision d1d1ec6</p>
+      <h1>Fixed-page flipbook</h1>
+      <p>
+        This route loads the preserved <code>read-as-book</code> package as a
+        separate, lazy comparison. Its sample pages use the same ideas as the
+        semantic fixture, rendered as fixed SVG images.
+      </p>
+      <ul>
+        <li>Original full-screen page-turn interaction.</li>
+        <li>Raster-image document model.</li>
+        <li>All pages handed to StPageFlip when opened.</li>
+        <li>Retained only as a fallback during V2 review.</li>
+      </ul>
+      <div class="legacy-demo-actions">
+        <button id="open-legacy" type="button">Open legacy book viewer</button>
+        <a href="../">Back to comparison</a>
+      </div>
+      <p id="legacy-status" class="legacy-status" role="status">
+        Legacy viewer not loaded.
+      </p>
+    </main>
+    <script type="module" src="/src/legacy.ts"></script>
+  </body>
+</html>
+

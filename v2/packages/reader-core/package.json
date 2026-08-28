@@ -1,0 +1,22 @@
+{
+  "name": "@ethical-tech/book-reader-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@ethical-tech/book-publication-model": "*"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}
+
