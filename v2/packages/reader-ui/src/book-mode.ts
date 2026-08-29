@@ -9,6 +9,7 @@ import {
   applyPublicationAppearance,
   publicationPageFanCount,
 } from "./appearance.js";
+import { shareReadingLocation } from "./share.js";
 
 type BookPage = {
   kind: "cover" | "content";
@@ -16,8 +17,14 @@ type BookPage = {
   chapterTitle: string;
   anchor: string;
   sourceAnchors: string[];
+  sourceSpans: Array<{
+    anchor: string;
+    start: number;
+    end: number;
+  }>;
   nodes: Node[];
   screenNumber?: number;
+  continuation?: boolean;
 };
 
 type BookSpreadSlot = {
@@ -53,8 +60,33 @@ export type SemanticBookMode = {
 };
 
 export const SEMANTIC_BOOK_SINGLE_PAGE_QUERY = "(max-width: 45rem)";
-const TURN_SEGMENT_COUNT = 9;
-const TARGET_SCREEN_PAGE_CHARACTERS = 1_800;
+
+type PaginationProfile = {
+  targetUnits: number;
+  maximumBlockCharacters: number;
+  maximumListCharacters: number;
+  maximumQuoteCharacters: number;
+  headingOneCost: number;
+  headingTwoCost: number;
+};
+
+const SPREAD_PAGINATION: PaginationProfile = {
+  targetUnits: 1_100,
+  maximumBlockCharacters: 760,
+  maximumListCharacters: 520,
+  maximumQuoteCharacters: 620,
+  headingOneCost: 280,
+  headingTwoCost: 210,
+};
+
+const SINGLE_PAGE_PAGINATION: PaginationProfile = {
+  targetUnits: 570,
+  maximumBlockCharacters: 340,
+  maximumListCharacters: 260,
+  maximumQuoteCharacters: 300,
+  headingOneCost: 520,
+  headingTwoCost: 430,
+};
 
 function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -130,63 +162,241 @@ function sourceAnchors(nodes: Element[]): string[] {
   ]);
 }
 
+type PaginatedBlock = {
+  node: Element;
+  sourceAnchors: string[];
+  navigationAnchor?: string;
+  sourceStart: number;
+  sourceEnd: number;
+  units: number;
+  startsPage: boolean;
+  continuation: boolean;
+};
+
+function textBreaks(
+  value: string,
+  maximum: number,
+): Array<{ start: number; end: number }> {
+  const ranges: Array<{ start: number; end: number }> = [];
+  let start = 0;
+  while (start < value.length) {
+    let end = Math.min(value.length, start + maximum);
+    if (end < value.length) {
+      const candidate = value.slice(start, end);
+      const minimum = Math.floor(candidate.length * 0.58);
+      const sentenceBreaks = Array.from(
+        candidate.matchAll(/[.!?]["'’”)]?\s+/g),
+      );
+      const sentence = sentenceBreaks.at(-1);
+      const sentenceEnd =
+        sentence?.index === undefined
+          ? -1
+          : sentence.index + sentence[0].trimEnd().length;
+      if (sentenceEnd >= minimum) {
+        end = start + sentenceEnd;
+      } else {
+        const whitespace = candidate.lastIndexOf(" ");
+        if (whitespace >= minimum) {
+          end = start + whitespace;
+        }
+      }
+    }
+    if (end <= start) {
+      end = Math.min(value.length, start + maximum);
+    }
+    while (end < value.length && /\s/.test(value[end] ?? "")) {
+      end += 1;
+    }
+    ranges.push({ start, end });
+    start = end;
+  }
+  return ranges;
+}
+
+function textPoint(
+  nodes: Text[],
+  offset: number,
+  endPoint: boolean,
+): { node: Text; offset: number } {
+  let consumed = 0;
+  for (const [index, node] of nodes.entries()) {
+    const next = consumed + node.data.length;
+    if (
+      offset < next ||
+      (endPoint && offset === next) ||
+      index === nodes.length - 1
+    ) {
+      return {
+        node,
+        offset: Math.min(node.data.length, Math.max(0, offset - consumed)),
+      };
+    }
+    consumed = next;
+  }
+  const last = nodes.at(-1);
+  if (!last) {
+    throw new Error("Cannot locate text offset in an empty element");
+  }
+  return { node: last, offset: last.data.length };
+}
+
+function removeContinuationIds(node: Element): void {
+  node.removeAttribute("id");
+  for (const identified of node.querySelectorAll("[id]")) {
+    identified.removeAttribute("id");
+  }
+}
+
+function splitElementForBook(
+  source: Element,
+  profile: PaginationProfile,
+): Array<{ node: Element; start: number; end: number }> {
+  const text = source.textContent ?? "";
+  if (
+    source.matches(
+      "img, picture, video, audio, canvas, svg, iframe, object, embed, input, textarea, select, button, hr, br",
+    ) ||
+    source.querySelector(
+      "img, picture, video, audio, canvas, svg, iframe, object, embed, input, textarea, select, button, hr, br",
+    )
+  ) {
+    return [{ node: source, start: 0, end: text.length }];
+  }
+  const maximum =
+    source.tagName === "UL" || source.tagName === "OL"
+      ? profile.maximumListCharacters
+      : source.tagName === "BLOCKQUOTE"
+        ? profile.maximumQuoteCharacters
+        : profile.maximumBlockCharacters;
+  if (
+    text.length <= maximum ||
+    /^H[1-6]$/.test(source.tagName)
+  ) {
+    return [{ node: source, start: 0, end: text.length }];
+  }
+
+  const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
+  const textNodes: Text[] = [];
+  let current = walker.nextNode();
+  while (current) {
+    textNodes.push(current as Text);
+    current = walker.nextNode();
+  }
+  if (textNodes.length === 0) {
+    return [{ node: source, start: 0, end: text.length }];
+  }
+
+  const breaks = textBreaks(text, maximum);
+  return breaks.map(({ start, end }, index) => {
+    const range = document.createRange();
+    const startPoint = textPoint(textNodes, start, false);
+    const endPoint = textPoint(textNodes, end, true);
+    if (index === 0) {
+      range.setStart(source, 0);
+    } else {
+      range.setStart(startPoint.node, startPoint.offset);
+    }
+    if (index === breaks.length - 1) {
+      range.setEnd(source, source.childNodes.length);
+    } else {
+      range.setEnd(endPoint.node, endPoint.offset);
+    }
+    const fragment = source.cloneNode(false) as Element;
+    fragment.append(range.cloneContents());
+    if (index > 0) {
+      removeContinuationIds(fragment);
+    }
+    return { node: fragment, start, end };
+  });
+}
+
+function blockUnits(node: Element, profile: PaginationProfile): number {
+  const text = node.textContent?.trim().length ?? 0;
+  const structuralCost =
+    node.tagName === "H1"
+      ? profile.headingOneCost
+      : node.tagName === "H2"
+        ? profile.headingTwoCost
+        : node.tagName === "UL" || node.tagName === "OL"
+          ? 80
+          : node.tagName === "BLOCKQUOTE"
+            ? 70
+            : 34;
+  return text + structuralCost;
+}
+
 function pagesFromArticle(
   article: HTMLElement,
   chapter: SemanticChapter,
+  profile: PaginationProfile,
 ): BookPage[] {
   const sourceNodes = Array.from(article.children).filter(
     (node) => !node.classList.contains("book-chapter-nav"),
   );
-  const groups: Element[][] = [];
-  let current: Element[] = [];
-
-  for (const node of sourceNodes) {
-    const startsPage = /^H[12]$/.test(node.tagName);
-    if (startsPage && current.length > 0) {
-      groups.push(current);
+  const blocks = sourceNodes.flatMap<PaginatedBlock>((source) => {
+    const originalAnchors = sourceAnchors([source]);
+    return splitElementForBook(source, profile).map(
+      ({ node, start, end }, index) => ({
+      node,
+      sourceAnchors: sourceAnchors([node]),
+      ...(originalAnchors[0]
+        ? { navigationAnchor: originalAnchors[0] }
+        : {}),
+      sourceStart: start,
+      sourceEnd: end,
+      units: blockUnits(node, profile),
+      startsPage: index === 0 && /^H[12]$/.test(source.tagName),
+      continuation: index > 0,
+      }),
+    );
+  });
+  const pages: PaginatedBlock[][] = [];
+  let current: PaginatedBlock[] = [];
+  let units = 0;
+  for (const block of blocks) {
+    if (
+      current.length > 0 &&
+      (block.startsPage || units + block.units > profile.targetUnits)
+    ) {
+      pages.push(current);
       current = [];
+      units = 0;
     }
-    current.push(node);
+    current.push(block);
+    units += block.units;
   }
   if (current.length > 0) {
-    groups.push(current);
+    pages.push(current);
   }
 
-  const paginatedGroups = groups.flatMap((group) => {
-    const chunks: Element[][] = [];
-    let chunk: Element[] = [];
-    let characters = 0;
-    for (const node of group) {
-      const length = node.textContent?.trim().length ?? 0;
-      if (
-        chunk.length > 0 &&
-        characters + length > TARGET_SCREEN_PAGE_CHARACTERS
-      ) {
-        chunks.push(chunk);
-        chunk = [];
-        characters = 0;
-      }
-      chunk.push(node);
-      characters += length;
-    }
-    if (chunk.length > 0) {
-      chunks.push(chunk);
-    }
-    return chunks;
-  });
-
-  return paginatedGroups.map((nodes, index) => {
-    const anchors = sourceAnchors(nodes);
+  return pages.map((blocksOnPage, index) => {
+    const anchors = Array.from(
+      new Set(blocksOnPage.flatMap((block) => block.sourceAnchors)),
+    );
     const anchor =
-      anchors[0] ?? (index === 0 ? chapter.firstAnchor : chapter.lastAnchor);
+      blocksOnPage[0]?.navigationAnchor ??
+      anchors[0] ??
+      (index === 0 ? chapter.firstAnchor : chapter.lastAnchor);
     return {
       kind: "content",
       chapterId: chapter.chapterId,
       chapterTitle: chapter.title,
       anchor,
       sourceAnchors: anchors,
+      sourceSpans: blocksOnPage.flatMap((block) =>
+        block.navigationAnchor
+          ? [
+              {
+                anchor: block.navigationAnchor,
+                start: block.sourceStart,
+                end: block.sourceEnd,
+              },
+            ]
+          : [],
+      ),
+      continuation: blocksOnPage[0]?.continuation ?? false,
       nodes: cloneGroupForBook(
-        nodes,
+        blocksOnPage.map((block) => block.node),
         `${chapter.chapterId}-${index + 1}`,
       ),
     };
@@ -225,6 +435,7 @@ function coverPage(publication: PublicationManifest): BookPage {
     chapterTitle: publication.title,
     anchor: firstChapter.firstAnchor,
     sourceAnchors: [],
+    sourceSpans: [],
     nodes: [cover],
   };
 }
@@ -284,7 +495,7 @@ async function loadArticle(
     content.dataset.chapterId === chapter.chapterId &&
     content.hasChildNodes()
   ) {
-    return content;
+    return content.cloneNode(true) as HTMLElement;
   }
 
   const response = await fetcher(chapter.href, { signal });
@@ -389,9 +600,11 @@ export function createSemanticBookMode(
     const actions = element("div", "book-mode-actions");
     const counter = element("span", "book-mode-counter", "Preparing pages");
     counter.setAttribute("aria-live", "polite");
+    const shareButton = element("button", "book-mode-share", "Share");
+    shareButton.type = "button";
     const closeButton = element("button", "book-mode-close", "Close");
     closeButton.type = "button";
-    actions.append(counter, closeButton);
+    actions.append(counter, shareButton, closeButton);
     chrome.append(identity, actions);
 
     const stage = element("div", "book-mode-stage");
@@ -429,6 +642,12 @@ export function createSemanticBookMode(
     let navigating = false;
     let deferredLocation: SemanticLocation | undefined;
     let deferredCover = false;
+    let loadedArticles: HTMLElement[] | undefined;
+    let repaginateAfterNavigation = false;
+    let queuedDirection: -1 | 1 | undefined;
+    let acceptingTargetLocation = false;
+    let paginationReady = false;
+    let paginationSinglePage = media.matches;
 
     const pageStarts = () => {
       if (media.matches) {
@@ -568,18 +787,9 @@ export function createSemanticBookMode(
     const decorativeFace = (
       page: BookPage,
       className: string,
-      segmentIndex: number,
     ): HTMLElement => {
       const face = element("div", className);
       const pageSlice = element("div", "book-mode-turn-face-page");
-      pageSlice.style.setProperty(
-        "--book-turn-segment-index",
-        String(segmentIndex),
-      );
-      pageSlice.style.setProperty(
-        "--book-turn-segment-count",
-        String(TURN_SEGMENT_COUNT),
-      );
       const faceContent = element("div", "book-mode-sheet-content");
       faceContent.append(...page.nodes.map((node) => node.cloneNode(true)));
       for (const identified of faceContent.querySelectorAll("[id]")) {
@@ -592,21 +802,12 @@ export function createSemanticBookMode(
 
     const blankDecorativeFace = (
       className: string,
-      segmentIndex: number,
     ): HTMLElement => {
       const face = element(
         "div",
         `${className} book-mode-turn-face-blank`,
       );
       const pageSlice = element("div", "book-mode-turn-face-page");
-      pageSlice.style.setProperty(
-        "--book-turn-segment-index",
-        String(segmentIndex),
-      );
-      pageSlice.style.setProperty(
-        "--book-turn-segment-count",
-        String(TURN_SEGMENT_COUNT),
-      );
       face.append(pageSlice);
       return face;
     };
@@ -689,47 +890,26 @@ export function createSemanticBookMode(
       );
       leaf.setAttribute("aria-hidden", "true");
       leaf.inert = true;
-      for (let index = 0; index < TURN_SEGMENT_COUNT; index += 1) {
-        const segment = element("div", "book-mode-turn-segment");
-        const normalized = index / (TURN_SEGMENT_COUNT - 1);
-        const centered = normalized - 0.5;
-        segment.style.setProperty("--book-turn-segment-index", String(index));
-        segment.style.setProperty(
-          "--book-turn-segment-count",
-          String(TURN_SEGMENT_COUNT),
-        );
-        segment.style.setProperty(
-          "--book-turn-segment-bend",
-          `${centered * 20}deg`,
-        );
-        segment.style.setProperty(
-          "--book-turn-segment-lift",
-          `${(1 - Math.abs(centered) * 2) * 15}px`,
-        );
-        segment.append(
-          turn.front
-            ? decorativeFace(
-                turn.front,
-                "book-mode-turn-face book-mode-turn-front",
-                index,
-              )
-            : blankDecorativeFace(
-                "book-mode-turn-face book-mode-turn-front",
-                index,
-              ),
-          turn.back
-            ? decorativeFace(
-                turn.back,
-                "book-mode-turn-face book-mode-turn-back",
-                index,
-              )
-            : blankDecorativeFace(
-                "book-mode-turn-face book-mode-turn-back",
-                index,
-              ),
-        );
-        leaf.append(segment);
-      }
+      const surface = element("div", "book-mode-turn-surface");
+      surface.append(
+        turn.front
+          ? decorativeFace(
+              turn.front,
+              "book-mode-turn-face book-mode-turn-front",
+            )
+          : blankDecorativeFace(
+              "book-mode-turn-face book-mode-turn-front",
+            ),
+        turn.back
+          ? decorativeFace(
+              turn.back,
+              "book-mode-turn-face book-mode-turn-back",
+            )
+          : blankDecorativeFace(
+              "book-mode-turn-face book-mode-turn-back",
+            ),
+      );
+      leaf.append(surface);
       leaf.append(
         element("span", "book-mode-turn-shadow"),
         element("span", "book-mode-turn-fold"),
@@ -776,6 +956,9 @@ export function createSemanticBookMode(
       }
       spread.replaceChildren();
       const viewIndex = renderOptions.viewIndex ?? pageIndex;
+      book.dataset.bookPageIndex = String(pageIndex);
+      book.dataset.bookViewIndex = String(viewIndex);
+      book.dataset.bookNavigating = String(navigating);
       const coverVisible =
         renderOptions.showCover ?? pages[viewIndex]?.kind === "cover";
       book.classList.toggle(
@@ -868,11 +1051,131 @@ export function createSemanticBookMode(
             ? `Screen ${visiblePages[0]} / ${pages.length - 1}`
             : `Screens ${visiblePages[0]}–${visiblePages.at(-1)} / ${pages.length - 1}`;
       }
-      spread.setAttribute("aria-busy", String(navigating));
+      spread.setAttribute(
+        "aria-busy",
+        String(navigating || !paginationReady),
+      );
+    };
+    const repaginate = () => {
+      if (!loadedArticles) {
+        return;
+      }
+      const currentLocation = session.getState().location;
+      const urlAnchor = decodeURIComponent(globalThis.location.hash.slice(1));
+      const canonicalAnchor =
+        urlAnchor ||
+        (currentLocation?.kind === "semantic"
+          ? currentLocation.anchor
+          : undefined);
+      const firstVisible = pages[pageIndex];
+      const visibleSlots =
+        paginationSinglePage ||
+        firstVisible?.kind === "cover" ||
+        pageIndex === 1
+          ? firstVisible
+            ? [firstVisible]
+            : []
+          : [firstVisible, pages[pageIndex + 1]].filter(
+              (page): page is BookPage => page !== undefined,
+            );
+      const canonicalVisible =
+        currentLocation?.kind === "semantic"
+          ? visibleSlots.find(
+              (page) =>
+                page.chapterId === currentLocation.chapterId &&
+                canonicalAnchor !== undefined &&
+                page.sourceAnchors.includes(canonicalAnchor),
+            ) ??
+            visibleSlots.find(
+              (page) =>
+                page.chapterId === currentLocation.chapterId &&
+                canonicalAnchor !== undefined &&
+                page.sourceSpans.some(
+                  (span) => span.anchor === canonicalAnchor,
+                ),
+            )
+          : undefined;
+      const visible = canonicalVisible ?? pages[pageIndex];
+      pages = bookPagesFromArticles(
+        publication,
+        loadedArticles,
+        media.matches ? SINGLE_PAGE_PAGINATION : SPREAD_PAGINATION,
+      );
+      paginationSinglePage = media.matches;
+      if (visible?.kind === "cover") {
+        pageIndex = 0;
+      } else if (visible) {
+        const visibleSpan =
+          visible.sourceSpans.find((span) => span.anchor === visible.anchor) ??
+          visible.sourceSpans[0];
+        const nextIndex = pages.findIndex((page) => {
+          if (page.chapterId !== visible.chapterId) {
+            return false;
+          }
+          if (visibleSpan) {
+            return page.sourceSpans.some(
+              (span) =>
+                span.anchor === visibleSpan.anchor &&
+                span.start <= visibleSpan.start &&
+                visibleSpan.start < span.end,
+            );
+          }
+          return (
+            page.sourceAnchors.includes(visible.anchor) ||
+            page.anchor === visible.anchor
+          );
+        });
+        pageIndex = boundedIndex(Math.max(1, nextIndex));
+      } else {
+        pageIndex = boundedIndex(pageIndex);
+      }
+      render();
+    };
+    const acceptTargetPage = async (
+      targetPage: BookPage,
+      activePublication: PublicationManifest,
+    ): Promise<boolean> => {
+      if (targetPage.kind === "cover") {
+        return true;
+      }
+      const currentLocation = session.getState().location;
+      if (
+        currentLocation?.kind === "semantic" &&
+        currentLocation.chapterId === targetPage.chapterId &&
+        currentLocation.anchor === targetPage.anchor &&
+        (targetPage.continuation ||
+          decodeURIComponent(globalThis.location.hash.slice(1)) ===
+            targetPage.anchor)
+      ) {
+        return true;
+      }
+      acceptingTargetLocation = true;
+      try {
+        return await options.navigate({
+          kind: "semantic",
+          bookId: activePublication.bookId,
+          editionId: activePublication.editionId,
+          chapterId: targetPage.chapterId,
+          anchor: targetPage.anchor,
+        });
+      } finally {
+        acceptingTargetLocation = false;
+      }
     };
     showCoverView = () => {
       if (navigating) {
-        deferredCover = true;
+        operationVersion += 1;
+        navigating = false;
+        queuedDirection = undefined;
+        deferredLocation = undefined;
+        deferredCover = false;
+        pageIndex = 0;
+        book.classList.remove(
+          "book-mode-book-sliding",
+          "book-mode-book-opening",
+          "book-mode-book-positioned",
+        );
+        render();
         return;
       }
       deferredCover = false;
@@ -883,6 +1186,7 @@ export function createSemanticBookMode(
 
     const go = async (direction: -1 | 1) => {
       if (navigating) {
+        queuedDirection = direction;
         return;
       }
       const starts = pageStarts();
@@ -955,16 +1259,7 @@ export function createSemanticBookMode(
       if (!operationActive()) {
         return;
       }
-      const accepted =
-        targetPage.kind === "cover"
-          ? true
-          : await options.navigate({
-              kind: "semantic",
-              bookId: current.bookId,
-              editionId: current.editionId,
-              chapterId: targetPage.chapterId,
-              anchor: targetPage.anchor,
-            });
+      const accepted = await acceptTargetPage(targetPage, current);
       if (!operationActive()) {
         return;
       }
@@ -972,6 +1267,12 @@ export function createSemanticBookMode(
         pageIndex = fromIndex;
       } else {
         pageIndex = boundedIndex(target);
+        if (
+          deferredLocation?.chapterId === targetPage.chapterId &&
+          deferredLocation.anchor === targetPage.anchor
+        ) {
+          deferredLocation = undefined;
+        }
         if (targetPage.kind === "cover") {
           options.onCoverReached?.();
         }
@@ -982,6 +1283,10 @@ export function createSemanticBookMode(
         "book-mode-book-opening",
         "book-mode-book-positioned",
       );
+      if (repaginateAfterNavigation) {
+        repaginateAfterNavigation = false;
+        repaginate();
+      }
       applyDeferredLocation();
       const completedCoverClose =
         accepted && pages[pageIndex]?.kind === "cover";
@@ -995,6 +1300,11 @@ export function createSemanticBookMode(
             book.classList.remove("book-mode-book-closing");
           });
         });
+      }
+      const queued = queuedDirection;
+      queuedDirection = undefined;
+      if (queued !== undefined && overlay === root) {
+        void go(queued);
       }
     };
 
@@ -1029,10 +1339,20 @@ export function createSemanticBookMode(
     };
 
     const onMediaChange = () => {
-      pageIndex = boundedIndex(pageIndex);
-      render();
+      if (navigating) {
+        repaginateAfterNavigation = true;
+        return;
+      }
+      repaginate();
+    };
+    const onShare = async () => {
+      counter.textContent = await shareReadingLocation(
+        publication.title,
+        globalThis.location.href,
+      );
     };
     closeButton.addEventListener("click", close);
+    shareButton.addEventListener("click", () => void onShare());
     previous.addEventListener("click", () => void go(-1));
     next.addEventListener("click", () => void go(1));
     let pointerStart:
@@ -1147,27 +1467,29 @@ export function createSemanticBookMode(
       const angle = 180 * progress * start.direction * -1;
       const verticalDelta = event.clientY - start.y;
       const skew = Math.min(7, Math.max(-7, verticalDelta / 20));
+      const curve = Math.sin(Math.PI * progress);
       start.leaf.style.setProperty("--book-peel-angle", `${angle}deg`);
       start.leaf.style.setProperty(
         "--book-peel-progress",
         String(progress),
       );
       start.leaf.style.setProperty("--book-peel-skew", `${skew}deg`);
+      start.leaf.style.setProperty(
+        "--book-peel-curl",
+        `${curve * start.direction * -8}deg`,
+      );
+      start.leaf.style.setProperty(
+        "--book-peel-lift",
+        `${curve * 22}px`,
+      );
+      start.leaf.style.setProperty(
+        "--book-peel-radius",
+        `${curve * 48}%`,
+      );
       start.leaf.classList.toggle(
         "book-mode-turn-past-half",
         progress >= 0.5,
       );
-      for (const [index, segment] of Array.from(
-        start.leaf.querySelectorAll<HTMLElement>(".book-mode-turn-segment"),
-      ).entries()) {
-        const normalized = index / (TURN_SEGMENT_COUNT - 1);
-        const centered = normalized - 0.5;
-        const curve = Math.sin(Math.PI * progress);
-        const directionScale = start.direction > 0 ? 1 : -1;
-        const bend = centered * 28 * curve * directionScale;
-        const lift = (1 - Math.abs(centered) * 2) * 22 * curve;
-        segment.style.transform = `translateZ(${lift}px) rotateY(${bend}deg)`;
-      }
     };
     const settleInteractiveTurn = async (
       start: NonNullable<typeof pointerStart>,
@@ -1195,11 +1517,9 @@ export function createSemanticBookMode(
         `${commit ? direction * -180 : 0}deg`,
       );
       leaf.classList.toggle("book-mode-turn-past-half", commit);
-      for (const segment of leaf.querySelectorAll<HTMLElement>(
-        ".book-mode-turn-segment",
-      )) {
-        segment.style.transform = "translateZ(0) rotateY(0)";
-      }
+      leaf.style.setProperty("--book-peel-curl", "0deg");
+      leaf.style.setProperty("--book-peel-lift", "0px");
+      leaf.style.setProperty("--book-peel-radius", "0%");
       await new Promise<void>((resolve) => {
         let settled = false;
         const finish = () => {
@@ -1224,16 +1544,7 @@ export function createSemanticBookMode(
         const activePublication = session.getState().publication;
         targetPage = navigationPageForTarget(target, direction);
         if (activePublication && targetPage) {
-          accepted =
-            targetPage.kind === "cover"
-              ? true
-              : await options.navigate({
-                  kind: "semantic",
-                  bookId: activePublication.bookId,
-                  editionId: activePublication.editionId,
-                  chapterId: targetPage.chapterId,
-                  anchor: targetPage.anchor,
-                });
+          accepted = await acceptTargetPage(targetPage, activePublication);
         }
       }
       if (overlay !== root || operation !== operationVersion) {
@@ -1245,13 +1556,29 @@ export function createSemanticBookMode(
         pageIndex = fromIndex;
       } else {
         pageIndex = boundedIndex(target);
+        if (
+          targetPage &&
+          deferredLocation?.chapterId === targetPage.chapterId &&
+          deferredLocation.anchor === targetPage.anchor
+        ) {
+          deferredLocation = undefined;
+        }
         if (targetPage?.kind === "cover") {
           options.onCoverReached?.();
         }
       }
       navigating = false;
+      if (repaginateAfterNavigation) {
+        repaginateAfterNavigation = false;
+        repaginate();
+      }
       applyDeferredLocation();
       render();
+      const queued = queuedDirection;
+      queuedDirection = undefined;
+      if (queued !== undefined && overlay === root) {
+        void go(queued);
+      }
     };
     const onPointerMove = (event: PointerEvent) => {
       if (!pointerStart || event.pointerId !== pointerStart.id) {
@@ -1322,7 +1649,7 @@ export function createSemanticBookMode(
       pageIndex = 0;
       spread.setAttribute("aria-busy", "true");
       render();
-      const loadedPages = await loadBookPages(
+      loadedArticles = await loadBookArticles(
         publication,
         content,
         fetcher,
@@ -1332,7 +1659,12 @@ export function createSemanticBookMode(
         return;
       }
       loading = undefined;
-      pages = loadedPages;
+      pages = bookPagesFromArticles(
+        publication,
+        loadedArticles,
+        media.matches ? SINGLE_PAGE_PAGINATION : SPREAD_PAGINATION,
+      );
+      paginationSinglePage = media.matches;
       const current = session.getState().location;
       const currentIndex =
         current?.kind === "semantic"
@@ -1345,6 +1677,7 @@ export function createSemanticBookMode(
       pageIndex = options.startAtCover?.()
         ? 0
         : boundedIndex(Math.max(1, currentIndex));
+      paginationReady = true;
       let initialSubscription = true;
       unsubscribeSession = session.subscribe((nextState) => {
         if (initialSubscription) {
@@ -1359,6 +1692,23 @@ export function createSemanticBookMode(
           return;
         }
         if (navigating) {
+          if (!acceptingTargetLocation) {
+            operationVersion += 1;
+            navigating = false;
+            queuedDirection = undefined;
+            deferredLocation = undefined;
+            const index = indexForLocation(location);
+            if (index >= 0) {
+              pageIndex = boundedIndex(index);
+            }
+            book.classList.remove(
+              "book-mode-book-sliding",
+              "book-mode-book-opening",
+              "book-mode-book-positioned",
+            );
+            render();
+            return;
+          }
           deferredLocation = location;
           return;
         }
@@ -1373,6 +1723,7 @@ export function createSemanticBookMode(
     } catch (error) {
       if (!controller.signal.aborted && overlay) {
         loading = undefined;
+        paginationReady = true;
         spread.replaceChildren(
           element(
             "p",
@@ -1383,6 +1734,7 @@ export function createSemanticBookMode(
           ),
         );
         counter.textContent = "Book view unavailable";
+        spread.setAttribute("aria-busy", "false");
         closeButton.focus();
       }
     }
@@ -1405,14 +1757,37 @@ export function createSemanticBookMode(
   };
 }
 
-async function loadBookPages(
+function bookPagesFromArticles(
+  publication: PublicationManifest,
+  articles: HTMLElement[],
+  profile: PaginationProfile,
+): BookPage[] {
+  const pages: BookPage[] = [coverPage(publication)];
+  let screenNumber = 0;
+  for (const [index, chapter] of publication.renditions.semantic.chapters.entries()) {
+    const article = articles[index];
+    if (!article) {
+      throw new Error(`Book view did not load ${chapter.title}`);
+    }
+    pages.push(
+      ...pagesFromArticle(article, chapter, profile).map((page) => ({
+        ...page,
+        screenNumber: ++screenNumber,
+      })),
+    );
+  }
+  if (pages.length === 1) {
+    throw new Error("Publication contains no semantic screen pages");
+  }
+  return pages;
+}
+
+async function loadBookArticles(
   publication: PublicationManifest,
   content: HTMLElement,
   fetcher: typeof globalThis.fetch,
   signal: AbortSignal,
-): Promise<BookPage[]> {
-  const pages: BookPage[] = [coverPage(publication)];
-  let screenNumber = 0;
+): Promise<HTMLElement[]> {
   const chapters = publication.renditions.semantic.chapters;
   const articles = new Array<HTMLElement>(chapters.length);
   let nextChapter = 0;
@@ -1441,20 +1816,5 @@ async function loadBookPages(
     ),
   );
 
-  for (const [index, chapter] of chapters.entries()) {
-    const article = articles[index];
-    if (!article) {
-      throw new Error(`Book view did not load ${chapter.title}`);
-    }
-    pages.push(
-      ...pagesFromArticle(article, chapter).map((page) => ({
-        ...page,
-        screenNumber: ++screenNumber,
-      })),
-    );
-  }
-  if (pages.length === 1) {
-    throw new Error("Publication contains no semantic screen pages");
-  }
-  return pages;
+  return articles;
 }

@@ -226,6 +226,7 @@ export function mountBookshelf(
   };
 
   const depart = (
+    volume: BookshelfVolume,
     action: BookshelfAction,
     source: HTMLButtonElement,
   ) => {
@@ -243,17 +244,38 @@ export function mountBookshelf(
     }
 
     const rect = source.getBoundingClientRect();
-    const flight = source.cloneNode(true) as HTMLButtonElement;
-    flight.removeAttribute("id");
-    flight.removeAttribute("aria-controls");
+    const flight = element("div", "bookshelf-book-flight");
     flight.setAttribute("aria-hidden", "true");
-    flight.tabIndex = -1;
-    flight.disabled = true;
-    flight.className = "bookshelf-book bookshelf-book-flight";
+    applyPublicationAppearance(flight, volume.appearance);
+    const spine = source
+      .querySelector(".bookshelf-book-spine")
+      ?.cloneNode(true);
+    if (spine) {
+      flight.append(spine);
+    }
+    const cover = element("div", "bookshelf-flight-cover");
+    const coverFrame = element("div", "bookshelf-flight-cover-frame");
+    const coverTitle = element(
+      "span",
+      "bookshelf-flight-cover-title",
+      volume.title,
+    );
+    const coverOrg = element(
+      "span",
+      "bookshelf-flight-cover-org",
+      "Ethical Tech CoLab",
+    );
+    coverFrame.append(coverTitle, coverOrg);
+    cover.append(coverFrame);
+    flight.append(cover);
     flight.style.setProperty("--shelf-flight-left", `${rect.left}px`);
     flight.style.setProperty("--shelf-flight-top", `${rect.top}px`);
     flight.style.setProperty("--shelf-flight-width", `${rect.width}px`);
     flight.style.setProperty("--shelf-flight-height", `${rect.height}px`);
+    flight.style.setProperty(
+      "--shelf-flight-cover-width",
+      `${rect.height * 0.7727}px`,
+    );
     document.body.append(flight);
 
     let completed = false;
@@ -287,7 +309,7 @@ export function mountBookshelf(
       source.classList.remove("bookshelf-book-departing");
     };
     flight.addEventListener("animationend", onAnimationEnd, { once: true });
-    fallback = globalThis.setTimeout(navigate, 900);
+    fallback = globalThis.setTimeout(navigate, 1_250);
   };
 
   const select = (volumeId: string) => {
@@ -331,7 +353,7 @@ export function mountBookshelf(
           return;
         }
         event.preventDefault();
-        depart(action, button);
+        depart(volume, action, button);
       };
       link.addEventListener("click", onAction);
       actionDisposers.push(() => link.removeEventListener("click", onAction));

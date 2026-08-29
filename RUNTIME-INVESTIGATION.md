@@ -79,8 +79,9 @@ The deployed comparison uses:
 
 - V1: the actual 46 production WebP pages and production PDF URL.
 - V2: the actual 16-section semantic publication with its complete back matter.
-- V2 book presentation: 56 screen sheets split only at semantic block
-  boundaries; these presentation sheets are not citation locations.
+- V2 book presentation: 99 desktop screen sheets or 221 phone screen sheets,
+  split at semantic block and sentence/word boundaries; these responsive
+  presentation sheets are not citation locations.
 - The small invented fixture only for deterministic interaction regression
   tests.
 
@@ -183,10 +184,11 @@ Static page curvature uses:
 - Shorter visible leaf width.
 - Page-count-driven fanned layers at both fore-edges.
 
-Turning-page curvature uses nine bounded vertical segments. Every segment
-contains the correct slice of the same outgoing and incoming semantic face.
-Segment lift and bend vary across the leaf during automatic and pointer-driven
-turns.
+Turning-page curvature uses one continuous front/back semantic surface. The
+outer edge bends and shortens with a variable-radius silhouette, lift, skew,
+sheen, fold, and shadow during automatic and pointer-driven turns. Removing
+the previous sliced surface eliminates inter-segment seams and reduces the
+moving leaf from eighteen duplicated page faces to two.
 
 This remains a CSS visual approximation. It intentionally avoids canvas,
 WebGL, and a full paper finite-element simulation.
@@ -201,5 +203,27 @@ fixture: the cover retained desktop half-spread width. On narrow screens:
 - Cover type scales from the book container using container query units.
 - Subtitle size scales independently.
 - Cover content is tested to remain inside the board.
+- Semantic book pages use responsive pagination profiles and never scroll
+  internally; exhaustive Edge/Chromium checks cover all 99 desktop and 221
+  phone sheets.
 - Empty cover folios are not rendered, eliminating intrinsic vertical
   overflow rather than only hiding a scrollbar.
+
+## Final payload and capability findings
+
+The built production comparison measures:
+
+| Approach | Runtime gzip | Complete publication payload |
+|---|---:|---:|
+| V2 semantic | 27,688 bytes | 74,281 bytes |
+| Legacy fixed pages | 25,393 bytes | 9,098,935 bytes |
+
+V2 runtime code is about 2.3 KB gzip larger, but the complete semantic book is
+99.18% smaller, approximately 122.5 times lighter. The saving comes from
+replacing 9.07 MB of already-compressed WebP page images with 46,593 bytes gzip
+of semantic chapter HTML; SVG is not involved in the legacy page payload.
+
+Current-location sharing is implemented with Web Share and clipboard fallback.
+Local annotations, comments, bookmarks, search, offline caching, and
+collaborative comments remain specification/backlog work and are identified as
+planned or future on the published functionality dashboard.

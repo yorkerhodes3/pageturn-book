@@ -9,6 +9,7 @@ import type {
   ReaderSessionState,
 } from "@ethical-tech/book-reader-core";
 import { createSemanticBookMode } from "./book-mode.js";
+import { shareReadingLocation } from "./share.js";
 
 export type ReaderShellOptions = {
   history?: History;
@@ -147,6 +148,9 @@ export function mountReaderShell(
   progress.setAttribute("role", "status");
   const next = element("button", "book-reader-control", "Next");
   next.type = "button";
+  const share = element("button", "book-reader-control", "Share");
+  share.type = "button";
+  share.title = "Share the current canonical reading location";
   const bookView = element(
     "button",
     "book-reader-control book-reader-book-view",
@@ -154,7 +158,7 @@ export function mountReaderShell(
   );
   bookView.type = "button";
   bookView.disabled = true;
-  toolbar.append(previous, progress, next, bookView);
+  toolbar.append(previous, progress, next, share, bookView);
 
   layout.classList.add("book-layout-enhanced");
   layout.prepend(toolbar, sidebar);
@@ -312,8 +316,16 @@ export function mountReaderShell(
     });
   };
 
+  const onShare = async () => {
+    progress.textContent = await shareReadingLocation(
+      publication?.title ?? document.title,
+      browserLocation.href,
+    );
+  };
+
   previous.addEventListener("click", () => void runRelative("previous"));
   next.addEventListener("click", () => void runRelative("next"));
+  share.addEventListener("click", () => void onShare());
   bookView.addEventListener("click", () => {
     void bookMode.open(bookView).catch((error: unknown) => {
       progress.textContent =

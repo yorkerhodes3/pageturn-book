@@ -25,3 +25,4 @@ export type {
   ReaderShellHandle,
   ReaderShellOptions,
 } from "./reader-shell.js";
+export { shareReadingLocation } from "./share.js";

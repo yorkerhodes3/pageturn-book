@@ -90,6 +90,13 @@ The landing page links to:
 - The V2 semantic reader.
 - A side-by-side iframe comparison.
 - A responsive 21-volume library shelf with selectable bindings.
+- A functionality and payload dashboard.
+
+Published routes:
+
+- <https://yorkerhodes3.github.io/pageturn-book/>
+- <https://yorkerhodes3.github.io/pageturn-book/shelf/>
+- <https://yorkerhodes3.github.io/pageturn-book/dashboard/>
 
 The direct semantic chapter is:
 

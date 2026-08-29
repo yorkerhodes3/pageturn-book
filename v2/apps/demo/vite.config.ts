@@ -44,6 +44,7 @@ export default defineConfig(() => {
     resolve(root, "legacy", "index.html"),
     resolve(root, "compare", "index.html"),
     resolve(root, "shelf", "index.html"),
+    resolve(root, "dashboard", "index.html"),
     ...collectHtml(publicationRoot),
   ];
   const input = Object.fromEntries(

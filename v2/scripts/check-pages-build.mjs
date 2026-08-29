@@ -8,6 +8,7 @@ const required = [
   "legacy/index.html",
   "compare/index.html",
   "shelf/index.html",
+  "dashboard/index.html",
   "book/demo-book/2026-08/manifest.json",
   "book/demo-book/2026-08/build-metadata.json",
   "book/demo-book/2026-08/chapters/introduction/index.html",

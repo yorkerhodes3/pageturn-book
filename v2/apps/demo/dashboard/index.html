@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Implementation status, payload comparison, and showcase routes for the Ethical Tech CoLab book reader."
+    >
+    <title>Reader functionality dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📊</text></svg>">
+    <link rel="stylesheet" href="/src/demo.css">
+  </head>
+  <body class="dashboard-page">
+    <header class="dashboard-hero">
+      <div>
+        <p class="dashboard-kicker">Ethical Tech CoLab · Reader V2</p>
+        <h1>Functionality &amp; payload dashboard</h1>
+        <p>
+          One place to review what works now, what remains planned, how to
+          showcase each capability, and what the semantic approach costs.
+        </p>
+      </div>
+      <nav class="dashboard-nav" aria-label="Dashboard navigation">
+        <a href="../shelf/">Open library shelf</a>
+        <a href="../">Reader overview</a>
+      </nav>
+    </header>
+
+    <main class="dashboard-main">
+      <section class="dashboard-metrics" aria-label="Reader summary">
+        <article>
+          <strong>21</strong>
+          <span>production bindings</span>
+        </article>
+        <article>
+          <strong>99</strong>
+          <span>desktop screen pages</span>
+        </article>
+        <article>
+          <strong>0</strong>
+          <span>book-page scrollbars</span>
+        </article>
+        <article>
+          <strong>~123×</strong>
+          <span>lighter complete book payload</span>
+        </article>
+      </section>
+
+      <section class="dashboard-section" aria-labelledby="showcase-title">
+        <div class="dashboard-section-heading">
+          <p>Demonstrations</p>
+          <h2 id="showcase-title">Showcase the reader</h2>
+        </div>
+        <div class="dashboard-showcase">
+          <a href="../shelf/">
+            <span>Library experience</span>
+            <strong>Browse all bindings</strong>
+            <small>Selection, pull-out, cover reveal, and reader handoff</small>
+          </a>
+          <a href="../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book">
+            <span>Semantic book</span>
+            <strong>Read What Is Ethical AI?</strong>
+            <small>Correct two-sided CSS turns, curl, anchors, and native text</small>
+          </a>
+          <a href="../legacy/?view=book">
+            <span>Preserved fallback</span>
+            <strong>Open legacy facsimile</strong>
+            <small>Designed raster pages and the original page-turn engine</small>
+          </a>
+          <a href="../compare/">
+            <span>Evaluation</span>
+            <strong>Compare side by side</strong>
+            <small>Inspect semantic and fixed-page approaches together</small>
+          </a>
+        </div>
+      </section>
+
+      <section class="dashboard-section" aria-labelledby="status-title">
+        <div class="dashboard-section-heading">
+          <p>Delivery status</p>
+          <h2 id="status-title">Capability matrix</h2>
+        </div>
+        <div class="dashboard-table-wrap">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th scope="col">Capability</th>
+                <th scope="col">Status</th>
+                <th scope="col">Current evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Semantic HTML and stable anchors</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Native text, direct chapter URLs, references, and citation-safe anchors.</td>
+              </tr>
+              <tr>
+                <th scope="row">Open-book presentation</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Cover, binding, page fans, correct front/back faces, and continuous CSS curl.</td>
+              </tr>
+              <tr>
+                <th scope="row">Page-edge grab and turn</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Mouse, touch, cancel/reverse gestures, arrows, and keyboard navigation.</td>
+              </tr>
+              <tr>
+                <th scope="row">Responsive physical pagination</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>99 spread screens or 221 phone screens, with zero internal page scrolling.</td>
+              </tr>
+              <tr>
+                <th scope="row">Publication bookshelf</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>21 lazy-loaded production volumes with metadata-driven bindings.</td>
+              </tr>
+              <tr>
+                <th scope="row">Share current reading location</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Native Web Share when available, with clipboard link fallback.</td>
+              </tr>
+              <tr>
+                <th scope="row">Legacy facsimile fallback</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Any shelf volume opens its immutable production page manifest.</td>
+              </tr>
+              <tr>
+                <th scope="row">Local comments and annotations</th>
+                <td><span class="status status-planned">Planned</span></td>
+                <td>Specified and backlogged; creation, persistence, re-anchoring, and export are not built yet.</td>
+              </tr>
+              <tr>
+                <th scope="row">Collaborative comments</th>
+                <td><span class="status status-future">Future</span></td>
+                <td>Requires identity, moderation, privacy, and a service boundary after local annotations.</td>
+              </tr>
+              <tr>
+                <th scope="row">Bookmarks, search, and offline cache</th>
+                <td><span class="status status-planned">Planned</span></td>
+                <td>Present in the specification and implementation backlog, not the current vertical slice.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dashboard-section" aria-labelledby="weight-title">
+        <div class="dashboard-section-heading">
+          <p>Production comparison</p>
+          <h2 id="weight-title">Payload weight</h2>
+        </div>
+        <div class="dashboard-weight-grid">
+          <article>
+            <h3>V2 semantic book</h3>
+            <strong>~74 KB</strong>
+            <p>
+              Approximately 27 KB gzip for reader CSS/JavaScript plus 46 KB
+              gzip for all 17 semantic chapters.
+            </p>
+          </article>
+          <article>
+            <h3>Legacy fixed pages</h3>
+            <strong>~9.10 MB</strong>
+            <p>
+              Approximately 24 KB gzip for runtime code plus 9.07 MB of 46
+              already-compressed WebP page images.
+            </p>
+          </article>
+          <article class="dashboard-weight-result">
+            <h3>Complete-book reduction</h3>
+            <strong>~99.2%</strong>
+            <p>
+              V2 runtime code is only about 2 KB gzip larger. The major saving
+              comes from semantic text replacing raster pages—not from avoiding
+              SVG, because the legacy pages are WebP images.
+            </p>
+          </article>
+        </div>
+        <p class="dashboard-method">
+          Measurements use the production <cite>What Is Ethical AI?</cite>
+          fixture and modeled gzip sizes from the built Pages artifact. Shared
+          HTML shell overhead is excluded from both sides.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

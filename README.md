@@ -1,5 +1,9 @@
 # Ethical Tech CoLab Book Reader
 
+> **Published demo:** [Reader overview](https://yorkerhodes3.github.io/pageturn-book/)
+> · [Library shelf](https://yorkerhodes3.github.io/pageturn-book/shelf/)
+> · [Functionality dashboard](https://yorkerhodes3.github.io/pageturn-book/dashboard/)
+
 This repository develops and compares two reader approaches before integration
 with the Ethical Tech CoLab website:
 
@@ -31,6 +35,8 @@ GitHub Actions builds a Pages artifact containing:
 - `/legacy/` - pinned fixed-page viewer.
 - `/shelf/` - responsive mahogany library shelf containing all 21 production
   fixed-page publications, with a semantic reading option where available.
+- `/dashboard/` - implementation status, showcase routes, sharing/commenting
+  status, and measured V2-versus-legacy payload weight.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
   semantic scroll reader using production content.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book` -
