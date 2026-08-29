@@ -20,6 +20,7 @@ export type {
   PublicationBindingAppearance,
   PublicationCapabilities,
   PublicationCoverAppearance,
+  PublicationFrontMatter,
   PublicationManifest,
   ReaderLocation,
   SemanticChapter,

@@ -440,6 +440,10 @@
   color: #e4bf73;
 }
 
+.status-partial {
+  color: #e2a866;
+}
+
 .status-future {
   color: #aaa3d2;
 }

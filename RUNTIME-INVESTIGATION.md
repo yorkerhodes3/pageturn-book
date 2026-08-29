@@ -215,11 +215,11 @@ The built production comparison measures:
 
 | Approach | Runtime gzip | Complete publication payload |
 |---|---:|---:|
-| V2 semantic | 27,688 bytes | 74,281 bytes |
-| Legacy fixed pages | 25,393 bytes | 9,098,935 bytes |
+| V2 semantic | 32,710 bytes | 79,130 bytes |
+| Legacy fixed pages | 27,044 bytes | 9,100,586 bytes |
 
-V2 runtime code is about 2.3 KB gzip larger, but the complete semantic book is
-99.18% smaller, approximately 122.5 times lighter. The saving comes from
+V2 runtime code is about 5.7 KB gzip larger, but the complete semantic book is
+99.13% smaller, approximately 115 times lighter. The saving comes from
 replacing 9.07 MB of already-compressed WebP page images with 46,593 bytes gzip
 of semantic chapter HTML; SVG is not involved in the legacy page payload.
 
@@ -227,3 +227,22 @@ Current-location sharing is implemented with Web Share and clipboard fallback.
 Local annotations, comments, bookmarks, search, offline caching, and
 collaborative comments remain specification/backlog work and are identified as
 planned or future on the published functionality dashboard.
+
+## Front matter and source-note fidelity
+
+The designed edition begins with:
+
+1. A title/imprint page.
+2. A thesis and disclaimer page.
+3. A contents page.
+
+V2 now represents that information semantically as an inner cover, title page,
+responsive thesis leaves, bounded linkable contents leaves, and
+imprint/notes leaves before body screen page 1. Compact viewports split long
+front matter rather than clipping it.
+
+The designed PDF also contains page footnotes. The canonical `REPORT.md` and
+website publication object contain no footnote markers, definitions, or
+footnote-to-source mapping, despite the report build including a footnote
+plugin. V2 therefore links the complete Works Cited and states the limitation
+instead of inventing endnotes.

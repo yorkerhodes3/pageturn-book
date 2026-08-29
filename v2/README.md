@@ -24,6 +24,12 @@ release described in [SPECIFICATION.md](../SPECIFICATION.md).
 - The old viewer remains untouched and independently recoverable.
 - A metadata-driven bookshelf renders all production bindings without loading
   page images, then lazy-loads the selected publication for reading.
+- Book mode renders validated inner-cover metadata, a title page, thesis,
+  imprint/notes, and a linkable multi-page table of contents.
+- Book text can be adjusted from 80% through 130%; presentation pages
+  repaginate around the same canonical source location.
+- The CSS page turn uses a two-phase clipped fold so readable semantic
+  front/back faces stay attached to the gutter.
 
 ## Workspace
 
@@ -132,7 +138,7 @@ chapters:
     source: chapters/01-introduction.md
 ```
 
-Cover and binding appearance can be shared with a future shelf view:
+Cover and binding appearance is shared by the shelf and reader:
 
 ```yaml
 appearance:
@@ -149,6 +155,21 @@ appearance:
     hubs: 5
     shelfLabel: ETHICAL TECHNOLOGY
 ```
+
+Optional semantic front matter supplies the physical opening leaves:
+
+```yaml
+frontMatter:
+  kicker: Ethical Tech CoLab · Research paper
+  credits: Research team and institutional attribution
+  thesis: The publication's opening thesis text.
+  disclaimer: Standing publication disclaimer.
+  canonicalUrl: https://example.org/publication/
+  notesStatus: Complete Works Cited; mapped endnotes require source note data.
+```
+
+`canonicalUrl` must be absolute HTTP(S). Publication language must be a valid
+BCP-47 tag.
 
 `@ethical-tech/book-reader-ui` exports
 `publicationAppearanceVariables()` and `applyPublicationAppearance()`. Reader

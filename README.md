@@ -18,6 +18,7 @@ with the Ethical Tech CoLab website:
 - [Specification](./SPECIFICATION.md)
 - [Implementation backlog](./BACKLOG.md)
 - [Real-content and Edge investigation](./RUNTIME-INVESTIGATION.md)
+- [V2 visual fidelity review](./VISUAL-FIDELITY-REVIEW.md)
 
 ## Implementations
 

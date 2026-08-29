@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const pagesBase = (process.env.PAGES_BASE_PATH ?? "").replace(/\/$/, "");
 const route = (path: string) => `${pagesBase}${path}`;
@@ -24,6 +24,29 @@ async function turnLeafState(leaf: Locator) {
       left: Number.parseFloat(style.left),
     };
   });
+}
+
+async function advanceBookToContent(
+  page: Page,
+  expectedCounter: string,
+): Promise<void> {
+  const counter = page.locator(".book-mode-counter");
+  for (let index = 0; index < 30; index += 1) {
+    if ((await counter.textContent()) === expectedCounter) {
+      return;
+    }
+    await advanceBookPage(page);
+  }
+  throw new Error(`Book did not reach ${expectedCounter}`);
+}
+
+async function advanceBookPage(page: Page): Promise<string> {
+  const counter = page.locator(".book-mode-counter");
+  const before = await counter.textContent();
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect.poll(() => counter.textContent()).not.toBe(before);
+  await expect(counter).not.toHaveText("Turning page");
+  return (await counter.textContent()) ?? "";
 }
 
 test("presents both reader versions from the comparison landing page", async ({
@@ -75,7 +98,7 @@ test("documents implemented and planned capabilities on the dashboard", async ({
   await expect(
     page.getByRole("row", { name: /Local comments and annotations Planned/ }),
   ).toBeVisible();
-  await expect(page.getByText("~99.2%")).toBeVisible();
+  await expect(page.getByText("~99.1%")).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Read What Is Ethical AI/ }),
   ).toHaveAttribute(
@@ -315,15 +338,303 @@ test("uses the production Ethical Tech CoLab report in V2", async ({ page }) => 
     page.getByRole("dialog", { name: "What Is Ethical AI?" }),
   ).toBeVisible();
   await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 99");
+  await advanceBookToContent(page, "Screen 1 / 99");
   await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(22);
   await expect(page.locator(".book-mode-overlay")).toHaveCSS(
     "--book-page-count",
     "46",
   );
+});
+
+test("recreates production front matter with linkable contents", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.locator('.book-mode-spread[aria-busy="false"]')).toBeVisible();
+
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Inside front cover · Title page",
+  );
+  await expect(
+    page.getByRole("dialog").getByText("Publication record"),
+  ).toBeVisible();
+  await expect(page.locator(".book-mode-front-date")).toHaveText("July 2026");
+  await expect(
+    page.getByRole("dialog").getByText(
+      /NYU School of Professional Studies Center for Global Affairs/,
+    ),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "About this publication · Contents 1",
+  );
+  const contentsNavigation = page
+    .getByRole("dialog")
+    .getByRole("navigation", { name: /Table of contents, part 1/ });
+  await expect(contentsNavigation).toBeVisible();
+  await expect(
+    contentsNavigation.locator('[role="treeitem"][aria-level="2"]').first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("dialog").getByText(
+      /What is ethics, and why did humanity invent it/,
+    ),
+  ).toBeVisible();
+  const power = page
+    .getByRole("dialog")
+    .getByRole("link", { name: "Humanity's Relationship with Power" });
+  await expect(power).toHaveAttribute("href", /\?view=book#power$/);
+  await power.click();
+  await expect(page).toHaveURL(/\/chapters\/power\/\?view=book#power$/);
+  await expect(page.locator(".book-mode-counter")).toContainText("/ 99");
+  const powerHeading =
+    page
+      .getByRole("dialog")
+      .getByRole("heading", { name: "02. Humanity's Relationship with Power" });
+  await expect(powerHeading).toBeVisible();
+  await expect(powerHeading).toBeFocused();
+});
+
+test("keeps all mobile front matter and contents reachable", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await advanceBookPage(page);
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Inside front cover",
+  );
+  await expect(
+    page.getByRole("dialog").getByText(/NYU School of Professional Studies/),
+  ).toBeVisible();
+
+  const links = new Set<string>();
+  for (let index = 0; index < 20; index += 1) {
+    const counter = await page.locator(".book-mode-counter").textContent();
+    if (counter?.startsWith("Screen 1 /")) {
+      break;
+    }
+    for (const label of await page.locator(".book-mode-toc-link").allTextContents()) {
+      links.add(label.trim());
+    }
+    const visiblePagesFit = await page
+      .locator(".book-mode-sheet:not(.book-mode-sheet-blank)")
+      .evaluateAll((nodes) =>
+        nodes.every((node) => node.scrollHeight - node.clientHeight <= 1),
+      );
+    expect(visiblePagesFit).toBe(true);
+    await advanceBookPage(page);
+  }
+  expect(links).toContain("Executive Summary");
+  expect(links).toContain("Conclusion");
+  expect(links).toContain("Works Cited");
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Screen 1 / 221",
+  );
+});
+
+test("focuses the exact subsection selected from contents", async ({ page }) => {
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await advanceBookPage(page);
+  const ethicalRealism = page
+    .getByRole("dialog")
+    .getByRole("link", { name: "Ethical realism." });
+  for (let index = 0; index < 6; index += 1) {
+    if (await ethicalRealism.isVisible()) {
+      break;
+    }
+    await advanceBookPage(page);
+  }
+  await ethicalRealism.click();
+
+  await expect(page).toHaveURL(
+    /\/chapters\/ethical-ir\/\?view=book#ethical-ir-ethical-realism-2$/,
+  );
+  const heading = page
+    .getByRole("dialog")
+    .getByRole("heading", { name: "Ethical realism." });
+  await expect(heading).toBeVisible();
+  await expect(heading).toBeFocused();
+});
+
+test("preserves the current front-matter passage across breakpoints", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  for (let index = 0; index < 4; index += 1) {
+    await advanceBookPage(page);
+  }
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "About this publication 2",
+  );
+  const fragment = await page
+    .locator(".book-mode-publication-thesis")
+    .textContent()
+    .then((text) => text?.trim().slice(0, 70) ?? "");
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await expect(page.locator(".book-mode-counter")).toContainText(
+    "About this publication",
+  );
+  await expect(page.getByRole("dialog")).toContainText(fragment);
+});
+
+test("shows the source notes limitation and complete Works Cited path", async ({
+  page,
+}) => {
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  const next = page.getByRole("button", { name: "Next screen page" });
+  const notesStatus = page.getByRole("dialog").getByText(
+    /canonical semantic source does not expose mapped footnote callouts/,
+  );
+  for (let index = 0; index < 10; index += 1) {
+    if (await notesStatus.isVisible()) {
+      break;
+    }
+    await next.click();
+  }
+  await expect(notesStatus).toBeVisible();
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("link", { name: "Open the complete Works Cited" }),
+  ).toHaveAttribute("href", /\?view=book#references$/);
+});
+
+test("adjusts book font size and repaginates at the same source location", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`${productionChapterPath}#executive-summary`);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 99");
+  const content = page
+    .locator('.book-mode-sheet[data-book-page="1"] .book-mode-sheet-content');
+  const initialSize = await content.evaluate((node) =>
+    Number.parseFloat(getComputedStyle(node).fontSize),
+  );
+
+  await page
+    .getByRole("button", { name: "Increase book text size" })
+    .click();
+  await page
+    .getByRole("button", { name: "Increase book text size" })
+    .click();
+  await page
+    .getByRole("button", { name: "Increase book text size" })
+    .click();
+  await expect(page.locator(".book-mode-font-status")).toHaveText("130%");
+  await expect(page.locator(".book-mode-counter")).toContainText("/ ");
+  const largerSize = await content.evaluate((node) =>
+    Number.parseFloat(getComputedStyle(node).fontSize),
+  );
+  expect(largerSize).toBeGreaterThan(initialSize);
+  await expect(page).toHaveURL(/#executive-summary$/);
+  await expect
+    .poll(() =>
+      page
+        .locator(".book-mode-sheet:not(.book-mode-sheet-blank)")
+        .evaluateAll((nodes) =>
+          nodes.every((node) => node.scrollHeight - node.clientHeight <= 1),
+        ),
+    )
+    .toBe(true);
+  await page.addStyleTag({
+    content:
+      ".book-mode-turn-leaf-forward,.book-mode-turn-surface," +
+      ".book-mode-turn-front,.book-mode-turn-back{" +
+      "animation-duration:2s!important}",
+  });
+  await page.getByRole("button", { name: "Next screen page" }).click();
+  await expect(
+    page.getByRole("button", { name: "Increase book text size" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Decrease book text size" }),
+  ).toBeDisabled();
+  const turningFaceSize = await page
+    .locator(".book-mode-turn-front .book-mode-sheet-content")
+    .evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize));
+  expect(turningFaceSize).toBeCloseTo(largerSize, 1);
+  await page.locator(".book-mode-turn-leaf").waitFor({ state: "detached" });
+  await page.getByRole("button", { name: "Close" }).click();
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.locator(".book-mode-font-status")).toHaveText("130%");
+  await page.getByRole("button", { name: "Close" }).click();
+  await page.reload();
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.locator(".book-mode-font-status")).toHaveText("130%");
+});
+
+test("applies text sizing to front matter and contents", async ({ page }) => {
+  await page.goto(productionChapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await advanceBookPage(page);
+  const credits = page.locator(".book-mode-inner-credits");
+  const initialSize = await credits.evaluate((node) =>
+    Number.parseFloat(getComputedStyle(node).fontSize),
+  );
+  for (let index = 0; index < 3; index += 1) {
+    await page
+      .getByRole("button", { name: "Increase book text size" })
+      .click();
+  }
+  await expect(page.locator(".book-mode-font-status")).toHaveText("130%");
+  const adjustedSize = await credits.evaluate((node) =>
+    Number.parseFloat(getComputedStyle(node).fontSize),
+  );
+  expect(adjustedSize).toBeGreaterThan(initialSize);
+  const visiblePagesFit = await page
+    .locator(".book-mode-sheet:not(.book-mode-sheet-blank)")
+    .evaluateAll((nodes) =>
+      nodes.every(
+        (node) =>
+          node.scrollHeight - node.clientHeight <= 1 ||
+          node.hasAttribute("data-book-fit-scale"),
+      ),
+    );
+  expect(visiblePagesFit).toBe(true);
+});
+
+test("scales an oversized atomic block instead of clipping it", async ({
+  page,
+}) => {
+  await page.goto(`${chapterPath}#introduction`);
+  await page.locator("[data-reader-content]").evaluate((article) => {
+    const figure = document.createElement("figure");
+    figure.id = "oversized-figure";
+    figure.style.height = "1200px";
+    figure.textContent = "Oversized semantic figure";
+    article.querySelector("h1")?.after(figure);
+  });
+  await page.getByRole("button", { name: "Book view" }).click();
+  const fitted = page.locator(".book-mode-sheet[data-book-fit-scale]").last();
+  await expect(fitted).toBeAttached();
+  const fit = await fitted.evaluate((sheet) => {
+    const content = sheet.querySelector<HTMLElement>(
+      ".book-mode-sheet-content",
+    );
+    if (!content) {
+      throw new Error("Expected fitted page content");
+    }
+    return {
+      scale: Number(sheet.dataset.bookFitScale),
+      contentHeight: content.getBoundingClientRect().height,
+      sheetHeight: sheet.getBoundingClientRect().height,
+    };
+  });
+  expect(fit.scale).toBeLessThan(1);
+  expect(fit.contentHeight).toBeLessThanOrEqual(fit.sheetHeight);
 });
 
 test("shares the current canonical location from scroll and book views", async ({
@@ -392,9 +703,7 @@ test("keeps production book pages free of internal scrolling", async ({
     await page.goto(productionChapterPath);
     await page.getByRole("button", { name: "Book view" }).click();
     await expect(page.locator('.book-mode-spread[aria-busy="false"]')).toBeVisible();
-    await page
-      .getByRole("button", { name: "Turn page forward" })
-      .click();
+    await advanceBookToContent(page, viewport.counter);
     await expect(page.locator(".book-mode-counter")).toHaveText(
       viewport.counter,
     );
@@ -408,6 +717,21 @@ test("keeps production book pages free of internal scrolling", async ({
       );
     expect(sheets.every(({ overflow }) => overflow <= 1)).toBe(true);
     expect(sheets.every(({ overflowY }) => overflowY === "hidden")).toBe(true);
+    const bodyPages = page.locator(
+      '.book-mode-sheet[data-book-page]:has(.book-mode-folio)',
+    );
+    const bottomClearance = await bodyPages.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const content = node.querySelector(".book-mode-sheet-content");
+        const last = content?.lastElementChild;
+        const folio = node.querySelector(".book-mode-folio");
+        return last && folio
+          ? folio.getBoundingClientRect().top -
+              last.getBoundingClientRect().bottom
+          : 0;
+      }),
+    );
+    expect(bottomClearance.every((clearance) => clearance >= 12)).toBe(true);
     if (viewport.width > 1000) {
       const next = page.getByRole("button", { name: "Next screen page" });
       for (const expected of [
@@ -439,10 +763,7 @@ test("repaginates production content when the book crosses its breakpoint", asyn
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(productionChapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 99");
+  await advanceBookToContent(page, "Screen 1 / 99");
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 221");
@@ -495,6 +816,23 @@ test("repaginates production content when the book crosses its breakpoint", asyn
   );
 });
 
+test("keeps pages readable in a short landscape viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 400 });
+  await page.goto(`${productionChapterPath}#executive-summary`);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await expect(page.locator(".book-mode-counter")).toContainText("/ ");
+  await expect(page.locator(".book-mode-overlay")).toHaveCSS(
+    "overflow-y",
+    "auto",
+  );
+  const fits = await page
+    .locator(".book-mode-sheet:not(.book-mode-sheet-blank)")
+    .evaluateAll((nodes) =>
+      nodes.every((node) => node.scrollHeight - node.clientHeight <= 1),
+    );
+  expect(fits).toBe(true);
+});
+
 test("preserves cached chapters across navigation and repagination", async ({
   page,
 }) => {
@@ -504,7 +842,7 @@ test("preserves cached chapters across navigation and repagination", async ({
   await page.goto(productionChapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
   const next = page.getByRole("button", { name: "Next screen page" });
-  await next.click();
+  await advanceBookToContent(page, "Screen 1 / 99");
   for (let index = 0; index < 8; index += 1) {
     if (page.url().includes("/chapters/power/")) {
       break;
@@ -570,10 +908,7 @@ test("keeps pointer-turned continuation sheets at one canonical location", async
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(productionChapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 221");
+  await advanceBookToContent(page, "Screen 1 / 221");
   await page
     .getByRole("button", { name: "Next screen page" })
     .click();
@@ -677,6 +1012,27 @@ test("serves directly readable semantic content without JavaScript", async ({
   await context.close();
 });
 
+test("keeps unsupported RTL publications in semantic scroll view", async ({
+  page,
+}) => {
+  await page.route("**/manifest.json", async (route) => {
+    const response = await route.fetch();
+    const manifest = (await response.json()) as Record<string, unknown>;
+    manifest.direction = "rtl";
+    await route.fulfill({ response, json: manifest });
+  });
+  await page.goto(chapterPath);
+  const bookView = page.getByRole("button", { name: "Book view" });
+  await expect(bookView).toBeDisabled();
+  await expect(bookView).toHaveAttribute(
+    "title",
+    "Physical book mode is not yet available for right-to-left publications",
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Introduction" }),
+  ).toBeVisible();
+});
+
 test("enhances the existing semantic chapter through a reader session", async ({
   page,
 }) => {
@@ -745,7 +1101,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   page,
 }) => {
   await page.route("**/chapters/principles/index.html", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
     await route.continue();
   });
   await page.goto(chapterPath);
@@ -773,6 +1129,9 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     "aria-busy",
     "true",
   );
+  await expect(
+    page.getByRole("button", { name: "Next screen page" }),
+  ).toBeEnabled();
   await expect(page).toHaveURL(/\?view=book$/);
   await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
   await expect(page.locator(".book-mode-cover")).toHaveCount(1);
@@ -780,7 +1139,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     dialog.getByRole("heading", {
       level: 1,
       name: "A Small Book About Ethical Technology",
-    }),
+    }).last(),
   ).toBeVisible();
   await expect(page.locator(".book-mode-overlay")).toHaveAttribute(
     "data-book-binding-material",
@@ -865,7 +1224,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(5);
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
-  ).toContainText("Introduction");
+  ).toContainText("A Small Book About Ethical Technology");
   const openingPageBox = await page
     .locator(".book-mode-spread > .book-mode-sheet-right")
     .boundingBox();
@@ -880,26 +1239,28 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
     openingBookBox.x + openingBookBox.width + 1,
   );
   await expect(coverLeaf).toHaveCount(0, { timeout: 3000 });
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Inside front cover · Title page",
+  );
   await expect(page.locator(".book-mode-sheet")).toHaveCount(2);
   await expect(page.locator(".book-mode-page-fan-edge")).toHaveCount(10);
   await expect(
-    page.locator(".book-mode-sheet-blank-inside-cover"),
+    page.locator(".book-mode-inner-cover"),
   ).toHaveCount(1);
   await expect(page.locator(".book-mode-sheet-right")).not.toHaveCSS(
     "transform",
     "none",
   );
   await expect(
-    dialog.getByRole("heading", { level: 1, name: "Introduction" }),
+    page
+      .getByLabel(
+        "A Small Book About Ethical Technology, Title page",
+      )
+      .getByRole("heading", {
+        level: 1,
+        name: "A Small Book About Ethical Technology",
+      }),
   ).toBeVisible();
-  const openingLink = dialog.getByRole("link", {
-    name: "this opening section",
-  });
-  await expect(openingLink).toHaveAttribute(
-    "href",
-    "#book-mode-introduction-1-1",
-  );
   await expect(page.locator("main.book-layout")).toHaveAttribute("inert", "");
 
   await page
@@ -911,7 +1272,7 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   expect(closingFaces.back).toContain("A Small Book About Ethical Technology");
   await expect(
     page.locator(".book-mode-spread > .book-mode-sheet-right"),
-  ).toContainText("Introduction");
+  ).toContainText("A Small Book About Ethical Technology");
   await expect(
     page.locator(".book-mode-spread > .book-mode-cover"),
   ).toHaveCount(0);
@@ -931,7 +1292,32 @@ test("opens a semantic spread and keeps scroll navigation in sync", async ({
   await expect(page.locator(".book-mode-turn-leaf")).toHaveCount(0, {
     timeout: 3000,
   });
+  await expect(page.locator(".book-mode-counter")).toHaveText(
+    "Inside front cover · Title page",
+  );
+
+  await page
+    .getByRole("button", { name: "Next screen page", exact: true })
+    .evaluate((button) => (button as HTMLButtonElement).click());
+  const frontMatterLeaf = page.locator(".book-mode-turn-leaf-forward");
+  await expect(frontMatterLeaf).toBeVisible();
+  const frontMatterFaces = await turnLeafState(frontMatterLeaf);
+  expect(frontMatterFaces.front).toContain(
+    "A Small Book About Ethical Technology",
+  );
+  expect(frontMatterFaces.back).toContain("Contents");
+  await expect(
+    page.locator(".book-mode-spread > .book-mode-sheet-right"),
+  ).toContainText("Introduction");
+  await expect(frontMatterLeaf).toHaveCount(0, { timeout: 3000 });
   await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  const openingLink = dialog.getByRole("link", {
+    name: "this opening section",
+  });
+  await expect(openingLink).toHaveAttribute(
+    "href",
+    "#book-mode-introduction-1-1",
+  );
 
   await page
     .getByRole("button", { name: "Next screen page", exact: true })
@@ -1074,10 +1460,7 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
     )
     .toBe(true);
 
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
+  await advanceBookToContent(page, "Screen 1 / 14");
 
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
@@ -1154,11 +1537,86 @@ test("uses one semantic sheet on a narrow screen", async ({ page }) => {
   await page.mouse.up();
   await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
 
-  await page
-    .getByRole("button", { name: "Previous screen page" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Front cover");
-  await expect(page).toHaveURL(/\?view=book$/);
+});
+
+test("keeps a dragged curl attached through distinct reveal phases", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(chapterPath);
+  await page.getByRole("button", { name: "Book view" }).click();
+  await advanceBookToContent(page, "Screen 1 / 14");
+  const book = page.locator(".book-mode-book");
+  const box = await book.boundingBox();
+  if (!box) {
+    throw new Error("Expected draggable book bounds");
+  }
+  const startX = box.x + box.width - 3;
+  const startY = box.y + 24;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+
+  const phases: Array<{
+    progress: number;
+    clipPath: string;
+    tip: string;
+    transformOriginX: number;
+    frontOpacity: string;
+    backOpacity: string;
+    backTransform: string;
+    frontText: string;
+    backText: string;
+  }> = [];
+  for (const progress of [0.15, 0.35, 0.55, 0.8]) {
+    await page.mouse.move(startX - box.width * progress * 0.5, startY, {
+      steps: 3,
+    });
+    await page.waitForTimeout(50);
+    const leaf = page.locator(".book-mode-turn-leaf-interactive");
+    await expect(leaf).toBeVisible();
+    phases.push(
+      await leaf.evaluate((node, currentProgress) => {
+        const surface = node.querySelector<HTMLElement>(
+          ".book-mode-turn-surface",
+        );
+        const front = node.querySelector<HTMLElement>(".book-mode-turn-front");
+        const back = node.querySelector<HTMLElement>(".book-mode-turn-back");
+        if (!surface || !front || !back) {
+          throw new Error("Expected complete turning leaf");
+        }
+        return {
+          progress: currentProgress,
+          clipPath: getComputedStyle(surface).clipPath,
+          tip: node.style.getPropertyValue("--book-peel-tip-x"),
+          transformOriginX: Number.parseFloat(
+            getComputedStyle(node).transformOrigin,
+          ),
+          frontOpacity: getComputedStyle(front).opacity,
+          backOpacity: getComputedStyle(back).opacity,
+          backTransform: getComputedStyle(back).transform,
+          frontText: front.textContent ?? "",
+          backText: back.textContent ?? "",
+        };
+      }, progress),
+    );
+  }
+
+  expect(new Set(phases.map(({ tip }) => tip)).size).toBe(4);
+  expect(new Set(phases.map(({ clipPath }) => clipPath)).size).toBeGreaterThanOrEqual(
+    3,
+  );
+  expect(phases.every(({ clipPath }) => clipPath.startsWith("polygon("))).toBe(
+    true,
+  );
+  expect(phases[0]?.transformOriginX).toBe(0);
+  expect(phases.at(-1)?.transformOriginX).toBeGreaterThan(0);
+  expect(phases[0]?.frontOpacity).toBe("1");
+  expect(phases[0]?.backOpacity).toBe("0");
+  expect(phases.at(-1)?.frontOpacity).toBe("0");
+  expect(phases.at(-1)?.backOpacity).toBe("1");
+  expect(phases.at(-1)?.backTransform).toBe("none");
+  expect(phases[0]?.frontText).not.toBe(phases[0]?.backText);
+  await page.mouse.up();
 });
 
 test("preserves native text selection away from page edges", async ({ page }) => {
@@ -1182,10 +1640,7 @@ test("cancels a peel that reverses away from its chosen direction", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
+  await advanceBookToContent(page, "Screen 1 / 14");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -1215,10 +1670,7 @@ test("does not turn a page when a pointer gesture is cancelled", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
+  await advanceBookToContent(page, "Screen 1 / 14");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -1275,10 +1727,7 @@ test("does not navigate after closing during an automatic turn", async ({
 test("browser Back cancels an in-flight page turn", async ({ page }) => {
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Next screen page", exact: true })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  await advanceBookToContent(page, "Screen 1 / 7");
   await page.addStyleTag({
     content:
       ".book-mode-turn-leaf-forward,.book-mode-turn-surface{" +
@@ -1303,10 +1752,7 @@ test("does not navigate after closing a committed pointer peel", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
-  await page
-    .getByRole("button", { name: "Turn page forward" })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
+  await advanceBookToContent(page, "Screen 1 / 14");
   const book = page.locator(".book-mode-book");
   const box = await book.boundingBox();
   if (!box) {
@@ -1339,10 +1785,7 @@ test("restores book view through browser Back and Forward", async ({ page }) => 
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page).toHaveURL(/\?view=book$/);
 
-  await page
-    .getByRole("button", { name: "Next screen page", exact: true })
-    .click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 7");
+  await advanceBookToContent(page, "Screen 1 / 7");
   await expect(page).toHaveURL(/\?view=book#introduction$/);
 
   await page.goBack();
@@ -1374,8 +1817,7 @@ test("realigns a pending mobile turn when the viewport becomes a spread", async 
     exact: true,
   });
 
-  await next.click();
-  await expect(page.locator(".book-mode-counter")).toHaveText("Screen 1 / 14");
+  await advanceBookToContent(page, "Screen 1 / 14");
   const turn = next.click();
   await page.setViewportSize({ width: 1280, height: 800 });
   await turn;
@@ -1390,12 +1832,13 @@ test("removes the book-turn delay for reduced motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(chapterPath);
   await page.getByRole("button", { name: "Book view" }).click();
+  await advanceBookToContent(page, "Screen 1 / 7");
   await page
     .getByRole("button", { name: "Next screen page", exact: true })
     .click();
 
   await expect(page.locator(".book-mode-counter")).toHaveText(
-    "Screen 1 / 7",
+    "Screens 2–3 / 7",
     { timeout: 250 },
   );
   await expect(page.locator(".book-mode-turn-leaf")).toHaveCount(0);

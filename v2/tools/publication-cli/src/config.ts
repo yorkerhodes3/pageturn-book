@@ -10,6 +10,7 @@ import {
   type LegacyFacsimileRendition,
   type PublicationAppearance,
   type PublicationAuthor,
+  type PublicationFrontMatter,
 } from "@ethical-tech/book-publication-model";
 import { parse } from "yaml";
 
@@ -29,6 +30,7 @@ export type BookConfig = {
   direction: "ltr" | "rtl";
   publicationDate?: string;
   description?: string;
+  frontMatter?: PublicationFrontMatter;
   appearance?: PublicationAppearance;
   chapters: ChapterConfig[];
   legacyFacsimile?: LegacyFacsimileRendition;
@@ -226,6 +228,46 @@ function parseAppearance(
   };
 }
 
+function parseFrontMatter(
+  value: unknown,
+): PublicationFrontMatter | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  const frontMatter = record(value, "book.frontMatter");
+  const optional = (key: keyof PublicationFrontMatter) =>
+    optionalText(frontMatter[key], `book.frontMatter.${key}`);
+  const kicker = optional("kicker");
+  const credits = optional("credits");
+  const thesis = optional("thesis");
+  const disclaimer = optional("disclaimer");
+  const canonicalUrl = optional("canonicalUrl");
+  if (canonicalUrl !== undefined) {
+    let parsed: URL;
+    try {
+      parsed = new URL(canonicalUrl);
+    } catch {
+      throw new Error(
+        "book.frontMatter.canonicalUrl must be an absolute HTTP(S) URL",
+      );
+    }
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+      throw new Error(
+        "book.frontMatter.canonicalUrl must be an absolute HTTP(S) URL",
+      );
+    }
+  }
+  const notesStatus = optional("notesStatus");
+  return {
+    ...(kicker === undefined ? {} : { kicker }),
+    ...(credits === undefined ? {} : { credits }),
+    ...(thesis === undefined ? {} : { thesis }),
+    ...(disclaimer === undefined ? {} : { disclaimer }),
+    ...(canonicalUrl === undefined ? {} : { canonicalUrl }),
+    ...(notesStatus === undefined ? {} : { notesStatus }),
+  };
+}
+
 export function resolveSourceFile(
   sourceRoot: string,
   relativePath: string,
@@ -256,18 +298,29 @@ export async function readBookConfig(sourceRoot: string): Promise<BookConfig> {
     "book.publicationDate",
   );
   const description = optionalText(book.description, "book.description");
+  const frontMatter = parseFrontMatter(book.frontMatter);
   const legacyFacsimile = parseLegacy(book.legacyFacsimile);
   const appearance = parseAppearance(book.appearance);
+  const language = text(book.language, "book.language");
+  try {
+    Intl.getCanonicalLocales(language);
+  } catch (error) {
+    if (!(error instanceof RangeError)) {
+      throw error;
+    }
+    throw new Error("book.language must be a valid BCP-47 language tag");
+  }
 
   return {
     bookId: toBookId(text(book.bookId, "book.bookId")),
     editionId: toEditionId(text(book.editionId, "book.editionId")),
     title: text(book.title, "book.title"),
     authors: parseAuthors(book.authors),
-    language: text(book.language, "book.language"),
+    language,
     direction: directionValue,
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
+    ...(frontMatter === undefined ? {} : { frontMatter }),
     ...(appearance === undefined ? {} : { appearance }),
     chapters: parseChapters(book.chapters),
     ...(legacyFacsimile === undefined ? {} : { legacyFacsimile }),

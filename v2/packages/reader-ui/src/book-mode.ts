@@ -12,7 +12,8 @@ import {
 import { shareReadingLocation } from "./share.js";
 
 type BookPage = {
-  kind: "cover" | "content";
+  kind: "cover" | "front-matter" | "toc" | "content";
+  label: string;
   chapterId: ChapterId;
   chapterTitle: string;
   anchor: string;
@@ -22,6 +23,11 @@ type BookPage = {
     start: number;
     end: number;
   }>;
+  syntheticSpan?: {
+    section: "inside-cover" | "title" | "thesis" | "toc" | "notes";
+    start: number;
+    end: number;
+  };
   nodes: Node[];
   screenNumber?: number;
   continuation?: boolean;
@@ -88,6 +94,69 @@ const SINGLE_PAGE_PAGINATION: PaginationProfile = {
   headingTwoCost: 430,
 };
 
+const SHORT_VIEWPORT_PAGINATION: PaginationProfile = {
+  targetUnits: 540,
+  maximumBlockCharacters: 320,
+  maximumListCharacters: 240,
+  maximumQuoteCharacters: 280,
+  headingOneCost: 480,
+  headingTwoCost: 400,
+};
+
+function normalizeFontScale(value: number): number {
+  const finite = Number.isFinite(value) ? value : 1;
+  return Number(
+    (Math.round(Math.min(1.3, Math.max(0.8, finite)) * 10) / 10).toFixed(1),
+  );
+}
+
+function readFontScale(bookId: string, fallback: number): number {
+  try {
+    const stored = globalThis.localStorage.getItem(
+      `ethical-tech-book-font:${bookId}`,
+    );
+    return stored === null ? fallback : normalizeFontScale(Number(stored));
+  } catch (error) {
+    console.warn("Book text size preference could not be read", error);
+    return fallback;
+  }
+}
+
+function writeFontScale(bookId: string, value: number): void {
+  try {
+    globalThis.localStorage.setItem(
+      `ethical-tech-book-font:${bookId}`,
+      String(value),
+    );
+  } catch (error) {
+    console.warn("Book text size preference could not be saved", error);
+  }
+}
+
+function scaledPaginationProfile(
+  profile: PaginationProfile,
+  fontScale: number,
+): PaginationProfile {
+  const divisor = Math.pow(fontScale, 1.55);
+  return {
+    targetUnits: Math.max(320, Math.round(profile.targetUnits / divisor)),
+    maximumBlockCharacters: Math.max(
+      190,
+      Math.round(profile.maximumBlockCharacters / divisor),
+    ),
+    maximumListCharacters: Math.max(
+      160,
+      Math.round(profile.maximumListCharacters / divisor),
+    ),
+    maximumQuoteCharacters: Math.max(
+      180,
+      Math.round(profile.maximumQuoteCharacters / divisor),
+    ),
+    headingOneCost: profile.headingOneCost,
+    headingTwoCost: profile.headingTwoCost,
+  };
+}
+
 function element<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   className: string,
@@ -125,6 +194,7 @@ function cloneGroupForBook(nodes: Element[], pageKey: string): Node[] {
     if (!node.id) {
       continue;
     }
+    node.setAttribute("data-book-source-anchor", node.id);
     const replacement = `book-mode-${pageKey}-${++idIndex}`;
     idMap.set(node.id, replacement);
     node.id = replacement;
@@ -379,6 +449,7 @@ function pagesFromArticle(
       (index === 0 ? chapter.firstAnchor : chapter.lastAnchor);
     return {
       kind: "content",
+      label: chapter.title,
       chapterId: chapter.chapterId,
       chapterTitle: chapter.title,
       anchor,
@@ -431,6 +502,7 @@ function coverPage(publication: PublicationManifest): BookPage {
   cover.append(authors);
   return {
     kind: "cover",
+    label: "Front cover",
     chapterId: firstChapter.chapterId,
     chapterTitle: publication.title,
     anchor: firstChapter.firstAnchor,
@@ -438,6 +510,390 @@ function coverPage(publication: PublicationManifest): BookPage {
     sourceSpans: [],
     nodes: [cover],
   };
+}
+
+function syntheticPage(
+  publication: PublicationManifest,
+  kind: "front-matter" | "toc",
+  label: string,
+  node: HTMLElement,
+  syntheticSpan: NonNullable<BookPage["syntheticSpan"]>,
+): BookPage {
+  const firstChapter = publication.renditions.semantic.chapters[0];
+  if (!firstChapter) {
+    throw new Error("Publication contains no chapter for its front matter");
+  }
+  return {
+    kind,
+    label,
+    chapterId: firstChapter.chapterId,
+    chapterTitle: label,
+    anchor: firstChapter.firstAnchor,
+    sourceAnchors: [],
+    sourceSpans: [],
+    syntheticSpan,
+    nodes: [node],
+  };
+}
+
+function titlePage(publication: PublicationManifest): BookPage {
+  const root = element("div", "book-mode-title-page");
+  const kicker = element(
+    "p",
+    "book-mode-front-kicker",
+    publication.frontMatter?.kicker ?? "Research publication",
+  );
+  const title = element("h1", "book-mode-front-title", publication.title);
+  const subtitleText =
+    publication.appearance?.cover.subtitle ?? publication.description;
+  const subtitle = subtitleText
+    ? element("p", "book-mode-front-subtitle", subtitleText)
+    : undefined;
+  const rule = element("hr", "book-mode-front-rule");
+  const authors = element(
+    "p",
+    "book-mode-front-authors",
+    publication.authors.map((author) => author.name).join(", "),
+  );
+  const date = publication.publicationDate
+    ? element(
+        "p",
+        "book-mode-front-date",
+        publicationDateLabel(
+          publication.publicationDate,
+          publication.language,
+        ),
+      )
+    : undefined;
+  root.append(kicker, title);
+  if (subtitle) {
+    root.append(subtitle);
+  }
+  root.append(rule, authors);
+  if (date) {
+    root.append(date);
+  }
+  return syntheticPage(
+    publication,
+    "front-matter",
+    "Title page",
+    root,
+    { section: "title", start: 0, end: 1 },
+  );
+}
+
+function publicationDateLabel(value: string, language: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  let supportedLocale = "en";
+  try {
+    supportedLocale =
+      Intl.DateTimeFormat.supportedLocalesOf([language])[0] ?? "en";
+  } catch (error) {
+    if (!(error instanceof RangeError)) {
+      throw error;
+    }
+  }
+  return new Intl.DateTimeFormat(supportedLocale, {
+    year: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function innerCoverPage(publication: PublicationManifest): BookPage {
+  const root = element("div", "book-mode-inner-cover");
+  root.append(
+    element("p", "book-mode-front-kicker", "Publication record"),
+    element("h1", "book-mode-inner-title", publication.title),
+  );
+  if (publication.frontMatter?.credits) {
+    root.append(
+      element("p", "book-mode-inner-label", "Credits"),
+      element("p", "book-mode-inner-credits", publication.frontMatter.credits),
+    );
+  }
+  if (publication.frontMatter?.canonicalUrl) {
+    const link = element(
+      "a",
+      "book-mode-inner-link",
+      publication.frontMatter.canonicalUrl,
+    );
+    link.href = publication.frontMatter.canonicalUrl;
+    root.append(element("p", "book-mode-inner-label", "Canonical edition"), link);
+  }
+  return syntheticPage(
+    publication,
+    "front-matter",
+    "Inside front cover",
+    root,
+    { section: "inside-cover", start: 0, end: 1 },
+  );
+}
+
+function publicationPage(
+  publication: PublicationManifest,
+  thesis: string,
+  start: number,
+  end: number,
+  index: number,
+  total: number,
+): BookPage {
+  const root = element("div", "book-mode-publication-page");
+  root.append(
+    element("p", "book-mode-front-kicker", "Publication thesis"),
+    element(
+      "h1",
+      "book-mode-inner-title",
+      total === 1
+        ? "About this publication"
+        : `About this publication · ${index + 1}`,
+    ),
+  );
+  root.append(element("p", "book-mode-publication-thesis", thesis));
+  return syntheticPage(
+    publication,
+    "front-matter",
+    total === 1
+      ? "About this publication"
+      : `About this publication ${index + 1}`,
+    root,
+    { section: "thesis", start, end },
+  );
+}
+
+function publicationPages(
+  publication: PublicationManifest,
+  compact: boolean,
+  short: boolean,
+): BookPage[] {
+  const thesis = publication.frontMatter?.thesis;
+  if (!thesis) {
+    return [];
+  }
+  const sections = compact
+    ? textBreaks(thesis, short ? 280 : 470)
+    : [{ start: 0, end: thesis.length }];
+  return sections.map(({ start, end }, index) =>
+    publicationPage(
+      publication,
+      thesis.slice(start, end),
+      start,
+      end,
+      index,
+      sections.length,
+    ),
+  );
+}
+
+function notesPage(
+  publication: PublicationManifest,
+  includeDisclaimer: boolean,
+  includeNotes: boolean,
+): BookPage {
+  const root = element("div", "book-mode-publication-page book-mode-notes-page");
+  const label =
+    includeDisclaimer && includeNotes
+      ? "Imprint and notes"
+      : includeDisclaimer
+        ? "Publication imprint"
+        : "Notes and sources";
+  root.append(
+    element("p", "book-mode-front-kicker", label),
+    element("h1", "book-mode-inner-title", label),
+  );
+  if (includeDisclaimer && publication.frontMatter?.disclaimer) {
+    const note = element("aside", "book-mode-publication-disclaimer");
+    note.append(
+      element("h2", "book-mode-publication-note-title", "Publication note"),
+      element("p", "", publication.frontMatter.disclaimer),
+    );
+    root.append(note);
+  }
+  if (includeNotes && publication.frontMatter?.notesStatus) {
+    const notes = element("aside", "book-mode-notes-status");
+    notes.append(
+      element("h2", "book-mode-publication-note-title", "Notes and sources"),
+      element("p", "", publication.frontMatter.notesStatus),
+    );
+    root.append(notes);
+  }
+  const references = includeNotes
+    ? publication.renditions.semantic.chapters.find(
+    (chapter) => chapter.chapterId === "references",
+      )
+    : undefined;
+  if (references) {
+    const link = element(
+      "a",
+      "book-mode-notes-link book-mode-toc-link",
+      "Open the complete Works Cited",
+    );
+    const url = new URL(references.href, globalThis.location.href);
+    url.searchParams.set("view", "book");
+    url.hash = references.firstAnchor;
+    link.href = url.toString();
+    link.dataset.chapterId = references.chapterId;
+    link.dataset.anchor = references.firstAnchor;
+    root.append(link);
+  }
+  return syntheticPage(
+    publication,
+    "front-matter",
+    label,
+    root,
+    {
+      section: "notes",
+      start: includeDisclaimer ? 0 : 1,
+      end: includeNotes ? 2 : 1,
+    },
+  );
+}
+
+function notesPages(
+  publication: PublicationManifest,
+  compact: boolean,
+): BookPage[] {
+  const hasDisclaimer = publication.frontMatter?.disclaimer !== undefined;
+  const hasNotes = publication.frontMatter?.notesStatus !== undefined;
+  if (!hasDisclaimer && !hasNotes) {
+    return [];
+  }
+  if (!compact) {
+    return [notesPage(publication, hasDisclaimer, hasNotes)];
+  }
+  return [
+    ...(hasDisclaimer ? [notesPage(publication, true, false)] : []),
+    ...(hasNotes ? [notesPage(publication, false, true)] : []),
+  ];
+}
+
+type TocRow = {
+  entry: PublicationManifest["tableOfContents"][number];
+  depth: number;
+};
+
+function flattenToc(
+  entries: PublicationManifest["tableOfContents"],
+  depth = 0,
+): TocRow[] {
+  return entries.flatMap((entry) => [
+    { entry, depth },
+    ...flattenToc(entry.children ?? [], depth + 1),
+  ]);
+}
+
+function tocList(
+  publication: PublicationManifest,
+  rows: TocRow[],
+): HTMLOListElement {
+  const list = element("ol", "book-mode-toc-list");
+  list.setAttribute("role", "tree");
+  for (const { entry, depth } of rows) {
+    const item = element("li", "book-mode-toc-item");
+    item.setAttribute("role", "treeitem");
+    item.setAttribute("aria-level", String(depth + 1));
+    item.style.setProperty("--book-toc-depth", String(depth));
+    item.classList.toggle("book-mode-toc-subitem", depth > 0);
+    const chapter = publication.renditions.semantic.chapters.find(
+      (candidate) => candidate.chapterId === entry.location.chapterId,
+    );
+    const link = element("a", "book-mode-toc-link", entry.title);
+    if (chapter) {
+      const url = new URL(chapter.href, globalThis.location.href);
+      url.searchParams.set("view", "book");
+      url.hash = entry.location.anchor;
+      link.href = url.toString();
+      link.dataset.chapterId = entry.location.chapterId;
+      link.dataset.anchor = entry.location.anchor;
+    }
+    item.append(link);
+    list.append(item);
+  }
+  return list;
+}
+
+function tocRowWeight({ entry, depth }: TocRow): number {
+  return 1 + entry.title.length / 64 + depth * 0.12;
+}
+
+function contentsPages(
+  publication: PublicationManifest,
+  singlePage: boolean,
+): BookPage[] {
+  const maximumWeight = singlePage ? 7.2 : 12;
+  const groups: TocRow[][] = [];
+  let group: TocRow[] = [];
+  let weight = 0;
+  for (const row of flattenToc(publication.tableOfContents)) {
+    const entryWeight = tocRowWeight(row);
+    if (group.length > 0 && weight + entryWeight > maximumWeight) {
+      groups.push(group);
+      group = [];
+      weight = 0;
+    }
+    group.push(row);
+    weight += entryWeight;
+  }
+  if (group.length > 0) {
+    groups.push(group);
+  }
+  const pages: BookPage[] = [];
+  let rowStart = 0;
+  for (const [index, entries] of groups.entries()) {
+    const root = element("div", "book-mode-toc-page");
+    const navigation = element("nav", "book-mode-toc-navigation");
+    navigation.setAttribute(
+      "aria-label",
+      `Table of contents, part ${index + 1} of ${groups.length}`,
+    );
+    navigation.append(tocList(publication, entries));
+    root.append(
+      element(
+        "p",
+        "book-mode-front-kicker",
+        `Contents · ${index + 1}`,
+      ),
+      element("h1", "book-mode-inner-title", "Contents"),
+      navigation,
+    );
+    pages.push(
+      syntheticPage(
+        publication,
+        "toc",
+        `Contents ${index + 1}`,
+        root,
+        {
+          section: "toc",
+          start: rowStart,
+          end: rowStart + entries.length,
+        },
+      ),
+    );
+    rowStart += entries.length;
+  }
+  return pages;
+}
+
+function frontMatterPages(
+  publication: PublicationManifest,
+  singlePage: boolean,
+  short: boolean,
+  fontScale: number,
+): BookPage[] {
+  const compact = singlePage || short || fontScale > 1.1;
+  return [
+    innerCoverPage(publication),
+    titlePage(publication),
+    ...publicationPages(publication, compact, short),
+    ...contentsPages(publication, compact),
+    ...notesPages(publication, compact),
+  ];
 }
 
 function bindingElement(publication: PublicationManifest): HTMLElement {
@@ -483,6 +939,25 @@ function pageFan(
     fan.append(edge);
   }
   return fan;
+}
+
+function fitBookSheet(sheet: HTMLElement): void {
+  const content = sheet.querySelector<HTMLElement>(".book-mode-sheet-content");
+  if (!content) {
+    return;
+  }
+  content.style.removeProperty("transform");
+  content.style.removeProperty("width");
+  sheet.removeAttribute("data-book-fit-scale");
+  const available = content.clientHeight;
+  const required = content.scrollHeight;
+  if (available <= 0 || required <= available + 1) {
+    return;
+  }
+  const scale = Math.min(1, available / required);
+  content.style.width = `${100 / scale}%`;
+  content.style.transform = `scale(${scale})`;
+  sheet.dataset.bookFitScale = scale.toFixed(3);
 }
 
 async function loadArticle(
@@ -532,6 +1007,11 @@ export function createSemanticBookMode(
   const media = globalThis.matchMedia(
     options.singlePageQuery ?? SEMANTIC_BOOK_SINGLE_PAGE_QUERY,
   );
+  const shortViewport = globalThis.matchMedia("(max-height: 36rem)");
+  let bookFontScale = normalizeFontScale(
+    session.getState().preferences.fontScale,
+  );
+  let fontPreferenceLoaded = false;
   let overlay: HTMLElement | undefined;
   let pages: BookPage[] = [];
   let pageIndex = 0;
@@ -580,8 +1060,18 @@ export function createSemanticBookMode(
     if (!publication || state.status !== "ready") {
       throw new Error("Semantic reader must be ready before opening book view");
     }
+    if (publication.direction === "rtl") {
+      throw new Error(
+        "Physical book mode is not yet available for right-to-left publications",
+      );
+    }
 
     trigger = invoker;
+    if (!fontPreferenceLoaded) {
+      bookFontScale = readFontScale(publication.bookId, bookFontScale);
+      fontPreferenceLoaded = true;
+    }
+    let fontScale = bookFontScale;
     const controller = new AbortController();
     loading = controller;
     const root = element("section", "book-mode-overlay");
@@ -589,6 +1079,7 @@ export function createSemanticBookMode(
     root.setAttribute("aria-modal", "true");
     root.setAttribute("aria-labelledby", "book-mode-title");
     applyPublicationAppearance(root, publication.appearance);
+    root.dataset.bookFontSize = String(Math.round(fontScale * 100));
 
     const chrome = element("header", "book-mode-chrome");
     const identity = element("div", "book-mode-identity");
@@ -600,11 +1091,26 @@ export function createSemanticBookMode(
     const actions = element("div", "book-mode-actions");
     const counter = element("span", "book-mode-counter", "Preparing pages");
     counter.setAttribute("aria-live", "polite");
+    const fontControls = element("div", "book-mode-font-controls");
+    fontControls.setAttribute("role", "group");
+    fontControls.setAttribute("aria-label", "Book text size");
+    const decreaseFont = element("button", "book-mode-font-button", "A−");
+    decreaseFont.type = "button";
+    decreaseFont.setAttribute("aria-label", "Decrease book text size");
+    const fontStatus = element(
+      "span",
+      "book-mode-font-status",
+      `${Math.round(fontScale * 100)}%`,
+    );
+    const increaseFont = element("button", "book-mode-font-button", "A+");
+    increaseFont.type = "button";
+    increaseFont.setAttribute("aria-label", "Increase book text size");
+    fontControls.append(decreaseFont, fontStatus, increaseFont);
     const shareButton = element("button", "book-mode-share", "Share");
     shareButton.type = "button";
     const closeButton = element("button", "book-mode-close", "Close");
     closeButton.type = "button";
-    actions.append(counter, shareButton, closeButton);
+    actions.append(counter, fontControls, shareButton, closeButton);
     chrome.append(identity, actions);
 
     const stage = element("div", "book-mode-stage");
@@ -648,13 +1154,22 @@ export function createSemanticBookMode(
     let acceptingTargetLocation = false;
     let paginationReady = false;
     let paginationSinglePage = media.matches;
+    const paginationProfile = () =>
+      scaledPaginationProfile(
+        shortViewport.matches
+          ? SHORT_VIEWPORT_PAGINATION
+          : media.matches
+            ? SINGLE_PAGE_PAGINATION
+            : SPREAD_PAGINATION,
+        fontScale,
+      );
 
     const pageStarts = () => {
       if (media.matches) {
         return pages.map((_page, index) => index);
       }
       const starts = pages.length > 1 ? [0, 1] : [0];
-      for (let index = 2; index < pages.length; index += 2) {
+      for (let index = 3; index < pages.length; index += 2) {
         starts.push(index);
       }
       return starts;
@@ -663,11 +1178,13 @@ export function createSemanticBookMode(
       if (media.matches || index <= 1) {
         return index;
       }
-      return 2 + Math.floor((index - 2) / 2) * 2;
+      return 1 + Math.floor((index - 1) / 2) * 2;
     };
     const boundedIndex = (index: number) =>
       Math.min(alignedIndex(index), pageStarts().at(-1) ?? 0);
     const fanLayerCount = publicationPageFanCount(publication.appearance);
+    const contentPageCount = () =>
+      pages.filter((page) => page.kind === "content").length;
 
     const spreadSlots = (startIndex: number): BookSpreadSlot[] => {
       const page = pages[startIndex];
@@ -680,10 +1197,19 @@ export function createSemanticBookMode(
         return [{ side: "right", page, blank: "none" }];
       }
       if (startIndex === 1) {
+        const title = pages[startIndex + 1];
         return [
-          { side: "left", blank: "inside-cover" },
           ...(page
-            ? [{ side: "right" as const, page, blank: "none" as const }]
+            ? [{ side: "left" as const, page, blank: "inside-cover" as const }]
+            : []),
+          ...(title
+            ? [
+                {
+                  side: "right" as const,
+                  page: title,
+                  blank: "none" as const,
+                },
+              ]
             : []),
         ];
       }
@@ -703,6 +1229,14 @@ export function createSemanticBookMode(
       direction: -1 | 1,
     ): BookPage | undefined => {
       const slots = spreadSlots(target);
+      const contentPages = slots
+        .map((slot) => slot.page)
+        .filter(
+          (page): page is BookPage => page?.kind === "content",
+        );
+      if (contentPages.length === 1) {
+        return contentPages[0];
+      }
       const starts = pageStarts();
       const isFinalForwardSpread =
         direction > 0 && starts.indexOf(target) === starts.length - 1;
@@ -789,6 +1323,7 @@ export function createSemanticBookMode(
       className: string,
     ): HTMLElement => {
       const face = element("div", className);
+      face.classList.add(`book-mode-turn-face-${page.kind}`);
       const pageSlice = element("div", "book-mode-turn-face-page");
       const faceContent = element("div", "book-mode-sheet-content");
       faceContent.append(...page.nodes.map((node) => node.cloneNode(true)));
@@ -890,6 +1425,7 @@ export function createSemanticBookMode(
       );
       leaf.setAttribute("aria-hidden", "true");
       leaf.inert = true;
+      leaf.style.setProperty("--book-peel-origin-y", "9%");
       const surface = element("div", "book-mode-turn-surface");
       surface.append(
         turn.front
@@ -991,6 +1527,8 @@ export function createSemanticBookMode(
           [
             "book-mode-sheet",
             page.kind === "cover" ? "book-mode-cover" : "",
+            page.kind === "front-matter" ? "book-mode-front-matter" : "",
+            page.kind === "toc" ? "book-mode-contents" : "",
             coverVisible
               ? "book-mode-sheet-cover"
               : `book-mode-sheet-${slot.side}`,
@@ -1001,22 +1539,37 @@ export function createSemanticBookMode(
         sheet.dataset.bookPage =
           page.kind === "cover"
             ? "cover"
-            : String(page.screenNumber ?? pageIndex);
+            : page.screenNumber === undefined
+              ? page.label
+              : String(page.screenNumber);
         sheet.setAttribute(
           "aria-label",
           page.kind === "cover"
             ? `${publication.title}, front cover`
-            : `${page.chapterTitle}, screen page ${page.screenNumber} of ${pages.length - 1}`,
+            : page.kind === "content"
+              ? `${page.chapterTitle}, screen page ${page.screenNumber} of ${contentPageCount()}`
+              : `${publication.title}, ${page.label}`,
         );
         const contentRoot = element("div", "book-mode-sheet-content");
         contentRoot.append(...page.nodes.map((node) => node.cloneNode(true)));
         const folio = element(
           "footer",
           "book-mode-folio",
-          page.kind === "cover" ? "" : String(page.screenNumber),
+          page.kind === "content" ? String(page.screenNumber) : "",
         );
         sheet.append(contentRoot);
-        if (page.kind !== "cover") {
+        if (page.kind === "content") {
+          const runningTitle = element(
+            "span",
+            "book-mode-folio-title",
+            publication.title,
+          );
+          const number = element(
+            "span",
+            "book-mode-folio-number",
+            String(page.screenNumber),
+          );
+          folio.replaceChildren(runningTitle, number);
           sheet.append(folio);
         }
         if (
@@ -1032,10 +1585,38 @@ export function createSemanticBookMode(
         }
         spread.append(sheet);
       }
+      const renderedSheets = Array.from(
+        spread.querySelectorAll<HTMLElement>(".book-mode-sheet"),
+      );
+      for (const sheet of renderedSheets) {
+        fitBookSheet(sheet);
+        for (const mediaElement of sheet.querySelectorAll<
+          HTMLImageElement | HTMLVideoElement | HTMLIFrameElement
+        >("img, video, iframe")) {
+          mediaElement.addEventListener(
+            "load",
+            () => {
+              if (sheet.isConnected) {
+                fitBookSheet(sheet);
+              }
+            },
+            { once: true },
+          );
+        }
+      }
+      requestAnimationFrame(() => {
+        for (const sheet of renderedSheets) {
+          if (sheet.isConnected) {
+            fitBookSheet(sheet);
+          }
+        }
+      });
       const starts = pageStarts();
       const position = starts.indexOf(pageIndex);
       previous.disabled = position <= 0 || navigating;
       next.disabled = position >= starts.length - 1 || navigating;
+      decreaseFont.disabled = navigating || fontScale <= 0.8;
+      increaseFont.disabled = navigating || fontScale >= 1.3;
       if (renderOptions.counterText !== undefined) {
         counter.textContent = renderOptions.counterText;
       } else if (coverVisible) {
@@ -1047,9 +1628,13 @@ export function createSemanticBookMode(
             : [slot.page.screenNumber],
         );
         counter.textContent =
-          visiblePages.length === 1
-            ? `Screen ${visiblePages[0]} / ${pages.length - 1}`
-            : `Screens ${visiblePages[0]}–${visiblePages.at(-1)} / ${pages.length - 1}`;
+          visiblePages.length === 0
+            ? slots
+                .flatMap((slot) => (slot.page ? [slot.page.label] : []))
+                .join(" · ")
+            : visiblePages.length === 1
+              ? `Screen ${visiblePages[0]} / ${contentPageCount()}`
+              : `Screens ${visiblePages[0]}–${visiblePages.at(-1)} / ${contentPageCount()}`;
       }
       spread.setAttribute(
         "aria-busy",
@@ -1099,11 +1684,38 @@ export function createSemanticBookMode(
       pages = bookPagesFromArticles(
         publication,
         loadedArticles,
-        media.matches ? SINGLE_PAGE_PAGINATION : SPREAD_PAGINATION,
+        paginationProfile(),
+        media.matches,
+        shortViewport.matches,
+        fontScale,
       );
       paginationSinglePage = media.matches;
       if (visible?.kind === "cover") {
         pageIndex = 0;
+      } else if (visible && visible.kind !== "content") {
+        const syntheticSpan = visible.syntheticSpan;
+        let nextIndex = syntheticSpan
+          ? pages.findIndex(
+              (page) =>
+                page.syntheticSpan?.section === syntheticSpan.section &&
+                page.syntheticSpan.start <= syntheticSpan.start &&
+                syntheticSpan.start < page.syntheticSpan.end,
+            )
+          : -1;
+        if (nextIndex < 0) {
+          nextIndex = pages.findIndex(
+            (page) => page.kind === visible.kind && page.label === visible.label,
+          );
+        }
+        if (nextIndex < 0 && visible.kind === "toc") {
+          for (let index = pages.length - 1; index >= 0; index -= 1) {
+            if (pages[index]?.kind === "toc") {
+              nextIndex = index;
+              break;
+            }
+          }
+        }
+        pageIndex = boundedIndex(Math.max(1, nextIndex));
       } else if (visible) {
         const visibleSpan =
           visible.sourceSpans.find((span) => span.anchor === visible.anchor) ??
@@ -1136,6 +1748,9 @@ export function createSemanticBookMode(
       activePublication: PublicationManifest,
     ): Promise<boolean> => {
       if (targetPage.kind === "cover") {
+        return true;
+      }
+      if (targetPage.kind !== "content") {
         return true;
       }
       const currentLocation = session.getState().location;
@@ -1345,14 +1960,108 @@ export function createSemanticBookMode(
       }
       repaginate();
     };
+    const onShortViewportChange = () => {
+      if (navigating) {
+        repaginateAfterNavigation = true;
+        return;
+      }
+      repaginate();
+    };
     const onShare = async () => {
       counter.textContent = await shareReadingLocation(
         publication.title,
         globalThis.location.href,
       );
     };
+    const updateFontControls = () => {
+      decreaseFont.disabled = navigating || fontScale <= 0.8;
+      increaseFont.disabled = navigating || fontScale >= 1.3;
+      fontStatus.textContent = `${Math.round(fontScale * 100)}%`;
+      root.dataset.bookFontSize = String(Math.round(fontScale * 100));
+    };
+    const setFontScale = (next: number) => {
+      const bounded = normalizeFontScale(next);
+      if (bounded === fontScale) {
+        return;
+      }
+      fontScale = bounded;
+      bookFontScale = fontScale;
+      writeFontScale(publication.bookId, fontScale);
+      updateFontControls();
+      if (navigating) {
+        repaginateAfterNavigation = true;
+        return;
+      }
+      repaginate();
+    };
+    const onRootClick = (event: MouseEvent) => {
+      const link =
+        event.target instanceof Element
+          ? event.target.closest<HTMLAnchorElement>(".book-mode-toc-link")
+          : null;
+      const chapterId = link?.dataset.chapterId;
+      const anchor = link?.dataset.anchor;
+      if (!link || !chapterId || !anchor) {
+        return;
+      }
+      const targetIndex = pages.findIndex(
+        (page) =>
+          page.kind === "content" &&
+          page.chapterId === chapterId &&
+          page.sourceAnchors.includes(anchor),
+      );
+      const targetPage = pages[targetIndex];
+      if (!targetPage || targetIndex < 0 || navigating) {
+        return;
+      }
+      event.preventDefault();
+      const operation = ++operationVersion;
+      navigating = true;
+      render({ counterText: "Opening section", allowCorner: false });
+      void acceptTargetPage(targetPage, publication).then((accepted) => {
+        if (overlay !== root || operation !== operationVersion) {
+          return;
+        }
+        navigating = false;
+        if (accepted) {
+          pageIndex = boundedIndex(targetIndex);
+          deferredLocation = undefined;
+        }
+        render();
+        const targetSheet =
+          targetPage.screenNumber === undefined
+            ? undefined
+            : Array.from(
+                spread.querySelectorAll<HTMLElement>(".book-mode-sheet"),
+              ).find(
+                (sheet) =>
+                  sheet.dataset.bookPage === String(targetPage.screenNumber),
+              );
+        const anchoredTarget = targetSheet
+          ? Array.from(
+              targetSheet.querySelectorAll<HTMLElement>(
+                "[data-book-source-anchor]",
+              ),
+            ).find(
+              (node) => node.dataset.bookSourceAnchor === anchor,
+            )
+          : undefined;
+        const focusTarget =
+          anchoredTarget ??
+          targetSheet?.querySelector<HTMLElement>(
+            ".book-mode-sheet-content h1, .book-mode-sheet-content h2, .book-mode-sheet-content p",
+          );
+        if (focusTarget) {
+          focusTarget.tabIndex = -1;
+          focusTarget.focus({ preventScroll: true });
+        }
+      });
+    };
     closeButton.addEventListener("click", close);
+    decreaseFont.addEventListener("click", () => setFontScale(fontScale - 0.1));
+    increaseFont.addEventListener("click", () => setFontScale(fontScale + 0.1));
     shareButton.addEventListener("click", () => void onShare());
+    root.addEventListener("click", onRootClick);
     previous.addEventListener("click", () => void go(-1));
     next.addEventListener("click", () => void go(1));
     let pointerStart:
@@ -1464,16 +2173,46 @@ export function createSemanticBookMode(
         start.direction > 0 ? -horizontal : horizontal;
       const progress = Math.min(1, Math.max(0, directedDistance / halfWidth));
       start.progress = progress;
-      const angle = 180 * progress * start.direction * -1;
+      const pastHalf = progress >= 0.5;
+      const phase = pastHalf ? (progress - 0.5) * 2 : progress * 2;
+      const eased = Math.sin((phase * Math.PI) / 2);
+      const angleMagnitude = pastHalf ? 74 * (1 - eased) : 74 * eased;
+      const angle =
+        start.direction > 0
+          ? pastHalf
+            ? angleMagnitude
+            : -angleMagnitude
+          : pastHalf
+            ? -angleMagnitude
+            : angleMagnitude;
       const verticalDelta = event.clientY - start.y;
       const skew = Math.min(7, Math.max(-7, verticalDelta / 20));
       const curve = Math.sin(Math.PI * progress);
+      const originFraction = Math.min(
+        1,
+        Math.max(0, (start.y - book.getBoundingClientRect().top) / book.getBoundingClientRect().height),
+      );
+      const originY = originFraction * 100;
+      const foldTop = 100 - progress * (42 + (1 - originFraction) * 25);
+      const foldBottom = 100 - progress * (42 + originFraction * 25);
+      const tip = Math.max(0, 100 - progress * 128);
       start.leaf.style.setProperty("--book-peel-angle", `${angle}deg`);
       start.leaf.style.setProperty(
         "--book-peel-progress",
         String(progress),
       );
       start.leaf.style.setProperty("--book-peel-skew", `${skew}deg`);
+      if (start.direction > 0) {
+        start.leaf.style.left = pastHalf ? "0" : "50%";
+        start.leaf.style.transformOrigin = pastHalf
+          ? `right ${originY}%`
+          : `left ${originY}%`;
+      } else {
+        start.leaf.style.left = pastHalf ? "50%" : "0";
+        start.leaf.style.transformOrigin = pastHalf
+          ? `left ${originY}%`
+          : `right ${originY}%`;
+      }
       start.leaf.style.setProperty(
         "--book-peel-curl",
         `${curve * start.direction * -8}deg`,
@@ -1486,9 +2225,15 @@ export function createSemanticBookMode(
         "--book-peel-radius",
         `${curve * 48}%`,
       );
+      start.leaf.style.setProperty("--book-peel-fold-top", `${foldTop}%`);
+      start.leaf.style.setProperty(
+        "--book-peel-fold-bottom",
+        `${foldBottom}%`,
+      );
+      start.leaf.style.setProperty("--book-peel-tip-x", `${tip}%`);
       start.leaf.classList.toggle(
         "book-mode-turn-past-half",
-        progress >= 0.5,
+        pastHalf,
       );
     };
     const settleInteractiveTurn = async (
@@ -1512,10 +2257,24 @@ export function createSemanticBookMode(
         return;
       }
       leaf.classList.add("book-mode-turn-leaf-settling");
+      if (commit) {
+        leaf.style.left = direction > 0 ? "0" : "50%";
+        leaf.style.transformOrigin =
+          direction > 0
+            ? "right var(--book-peel-origin-y, 50%)"
+            : "left var(--book-peel-origin-y, 50%)";
+      } else {
+        leaf.style.left = direction > 0 ? "50%" : "0";
+        leaf.style.transformOrigin =
+          direction > 0
+            ? "left var(--book-peel-origin-y, 50%)"
+            : "right var(--book-peel-origin-y, 50%)";
+      }
       leaf.style.setProperty(
         "--book-peel-angle",
-        `${commit ? direction * -180 : 0}deg`,
+        "0deg",
       );
+      leaf.style.setProperty("--book-peel-skew", "0deg");
       leaf.classList.toggle("book-mode-turn-past-half", commit);
       leaf.style.setProperty("--book-peel-curl", "0deg");
       leaf.style.setProperty("--book-peel-lift", "0px");
@@ -1634,18 +2393,30 @@ export function createSemanticBookMode(
     book.addEventListener("pointercancel", onPointerCancel);
     document.addEventListener("keydown", onKey);
     media.addEventListener("change", onMediaChange);
+    shortViewport.addEventListener("change", onShortViewportChange);
+    updateFontControls();
     cleanupInteraction = () => {
       document.removeEventListener("keydown", onKey);
       media.removeEventListener("change", onMediaChange);
+      shortViewport.removeEventListener("change", onShortViewportChange);
       book.removeEventListener("pointerdown", onPointerDown);
       book.removeEventListener("pointermove", onPointerMove);
       book.removeEventListener("pointerup", onPointerEnd);
       book.removeEventListener("pointercancel", onPointerCancel);
+      root.removeEventListener("click", onRootClick);
     };
     closeButton.focus();
 
     try {
-      pages = [coverPage(publication)];
+      pages = [
+        coverPage(publication),
+        ...frontMatterPages(
+          publication,
+          media.matches,
+          shortViewport.matches,
+          fontScale,
+        ),
+      ];
       pageIndex = 0;
       spread.setAttribute("aria-busy", "true");
       render();
@@ -1662,9 +2433,13 @@ export function createSemanticBookMode(
       pages = bookPagesFromArticles(
         publication,
         loadedArticles,
-        media.matches ? SINGLE_PAGE_PAGINATION : SPREAD_PAGINATION,
+        paginationProfile(),
+        media.matches,
+        shortViewport.matches,
+        fontScale,
       );
       paginationSinglePage = media.matches;
+      const stagedFrontMatterIndex = pageIndex;
       const current = session.getState().location;
       const currentIndex =
         current?.kind === "semantic"
@@ -1674,9 +2449,12 @@ export function createSemanticBookMode(
                 page.sourceAnchors.includes(current.anchor),
             )
           : 0;
-      pageIndex = options.startAtCover?.()
-        ? 0
-        : boundedIndex(Math.max(1, currentIndex));
+      pageIndex =
+        stagedFrontMatterIndex > 0
+          ? boundedIndex(stagedFrontMatterIndex)
+          : options.startAtCover?.()
+            ? 0
+            : boundedIndex(Math.max(1, currentIndex));
       paginationReady = true;
       let initialSubscription = true;
       unsubscribeSession = session.subscribe((nextState) => {
@@ -1761,8 +2539,14 @@ function bookPagesFromArticles(
   publication: PublicationManifest,
   articles: HTMLElement[],
   profile: PaginationProfile,
+  singlePage: boolean,
+  short: boolean,
+  fontScale: number,
 ): BookPage[] {
-  const pages: BookPage[] = [coverPage(publication)];
+  const pages: BookPage[] = [
+    coverPage(publication),
+    ...frontMatterPages(publication, singlePage, short, fontScale),
+  ];
   let screenNumber = 0;
   for (const [index, chapter] of publication.renditions.semantic.chapters.entries()) {
     const article = articles[index];

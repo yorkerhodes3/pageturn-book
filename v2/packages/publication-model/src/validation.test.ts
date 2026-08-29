@@ -17,6 +17,14 @@ function validManifest() {
     authors: [{ name: "Ethical Tech CoLab" }],
     language: "en",
     direction: "ltr",
+    frontMatter: {
+      kicker: "Ethical Tech CoLab · Research paper",
+      credits: "Research team",
+      thesis: "Ethics governs power.",
+      disclaimer: "Research publication disclaimer.",
+      canonicalUrl: "https://example.org/books/demo/",
+      notesStatus: "Works Cited is complete; mapped notes are unavailable.",
+    },
     appearance: {
       cover: {
         background: "#3d211d",
@@ -78,6 +86,7 @@ describe("validatePublicationManifest", () => {
 
     expect(manifest.bookId).toBe("demo-book");
     expect(manifest.appearance?.binding.material).toBe("leather");
+    expect(manifest.frontMatter?.thesis).toBe("Ethics governs power.");
     expect(manifest.renditions.semantic.chapters).toHaveLength(1);
   });
 
@@ -133,6 +142,36 @@ describe("validatePublicationManifest", () => {
       );
       expect(codes).toContain("COLOR_INVALID");
       expect(codes).toContain("BINDING_HUBS_RANGE");
+    }
+  });
+
+  it("rejects unsafe front matter links", () => {
+    const invalid = validManifest();
+    invalid.frontMatter.canonicalUrl = "javascript:alert(1)";
+
+    try {
+      validatePublicationManifest(invalid);
+      throw new Error("Expected validation failure");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PublicationValidationError);
+      expect(
+        (error as PublicationValidationError).issues.map((issue) => issue.code),
+      ).toContain("FRONT_MATTER_URL_INVALID");
+    }
+  });
+
+  it("rejects invalid BCP-47 language tags", () => {
+    const invalid = validManifest();
+    invalid.language = "en-US-US";
+
+    try {
+      validatePublicationManifest(invalid);
+      throw new Error("Expected validation failure");
+    } catch (error) {
+      expect(error).toBeInstanceOf(PublicationValidationError);
+      expect(
+        (error as PublicationValidationError).issues.map((issue) => issue.code),
+      ).toContain("LANGUAGE_INVALID");
     }
   });
 });

@@ -365,7 +365,11 @@ export function mountReaderShell(
       chapterIndex < 0 ||
       chapterIndex >= chapters.length - 1 ||
       state.status !== "ready";
-    bookView.disabled = state.status !== "ready";
+    const rtlBook = publication.direction === "rtl";
+    bookView.disabled = state.status !== "ready" || rtlBook;
+    bookView.title = rtlBook
+      ? "Physical book mode is not yet available for right-to-left publications"
+      : "Open physical book view";
     progress.textContent =
       state.status === "error"
         ? (state.error?.message ?? "Reader error")

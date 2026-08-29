@@ -13,6 +13,7 @@ import {
   type PublicationBindingAppearance,
   type PublicationCapabilities,
   type PublicationCoverAppearance,
+  type PublicationFrontMatter,
   type PublicationManifest,
   type SemanticChapter,
   type SemanticLocation,
@@ -710,6 +711,65 @@ function parseAppearance(
   return { cover, binding };
 }
 
+function parseFrontMatter(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): PublicationFrontMatter {
+  const record = validator.record(value, path);
+  const optional = (key: keyof PublicationFrontMatter) =>
+    validator.optionalString(record, key, path);
+  const kicker = optional("kicker");
+  const credits = optional("credits");
+  const thesis = optional("thesis");
+  const disclaimer = optional("disclaimer");
+  const canonicalUrl = optional("canonicalUrl");
+  if (canonicalUrl !== undefined) {
+    try {
+      const url = new URL(canonicalUrl);
+      if (url.protocol !== "https:" && url.protocol !== "http:") {
+        throw new Error("Unsupported protocol");
+      }
+    } catch {
+      validator.issue(
+        "FRONT_MATTER_URL_INVALID",
+        `${path}.canonicalUrl`,
+        "Front matter canonicalUrl must be an absolute HTTP(S) URL",
+      );
+    }
+  }
+  const notesStatus = optional("notesStatus");
+  return {
+    ...(kicker === undefined ? {} : { kicker }),
+    ...(credits === undefined ? {} : { credits }),
+    ...(thesis === undefined ? {} : { thesis }),
+    ...(disclaimer === undefined ? {} : { disclaimer }),
+    ...(canonicalUrl === undefined ? {} : { canonicalUrl }),
+    ...(notesStatus === undefined ? {} : { notesStatus }),
+  };
+}
+
+function parseLanguage(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): string {
+  const language = validator.string(value, path);
+  try {
+    return Intl.getCanonicalLocales(language)[0] ?? "en";
+  } catch (error) {
+    if (!(error instanceof RangeError)) {
+      throw error;
+    }
+    validator.issue(
+      "LANGUAGE_INVALID",
+      path,
+      `${path} must be a valid BCP-47 language tag`,
+    );
+    return "en";
+  }
+}
+
 export function validatePublicationManifest(
   value: unknown,
 ): PublicationManifest {
@@ -785,6 +845,10 @@ export function validatePublicationManifest(
     "$",
   );
   const description = validator.optionalString(record, "description", "$");
+  const frontMatter =
+    record.frontMatter === undefined
+      ? undefined
+      : parseFrontMatter(validator, record.frontMatter, "$.frontMatter");
   let license: PublicationManifest["license"];
   if (record.license !== undefined) {
     const licenseRecord = validator.record(record.license, "$.license");
@@ -811,10 +875,11 @@ export function validatePublicationManifest(
     contentHash,
     title: validator.string(record.title, "$.title"),
     authors,
-    language: validator.string(record.language, "$.language"),
+    language: parseLanguage(validator, record.language, "$.language"),
     direction,
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
+    ...(frontMatter === undefined ? {} : { frontMatter }),
     ...(license === undefined ? {} : { license }),
     ...(appearance === undefined ? {} : { appearance }),
     tableOfContents: validator

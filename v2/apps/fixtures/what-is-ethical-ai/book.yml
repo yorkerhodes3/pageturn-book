@@ -10,6 +10,13 @@ authors:
 language: en
 direction: ltr
 publicationDate: 2026-07-01
+frontMatter:
+  kicker: "Ethical Tech CoLab · NYU Center for Global Affairs · in collaboration with Microsoft · Research paper"
+  credits: "Ethical Tech CoLab · NYU School of Professional Studies Center for Global Affairs, in collaboration with Microsoft. Master's Research · M.S. in Global Affairs."
+  thesis: "What is ethics, and why did humanity invent it? What makes technology ethical, international relations ethical, and artificial intelligence ethical? This paper answers those questions in that order, on the conviction that the issue at the heart of artificial intelligence is power and that ethics is humanity's oldest and most tested answer to the problem of governing power. It traces ethics from its origins in the earliest civilizations through international affairs and human rights law to the responsible AI movement, the humanitarian sector, and the United Nations system, and closes with the motivation and research philosophy of the Ethical Tech CoLab."
+  disclaimer: "The Ethical Tech CoLab is a research initiative of the NYU School of Professional Studies Center for Global Affairs, conducted in collaboration with Microsoft. Views and findings are those of the researchers and do not represent the official positions of New York University, Microsoft, or any partner institution. External programs cited are referenced as evidence, not as CoLab partnerships."
+  canonicalUrl: https://ethical-tech-colab.github.io/what-is-ethical-ai/
+  notesStatus: "The designed PDF contains page footnotes, but the canonical semantic source does not expose mapped footnote callouts or definitions. The complete Works Cited is included and linkable; mapped endnotes require source note data."
 appearance:
   cover:
     background: "#17233d"

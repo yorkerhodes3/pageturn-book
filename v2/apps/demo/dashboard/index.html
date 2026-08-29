@@ -42,7 +42,7 @@
           <span>book-page scrollbars</span>
         </article>
         <article>
-          <strong>~123×</strong>
+          <strong>~115×</strong>
           <span>lighter complete book payload</span>
         </article>
       </section>
@@ -99,7 +99,12 @@
               <tr>
                 <th scope="row">Open-book presentation</th>
                 <td><span class="status status-complete">Implemented</span></td>
-                <td>Cover, binding, page fans, correct front/back faces, and continuous CSS curl.</td>
+                <td>Outer cover, inner cover, title/imprint leaves, page fans, running folios, and continuous CSS curl.</td>
+              </tr>
+              <tr>
+                <th scope="row">Front matter and contents</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>Publication record, title page, thesis, disclaimer, and a multi-page linkable table of contents.</td>
               </tr>
               <tr>
                 <th scope="row">Page-edge grab and turn</th>
@@ -110,6 +115,11 @@
                 <th scope="row">Responsive physical pagination</th>
                 <td><span class="status status-complete">Implemented</span></td>
                 <td>99 spread screens or 221 phone screens, with zero internal page scrolling.</td>
+              </tr>
+              <tr>
+                <th scope="row">Adjustable book typography</th>
+                <td><span class="status status-complete">Implemented</span></td>
+                <td>80%–130% controls repaginate around the current source location without clipping.</td>
               </tr>
               <tr>
                 <th scope="row">Publication bookshelf</th>
@@ -125,6 +135,16 @@
                 <th scope="row">Legacy facsimile fallback</th>
                 <td><span class="status status-complete">Implemented</span></td>
                 <td>Any shelf volume opens its immutable production page manifest.</td>
+              </tr>
+              <tr>
+                <th scope="row">Footnotes and endnotes</th>
+                <td><span class="status status-partial">Source blocked</span></td>
+                <td>The complete Works Cited is linkable. The canonical Markdown has no mapped footnote callouts or definitions, so PDF footnotes cannot yet become reliable semantic endnotes.</td>
+              </tr>
+              <tr>
+                <th scope="row">Right-to-left physical book mode</th>
+                <td><span class="status status-future">Future</span></td>
+                <td>RTL semantic scroll reading remains available. Physical book mode is disabled until sheet order, gestures, origins, and curl geometry are fully mirrored and tested.</td>
               </tr>
               <tr>
                 <th scope="row">Local comments and annotations</th>
@@ -154,9 +174,9 @@
         <div class="dashboard-weight-grid">
           <article>
             <h3>V2 semantic book</h3>
-            <strong>~74 KB</strong>
+            <strong>~79 KB</strong>
             <p>
-              Approximately 27 KB gzip for reader CSS/JavaScript plus 46 KB
+              Approximately 33 KB gzip for reader CSS/JavaScript plus 46 KB
               gzip for all 17 semantic chapters.
             </p>
           </article>
@@ -164,15 +184,15 @@
             <h3>Legacy fixed pages</h3>
             <strong>~9.10 MB</strong>
             <p>
-              Approximately 24 KB gzip for runtime code plus 9.07 MB of 46
+              Approximately 27 KB gzip for runtime code plus 9.07 MB of 46
               already-compressed WebP page images.
             </p>
           </article>
           <article class="dashboard-weight-result">
             <h3>Complete-book reduction</h3>
-            <strong>~99.2%</strong>
+            <strong>~99.1%</strong>
             <p>
-              V2 runtime code is only about 2 KB gzip larger. The major saving
+              V2 runtime code is about 6 KB gzip larger. The major saving
               comes from semantic text replacing raster pages—not from avoiding
               SVG, because the legacy pages are WebP images.
             </p>

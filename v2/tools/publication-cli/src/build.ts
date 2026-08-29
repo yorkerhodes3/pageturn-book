@@ -251,6 +251,7 @@ export async function createBuildPlan(
     direction: config.direction,
     publicationDate: config.publicationDate,
     description: config.description,
+    frontMatter: config.frontMatter,
     appearance: config.appearance,
     chapters: chapters.map((chapter) => ({
       chapterId: chapter.config.chapterId,
@@ -295,6 +296,9 @@ export async function createBuildPlan(
     ...(config.description === undefined
       ? {}
       : { description: config.description }),
+    ...(config.frontMatter === undefined
+      ? {}
+      : { frontMatter: config.frontMatter }),
     ...(config.appearance === undefined
       ? {}
       : { appearance: config.appearance }),

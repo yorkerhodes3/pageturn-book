@@ -172,6 +172,15 @@ export type PublicationAppearance = {
   binding: PublicationBindingAppearance;
 };
 
+export type PublicationFrontMatter = {
+  kicker?: string;
+  credits?: string;
+  thesis?: string;
+  disclaimer?: string;
+  canonicalUrl?: string;
+  notesStatus?: string;
+};
+
 export type PublicationManifest = {
   schemaVersion: typeof MANIFEST_SCHEMA_VERSION;
   bookId: BookId;
@@ -183,6 +192,7 @@ export type PublicationManifest = {
   direction: "ltr" | "rtl";
   publicationDate?: string;
   description?: string;
+  frontMatter?: PublicationFrontMatter;
   license?: {
     name: string;
     url?: string;
