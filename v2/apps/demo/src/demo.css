@@ -79,6 +79,35 @@
   font-weight: 700;
 }
 
+.demo-destinations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.library-link {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #9f713e;
+  background: #3a1e13;
+  color: #f3dfb6;
+  text-decoration: none;
+  box-shadow:
+    inset 0 0 0 2px #231008,
+    inset 0 0 0 3px rgb(224 181 104 / 32%);
+}
+
+.library-link span {
+  font-weight: 800;
+}
+
+.library-link small {
+  color: #cbb58f;
+}
+
 .comparison-secondary-link {
   display: inline-block;
   margin-inline-start: 0.75rem;
@@ -189,6 +218,182 @@
   background: var(--book-color-paper);
   color: var(--book-color-muted);
   font: 600 0.75rem/1 var(--book-font-ui);
+}
+
+.shelf-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    linear-gradient(90deg, rgb(8 13 13 / 80%), transparent 20% 80%, rgb(8 13 13 / 80%)),
+    radial-gradient(circle at 50% 10%, rgb(219 179 106 / 14%), transparent 38rem),
+    repeating-linear-gradient(
+      45deg,
+      #17201f 0 2px,
+      #151d1c 2px 4px
+    );
+  color: #f1e5cc;
+  font-family: var(--book-font-ui);
+}
+
+.shelf-document {
+  overflow-x: clip;
+}
+
+.shelf-page *,
+.shelf-page *::before,
+.shelf-page *::after {
+  box-sizing: border-box;
+}
+
+.shelf-library-header {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: end;
+  width: min(92rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 4.5rem) clamp(0.5rem, 2vw, 2rem) 1.5rem;
+}
+
+.shelf-library-kicker {
+  margin: 0 0 0.4rem;
+  color: #c8a66b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.shelf-library-header h1 {
+  max-width: 16ch;
+  margin: 0;
+  color: #f3e9d4;
+  font: 500 clamp(2.5rem, 6vw, 5.6rem) / 0.92 var(--book-font-body);
+  letter-spacing: -0.035em;
+  text-shadow: 0 0.1rem 0 #000;
+  text-wrap: balance;
+}
+
+.shelf-library-introduction {
+  max-width: 56ch;
+  margin: 1rem 0 0;
+  color: #bfb49f;
+  line-height: 1.65;
+}
+
+.shelf-library-meta {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 0.55rem;
+  justify-items: end;
+  padding-bottom: 0.35rem;
+  color: #cfb77f;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.shelf-library-meta a {
+  color: #f0e3c8;
+}
+
+.shelf-library-room {
+  position: relative;
+  width: min(100%, 100rem);
+  margin: 0 auto;
+  padding: 3.8rem clamp(0.75rem, 3vw, 3rem) 5rem;
+}
+
+.shelf-library-glow {
+  position: absolute;
+  z-index: -1;
+  top: -5rem;
+  right: 15%;
+  left: 15%;
+  height: 18rem;
+  background: radial-gradient(ellipse, rgb(244 205 127 / 17%), transparent 70%);
+  filter: blur(1rem);
+  pointer-events: none;
+}
+
+.shelf-library-casework {
+  position: relative;
+  padding: clamp(1rem, 2vw, 1.6rem);
+  border: clamp(0.7rem, 1.7vw, 1.35rem) solid #35170d;
+  border-radius: 0.35rem 0.35rem 0.15rem 0.15rem;
+  background:
+    linear-gradient(90deg, #210d07, transparent 4% 96%, #210d07),
+    #4c2517;
+  box-shadow:
+    0 2.8rem 5rem rgb(0 0 0 / 58%),
+    0 0 0 1px #160905,
+    0 0 0 0.35rem #63351f,
+    0 0 0 0.48rem #1c0b06,
+    inset 0 0 2.5rem rgb(0 0 0 / 65%);
+}
+
+.shelf-library-casework::before,
+.shelf-library-casework::after {
+  position: absolute;
+  z-index: 2;
+  top: -2.4rem;
+  bottom: -2.3rem;
+  width: clamp(1rem, 2.5vw, 2.2rem);
+  border: 1px solid #1b0905;
+  background:
+    linear-gradient(90deg, #251008, #6a351d 32%, #3a170c 68%, #170805),
+    repeating-linear-gradient(0deg, transparent 0 9px, rgb(255 255 255 / 4%) 10px);
+  box-shadow:
+    inset 0.2rem 0 0.3rem rgb(255 226 172 / 10%),
+    0.4rem 0.7rem 1rem rgb(0 0 0 / 42%);
+  content: "";
+}
+
+.shelf-library-casework::before {
+  left: -2rem;
+}
+
+.shelf-library-casework::after {
+  right: -2rem;
+  transform: scaleX(-1);
+}
+
+.shelf-library-noscript {
+  padding: 2rem;
+  color: #f1e5cc;
+}
+
+.shelf-library-noscript a {
+  color: #d4b06c;
+}
+
+@media (max-width: 52rem) {
+  .shelf-library-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .shelf-library-meta {
+    justify-items: start;
+  }
+
+  .shelf-library-room {
+    padding-top: 2.2rem;
+  }
+
+  .shelf-library-casework::before {
+    left: -1rem;
+  }
+
+  .shelf-library-casework::after {
+    right: -1rem;
+  }
 }
 
 @media (max-width: 52rem) {

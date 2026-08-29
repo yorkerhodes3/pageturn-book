@@ -50,6 +50,215 @@ test("presents both reader versions from the comparison landing page", async ({
     "href",
     "./book/what-is-ethical-ai/2026-07/chapters/executive-summary/",
   );
+  await expect(
+    page.getByRole("link", { name: /Enter the publication library/ }),
+  ).toHaveAttribute("href", "./shelf/");
+});
+
+test("renders the production library as optimized labeled bindings", async ({
+  page,
+}) => {
+  await page.goto(route("/shelf/"));
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Research, bound and shelved" }),
+  ).toBeVisible();
+  await expect(page.getByText("21 volumes")).toBeVisible();
+  await expect(page.locator(".bookshelf-book")).toHaveCount(21);
+  await expect(page.locator(".bookshelf-book-spine")).toHaveCount(21);
+  await expect(page.locator("img")).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { level: 2, name: "Humanitarian Systems" }),
+  ).toBeVisible();
+
+  const loadedPublicationAssets = await page.evaluate(() =>
+    performance
+      .getEntriesByType("resource")
+      .map((entry) => entry.name)
+      .filter(
+        (url) => url.includes("/pages/") || url.endsWith(".webp"),
+      ),
+  );
+  expect(loadedPublicationAssets).toEqual([]);
+
+  const thickBook = page.getByRole("button", {
+    name: "What Is Ethical AI?, 46 pages",
+  });
+  const slimBook = page.getByRole("button", {
+    name: "AI Research Assistant, 10 pages",
+  });
+  const [thickWidth, slimWidth] = await Promise.all([
+    thickBook.evaluate((book) => book.getBoundingClientRect().width),
+    slimBook.evaluate((book) => book.getBoundingClientRect().width),
+  ]);
+  expect(thickWidth).toBeGreaterThan(slimWidth);
+
+  await thickBook.click();
+  await expect(thickBook).toHaveAttribute("aria-pressed", "true");
+  const selection = page.locator(".bookshelf-selection");
+  await expect(selection).toBeVisible();
+  await expect(
+    selection.getByRole("heading", { name: "What Is Ethical AI?" }),
+  ).toBeVisible();
+  await expect(
+    selection.getByRole("link", { name: "Read semantic edition" }),
+  ).toHaveAttribute(
+    "href",
+    "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+  );
+  await expect(
+    selection.getByRole("link", { name: "View designed pages" }),
+  ).toHaveAttribute(
+    "href",
+    "../legacy/?book=what-is-ethical-ai&view=book",
+  );
+  await expect(
+    selection.getByRole("link", { name: "Read semantic edition" }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole("button", {
+      name: /FORCED LABOR RISK: Forced Labor Structural Risk Index/,
+    }),
+  ).toBeVisible();
+
+  await thickBook.focus();
+  await thickBook.press("ArrowRight");
+  await expect(
+    page.getByRole("button", { name: "AI Carbon Footprint, 18 pages" }),
+  ).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(selection).toBeHidden();
+  await expect(thickBook).toHaveAttribute("aria-pressed", "false");
+});
+
+test("pulls a shelf volume into the semantic reader", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(route("/shelf/"));
+  await page
+    .getByRole("button", { name: "What Is Ethical AI?, 46 pages" })
+    .click();
+  await page.getByRole("link", { name: "Read semantic edition" }).click();
+
+  await expect(page).toHaveURL(
+    /\/book\/what-is-ethical-ai\/2026-07\/chapters\/executive-summary\/\?view=book$/,
+  );
+  await expect(
+    page.getByRole("dialog", { name: "What Is Ethical AI?" }),
+  ).toBeVisible();
+});
+
+test("animates a selected binding out of the case before reading", async ({
+  page,
+}) => {
+  await page.goto(route("/shelf/"));
+  await page
+    .getByRole("button", { name: "What Is Ethical AI?, 46 pages" })
+    .click();
+  await page
+    .getByRole("link", { name: "Read semantic edition" })
+    .evaluate((link) => (link as HTMLAnchorElement).click());
+
+  await expect(page.locator(".bookshelf-book-flight")).toBeVisible();
+  await expect(page.locator(".bookshelf-navigating")).toBeVisible();
+  await expect(page).toHaveURL(
+    /\/book\/what-is-ethical-ai\/2026-07\/chapters\/executive-summary\/\?view=book$/,
+  );
+});
+
+test("keeps the shelf and selection card inside a phone viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(route("/shelf/"));
+
+  const documentOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(documentOverflow).toBeLessThanOrEqual(1);
+  const firstRow = page.locator(".bookshelf-volume-row").first();
+  const rowDimensions = await firstRow.evaluate((row) => ({
+    clientWidth: row.clientWidth,
+    scrollWidth: row.scrollWidth,
+  }));
+  expect(rowDimensions.scrollWidth).toBeGreaterThan(rowDimensions.clientWidth);
+
+  await page
+    .getByRole("button", { name: "What Is Ethical AI?, 46 pages" })
+    .click();
+  const selectionBox = await page.locator(".bookshelf-selection").boundingBox();
+  if (!selectionBox) {
+    throw new Error("Expected selected publication card");
+  }
+  expect(selectionBox.x).toBeGreaterThanOrEqual(0);
+  expect(selectionBox.x + selectionBox.width).toBeLessThanOrEqual(390);
+
+  await page.setViewportSize({ width: 390, height: 320 });
+  const [shortCard, closeButton] = await Promise.all([
+    page.locator(".bookshelf-selection").boundingBox(),
+    page.getByRole("button", { name: "Return book" }).boundingBox(),
+  ]);
+  if (!shortCard || !closeButton) {
+    throw new Error("Expected short-screen selection controls");
+  }
+  expect(shortCard.y).toBeGreaterThanOrEqual(0);
+  expect(shortCard.y + shortCard.height).toBeLessThanOrEqual(320);
+  expect(closeButton.y).toBeGreaterThanOrEqual(shortCard.y);
+});
+
+test("opens any selected shelf facsimile from its pinned manifest", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(route("/shelf/"));
+  await page
+    .getByRole("button", { name: "After the Corridor, 22 pages" })
+    .click();
+  await page.getByRole("link", { name: "Open designed pages" }).click();
+
+  await expect(page).toHaveURL(
+    /\/legacy\/\?book=after-the-corridor&view=book$/,
+  );
+  await expect(
+    page.getByRole("dialog", { name: "After the Corridor — page view" }),
+  ).toBeVisible();
+  await expect(page.locator(".rab-counter")).toHaveText("1 / 22");
+});
+
+test("retries a selected publication after a transient manifest failure", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  let attempts = 0;
+  await page.route("**/after-the-corridor/pages/manifest.json", async (route) => {
+    attempts += 1;
+    if (attempts === 1) {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "temporary failure" }),
+      });
+      return;
+    }
+    await route.continue();
+  });
+  await page.goto(
+    route("/legacy/?book=after-the-corridor"),
+  );
+  const open = page.getByRole("button", {
+    name: "Open legacy book viewer",
+  });
+  await open.click();
+  await expect(page.getByRole("status")).toContainText(
+    "Could not load After the Corridor page manifest (503)",
+  );
+  await expect(open).toBeEnabled();
+
+  await open.click();
+  await expect(
+    page.getByRole("dialog", { name: "After the Corridor — page view" }),
+  ).toBeVisible();
+  expect(attempts).toBe(2);
 });
 
 test("uses the production Ethical Tech CoLab report in V2", async ({ page }) => {
@@ -121,6 +330,7 @@ test("fits the production cover on a narrow screen", async ({ page }) => {
   const book = page.locator(".book-mode-book");
   const cover = page.locator(".book-mode-cover");
   const coverContent = page.locator(".book-mode-cover-content");
+  await expect(page.locator('.book-mode-spread[aria-busy="false"]')).toBeVisible();
   await expect(book).toBeVisible();
   await expect(cover).toBeVisible();
   const [bookBox, coverBox, contentBox] = await Promise.all([

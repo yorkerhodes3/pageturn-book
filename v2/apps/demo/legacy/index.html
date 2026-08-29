@@ -3,22 +3,21 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legacy fixed-page reader comparison</title>
+    <title>Fixed-page publication reader</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📖</text></svg>">
     <link rel="stylesheet" href="/src/demo.css">
   </head>
   <body>
     <main class="legacy-demo">
       <p class="comparison-version">Version 1 - pinned revision d1d1ec6</p>
-      <h1>Fixed-page flipbook</h1>
-      <p>
-        This route loads the preserved <code>read-as-book</code> package with
-        all 46 production pages of <cite>What Is Ethical AI?</cite>.
+      <h1 id="legacy-title">Fixed-page publication</h1>
+      <p id="legacy-description">
+        Loading the selected Ethical Tech CoLab publication.
       </p>
       <ul>
         <li>Exact designed PDF pages from the Ethical Tech CoLab website.</li>
         <li>Original full-screen page-turn interaction and raster model.</li>
-        <li>Same publication used by the V2 semantic comparison.</li>
+        <li id="legacy-page-summary">Loading production page count.</li>
       </ul>
       <div class="legacy-demo-actions">
         <button id="open-legacy" type="button">Open legacy book viewer</button>

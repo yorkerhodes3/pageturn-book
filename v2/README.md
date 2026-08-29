@@ -22,6 +22,8 @@ release described in [SPECIFICATION.md](../SPECIFICATION.md).
 - The generated chapter is readable without JavaScript and enhanced when
   JavaScript is available.
 - The old viewer remains untouched and independently recoverable.
+- A metadata-driven bookshelf renders all production bindings without loading
+  page images, then lazy-loads the selected publication for reading.
 
 ## Workspace
 
@@ -29,7 +31,7 @@ release described in [SPECIFICATION.md](../SPECIFICATION.md).
 packages/
   publication-model/      manifest, location, selector, and validation types
   reader-core/            headless state machine and renderer lifecycle
-  reader-ui/              framework-neutral shell, TOC, and browser history
+  reader-ui/              framework-neutral shell, bookshelf, and book mode
   renderer-semantic/      semantic HTML adoption and chapter loading
   theme/                  framework-neutral reader CSS
 tools/
@@ -87,6 +89,7 @@ The landing page links to:
 - The pinned legacy fixed-page viewer.
 - The V2 semantic reader.
 - A side-by-side iframe comparison.
+- A responsive 21-volume library shelf with selectable bindings.
 
 The direct semantic chapter is:
 

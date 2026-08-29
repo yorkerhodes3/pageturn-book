@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" class="shelf-document">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Browse the Ethical Tech CoLab publication library as a physical bookshelf."
+    >
+    <title>The Ethical Tech CoLab Library</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📚</text></svg>">
+    <link rel="stylesheet" href="/src/demo.css">
+  </head>
+  <body class="shelf-page">
+    <header class="shelf-library-header">
+      <div>
+        <p class="shelf-library-kicker">The Ethical Tech CoLab Library</p>
+        <h1>Research, bound and shelved</h1>
+        <p class="shelf-library-introduction">
+          Select a labeled binding to pull a volume from the case, then open
+          its available reading edition.
+        </p>
+      </div>
+      <div class="shelf-library-meta">
+        <span data-library-count>Loading volumes</span>
+        <a href="../">Reader comparison</a>
+      </div>
+    </header>
+    <main class="shelf-library-room">
+      <div class="shelf-library-glow" aria-hidden="true"></div>
+      <section
+        class="shelf-library-casework"
+        aria-label="Ethical Tech CoLab publication shelves"
+      >
+        <div data-library-bookshelf></div>
+        <noscript>
+          <p class="shelf-library-noscript">
+            JavaScript is required for the interactive shelf. Return to the
+            <a href="../">reader comparison</a> to open a publication directly.
+          </p>
+        </noscript>
+      </section>
+    </main>
+    <script type="module" src="/src/shelf.ts"></script>
+  </body>
+</html>

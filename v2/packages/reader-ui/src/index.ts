@@ -5,6 +5,13 @@ export {
   publicationAppearanceVariables,
   publicationPageFanCount,
 } from "./appearance.js";
+export { mountBookshelf } from "./bookshelf.js";
+export type {
+  BookshelfAction,
+  BookshelfHandle,
+  BookshelfSection,
+  BookshelfVolume,
+} from "./bookshelf.js";
 export {
   SEMANTIC_BOOK_SINGLE_PAGE_QUERY,
   createSemanticBookMode,

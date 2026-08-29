@@ -29,6 +29,8 @@ GitHub Actions builds a Pages artifact containing:
 
 - `/` - comparison overview.
 - `/legacy/` - pinned fixed-page viewer.
+- `/shelf/` - responsive mahogany library shelf containing all 21 production
+  fixed-page publications, with a semantic reading option where available.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
   semantic scroll reader using production content.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book` -
