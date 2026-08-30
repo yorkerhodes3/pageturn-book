@@ -33,11 +33,14 @@
       <section class="v3-review-note" aria-labelledby="v3-review-title">
         <div>
           <p>Review build</p>
-          <h2 id="v3-review-title">Geometry before integration</h2>
+          <h2 id="v3-review-title">Geometry with bounded reading state</h2>
         </div>
         <ul>
           <li>Drag any outer top or bottom page corner.</li>
           <li>The current spread stays semantic and selectable.</li>
+          <li>Only the current and adjacent chapters stay loaded.</li>
+          <li>URLs and resume state use chapter/source anchors.</li>
+          <li>Text size and sharing controls preserve that location.</li>
           <li>Only the active moving and revealed faces are cloned.</li>
           <li>No canvas, SVG page texture, or raster publication page is used.</li>
         </ul>
@@ -61,6 +64,34 @@
             </select>
           </label>
           <output data-v3-counter>Preparing book</output>
+        </div>
+        <div class="v3-reader-tools" aria-label="Reading tools">
+          <div
+            class="v3-font-controls"
+            role="group"
+            aria-label="Book text size"
+          >
+            <button
+              type="button"
+              data-v3-font-decrease
+              aria-label="Decrease book text size"
+            >A-</button>
+            <output data-v3-font-status aria-live="polite">100%</output>
+            <button
+              type="button"
+              data-v3-font-increase
+              aria-label="Increase book text size"
+            >A+</button>
+          </div>
+          <button type="button" class="v3-share" data-v3-share>
+            Share location
+          </button>
+          <output
+            class="v3-share-status"
+            data-v3-share-status
+            role="status"
+            aria-live="polite"
+          >Share this chapter or passage</output>
         </div>
 
         <div class="v3-book-shell">

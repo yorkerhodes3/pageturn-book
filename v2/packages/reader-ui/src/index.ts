@@ -20,6 +20,11 @@ export type {
   SemanticBookMode,
   SemanticBookModeOptions,
 } from "./book-mode.js";
+export {
+  normalizeBookFontScale,
+  readBookFontScale,
+  writeBookFontScale,
+} from "./font-scale.js";
 export { mountReaderShell } from "./reader-shell.js";
 export type {
   ReaderShellHandle,

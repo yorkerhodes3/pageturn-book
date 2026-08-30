@@ -9,6 +9,11 @@ import {
   applyPublicationAppearance,
   publicationPageFanCount,
 } from "./appearance.js";
+import {
+  normalizeBookFontScale as normalizeFontScale,
+  readBookFontScale as readFontScale,
+  writeBookFontScale as writeFontScale,
+} from "./font-scale.js";
 import { shareReadingLocation } from "./share.js";
 
 type BookPage = {
@@ -102,36 +107,6 @@ const SHORT_VIEWPORT_PAGINATION: PaginationProfile = {
   headingOneCost: 480,
   headingTwoCost: 400,
 };
-
-function normalizeFontScale(value: number): number {
-  const finite = Number.isFinite(value) ? value : 1;
-  return Number(
-    (Math.round(Math.min(1.3, Math.max(0.8, finite)) * 10) / 10).toFixed(1),
-  );
-}
-
-function readFontScale(bookId: string, fallback: number): number {
-  try {
-    const stored = globalThis.localStorage.getItem(
-      `ethical-tech-book-font:${bookId}`,
-    );
-    return stored === null ? fallback : normalizeFontScale(Number(stored));
-  } catch (error) {
-    console.warn("Book text size preference could not be read", error);
-    return fallback;
-  }
-}
-
-function writeFontScale(bookId: string, value: number): void {
-  try {
-    globalThis.localStorage.setItem(
-      `ethical-tech-book-font:${bookId}`,
-      String(value),
-    );
-  } catch (error) {
-    console.warn("Book text size preference could not be saved", error);
-  }
-}
 
 function scaledPaginationProfile(
   profile: PaginationProfile,

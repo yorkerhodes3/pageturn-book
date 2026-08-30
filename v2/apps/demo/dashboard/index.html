@@ -42,8 +42,8 @@
           <span>book-page scrollbars</span>
         </article>
         <article>
-          <strong>~115×</strong>
-          <span>lighter complete book payload</span>
+          <strong>~315×</strong>
+          <span>lighter initial V3 transfer</span>
         </article>
       </section>
 
@@ -66,7 +66,7 @@
           <a href="../v3/">
             <span>Geometry experiment</span>
             <strong>Review the isolated V3 fold</strong>
-            <small>Real semantic pages, continuous geometry, and bounded live faces</small>
+            <small>Lazy semantic chapters, durable anchors, typography, sharing, and continuous geometry</small>
           </a>
           <a href="../v3/?book=plurality">
             <span>Open source publication</span>
@@ -132,6 +132,16 @@
                 <td>Manifest chapters begin fresh leaves with a separate chapter-number label, prominent title, and desktop opening drop cap.</td>
               </tr>
               <tr>
+                <th scope="row">Bounded chapter-window loading</th>
+                <td><span class="status status-experimental">V3 implemented</span></td>
+                <td>The active chapter and at most one neighbor on either side remain loaded. Inactive source blocks and pages are released; parity-stable blank versos keep every chapter opening on a right-hand page.</td>
+              </tr>
+              <tr>
+                <th scope="row">Durable V3 reading location</th>
+                <td><span class="status status-experimental">V3 implemented</span></td>
+                <td>Book, edition, chapter, and source anchor survive reloads and responsive repagination. Explicit URLs outrank saved resume state, and browser Back/Forward restores semantic locations rather than screen-page numbers.</td>
+              </tr>
+              <tr>
                 <th scope="row">All-publication semantic ingest</th>
                 <td><span class="status status-experimental">V3 beta</span></td>
                 <td>All 20 report-model sources, the 542-term Cyber Dictionary, and Plurality's 30 CC0 chapters build into immutable semantic manifests and open from the shelf. Editorial parity and upstream export hardening remain.</td>
@@ -144,7 +154,7 @@
               <tr>
                 <th scope="row">Adjustable book typography</th>
                 <td><span class="status status-complete">Implemented</span></td>
-                <td>80%–130% controls repaginate around the current source location without clipping.</td>
+                <td>V2 and V3 share per-publication 80%–130% controls and repaginate around the current source anchor without clipping.</td>
               </tr>
               <tr>
                 <th scope="row">Publication bookshelf</th>
@@ -154,7 +164,7 @@
               <tr>
                 <th scope="row">Share current reading location</th>
                 <td><span class="status status-complete">Implemented</span></td>
-                <td>Native Web Share when available, with clipboard link fallback.</td>
+                <td>V2 and V3 use native Web Share when available, with clipboard fallback. V3 links contain only the canonical book, chapter, and source anchor.</td>
               </tr>
               <tr>
                 <th scope="row">Legacy facsimile fallback</th>
@@ -199,10 +209,11 @@
         <div class="dashboard-weight-grid">
           <article>
             <h3>V3 semantic geometry</h3>
-            <strong>~63 KB</strong>
+            <strong>~29 KB initial</strong>
             <p>
-              Approximately 16.1 KB gzip for V3 CSS, JavaScript, and catalog
-              metadata plus 46.4 KB for all 17 semantic chapters.
+              Approximately 20.0 KB gzip for V3 assets plus 9.2 KB for the
+              Ethical AI manifest, current chapter, and adjacent prefetch. The
+              complete static semantic path remains about 70.8 KB.
             </p>
           </article>
           <article>
@@ -222,20 +233,21 @@
             </p>
           </article>
           <article class="dashboard-weight-result">
-            <h3>Complete-book reduction</h3>
-            <strong>~99.3%</strong>
+            <h3>Initial-transfer reduction</h3>
+            <strong>~99.7%</strong>
             <p>
-              V3's experimental shell is smaller than V2 because it omits
-              several mature reader features. Both semantic paths save weight
-              by replacing raster pages—not by avoiding SVG.
+              V3 initially serves only a bounded semantic chapter window.
+              Static hosting still retains every chapter, while the browser
+              avoids downloading and retaining the rest until requested.
             </p>
           </article>
         </div>
         <p class="dashboard-method">
           Measurements use the production <cite>What Is Ethical AI?</cite>
-          fixture and modeled gzip sizes from the built Pages artifact. HTML
-          and manifest overhead are excluded from the card totals for a
-          consistent runtime-plus-content comparison.
+          fixture and gzip-equivalent sizes from the built Pages artifact.
+          The V3 initial figure includes assets, manifest, and the first two
+          chapters after adjacent prefetch; route HTML is excluded consistently
+          with the existing runtime-plus-content comparison.
         </p>
       </section>
     </main>

@@ -10,6 +10,12 @@ import {
   pageTurnPolygon,
   projectPageTurn,
 } from "@ethical-tech/book-reader-ui/page-turn-projection";
+import {
+  normalizeBookFontScale,
+  readBookFontScale,
+  shareReadingLocation,
+  writeBookFontScale,
+} from "@ethical-tech/book-reader-ui";
 import { catalogBook } from "./library-catalog.js";
 
 type SemanticBlock = Readonly<{
@@ -50,11 +56,32 @@ type PrototypePage = Readonly<{
   label: string;
   runningTitle: string;
   anchor: string;
-  kind: "front-matter" | "content";
+  kind: "front-matter" | "content" | "placeholder" | "blank";
   chapterOpening: boolean;
   chapterLabel?: string;
+  chapterIndex?: number;
+  chapterId?: string;
   nodes: readonly HTMLElement[];
 }>;
+
+type ChapterState = {
+  chapter: V3Chapter;
+  index: number;
+  status: "idle" | "loading" | "ready" | "error";
+  blocks: SemanticBlock[] | undefined;
+  pages: PrototypePage[] | undefined;
+  promise: Promise<void> | undefined;
+  error: Error | undefined;
+};
+
+type V3ReadingLocation = Readonly<{
+  bookId: string;
+  editionId: string;
+  chapterId: string;
+  anchor: string;
+}>;
+
+type LocationUpdate = "none" | "push" | "replace";
 
 type ActiveTurn = {
   direction: PageTurnDirection;
@@ -417,12 +444,36 @@ function parseV3Manifest(value: unknown): V3Manifest {
   };
 }
 
+function chapterNumberForChapter(
+  chapter: V3Chapter,
+  displayedHeading?: string,
+): string | undefined {
+  const displayedNumber = displayedHeading
+    ? /^(\d+(?:[-.]\d+)*)[.)]?\s+/.exec(displayedHeading)?.[1]
+    : undefined;
+  const chapterId = String(chapter.chapterId);
+  const sourceNumber =
+    displayedNumber ??
+    (/^\d+(?:-\d+)*$/.test(chapterId) ? chapterId : undefined);
+  return sourceNumber
+    ?.split("-")
+    .map((part) => String(Number(part)))
+    .join("-");
+}
+
+function chapterLabelForChapter(
+  chapter: V3Chapter,
+  displayedHeading?: string,
+): string {
+  const chapterNumber = chapterNumberForChapter(chapter, displayedHeading);
+  return chapterNumber ? `Chapter ${chapterNumber}` : "Chapter";
+}
+
 function semanticBlocks(
   article: HTMLElement,
   chapter: V3Chapter,
 ): SemanticBlock[] {
   const blocks: SemanticBlock[] = [];
-  const chapterId = String(chapter.chapterId);
   for (const child of article.children) {
     if (!(child instanceof HTMLElement)) {
       continue;
@@ -447,16 +498,7 @@ function semanticBlocks(
     const displayedNumber = /^(\d+(?:[-.]\d+)*)[.)]?\s+/.exec(
       headingText,
     )?.[1];
-    const sourceNumber =
-      displayedNumber ??
-      (/^\d+(?:-\d+)*$/.test(chapterId) ? chapterId : undefined);
-    const chapterNumber = sourceNumber
-      ?.split("-")
-      .map((part) => String(Number(part)))
-      .join("-");
-    const chapterLabel = chapterNumber
-      ? `Chapter ${chapterNumber}`
-      : "Chapter";
+    const chapterLabel = chapterLabelForChapter(chapter, headingText);
     if (child.matches("p") && (child.textContent?.length ?? 0) > 680) {
       sentenceRanges(child.textContent ?? "").forEach((range, index) => {
         const paragraph = cloneTextRange(
@@ -608,6 +650,7 @@ function frontMatterPages(manifest: V3Manifest): PrototypePage[] {
 function pageFromBlocks(
   blocks: readonly SemanticBlock[],
   pageNumber: number,
+  chapterState: ChapterState,
 ): PrototypePage {
   const first = blocks[0];
   if (!first) {
@@ -619,10 +662,56 @@ function pageFromBlocks(
     anchor: first.anchor,
     kind: "content",
     chapterOpening: first.chapterStart,
+    chapterIndex: chapterState.index,
+    chapterId: String(chapterState.chapter.chapterId),
     ...(first.chapterStart
       ? { chapterLabel: first.chapterLabel }
       : {}),
     nodes: blocks.map(({ node }) => node),
+  };
+}
+
+function placeholderPage(chapterState: ChapterState): PrototypePage {
+  const heading = createElement("h1", undefined, chapterState.chapter.title);
+  heading.id = chapterState.chapter.firstAnchor;
+  const loading = createElement(
+    "p",
+    "v3-placeholder-status",
+    chapterState.status === "error"
+      ? `Chapter unavailable: ${chapterState.error?.message ?? "unknown error"}`
+      : "Chapter content is loading",
+  );
+  const retry =
+    chapterState.status === "error"
+      ? createElement("button", "v3-placeholder-retry", "Retry chapter")
+      : undefined;
+  if (retry) {
+    retry.type = "button";
+    retry.dataset.v3RetryChapter = String(chapterState.chapter.chapterId);
+  }
+  return {
+    label: `${chapterState.chapter.title}, unloaded chapter`,
+    runningTitle: chapterState.chapter.title,
+    anchor: chapterState.chapter.firstAnchor,
+    kind: "placeholder",
+    chapterOpening: true,
+    chapterIndex: chapterState.index,
+    chapterId: String(chapterState.chapter.chapterId),
+    chapterLabel: chapterLabelForChapter(chapterState.chapter),
+    nodes: [heading, loading, ...(retry ? [retry] : [])],
+  };
+}
+
+function blankChapterPage(chapterState: ChapterState): PrototypePage {
+  return {
+    label: `Blank verso before ${chapterState.chapter.title}`,
+    runningTitle: chapterState.chapter.title,
+    anchor: `v3-blank-${String(chapterState.chapter.chapterId)}`,
+    kind: "blank",
+    chapterOpening: false,
+    chapterIndex: chapterState.index,
+    chapterId: String(chapterState.chapter.chapterId),
+    nodes: [],
   };
 }
 
@@ -638,6 +727,8 @@ function createSheet(
       "v3-sheet",
       `v3-sheet-${side}`,
       page.kind === "front-matter" ? "v3-sheet-front-matter" : "",
+      page.kind === "placeholder" ? "v3-sheet-placeholder" : "",
+      page.kind === "blank" ? "v3-sheet-blank" : "",
       page.chapterOpening ? "v3-sheet-chapter-opening" : "",
     ]
       .filter(Boolean)
@@ -645,6 +736,9 @@ function createSheet(
   );
   sheet.setAttribute("aria-label", page.label);
   sheet.dataset.v3Anchor = page.anchor;
+  if (page.chapterId) {
+    sheet.dataset.v3Chapter = page.chapterId;
+  }
   if (decorative) {
     sheet.setAttribute("aria-hidden", "true");
     sheet.inert = true;
@@ -697,6 +791,19 @@ const coverSubtitle = requiredElement<HTMLElement>(
   "[data-v3-cover-subtitle]",
 );
 const counter = requiredElement<HTMLOutputElement>("[data-v3-counter]");
+const decreaseFont = requiredElement<HTMLButtonElement>(
+  "[data-v3-font-decrease]",
+);
+const increaseFont = requiredElement<HTMLButtonElement>(
+  "[data-v3-font-increase]",
+);
+const fontStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-font-status]",
+);
+const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
+const shareStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-share-status]",
+);
 const previous = requiredElement<HTMLButtonElement>("[data-v3-previous]");
 const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
 const corners = Array.from(
@@ -708,14 +815,25 @@ const reducedMotion = globalThis.matchMedia(
 );
 
 let manifest: V3Manifest | undefined;
-let contentBlocks: SemanticBlock[] = [];
+let manifestUrl: URL | undefined;
+let chapterStates: ChapterState[] = [];
 let pages: PrototypePage[] = [];
 let spreadStart = 0;
 let activeTurn: ActiveTurn | undefined;
 let resizeTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let openingTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
-let loadedChapterCount = 0;
+let chapterWindowVersion = 0;
+let chapterWindowCenter = 0;
 let opening = true;
+let fontScale = 1;
+let locationTrackingReady = false;
+let applyingHistory = false;
+let sharing = false;
+let preferredAnchor:
+  | Readonly<{ chapterId: string; anchor: string }>
+  | undefined;
+let locationNavigationVersion = 0;
+let failureReported = false;
 
 if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
@@ -730,6 +848,28 @@ function pageSize(): { width: number; height: number } {
     width: singlePageMedia.matches ? bounds.width : bounds.width / 2,
     height: bounds.height,
   };
+}
+
+function waitForPageLayout(timeoutMs = 10_000): Promise<void> {
+  if (spread.clientWidth > 0 && spread.clientHeight > 0) {
+    return Promise.resolve();
+  }
+  return new Promise((resolveLayout, rejectLayout) => {
+    const observer = new ResizeObserver(() => {
+      if (spread.clientWidth > 0 && spread.clientHeight > 0) {
+        clearTimeout(timeout);
+        observer.disconnect();
+        resolveLayout();
+      }
+    });
+    const timeout = globalThis.setTimeout(() => {
+      observer.disconnect();
+      rejectLayout(
+        new Error("V3 book did not receive a measurable layout"),
+      );
+    }, timeoutMs);
+    observer.observe(spread);
+  });
 }
 
 function pageStep(): 1 | 2 {
@@ -758,22 +898,221 @@ function targetSpread(direction: PageTurnDirection): number {
     : spreadStart - step;
 }
 
+function turnTargetReady(
+  direction: PageTurnDirection,
+  allowRetry = false,
+): boolean {
+  const target = targetSpread(direction);
+  return pages
+    .slice(target, target + pageStep())
+    .every(
+      (page) =>
+        page?.kind !== "placeholder" ||
+        (allowRetry &&
+          page.chapterIndex !== undefined &&
+          chapterStates[page.chapterIndex]?.status === "error"),
+    );
+}
+
+function activePage(): PrototypePage | undefined {
+  const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
+  const pinnedAnchor = preferredAnchor;
+  const preferredPage = pinnedAnchor
+    ? visiblePages.find(
+        (page) =>
+          page?.chapterId === pinnedAnchor.chapterId &&
+          pageContainsAnchor(page, pinnedAnchor.anchor),
+      )
+    : undefined;
+  const contentPages = visiblePages.filter(
+    (page) => page?.kind === "content",
+  );
+  return (
+    preferredPage ??
+    contentPages.at(-1) ??
+    visiblePages
+      .filter((page) => page?.chapterIndex !== undefined)
+      .at(-1) ??
+    visiblePages[0]
+  );
+}
+
+function activeChapterIndex(): number {
+  return activePage()?.chapterIndex ?? 0;
+}
+
+function loadedChapterCount(): number {
+  return chapterStates.filter(({ status }) => status === "ready").length;
+}
+
+function decodeLocationHash(hash = globalThis.location.hash): string | undefined {
+  const encoded = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (encoded === "") {
+    return undefined;
+  }
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    throw new Error("V3 location contains a malformed source anchor");
+  }
+}
+
+function resumeStorageKey(bookId: string): string {
+  return `ethical-tech-book-v3-location:${bookId}`;
+}
+
+function readResumeLocation(
+  publication: V3Manifest,
+): V3ReadingLocation | undefined {
+  try {
+    const raw = globalThis.localStorage.getItem(
+      resumeStorageKey(publication.bookId),
+    );
+    if (raw === null) {
+      return undefined;
+    }
+    const parsed: unknown = JSON.parse(raw);
+    const saved = record(parsed, "saved reading location");
+    const location = {
+      bookId: stringValue(saved.bookId, "saved location.bookId"),
+      editionId: stringValue(saved.editionId, "saved location.editionId"),
+      chapterId: stringValue(saved.chapterId, "saved location.chapterId"),
+      anchor: stringValue(saved.anchor, "saved location.anchor"),
+    };
+    if (
+      location.bookId !== publication.bookId ||
+      location.editionId !== publication.editionId ||
+      !publication.chapters.some(
+        ({ chapterId }) => String(chapterId) === location.chapterId,
+      )
+    ) {
+      return undefined;
+    }
+    return location;
+  } catch (error) {
+    console.warn("V3 reading location could not be restored", error);
+    return undefined;
+  }
+}
+
+function writeResumeLocation(location: V3ReadingLocation): void {
+  try {
+    globalThis.localStorage.setItem(
+      resumeStorageKey(location.bookId),
+      JSON.stringify(location),
+    );
+  } catch (error) {
+    console.warn("V3 reading location could not be saved", error);
+  }
+}
+
+function currentReadingLocation(): V3ReadingLocation | undefined {
+  const page = activePage();
+  if (
+    !manifest ||
+    page?.kind !== "content" ||
+    page.chapterIndex === undefined ||
+    page.chapterId === undefined
+  ) {
+    return undefined;
+  }
+  return {
+    bookId: manifest.bookId,
+    editionId: manifest.editionId,
+    chapterId: page.chapterId,
+    anchor:
+      preferredAnchor?.chapterId === page.chapterId &&
+      pageContainsAnchor(page, preferredAnchor.anchor)
+        ? preferredAnchor.anchor
+        : page.anchor,
+  };
+}
+
+function readingLocationUrl(
+  location: V3ReadingLocation | undefined,
+  preserveContext: boolean,
+): URL {
+  if (!manifest) {
+    throw new Error("V3 cannot create a location before loading a publication");
+  }
+  const url = new URL(globalThis.location.href);
+  if (!preserveContext) {
+    url.search = "";
+  }
+  url.searchParams.set("book", manifest.bookId);
+  if (location) {
+    url.searchParams.set("chapter", location.chapterId);
+    url.hash = location.anchor;
+  } else {
+    url.searchParams.delete("chapter");
+    url.hash = "";
+  }
+  return url;
+}
+
+function syncCurrentLocation(update: LocationUpdate): void {
+  if (
+    update === "none" ||
+    !locationTrackingReady ||
+    applyingHistory ||
+    !manifest
+  ) {
+    return;
+  }
+  const location = currentReadingLocation();
+  const url = readingLocationUrl(location, true);
+  if (url.href !== globalThis.location.href) {
+    if (update === "push") {
+      globalThis.history.pushState({ v3Location: true }, "", url);
+    } else {
+      globalThis.history.replaceState({ v3Location: true }, "", url);
+    }
+  }
+  if (location) {
+    writeResumeLocation(location);
+  }
+}
+
+function renderFontControls(): void {
+  const percent = Math.round(fontScale * 100);
+  fontStatus.value = `${percent}%`;
+  reader.dataset.v3FontSize = String(percent);
+  decreaseFont.disabled = opening || activeTurn !== undefined || fontScale <= 0.8;
+  increaseFont.disabled = opening || activeTurn !== undefined || fontScale >= 1.3;
+}
+
+function applyFontScale(value: number): void {
+  fontScale = normalizeBookFontScale(value);
+  reader.style.setProperty("--v3-font-scale", String(fontScale));
+  renderFontControls();
+}
+
 function renderControls(): void {
   previous.disabled =
-    opening || !canTurn("backward") || activeTurn !== undefined;
+    opening ||
+    !canTurn("backward") ||
+    !turnTargetReady("backward", true) ||
+    activeTurn !== undefined;
   next.disabled =
-    opening || !canTurn("forward") || activeTurn !== undefined;
+    opening ||
+    !canTurn("forward") ||
+    !turnTargetReady("forward", true) ||
+    activeTurn !== undefined;
   for (const corner of corners) {
     const direction = corner.dataset.v3Direction;
     corner.disabled =
       opening ||
       activeTurn !== undefined ||
       (direction !== "forward" && direction !== "backward") ||
-      !canTurn(direction);
+      !canTurn(direction) ||
+      !turnTargetReady(direction);
   }
+  shareButton.disabled =
+    opening || activeTurn !== undefined || sharing || manifest === undefined;
+  renderFontControls();
 }
 
-function renderStationary(): void {
+function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
   const singlePage = singlePageMedia.matches;
   spread.classList.toggle("v3-spread-single", singlePage);
   stationary.replaceChildren(
@@ -789,10 +1128,36 @@ function renderStationary(): void {
           ),
         ]),
   );
-  counter.value = singlePage
-    ? `Page ${spreadStart + 1} of ${pages.length}`
-    : `Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`;
+  const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
+  const focusedPage =
+    visiblePages.filter((page) => page?.kind === "content").at(-1) ??
+    visiblePages.find((page) => page?.chapterIndex !== undefined);
+  if (focusedPage?.chapterIndex !== undefined) {
+    const chapterState = chapterStates[focusedPage.chapterIndex];
+    const chapterPages = chapterState?.pages ?? [];
+    const localIndices = visiblePages.flatMap((page) => {
+      const localIndex = chapterPages.indexOf(page);
+      return localIndex >= 0 ? [localIndex + 1] : [];
+    });
+    const pageLabel =
+      localIndices.length > 1
+        ? `pages ${localIndices[0]}–${localIndices.at(-1)}`
+        : `page ${localIndices[0] ?? 1}`;
+    counter.value =
+      `Chapter ${focusedPage.chapterIndex + 1}/${chapterStates.length}` +
+      ` · ${pageLabel}/${Math.max(1, chapterPages.length)}` +
+      (singlePage
+        ? ` · Page ${spreadStart + 1} of ${pages.length}`
+        : ` · Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`);
+  } else {
+    counter.value = singlePage
+      ? `Front matter · Page ${spreadStart + 1} of ${pages.length}`
+      : `Front matter · Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`;
+  }
   reader.dataset.v3Turning = "false";
+  reader.dataset.v3PageIndex = String(spreadStart);
+  reader.dataset.v3PageCount = String(pages.length);
+  reader.dataset.v3AtEnd = String(!canTurn("forward"));
   if (manifest) {
     const visibleEnd = spreadStart + pageStep() - 1;
     const starts = manifest.chapters
@@ -808,6 +1173,67 @@ function renderStationary(): void {
       .at(-1);
     chapterSelect.value = current?.id ?? "";
   }
+  renderControls();
+  syncCurrentLocation(locationUpdate);
+  if (preferredAnchor) {
+    const target = stationary.querySelector<HTMLElement>(
+      `#${CSS.escape(preferredAnchor.anchor)}`,
+    );
+    if (target) {
+      target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    }
+  }
+}
+
+function setFontScale(value: number): void {
+  if (!manifest) {
+    return;
+  }
+  const nextScale = normalizeBookFontScale(value);
+  if (nextScale === fontScale) {
+    return;
+  }
+  const preservation = currentPreservation();
+  if (activeTurn) {
+    finishTurn(false);
+  }
+  reader.setAttribute("aria-busy", "true");
+  status.textContent = "Repaginating the loaded chapter window";
+  applyFontScale(nextScale);
+  writeBookFontScale(manifest.bookId, fontScale);
+  try {
+    rebuildPages(
+      preservation.anchor,
+      preservation.progress,
+      preservation.chapterIndex,
+      preservation.chapterPageOffset,
+    );
+    reportReadyIfHealthy();
+  } catch (error: unknown) {
+    reportFailure("V3 could not resize the book text", error);
+  }
+}
+
+async function shareCurrentLocation(): Promise<void> {
+  if (!manifest || sharing) {
+    return;
+  }
+  sharing = true;
+  shareStatus.value = "Preparing reading link";
+  renderControls();
+  const location = currentReadingLocation();
+  const chapter = location
+    ? manifest.chapters.find(
+        ({ chapterId }) => String(chapterId) === location.chapterId,
+      )
+    : undefined;
+  const title = chapter
+    ? `${manifest.title}: ${chapter.title}`
+    : manifest.title;
+  const url = readingLocationUrl(location, false);
+  shareStatus.value = await shareReadingLocation(title, url.href);
+  sharing = false;
   renderControls();
 }
 
@@ -830,6 +1256,17 @@ function onStationaryClick(event: MouseEvent): void {
   ) {
     return;
   }
+  const retry = event.target.closest<HTMLButtonElement>(
+    "[data-v3-retry-chapter]",
+  );
+  const retryChapterId = retry?.dataset.v3RetryChapter;
+  if (retry && retryChapterId) {
+    event.preventDefault();
+    void goToChapter(retryChapterId, "replace").catch((error: unknown) => {
+      reportFailure("V3 could not retry the requested chapter", error);
+    });
+    return;
+  }
   const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
   const href = link?.getAttribute("href");
   if (!link || !href || href.length <= 1) {
@@ -849,26 +1286,29 @@ function onStationaryClick(event: MouseEvent): void {
     console.warn(`V3 could not locate internal anchor: ${anchor}`);
     return;
   }
-  event.preventDefault();
-  const step = pageStep();
-  spreadStart = Math.floor(pageIndex / step) * step;
-  renderStationary();
-  const target = stationary.querySelector<HTMLElement>(
-    `#${CSS.escape(anchor)}`,
-  );
-  if (target) {
-    target.tabIndex = -1;
-    target.focus({ preventScroll: true });
+  const chapterId = pages[pageIndex]?.chapterId;
+  if (!chapterId) {
+    console.warn(`V3 internal anchor has no chapter: ${anchor}`);
+    return;
   }
+  event.preventDefault();
+  void goToLocation(chapterId, anchor, "push").catch((error: unknown) => {
+    reportFailure("V3 could not open the linked passage", error);
+  });
 }
 
-function goToChapter(chapterId: string): void {
+function positionAtLocation(
+  chapterId: string,
+  anchor: string | undefined,
+  locationUpdate: LocationUpdate,
+): void {
   if (!manifest) {
     return;
   }
   if (chapterId === "") {
+    preferredAnchor = undefined;
     spreadStart = 0;
-    renderStationary();
+    renderStationary(locationUpdate);
     return;
   }
   const chapter = manifest.chapters.find(
@@ -877,22 +1317,81 @@ function goToChapter(chapterId: string): void {
   if (!chapter) {
     throw new Error(`V3 chapter is unavailable: ${chapterId}`);
   }
+  const targetAnchor = anchor ?? chapter.firstAnchor;
   const pageIndex = pages.findIndex((page) =>
-    pageContainsAnchor(page, chapter.firstAnchor),
+    page.kind === "content" &&
+    page.chapterId === chapterId &&
+    pageContainsAnchor(page, targetAnchor),
   );
   if (pageIndex < 0) {
-    throw new Error(`V3 could not locate chapter: ${chapter.title}`);
+    throw new Error(
+      `V3 could not locate ${targetAnchor} in ${chapter.title}`,
+    );
   }
   const step = pageStep();
+  preferredAnchor = { chapterId, anchor: targetAnchor };
   spreadStart = Math.floor(pageIndex / step) * step;
-  renderStationary();
+  renderStationary(locationUpdate);
   const heading = stationary.querySelector<HTMLElement>(
-    `#${CSS.escape(chapter.firstAnchor)}`,
+    `#${CSS.escape(targetAnchor)}`,
   );
   if (heading) {
     heading.tabIndex = -1;
     heading.focus({ preventScroll: true });
   }
+}
+
+async function goToLocation(
+  chapterId: string,
+  anchor: string | undefined,
+  locationUpdate: LocationUpdate,
+): Promise<void> {
+  const navigationVersion = ++locationNavigationVersion;
+  if (!manifest || chapterId === "") {
+    if (navigationVersion === locationNavigationVersion) {
+      positionAtLocation(chapterId, anchor, locationUpdate);
+    }
+    return;
+  }
+  const chapterIndex = chapterStates.findIndex(
+    ({ chapter }) => String(chapter.chapterId) === chapterId,
+  );
+  if (chapterIndex < 0) {
+    throw new Error(`V3 chapter is unavailable: ${chapterId}`);
+  }
+  const chapter = chapterStates[chapterIndex]?.chapter;
+  if (!chapter) {
+    throw new Error(`V3 chapter is unavailable: ${chapterId}`);
+  }
+  const preservation = {
+    anchor: anchor ?? chapter.firstAnchor,
+    progress:
+      chapterStates.length <= 1 ? 0 : chapterIndex / (chapterStates.length - 1),
+  };
+  while (navigationVersion === locationNavigationVersion) {
+    const result = await ensureChapterWindow(chapterIndex, preservation);
+    if (navigationVersion !== locationNavigationVersion) {
+      return;
+    }
+    if (result === "ready") {
+      positionAtLocation(chapterId, anchor, locationUpdate);
+      return;
+    }
+  }
+}
+
+async function goToChapter(
+  chapterId: string,
+  locationUpdate: LocationUpdate = "push",
+): Promise<void> {
+  const chapter = chapterStates.find(
+    ({ chapter: candidate }) => String(candidate.chapterId) === chapterId,
+  )?.chapter;
+  await goToLocation(
+    chapterId,
+    chapter?.firstAnchor,
+    locationUpdate,
+  );
 }
 
 function turnPages(direction: PageTurnDirection): {
@@ -940,6 +1439,12 @@ function beginTurn(
   }
   const target = targetSpread(direction);
   const selected = turnPages(direction);
+  if (
+    selected.moving.kind === "placeholder" ||
+    selected.revealed.kind === "placeholder"
+  ) {
+    return undefined;
+  }
   const moving = createElement("div", "v3-turn-surface");
   moving.setAttribute("aria-hidden", "true");
   moving.inert = true;
@@ -1069,11 +1574,15 @@ function finishTurn(commit: boolean): void {
     }
   }
   if (commit) {
+    preferredAnchor = undefined;
     spreadStart = turn.targetSpread;
   }
   activeTurn = undefined;
   turnLayer.replaceChildren();
   renderStationary();
+  if (commit) {
+    queueChapterWindow();
+  }
 }
 
 function settleTurn(commit: boolean): void {
@@ -1162,8 +1671,10 @@ function onCornerPointerDown(event: PointerEvent): void {
   }
   if (reducedMotion.matches) {
     if (canTurn(direction)) {
+      preferredAnchor = undefined;
       spreadStart = targetSpread(direction);
       renderStationary();
+      queueChapterWindow();
     }
     return;
   }
@@ -1205,13 +1716,30 @@ function onPointerCancel(event: PointerEvent): void {
   }
 }
 
-function automaticTurn(direction: PageTurnDirection): void {
+async function performAutomaticTurn(
+  direction: PageTurnDirection,
+): Promise<void> {
   if (!canTurn(direction) || activeTurn) {
     return;
   }
+  const target = targetSpread(direction);
+  const unloadedTarget = pages
+    .slice(target, target + pageStep())
+    .find((page) => page?.kind === "placeholder");
+  if (
+    unloadedTarget?.kind === "placeholder" &&
+    unloadedTarget.chapterIndex !== undefined
+  ) {
+    await ensureChapterWindow(unloadedTarget.chapterIndex);
+    if (!canTurn(direction) || !turnTargetReady(direction)) {
+      return;
+    }
+  }
   if (reducedMotion.matches) {
+    preferredAnchor = undefined;
     spreadStart = targetSpread(direction);
     renderStationary();
+    queueChapterWindow();
     return;
   }
   const size = pageSize();
@@ -1222,6 +1750,14 @@ function automaticTurn(direction: PageTurnDirection): void {
   });
   if (turn) {
     settleTurn(true);
+  }
+}
+
+async function automaticTurn(direction: PageTurnDirection): Promise<void> {
+  try {
+    await performAutomaticTurn(direction);
+  } catch (error: unknown) {
+    reportFailure("V3 could not turn to the requested chapter", error);
   }
 }
 
@@ -1386,7 +1922,10 @@ function fitBlock(block: SemanticBlock): SemanticBlock[] {
   return fragments;
 }
 
-function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
+function paginateContent(
+  blocks: readonly SemanticBlock[],
+  chapterState: ChapterState,
+): PrototypePage[] {
   if (measureContent.clientHeight <= 0) {
     throw new Error("V3 pagination measure has no usable height");
   }
@@ -1396,7 +1935,9 @@ function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
 
   for (const block of fittedBlocks) {
     if (block.chapterStart && current.length > 0) {
-      result.push(pageFromBlocks(current, result.length + 1));
+      result.push(
+        pageFromBlocks(current, result.length + 1, chapterState),
+      );
       current = [];
     }
     const candidate = [...current, block];
@@ -1411,20 +1952,26 @@ function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
     ) {
       const heading = current.pop();
       if (current.length > 0) {
-        result.push(pageFromBlocks(current, result.length + 1));
+        result.push(
+          pageFromBlocks(current, result.length + 1, chapterState),
+        );
       }
       const headingWithBlock = heading ? [heading, block] : [block];
       if (pageFits(headingWithBlock)) {
         current = headingWithBlock;
       } else {
         if (heading) {
-          result.push(pageFromBlocks([heading], result.length + 1));
+          result.push(
+            pageFromBlocks([heading], result.length + 1, chapterState),
+          );
         }
         current = [block];
       }
     } else {
       if (current.length > 0) {
-        result.push(pageFromBlocks(current, result.length + 1));
+        result.push(
+          pageFromBlocks(current, result.length + 1, chapterState),
+        );
       }
       current = [block];
     }
@@ -1435,7 +1982,9 @@ function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
   }
 
   if (current.length > 0) {
-    result.push(pageFromBlocks(current, result.length + 1));
+    result.push(
+      pageFromBlocks(current, result.length + 1, chapterState),
+    );
   }
   return result;
 }
@@ -1451,34 +2000,114 @@ function blankPage(manifestTitle: string): PrototypePage {
   };
 }
 
+function updateLoadedDiagnostics(): void {
+  const blocks = chapterStates.flatMap(({ blocks }) => blocks ?? []);
+  reader.dataset.v3LoadedChapterIds = chapterStates
+    .filter(({ status }) => status === "ready")
+    .map(({ chapter }) => String(chapter.chapterId))
+    .join(",");
+  reader.dataset.v3LoadedChapters = String(loadedChapterCount());
+  reader.dataset.v3ChapterCount = String(chapterStates.length);
+  reader.dataset.v3Tables = String(
+    blocks.filter(({ node }) => node.matches("table")).length,
+  );
+  reader.dataset.v3CodeBlocks = String(
+    blocks.filter(({ node }) => node.matches("pre")).length,
+  );
+  reader.dataset.v3NoteLinks = String(
+    blocks.reduce(
+      (total, { node }) =>
+        total + node.querySelectorAll('a[href^="#note-"]').length,
+      0,
+    ),
+  );
+  reader.dataset.v3DeepHeadings = String(
+    blocks.filter(({ node }) => node.matches("h4, h5, h6")).length,
+  );
+  reader.dataset.v3FigureLinks = String(
+    blocks.reduce(
+      (total, { node }) =>
+        total + node.querySelectorAll('a[href*="/figs/"]').length,
+      0,
+    ),
+  );
+  reader.dataset.v3Blocks = String(blocks.length);
+}
+
+function repaginateLoadedChapters(): void {
+  for (const chapterState of chapterStates) {
+    if (chapterState.status === "ready" && chapterState.blocks) {
+      const chapterPages = paginateContent(
+        chapterState.blocks,
+        chapterState,
+      );
+      chapterState.pages =
+        chapterPages.length % 2 === 0
+          ? chapterPages
+          : [...chapterPages, blankChapterPage(chapterState)];
+    }
+  }
+}
+
+function composedPublicationPages(): PrototypePage[] {
+  return chapterStates.flatMap((chapterState) =>
+    chapterState.status === "ready" && chapterState.pages
+      ? chapterState.pages
+      : [placeholderPage(chapterState), blankChapterPage(chapterState)],
+  );
+}
+
 function rebuildPages(
   preserveAnchor?: string,
   preserveProgress = 0,
+  preserveChapterIndex?: number,
+  preserveChapterPageOffset?: number,
 ): void {
   if (!manifest) {
     return;
   }
   spread.classList.toggle("v3-spread-single", singlePageMedia.matches);
   measure.hidden = false;
+  repaginateLoadedChapters();
   const built = [
     ...frontMatterPages(manifest),
-    ...paginateContent(contentBlocks),
+    ...composedPublicationPages(),
   ];
   if (built.length % 2 !== 0) {
     built.push(blankPage(manifest.title));
   }
   pages = built;
   measure.hidden = true;
+  updateLoadedDiagnostics();
   const projectedIndex = Math.round(
     Math.min(1, Math.max(0, preserveProgress)) *
       Math.max(0, pages.length - 1),
   );
   const matchingIndices = preserveAnchor
-    ? pages.flatMap(({ anchor }, index) =>
-        anchor === preserveAnchor ? [index] : [],
+    ? pages.flatMap((page, index) =>
+        pageContainsAnchor(page, preserveAnchor) ? [index] : [],
       )
     : [];
-  const preservedIndex =
+  const chapterPageIndices =
+    preserveChapterIndex === undefined
+      ? []
+      : pages.flatMap((page, index) =>
+          page.chapterIndex === preserveChapterIndex &&
+          page.kind === "content"
+            ? [index]
+            : [],
+        );
+  const chapterPreservedIndex =
+    preserveChapterPageOffset === undefined ||
+    chapterPageIndices.length === 0
+      ? -1
+      : chapterPageIndices[
+          Math.min(
+            chapterPageIndices.length - 1,
+            Math.max(0, preserveChapterPageOffset),
+          )
+        ] ?? -1;
+  const anchorPreservedIndex =
     matchingIndices.length === 0
       ? -1
       : matchingIndices.reduce((closest, candidate) =>
@@ -1487,6 +2116,10 @@ function rebuildPages(
             ? candidate
             : closest,
         );
+  const preservedIndex =
+    anchorPreservedIndex >= 0
+      ? anchorPreservedIndex
+      : chapterPreservedIndex;
   const step = pageStep();
   const maximumStart = Math.max(0, pages.length - step);
   const targetIndex =
@@ -1496,21 +2129,208 @@ function rebuildPages(
   renderStationary();
 }
 
+function currentPreservation(): Readonly<{
+  anchor?: string;
+  progress: number;
+  chapterIndex?: number;
+  chapterPageOffset?: number;
+}> {
+  const page = activePage();
+  const preservedAnchor = preferredAnchor?.anchor ?? page?.anchor;
+  const pageIndex = page ? pages.indexOf(page) : -1;
+  const chapterPageIndices =
+    page?.chapterIndex === undefined
+      ? []
+      : pages.flatMap((candidate, index) =>
+          candidate.kind === "content" &&
+          candidate.chapterIndex === page.chapterIndex
+            ? [index]
+            : [],
+        );
+  const chapterPageOffset =
+    pageIndex < 0 ? -1 : chapterPageIndices.indexOf(pageIndex);
+  return {
+    ...(preservedAnchor ? { anchor: preservedAnchor } : {}),
+    ...(page?.chapterIndex === undefined
+      ? {}
+      : { chapterIndex: page.chapterIndex }),
+    ...(chapterPageOffset < 0 ? {} : { chapterPageOffset }),
+    progress:
+      pages.length <= 1 ? 0 : spreadStart / Math.max(1, pages.length - 1),
+  };
+}
+
+function releaseChapter(chapterState: ChapterState): void {
+  if (chapterState.status === "loading") {
+    return;
+  }
+  chapterState.status = "idle";
+  chapterState.blocks = undefined;
+  chapterState.pages = undefined;
+  chapterState.promise = undefined;
+  chapterState.error = undefined;
+}
+
+function chapterInWindow(index: number): boolean {
+  return Math.abs(index - chapterWindowCenter) <= 1;
+}
+
+async function ensureChapterLoaded(index: number): Promise<void> {
+  const chapterState = chapterStates[index];
+  if (!chapterState) {
+    throw new RangeError(`V3 chapter index is unavailable: ${index}`);
+  }
+  if (chapterState.status === "ready") {
+    return;
+  }
+  if (chapterState.status === "loading" && chapterState.promise) {
+    return chapterState.promise;
+  }
+  if (!manifestUrl) {
+    throw new Error("V3 publication manifest URL is unavailable");
+  }
+
+  chapterState.status = "loading";
+  chapterState.error = undefined;
+  updateLoadedDiagnostics();
+  const promise = fetchChapterBlocks(chapterState.chapter, manifestUrl)
+    .then((blocks) => {
+      chapterState.blocks = blocks;
+      chapterState.status = "ready";
+      chapterState.pages = undefined;
+      chapterState.promise = undefined;
+      if (!chapterInWindow(index)) {
+        releaseChapter(chapterState);
+      }
+      updateLoadedDiagnostics();
+    })
+    .catch((error: unknown) => {
+      const failure =
+        error instanceof Error
+          ? error
+          : new Error(`Unknown chapter loading failure: ${String(error)}`);
+      chapterState.status = "error";
+      chapterState.error = failure;
+      chapterState.promise = undefined;
+      updateLoadedDiagnostics();
+      throw failure;
+    });
+  chapterState.promise = promise;
+  return promise;
+}
+
+async function ensureChapterWindow(
+  centerIndex: number,
+  preservation = currentPreservation(),
+): Promise<"ready" | "superseded"> {
+  const boundedCenter = Math.min(
+    chapterStates.length - 1,
+    Math.max(0, centerIndex),
+  );
+  const desired = [boundedCenter - 1, boundedCenter, boundedCenter + 1].filter(
+    (index) => index >= 0 && index < chapterStates.length,
+  );
+  const windowIsReady =
+    chapterWindowCenter === boundedCenter &&
+    desired.every(
+      (index) => chapterStates[index]?.status === "ready",
+    ) &&
+    chapterStates.every(
+      ({ index, status }) => desired.includes(index) || status === "idle",
+    );
+  if (windowIsReady) {
+    return "ready";
+  }
+  const version = ++chapterWindowVersion;
+  chapterWindowCenter = boundedCenter;
+  status.textContent = `Loading chapter window · ${desired.length} chapters`;
+  try {
+    await Promise.all(desired.map((index) => ensureChapterLoaded(index)));
+  } catch (error: unknown) {
+    if (version !== chapterWindowVersion) {
+      for (const chapterState of chapterStates) {
+        if (!chapterInWindow(chapterState.index)) {
+          releaseChapter(chapterState);
+        }
+      }
+      console.warn("V3 ignored a failure from an obsolete chapter window", error);
+      return "superseded";
+    }
+    for (const chapterState of chapterStates) {
+      if (!desired.includes(chapterState.index)) {
+        releaseChapter(chapterState);
+      }
+    }
+    if (activeTurn) {
+      finishTurn(false);
+    }
+    rebuildPages(
+      preservation.anchor,
+      preservation.progress,
+      preservation.chapterIndex,
+      preservation.chapterPageOffset,
+    );
+    throw error;
+  }
+  if (version !== chapterWindowVersion) {
+    return "superseded";
+  }
+
+  for (const chapterState of chapterStates) {
+    if (!desired.includes(chapterState.index)) {
+      releaseChapter(chapterState);
+    }
+  }
+  if (activeTurn) {
+    finishTurn(false);
+  }
+  rebuildPages(
+    preservation.anchor,
+    preservation.progress,
+    preservation.chapterIndex,
+    preservation.chapterPageOffset,
+  );
+  if (!opening) {
+    reportReady();
+  } else {
+    failureReported = false;
+  }
+  return "ready";
+}
+
+function queueChapterWindow(centerIndex = activeChapterIndex()): void {
+  void ensureChapterWindow(centerIndex).catch((error: unknown) => {
+    reportFailure("V3 could not load the chapter window", error);
+  });
+}
+
 function prototypeErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown V3 reader error";
 }
 
 function reportReady(): void {
+  failureReported = false;
   reader.dataset.v3Ready = "true";
   reader.setAttribute("aria-busy", "false");
-  status.textContent = `Geometry ready · ${loadedChapterCount} real chapters · ${pages.length} semantic pages`;
+  status.textContent =
+    `Geometry ready · ${loadedChapterCount()}/${chapterStates.length} chapters loaded` +
+    ` · ${pages.length} composed pages`;
 }
 
 function reportFailure(context: string, error: unknown): void {
+  failureReported = true;
   reader.dataset.v3Ready = "false";
   reader.setAttribute("aria-busy", "false");
   status.textContent = `${context}: ${prototypeErrorMessage(error)}`;
   console.error(error);
+}
+
+function reportReadyIfHealthy(): void {
+  if (failureReported) {
+    reader.setAttribute("aria-busy", "false");
+    return;
+  }
+  reportReady();
 }
 
 function finishOpening(): void {
@@ -1523,7 +2343,7 @@ function finishOpening(): void {
     openingTimer = undefined;
   }
   reader.dataset.v3Opening = "false";
-  reportReady();
+  reportReadyIfHealthy();
   renderControls();
 }
 
@@ -1533,57 +2353,169 @@ function startOpening(): void {
     finishOpening();
     return;
   }
-  status.textContent = `Opening complete semantic edition · ${loadedChapterCount} chapters`;
+  status.textContent =
+    `Opening semantic edition · ${loadedChapterCount()}/${chapterStates.length} chapters loaded`;
   entryCover.addEventListener("animationend", finishOpening, { once: true });
   openingTimer = globalThis.setTimeout(finishOpening, 1_300);
+}
+
+type InitialReadingLocation = Readonly<{
+  location: V3ReadingLocation;
+  source: "resume" | "url";
+}>;
+
+function initialReadingLocation(
+  publication: V3Manifest,
+): InitialReadingLocation | undefined {
+  const anchor = decodeLocationHash();
+  let chapterId = requestedChapterId;
+  if (anchor && chapterId === null) {
+    chapterId =
+      publication.chapters.find(
+        ({ firstAnchor }) => firstAnchor === anchor,
+      )?.chapterId.toString() ?? null;
+    if (chapterId === null) {
+      throw new Error(
+        "V3 source-anchor URLs must include their chapter parameter",
+      );
+    }
+  }
+  if (chapterId !== null) {
+    const chapter = publication.chapters.find(
+      ({ chapterId: candidate }) => String(candidate) === chapterId,
+    );
+    if (!chapter) {
+      throw new Error(`V3 chapter is unavailable: ${chapterId}`);
+    }
+    return {
+      source: "url",
+      location: {
+        bookId: publication.bookId,
+        editionId: publication.editionId,
+        chapterId,
+        anchor: anchor ?? chapter.firstAnchor,
+      },
+    };
+  }
+  const resumed = readResumeLocation(publication);
+  return resumed ? { source: "resume", location: resumed } : undefined;
+}
+
+async function restoreHistoryLocation(): Promise<void> {
+  if (!manifest) {
+    return;
+  }
+  const params = new URLSearchParams(globalThis.location.search);
+  const historyBookId = params.get("book") ?? "what-is-ethical-ai";
+  if (historyBookId !== manifest.bookId) {
+    globalThis.location.reload();
+    return;
+  }
+  const chapterId = params.get("chapter");
+  const anchor = decodeLocationHash();
+  if (anchor && chapterId === null) {
+    throw new Error(
+      "V3 source-anchor URLs must include their chapter parameter",
+    );
+  }
+  applyingHistory = true;
+  try {
+    await goToLocation(chapterId ?? "", anchor, "none");
+    const restored = currentReadingLocation();
+    if (restored) {
+      writeResumeLocation(restored);
+    }
+  } finally {
+    applyingHistory = false;
+  }
+}
+
+function onPopState(): void {
+  void restoreHistoryLocation().catch((error: unknown) => {
+    reportFailure("V3 could not restore the browser location", error);
+  });
 }
 
 async function initialize(): Promise<void> {
   const loaded = await fetchManifest();
   manifest = loaded.manifest;
+  manifestUrl = loaded.url;
   if (manifest.bookId !== requestedBookId) {
     throw new Error(
       `V3 requested ${requestedBookId} but loaded ${manifest.bookId}`,
     );
   }
   applyPublicationIdentity(manifest);
-  const chapters = loaded.manifest.chapters;
-  const blocks = await Promise.all(
-    chapters.map((chapter) => fetchChapterBlocks(chapter, loaded.url)),
-  );
-  contentBlocks = blocks.flat();
-  reader.dataset.v3Tables = String(
-    contentBlocks.filter(({ node }) => node.matches("table")).length,
-  );
-  reader.dataset.v3CodeBlocks = String(
-    contentBlocks.filter(({ node }) => node.matches("pre")).length,
-  );
-  reader.dataset.v3NoteLinks = String(
-    contentBlocks.reduce(
-      (total, { node }) =>
-        total + node.querySelectorAll('a[href^="#note-"]').length,
-      0,
-    ),
-  );
-  reader.dataset.v3DeepHeadings = String(
-    contentBlocks.filter(({ node }) => node.matches("h4, h5, h6")).length,
-  );
-  reader.dataset.v3FigureLinks = String(
-    contentBlocks.reduce(
-      (total, { node }) =>
-        total + node.querySelectorAll('a[href*="/figs/"]').length,
-      0,
-    ),
-  );
-  reader.dataset.v3Blocks = String(contentBlocks.length);
-  loadedChapterCount = chapters.length;
+  applyFontScale(readBookFontScale(manifest.bookId, 1));
+  chapterStates = manifest.chapters.map((chapter, index) => ({
+    chapter,
+    index,
+    status: "idle",
+    blocks: undefined,
+    pages: undefined,
+    promise: undefined,
+    error: undefined,
+  }));
+  const initialLocation = initialReadingLocation(manifest);
+  const initialChapterIndex = initialLocation
+    ? chapterStates.findIndex(
+        ({ chapter }) =>
+          String(chapter.chapterId) === initialLocation.location.chapterId,
+      )
+    : 0;
+  chapterWindowCenter = Math.max(0, initialChapterIndex);
   await document.fonts.ready;
+  await waitForPageLayout();
   rebuildPages();
-  if (requestedChapterId) {
-    goToChapter(requestedChapterId);
+  try {
+    await ensureChapterLoaded(chapterWindowCenter);
+  } catch (error: unknown) {
+    rebuildPages();
+    const placeholderIndex = pages.findIndex(
+      (page) =>
+        page.kind === "placeholder" &&
+        page.chapterIndex === chapterWindowCenter,
+    );
+    if (placeholderIndex >= 0) {
+      const step = pageStep();
+      spreadStart = Math.floor(placeholderIndex / step) * step;
+      const failedChapter = chapterStates[chapterWindowCenter]?.chapter;
+      chapterSelect.value = failedChapter
+        ? String(failedChapter.chapterId)
+        : "";
+      renderStationary("none");
+    }
+    locationTrackingReady = true;
+    opening = false;
+    reader.dataset.v3Opening = "false";
+    renderControls();
+    throw error;
   }
+  rebuildPages();
+  if (initialLocation) {
+    try {
+      positionAtLocation(
+        initialLocation.location.chapterId,
+        initialLocation.location.anchor,
+        "none",
+      );
+    } catch (error: unknown) {
+      if (initialLocation.source !== "resume") {
+        throw error;
+      }
+      console.warn("V3 saved source anchor could not be restored", error);
+      positionAtLocation(
+        initialLocation.location.chapterId,
+        undefined,
+        "none",
+      );
+    }
+  }
+  locationTrackingReady = true;
+  syncCurrentLocation("replace");
   reportReady();
   startOpening();
+  queueChapterWindow(chapterWindowCenter);
 }
 
 for (const corner of corners) {
@@ -1593,25 +2525,38 @@ spread.addEventListener("pointermove", onPointerMove);
 spread.addEventListener("pointerup", onPointerEnd);
 spread.addEventListener("pointercancel", onPointerCancel);
 stationary.addEventListener("click", onStationaryClick);
-previous.addEventListener("click", () => automaticTurn("backward"));
-next.addEventListener("click", () => automaticTurn("forward"));
+previous.addEventListener("click", () => void automaticTurn("backward"));
+next.addEventListener("click", () => void automaticTurn("forward"));
+decreaseFont.addEventListener("click", () => setFontScale(fontScale - 0.1));
+increaseFont.addEventListener("click", () => setFontScale(fontScale + 0.1));
+shareButton.addEventListener("click", () => void shareCurrentLocation());
 chapterSelect.addEventListener("change", () =>
-  goToChapter(chapterSelect.value),
+  void goToChapter(chapterSelect.value).catch((error: unknown) => {
+    reportFailure("V3 could not open the selected chapter", error);
+  }),
 );
 
 const onKeyDown = (event: KeyboardEvent) => {
-  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+  if (
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    (event.target instanceof Element &&
+      event.target.closest("a, button, input, select, textarea") !== null)
+  ) {
     return;
   }
   if (event.key === "ArrowLeft") {
     event.preventDefault();
-    automaticTurn("backward");
+    void automaticTurn("backward");
   } else if (event.key === "ArrowRight") {
     event.preventDefault();
-    automaticTurn("forward");
+    void automaticTurn("forward");
   }
 };
 document.addEventListener("keydown", onKeyDown);
+globalThis.addEventListener("popstate", onPopState);
 
 const observer = new ResizeObserver(() => {
   if (!manifest || pages.length === 0) {
@@ -1620,20 +2565,20 @@ const observer = new ResizeObserver(() => {
   if (resizeTimer !== undefined) {
     clearTimeout(resizeTimer);
   }
-  if (openingTimer !== undefined) {
-    clearTimeout(openingTimer);
-  }
   resizeTimer = globalThis.setTimeout(() => {
     resizeTimer = undefined;
-    const anchor = pages[spreadStart]?.anchor;
-    const progress =
-      pages.length <= 1 ? 0 : spreadStart / (pages.length - 1);
+    const preservation = currentPreservation();
     if (activeTurn) {
       finishTurn(false);
     }
     try {
-      rebuildPages(anchor, progress);
-      reportReady();
+      rebuildPages(
+        preservation.anchor,
+        preservation.progress,
+        preservation.chapterIndex,
+        preservation.chapterPageOffset,
+      );
+      reportReadyIfHealthy();
     } catch (error: unknown) {
       reportFailure("V3 could not repaginate", error);
     }
@@ -1646,6 +2591,7 @@ globalThis.addEventListener(
   () => {
     observer.disconnect();
     document.removeEventListener("keydown", onKeyDown);
+    globalThis.removeEventListener("popstate", onPopState);
     stationary.removeEventListener("click", onStationaryClick);
     chapterSelect.replaceChildren();
     if (resizeTimer !== undefined) {

@@ -376,6 +376,34 @@ desktop test profile, and retains detached parsed source documents even though
 only 116 elements are attached. Chapter-level loading and source-document
 release are the next performance priorities.
 
+### 10.4 Bounded-reader hardening checkpoint - 2026-08-30
+
+The eager-loading limitation recorded in section 10.3 is now addressed:
+
+- V3 loads the requested chapter first and then only the adjacent chapter
+  window. Stable state contains no more than three chapter source/page runs.
+- Released chapters return to lightweight two-leaf placeholders. Loaded chapter
+  runs are padded to even physical length, so every chapter opens on a
+  right-hand page and lazy expansion cannot change downstream spread parity.
+- Navigation is represented by book, edition, chapter, and source anchor.
+  Responsive screen-page numbers remain presentation-only.
+- URLs use `?book=<id>&chapter=<id>#<source-anchor>`. Explicit URLs outrank saved
+  resume state, chapter and anchor jumps push history, ordinary page turns
+  replace it, and Back/Forward restores and focuses the semantic target.
+- V3 now has per-publication 80%-130% typography controls shared with V2. A
+  change repaginates only the loaded window and preserves the source anchor.
+- V3 shares a canonical book/chapter/anchor URL through Web Share or clipboard
+  fallback. Embed and shelf-handoff query state is omitted from shared links.
+
+The built V3 assets measure 19,991 bytes gzip, remaining inside the 20 kB
+promotion gate. Including route HTML, the shared route is 22.0 kB gzip. After
+adjacent prefetch, the initial Plurality path is about 75.8 kB gzip versus 517.5
+kB for its complete static path. A fresh local Chromium profile retained 3,885 DOM
+nodes and 1.39 MB heap versus the earlier eager baseline of 31,850 nodes and
+2.00 MB. The expanded validation contains 38 unit tests and 59 browser
+scenarios against both root and Pages base paths. Full measurements and
+methodology are in [V3-LIBRARY-REVIEW.md](./V3-LIBRARY-REVIEW.md).
+
 ## 11. Promotion gates
 
 The geometry path cannot replace the current CSS path until all gates pass:

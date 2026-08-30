@@ -262,11 +262,16 @@ The importer should:
 V3 accepts a validated shelf publication identity and resolves its immutable
 local manifest. It no longer contains a hard-coded Ethical AI manifest URL.
 
-The current full-book test deliberately fetches all 17 Ethical AI chapters so
-payload and end-to-end fidelity can be measured. General multi-book production
-should restore chapter-level loading and adjacent prefetch, particularly for
-the 542-term Cyber Dictionary, rather than requiring every publication to load
-all content before its first page opens.
+V3 now fetches the requested chapter first, then prefetches only the immediate
+adjacent window. It retains at most three chapter source/page runs and releases
+inactive chapters. Unloaded chapters keep parity-stable two-leaf skeletons, and
+loaded chapters receive a blank verso when needed, so every chapter opening
+remains on the right without downstream page-index shifts.
+
+The complete Ethical AI traversal test still reaches all 17 chapters in order,
+but it does so through the bounded window rather than fetching the entire book
+before its first usable page. Long individual chapters remain the next
+incremental-pagination target.
 
 The shelf can then offer:
 
@@ -347,5 +352,9 @@ A shelf book is V3-ready only when:
 - the publication adds no page-image requests to its semantic path;
 - semantic payload, page count, DOM, heap, and turn-frame measurements are
   recorded;
+- initial chapter loading and adjacent prefetch retain no more than three
+  chapter source/page runs;
+- canonical book/chapter/source-anchor URLs, resume, history, typography, and
+  sharing survive repagination;
 - V3 and every available V2, designed-page, or external source-reader action
   remain independently available.

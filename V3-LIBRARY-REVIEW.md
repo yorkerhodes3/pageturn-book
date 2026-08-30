@@ -9,7 +9,7 @@
 | Shelf publication chapters | 322 |
 | Plurality source revision | `86158859464aee75633acd854c656928121a7fd8` |
 | Lab source revision | `b456e8e137a0b6ce9a51799b71c6091f5241b5d7` |
-| Status | Broad V3 beta; editorial and lazy-loading hardening remain |
+| Status | Broad V3 beta with bounded chapter loading, durable locations, typography, and sharing |
 
 ## 1. What is available
 
@@ -72,38 +72,52 @@ The Plurality importer preserves:
   roughly 30 MB image library (37 figure links in the built snapshot);
 - CC0 source and voluntary attribution metadata.
 
-## 4. Controlled special-case measurements
+## 4. Controlled chapter-window measurements
 
-Fresh Chromium contexts at 1440 x 1000 were measured after garbage collection.
-Body bytes are complete built uncompressed path sizes, including the shared V3
-shell.
+V3 now loads the current chapter first, prefetches only its immediate neighbor,
+and retains at most the active chapter plus one chapter on either side. Inactive
+source blocks and paginated pages are released. Two parity-stable placeholder
+leaves stand in for each unloaded chapter, so replacing a placeholder cannot
+shift downstream recto/verso alignment or skip a chapter opening.
 
-Built gzip-equivalent complete paths, including the shared 17.4 kB V3 shell:
+Fresh Chromium contexts at 1440 x 1000 were measured against the local
+production build after adjacent prefetch and garbage collection. Body bytes are
+uncompressed local HTTP response bodies. Usable time is a warm local-preview
+measurement and should be treated as comparative rather than a network promise.
 
-- *What Is Ethical AI?*: about 68.6 kB;
-- Plurality: about 513.9 kB;
-- Cyber Dictionary: about 127.4 kB;
-- AI Models Research: about 45.8 kB.
+| Publication | Usable | Responses | Chapter responses | Body bytes | Loaded chapters/pages | Retained source elements | DOM nodes | Heap | Images |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| What Is Ethical AI? | 196 ms | 9 | 2 | 99,268 | 2 / 4 | 20 | 621 | 1.33 MB | 0 |
+| Plurality | 449 ms | 12 | 2 | 408,572 | 2 / 46 | 623 | 3,885 | 1.39 MB | 0 |
+| Cyber Dictionary | 304 ms | 9 | 2 | 289,372 | 2 / 14 | 250 | 1,640 | 1.31 MB | 0 |
+| AI Models Research | 306 ms | 9 | 2 | 85,409 | 2 / 4 | 66 | 944 | 1.29 MB | 0 |
 
-| Publication | Usable time | Responses | Body bytes | Semantic pages | DOM nodes | Attached elements | Heap | Images loaded |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Plurality | 5.04 s | 36 | 1,518,161 | 520 | 31,850 | 122 | 2.00 MB | 0 B |
-| Cyber Dictionary | 3.56 s | 20 | 499,349 | 126 | 12,517 | 99 | 1.69 MB | 0 B |
-| AI Models Research | 2.08 s | 17 | 119,842 | 26 | 3,128 | 95 | 1.51 MB | 0 B |
+The earlier eager Plurality baseline was 5.04 seconds, 36 responses, 1,518,161
+body bytes, 31,850 DOM nodes, and 2.00 MB heap. The bounded implementation's
+local comparison reduces those figures to 449 ms, 12 responses, 408,572 bytes,
+3,885 nodes, and 1.39 MB heap. A direct Plurality jump from chapter `1` to
+chapter `6-4` loaded and paginated the new `6-3,6-4,6-5` window in about 240 ms
+on the same profile, then released the old window.
 
-The attached document stays bounded. Timings vary with filesystem cache; the
-same Plurality path measured between about 5 and 10 seconds during this review.
-The high Plurality/Cyber node counts are
-detached parsed chapter documents and source nodes retained for repagination.
-They demonstrate why production work should add chapter-level loading and
-release inactive source DOM rather than interpreting "bounded attached faces"
-as sufficient by itself.
+Lazy loading changes serving and runtime size, not static hosting size. Every
+chapter remains an independently addressable file in the Pages artifact.
+
+| Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
+|---|---:|---:|---:|
+| What Is Ethical AI? | 31.1 kB | 72.8 kB | 57% |
+| Plurality | 75.8 kB | 517.5 kB | 85% |
+| Cyber Dictionary | 44.8 kB | 130.9 kB | 66% |
+| AI Models Research | 28.4 kB | 50.0 kB | 43% |
+
+These gzip paths include the 22.0 kB shared V3 route (19,991-byte assets plus
+2.0 kB route HTML), the publication manifest, and either the first two chapters
+or the complete semantic corpus.
 
 ## 5. Build and validation evidence
 
 - 23 fixtures build through the same publication CLI.
 - 324 static semantic chapter routes are emitted.
-- The Pages artifact contains 410 files totaling 6.06 MB raw / 1.67 MB gzip.
+- The Pages artifact contains 412 files totaling 6.11 MB raw / 1.67 MB gzip.
 - The Vite multi-page build processes 330 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
@@ -113,6 +127,10 @@ as sufficient by itself.
   are retained.
 - The complete Ethical AI traversal confirms all 17 chapter openings, all 122
   references, and the disclaimer.
+- All 38 unit tests and 59 browser scenarios pass against both root and GitHub
+  Pages base paths. The browser matrix includes lazy-window release, load
+  failure/retry, turn/rebuild races, superseded navigation, resume/history,
+  deep-anchor typography, and sharing.
 - V1 and V2 continue to use their original bundles and routes.
 - Source regeneration is deterministic: a complete lab/Plurality refresh
   produced the same whole-tree SHA-256 digest before and after regeneration.
@@ -121,10 +139,11 @@ as sufficient by itself.
 
 ### 6.1 Runtime
 
-- Load the current chapter first, then adjacent chapters.
-- Replace detached source DOM retention with serializable semantic blocks or
-  release parsed documents after pagination.
-- Add incremental page-window construction for very long books.
+- Move adjacent prefetch to an explicit idle scheduler and add abort signals for
+  obsolete chapter requests.
+- Add incremental page construction within unusually long individual chapters.
+- Evaluate a serializable block representation if three-chapter source-node
+  retention remains material on low-memory phones.
 - Add progress feedback for Plurality and dictionary pagination.
 
 ### 6.2 Content fidelity
@@ -140,13 +159,14 @@ as sufficient by itself.
 ### 6.3 Reader features
 
 - Add hierarchical contents navigation and search for long books.
-- Apply the mature V2 typography controls and canonical history model.
-- Persist reading position per publication.
+- Add bookmarks and a visible "start from beginning" action for resumed books.
+- Extend sharing to selected text and exported annotations.
 - Measure turn frames on representative low-end mobile hardware.
 
-V3 now includes a manifest-driven chapter picker and `?chapter=` start option,
-which provide chapter navigation for review. A hierarchical contents view and
-search remain future work.
+V3 now includes a manifest-driven chapter picker, canonical
+`?book=<id>&chapter=<id>#<source-anchor>` locations, browser history, per-edition
+resume, per-publication 80%-130% typography, and Web Share/clipboard links. A
+hierarchical contents view and search remain future work.
 
 The remaining production-quality estimate is 25-40 person-days, with
 chapter-level loading and editorial QA now the dominant work rather than basic
