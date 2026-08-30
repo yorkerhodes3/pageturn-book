@@ -351,7 +351,7 @@ The committed source set contains 322 shelf-publication chapters. The build
 emits 22 shelf manifests plus the internal demo, 324 semantic chapter routes,
 and a 410-file Pages artifact measuring 6.06 MB raw / 1.67 MB gzip.
 
-The shared V3 route is 17.7 kB gzip including HTML, CSS, JavaScript, catalog
+The shared V3 route is 17.8 kB gzip including HTML, CSS, JavaScript, catalog
 metadata, and module-preload support. It preserves prose, lists, tables, chart
 data, formulas, glossary records, chapter notes, figure links, and H1-H6
 headings. Unsupported non-empty top-level blocks now fail explicitly instead
@@ -371,7 +371,7 @@ one that initializes every shelf publication and representative assertions for
 tables, formulas, Plurality notes, and all 28 Plurality H4-H6 headings.
 
 The largest current limitation is eager source loading. Plurality's complete
-30-chapter path is about 519 kB gzip, initializes in about 5-10 seconds on the
+30-chapter path is about 514 kB gzip, initializes in about 5-10 seconds on the
 desktop test profile, and retains detached parsed source documents even though
 only 116 elements are attached. Chapter-level loading and source-document
 release are the next performance priorities.

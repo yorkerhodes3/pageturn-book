@@ -38,7 +38,7 @@ explicit garbage collection.
 | Responses through usable state | 22 | 22 | 54 |
 | Response bodies, local uncompressed transfer | 177,489 B | 250,003 B | 9,198,289 B |
 | Publication image bytes | 0 | 0 | 9,073,542 B |
-| Modeled complete gzip-equivalent path | about 68.3 kB | about 83 kB | about 9.10 MB |
+| Modeled complete gzip-equivalent path | about 68.6 kB | about 83 kB | about 9.10 MB |
 | DOM nodes after GC, including detached parsed documents | 2,586 | 2,603 | 139 |
 | Attached elements | 110 | 164 | 40 |
 | Parsed documents | 18 | 17 | 1 |
@@ -62,14 +62,14 @@ Built gzip sizes:
 
 | Resource | Size |
 |---|---:|
-| V3 HTML | 1.68 kB |
+| V3 HTML | 1.70 kB |
 | V3 CSS | 4.16 kB |
-| V3 JavaScript, including geometry and full-book composer | 9.24 kB |
+| V3 JavaScript, including geometry and full-book composer | 9.25 kB |
 | Catalog metadata | 2.33 kB |
 | Module-preload support | 0.39 kB |
 | Publication manifest | 4.14 kB |
-| All 17 semantic chapters | 46.43 kB |
-| **Complete V3 reading path** | **about 68.3 kB** |
+| All 17 semantic chapters | 46.59 kB |
+| **Complete V3 reading path** | **about 68.6 kB** |
 
 That is approximately:
 

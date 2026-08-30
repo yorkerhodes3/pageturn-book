@@ -75,20 +75,21 @@ The Plurality importer preserves:
 ## 4. Controlled special-case measurements
 
 Fresh Chromium contexts at 1440 x 1000 were measured after garbage collection.
-Response-body bytes are local uncompressed sizes.
+Body bytes are complete built uncompressed path sizes, including the shared V3
+shell.
 
 Built gzip-equivalent complete paths, including the shared 17.4 kB V3 shell:
 
-- *What Is Ethical AI?*: about 68.3 kB;
-- Plurality: about 519.2 kB;
-- Cyber Dictionary: about 127.2 kB;
-- AI Models Research: about 45.6 kB.
+- *What Is Ethical AI?*: about 68.6 kB;
+- Plurality: about 513.9 kB;
+- Cyber Dictionary: about 127.4 kB;
+- AI Models Research: about 45.8 kB.
 
 | Publication | Usable time | Responses | Body bytes | Semantic pages | DOM nodes | Attached elements | Heap | Images loaded |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Plurality | 5.04 s | 36 | 1,530,161 | 520 | 31,850 | 122 | 2.00 MB | 0 B |
-| Cyber Dictionary | 3.56 s | 20 | 498,415 | 126 | 12,517 | 99 | 1.69 MB | 0 B |
-| AI Models Research | 2.08 s | 17 | 119,076 | 26 | 3,128 | 95 | 1.51 MB | 0 B |
+| Plurality | 5.04 s | 36 | 1,518,161 | 520 | 31,850 | 122 | 2.00 MB | 0 B |
+| Cyber Dictionary | 3.56 s | 20 | 499,349 | 126 | 12,517 | 99 | 1.69 MB | 0 B |
+| AI Models Research | 2.08 s | 17 | 119,842 | 26 | 3,128 | 95 | 1.51 MB | 0 B |
 
 The attached document stays bounded. Timings vary with filesystem cache; the
 same Plurality path measured between about 5 and 10 seconds during this review.

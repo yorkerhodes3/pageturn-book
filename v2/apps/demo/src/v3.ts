@@ -1156,6 +1156,10 @@ function onCornerPointerDown(event: PointerEvent): void {
   ) {
     throw new Error("V3 corner control has invalid turn metadata");
   }
+  if (resizeTimer !== undefined) {
+    clearTimeout(resizeTimer);
+    resizeTimer = undefined;
+  }
   if (reducedMotion.matches) {
     if (canTurn(direction)) {
       spreadStart = targetSpread(direction);
@@ -1620,6 +1624,7 @@ const observer = new ResizeObserver(() => {
     clearTimeout(openingTimer);
   }
   resizeTimer = globalThis.setTimeout(() => {
+    resizeTimer = undefined;
     const anchor = pages[spreadStart]?.anchor;
     const progress =
       pages.length <= 1 ? 0 : spreadStart / (pages.length - 1);
