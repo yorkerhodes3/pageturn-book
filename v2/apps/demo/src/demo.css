@@ -44,7 +44,7 @@
 
 .comparison-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin-block: 2rem;
 }
@@ -57,6 +57,13 @@
 
 .comparison-card-new {
   border-color: var(--book-color-link);
+}
+
+.comparison-card-v3 {
+  border-color: #9f713e;
+  background:
+    linear-gradient(145deg, rgb(159 113 62 / 10%), transparent 55%),
+    color-mix(in srgb, var(--book-color-paper) 92%, var(--book-color-bg));
 }
 
 .comparison-card h2 {
@@ -167,7 +174,7 @@
   justify-content: space-between;
   gap: 1rem;
   align-items: center;
-  width: min(100%, 96rem);
+  width: min(100%, 118rem);
   margin: 0 auto 1rem;
 }
 
@@ -179,9 +186,9 @@
 
 .compare-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
-  width: min(100%, 96rem);
+  width: min(100%, 118rem);
   margin: 0 auto;
 }
 
@@ -448,6 +455,10 @@
   color: #aaa3d2;
 }
 
+.status-experimental {
+  color: #7ebbd4;
+}
+
 .dashboard-weight-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -680,6 +691,24 @@
   .shelf-library-header {
     align-items: start;
     flex-direction: column;
+  }
+
+  @media (min-width: 52.01rem) and (max-width: 82rem) {
+    .comparison-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .comparison-card-v3 {
+      grid-column: 1 / -1;
+    }
+
+    .compare-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compare-panel-v3 {
+      grid-column: 1 / -1;
+    }
   }
 
   .shelf-library-meta {

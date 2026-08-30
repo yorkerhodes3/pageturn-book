@@ -8,6 +8,7 @@
 | Architecture basis | [ARCHITECTURE-REVIEW.md](./ARCHITECTURE-REVIEW.md) |
 | Concept basis | [CONCEPT-IDEA.md](./CONCEPT-IDEA.md) |
 | Delivery plan | [BACKLOG.md](./BACKLOG.md) |
+| Page-turn plan | [SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md) |
 
 ## 1. Decision summary
 
@@ -1308,6 +1309,32 @@ increase the active content window without an explicit performance review.
 The implementation may use CSS columns, explicit semantic segments, or a
 combination only after comparative prototype evidence.
 
+### 21.3 Semantic page-turn geometry promotion
+
+The selected visual-fidelity direction ports the useful StPageFlip fold,
+clipping, and shadow mathematics into V2 without adopting StPageFlip's page
+collection, DOM ownership, continuous render loop, or all-page lifecycle.
+
+| ID | Requirement |
+|---|---|
+| TURN-P-001 | Canonical publication content remains native semantic HTML; the turn engine neither rasterizes content nor becomes a content authority. |
+| TURN-P-002 | V2 continues to own pagination, stable anchors, history, focus, accessibility, and page-to-leaf content mapping. |
+| TURN-P-003 | Fold calculation is a deterministic, renderer-neutral TypeScript module with no DOM, timer, or global-browser dependency. |
+| TURN-P-004 | Only the current spread, destination underlay, moving front and back faces, and bounded shadow layers are mounted during a turn. |
+| TURN-P-005 | Forward and backward turns expose the correct distinct semantic content on every visible face without mirrored text or duplicate IDs. |
+| TURN-P-006 | The binding edge stays visually attached within 2 CSS pixels during top-corner, bottom-corner, automatic, committed, reversed, and cancelled turns. |
+| TURN-P-007 | Pointer input changes presentation continuously, but canonical location, history, and focus change only after a committed turn settles. |
+| TURN-P-008 | Pointer, keyboard/button, and corner-preview motion use the same geometry solver and face projection rather than separate visual approximations. |
+| TURN-P-009 | Resize, breakpoint, font-size, and content repagination safely cancel or settle active geometry before rebuilding pages. |
+| TURN-P-010 | Reduced motion bypasses spatial folding and preserves an understandable immediate end state. |
+| TURN-P-011 | The geometry path adds no publication-image requests, no page textures, no idle animation loop, and no more than 20 kB gzip of deployed runtime. |
+| TURN-P-012 | Active-frame work meets at least 55 FPS on the desktop reference profile and 45 FPS on the representative mobile profile without a task over 50 ms. |
+| TURN-P-013 | The current CSS turn remains available as an internal rollback until the geometry path passes promotion gates; the legacy fallback remains independently available. |
+| TURN-P-014 | Derived StPageFlip code and design retain the MIT copyright and permission notice in distributed source and notices. |
+
+Implementation details and measurable gates are in
+[SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md).
+
 ## 22. React adapter
 
 ### 22.1 Principles
@@ -1745,7 +1772,7 @@ The implementation backlog must trace work to these requirement groups:
 | `ANN-*` | Highlights, notes, persistence, and re-anchoring |
 | `EXP-*` | Export |
 | `LEG-*` | Existing viewer preservation and fallback |
-| `FAC-P-*`, `PAG-P-*` | Follow-on prototypes |
+| `FAC-P-*`, `PAG-P-*`, `TURN-P-*` | Follow-on prototypes |
 | `REACT-*` | React adapter |
 | `A11Y-*` | Accessibility |
 | `PERF-*`, `OFF-*` | Performance and offline |

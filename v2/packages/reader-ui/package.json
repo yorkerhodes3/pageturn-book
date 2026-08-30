@@ -3,13 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "files": ["dist"],
+  "files": ["dist", "THIRD_PARTY_NOTICES.md"],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./page-turn-geometry": {
+      "types": "./dist/page-turn-geometry.d.ts",
+      "default": "./dist/page-turn-geometry.js"
+    },
+    "./page-turn-projection": {
+      "types": "./dist/page-turn-projection.d.ts",
+      "default": "./dist/page-turn-projection.js"
     }
   },
   "dependencies": {
@@ -20,4 +28,3 @@
     "build": "tsc -b"
   }
 }
-

@@ -30,6 +30,11 @@ release described in [SPECIFICATION.md](../SPECIFICATION.md).
   repaginate around the same canonical source location.
 - The CSS page turn uses a two-phase clipped fold so readable semantic
   front/back faces stay attached to the gutter.
+- The selected geometry-port path has a DOM-free, attributed fold kernel under
+  test before it is allowed to replace the working CSS turn. See the
+  [geometry port plan](../SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md).
+- `/v3/` is an isolated visual prototype that applies the kernel to real
+  semantic publication pages; it does not alter the V2 `/book/` route.
 
 ## Workspace
 

@@ -74,6 +74,9 @@ test("presents both reader versions from the comparison landing page", async ({
     "./book/what-is-ethical-ai/2026-07/chapters/executive-summary/",
   );
   await expect(
+  page.getByRole("link", { name: "Open V3 geometry prototype" }),
+  ).toHaveAttribute("href", "./v3/");
+  await expect(
     page.getByRole("link", { name: /Enter the publication library/ }),
   ).toHaveAttribute("href", "./shelf/");
   await expect(
@@ -105,6 +108,162 @@ test("documents implemented and planned capabilities on the dashboard", async ({
     "href",
     "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
   );
+  await expect(
+  page.getByRole("link", { name: /Review the isolated V3 fold/ }),
+  ).toHaveAttribute("href", "../v3/");
+});
+
+test("renders isolated V3 geometry with real semantic page faces", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(route("/v3/"));
+
+  await expect(
+  page.getByRole("heading", {
+    level: 1,
+    name: "V3 semantic geometry",
+  }),
+  ).toBeVisible();
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await expect(page.locator("[data-v3-status]")).toContainText(
+  "3 real chapters",
+  );
+  await expect(page.locator("[data-v3-stationary] .v3-sheet")).toHaveCount(2);
+  await expect(page.locator("[data-v3-counter]")).toHaveText(/Spread 1 of/);
+  await expect(page.locator("[data-v3-stationary]")).toContainText(
+  "What Is Ethical AI?",
+  );
+  await expect(page.locator(".book-mode-overlay")).toHaveCount(0);
+
+  const spread = page.locator("[data-v3-spread]");
+  const bounds = await spread.boundingBox();
+  const corner = page.getByRole("button", {
+  name: "Turn the next page from its top corner",
+  });
+  const cornerBounds = await corner.boundingBox();
+  if (!bounds || !cornerBounds) {
+  throw new Error("Expected V3 spread and corner bounds");
+  }
+
+  const startX = cornerBounds.x + cornerBounds.width * 0.75;
+  const startY = cornerBounds.y + cornerBounds.height * 0.25;
+  await page.mouse.move(startX, startY);
+  await page.mouse.down();
+  await page.mouse.move(
+  bounds.x + bounds.width * 0.61,
+  bounds.y + bounds.height * 0.18,
+  { steps: 6 },
+  );
+
+  const moving = page.locator(".v3-turn-surface");
+  const revealed = page.locator(".v3-revealed-page");
+  await expect(moving).toBeVisible();
+  await expect(revealed).toBeVisible();
+  await expect(moving).toContainText("The question");
+  await expect(revealed).toContainText("Executive Summary");
+  await expect(moving).toHaveAttribute("aria-hidden", "true");
+  await expect(revealed).toHaveAttribute("aria-hidden", "true");
+  expect(
+  await moving.evaluate((node) => getComputedStyle(node).clipPath),
+  ).toMatch(/^polygon\(/);
+  expect(
+  await revealed.evaluate((node) => getComputedStyle(node).clipPath),
+  ).toMatch(/^polygon\(/);
+  await expect(page.locator(".v3-turn-layer [id]")).toHaveCount(0);
+
+  await page.mouse.up();
+  await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
+  await expect(page.locator("[data-v3-counter]")).toHaveText(/Spread 2 of/);
+  await expect(page.locator("[data-v3-stationary]")).toContainText(
+  "Executive Summary",
+  );
+
+  const backwardCorner = page.getByRole("button", {
+  name: "Turn the previous page from its top corner",
+  });
+  const backwardCornerBounds = await backwardCorner.boundingBox();
+  if (!backwardCornerBounds) {
+  throw new Error("Expected V3 backward corner bounds");
+  }
+  await page.mouse.move(
+  backwardCornerBounds.x + backwardCornerBounds.width * 0.25,
+  backwardCornerBounds.y + backwardCornerBounds.height * 0.25,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+  bounds.x + bounds.width * 0.39,
+  bounds.y + bounds.height * 0.18,
+  { steps: 6 },
+  );
+  await expect(page.locator(".v3-turn-surface")).toContainText(
+  "What Is Ethical AI?",
+  );
+  await expect(page.locator(".v3-revealed-page")).toContainText(
+  "Publication record",
+  );
+  await page.mouse.up();
+  await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
+  await expect(page.locator("[data-v3-counter]")).toHaveText(/Spread 1 of/);
+});
+
+test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
+  await page.goto(route("/compare/"));
+
+  await expect(page.locator(".compare-panel")).toHaveCount(3);
+  await expect(
+  page.getByTitle("Legacy fixed-page reader"),
+  ).toHaveAttribute("src", "../legacy/?view=book");
+  await expect(page.getByTitle("V2 semantic reader")).toHaveAttribute(
+  "src",
+  "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+  );
+  await expect(
+  page.getByTitle("V3 semantic geometry prototype"),
+  ).toHaveAttribute("src", "../v3/?embed=1");
+  const v3 = page.frameLocator('iframe[title="V3 semantic geometry prototype"]');
+  await expect(v3.locator("[data-v3-reader]")).toHaveAttribute(
+  "data-v3-ready",
+  "true",
+  );
+  await expect(v3.locator("[data-v3-status]")).toContainText(
+  "Geometry ready",
+  );
+});
+
+test("repaginates V3 semantic pages for a narrow review viewport", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(route("/v3/?embed=1"));
+
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+  "data-v3-ready",
+  "true",
+  );
+  const wideCount = await page
+  .locator("[data-v3-status]")
+  .textContent();
+  await page.setViewportSize({ width: 560, height: 900 });
+  await expect(page.locator("[data-v3-status]")).toContainText(
+  "Geometry ready",
+  );
+  await expect
+  .poll(() => page.locator("[data-v3-status]").textContent())
+  .not.toBe(wideCount);
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+  "data-v3-ready",
+  "true",
+  );
+  const fit = await page
+  .locator("[data-v3-stationary] .v3-sheet-content")
+  .evaluateAll((nodes) =>
+    nodes.every(
+      (node) => node.scrollHeight <= node.clientHeight + 1,
+    ),
+  );
+  expect(fit).toBe(true);
 });
 
 test("renders the production library as optimized labeled bindings", async ({

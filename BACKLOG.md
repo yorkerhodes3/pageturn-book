@@ -37,6 +37,7 @@ Estimates are relative and must be refined by the implementing team.
 
 | Status | Meaning |
 |---|---|
+| Complete | Acceptance is implemented and verified |
 | Ready | Requirements and dependencies are sufficient to begin |
 | Blocked | A named dependency or product decision prevents work |
 | Prototype | Evidence-gathering work, not release scope |
@@ -2130,7 +2131,204 @@ Possible decision includes not shipping responsive pages and instead using
 semantic scroll with chapter transitions. That outcome satisfies the approved
 architecture.
 
-## 21. Epic E16 - future product capabilities
+## 21. Epic E15A - semantic page-turn geometry port
+
+Option 1 from
+[PAGE-TURN-IMPLEMENTATION-ESTIMATES.md](./PAGE-TURN-IMPLEMENTATION-ESTIMATES.md)
+was selected on 2026-08-29. This epic improves physical-turn fidelity without
+changing semantic ownership or replacing the independently preserved legacy
+fallback.
+
+### V2-230 - freeze page-turn baseline and port boundary
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | M |
+| Status | Complete |
+| Depends on | Existing V2 semantic book-mode implementation |
+| Requirements | TURN-P-001, TURN-P-002, TURN-P-013, TURN-P-014 |
+
+Record the selected upstream StPageFlip version and revision, current visual and
+runtime baselines, the code that may be derived, and the subsystems that remain
+V2-owned.
+
+Acceptance:
+
+- StPageFlip 2.0.7 and tag revision `9b7c17a` are pinned in the plan.
+- The MIT notice is retained.
+- Page collection, pagination, history, accessibility, and content ownership
+  are explicitly excluded from the port.
+- The current CSS turn and legacy fallback are not overwritten.
+
+### V2-231 - implement the pure fold geometry kernel
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | L |
+| Status | Complete |
+| Depends on | V2-230 |
+| Requirements | TURN-P-003, TURN-P-006, TURN-P-014 |
+
+Build strict TypeScript geometry types and deterministic calculations for
+top/bottom corners, forward/backward direction, constrained pointer position,
+moving and revealed clip polygons, rotation, progress, and shadow axis.
+
+Acceptance:
+
+- The module has no DOM, timer, global, page-content, or reader-session import.
+- Invalid dimensions and non-finite input fail explicitly.
+- Degenerate folds return a typed non-success result rather than being silently
+  swallowed.
+- Unit tests cover symmetry, finite output, progress, constraints, both
+  directions, and both corners.
+
+### V2-232 - implement the semantic-face projector
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | L |
+| Status | Ready |
+| Depends on | V2-231 |
+| Requirements | TURN-P-004, TURN-P-005, TURN-P-006 |
+
+Translate a geometry frame into bounded transforms, clip paths, face
+visibility, and inner/outer shadow styles on V2's existing virtualized semantic
+faces.
+
+Acceptance:
+
+- Projection performs no content cloning and no page selection.
+- All style writes are batched in one active animation frame.
+- The stationary spread remains normal semantic HTML.
+- Moving clones remain inert, hidden from assistive technology, and stripped of
+  IDs.
+
+### V2-233 - unify pointer turn interaction
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | L |
+| Status | Ready |
+| Depends on | V2-232 |
+| Requirements | TURN-P-005 through TURN-P-009 |
+
+Replace progress-only pointer styling with page-local pointer coordinates,
+corner selection, geometry solving, and a deterministic drag/settle state
+machine.
+
+Acceptance:
+
+- A page can be grabbed from the full bounded top or bottom corner target.
+- Reversing direction, pointer cancellation, and lost capture restore the
+  original spread without navigation.
+- Navigation and history update once, after a committed settle.
+- Native selection and links away from the turn targets continue to work.
+
+### V2-234 - drive automatic and preview turns through geometry
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | L |
+| Status | Ready |
+| Depends on | V2-233 |
+| Requirements | TURN-P-008, TURN-P-010, UX-MOT-* |
+
+Use time-based pointer trajectories through the same solver for button,
+keyboard, and optional corner-preview turns.
+
+Acceptance:
+
+- Automatic turns do not use a separate clip-path keyframe approximation.
+- Frame-rate variation does not change duration or final state.
+- No requestAnimationFrame loop runs while the reader is idle.
+- Reduced motion commits immediately without creating moving faces.
+
+### V2-235 - port and tune soft-page shadow geometry
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | L |
+| Status | Ready |
+| Depends on | V2-232 |
+| Requirements | TURN-P-006, TURN-P-011, TURN-P-012, TURN-P-014 |
+
+Add bounded fold-edge, inner, and outer shadows aligned to the solved fold axis,
+then tune paper lift and static page arch without raster surfaces.
+
+Acceptance:
+
+- Shadows follow the fold rather than the book rectangle.
+- Shadow opacity and width remain bounded at fold endpoints.
+- No black seam appears between front and back faces.
+- Shadow layers do not intercept input or enter the accessibility tree.
+
+### V2-236 - integrate behind an internal geometry-path switch
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | M |
+| Status | Ready |
+| Depends on | V2-233, V2-234, V2-235 |
+| Requirements | TURN-P-001 through TURN-P-013 |
+
+Make the geometry path selectable for comparison while retaining the current CSS
+turn as rollback until promotion.
+
+Acceptance:
+
+- Both paths use identical semantic page and face mapping.
+- The switch does not alter canonical URLs or publication data.
+- Failure to create a geometry frame surfaces a diagnostic and safely restores
+  the stationary spread.
+- The switch is not exposed as a reader preference before promotion.
+
+### V2-237 - validate accessibility, performance, and browser behavior
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | XL |
+| Status | Ready |
+| Depends on | V2-236 |
+| Requirements | PAG-P-001 through PAG-P-008, TURN-P-004 through TURN-P-013 |
+
+Run unit, browser, accessibility-tree, visual-frame, bundle, DOM, and
+active-frame measurements on the real production book.
+
+Acceptance:
+
+- Chrome, Edge, Firefox, Safari, iOS Safari, and representative Android Chrome
+  meet the agreed functional matrix.
+- Added runtime is at most 20 kB gzip and introduces no page-image requests.
+- Desktop reaches at least 55 FPS and representative mobile reaches at least
+  45 FPS while dragging.
+- No active task exceeds 50 ms; resize/font rebuild budgets remain satisfied.
+- Quarter, half, and three-quarter frames show correct text and an attached
+  binding edge.
+
+### V2-238 - decide geometry-path promotion
+
+| Field | Value |
+|---|---|
+| Priority | P1 |
+| Size | S |
+| Status | Ready |
+| Depends on | V2-237 |
+| Requirements | TURN-P-001 through TURN-P-014 |
+
+Compare the geometry path with the current CSS turn and legacy visual baseline.
+Promote only if it materially improves fold fidelity while satisfying semantic,
+accessibility, payload, and runtime gates. Otherwise retain the current path and
+record the failed gate.
+
+## 22. Epic E16 - future product capabilities
 
 These stories are placeholders only. They must not enter implementation without
 separate product, privacy, security, accessibility, and operational review.
@@ -2180,7 +2378,7 @@ separate product, privacy, security, accessibility, and operational review.
 | Status | Future |
 | Depends on | Identity, collaboration, moderation, notification, and deletion policy |
 
-## 22. Requirement-to-story trace
+## 23. Requirement-to-story trace
 
 | Requirement group | Primary stories |
 |---|---|
@@ -2211,8 +2409,9 @@ separate product, privacy, security, accessibility, and operational review.
 | `SEC-*` | V2-032, V2-040, V2-041, V2-110, V2-122, V2-155 |
 | `FAC-P-*` | V2-200 through V2-206 |
 | `PAG-P-*` | V2-220 through V2-224 |
+| `TURN-P-*` | V2-230 through V2-238 |
 
-## 23. Acceptance-scenario trace
+## 24. Acceptance-scenario trace
 
 | Scenario | Stories |
 |---|---|
@@ -2229,7 +2428,7 @@ separate product, privacy, security, accessibility, and operational review.
 | AC-11 failed publication build | V2-040, V2-044 |
 | AC-12 packaged integration | V2-144 |
 
-## 24. Exact requirement coverage index
+## 25. Exact requirement coverage index
 
 This index supplements the grouped trace above. It names requirements that
 would otherwise appear only inside a numeric range, so automated and human
@@ -2283,7 +2482,7 @@ review can find every specification ID directly.
 | V2-203 | FAC-P-009 |
 | V2-221 through V2-224 | PAG-P-002, PAG-P-003, PAG-P-004, PAG-P-005, PAG-P-006, PAG-P-007 |
 
-## 25. Suggested first implementation slice
+## 26. Suggested first implementation slice
 
 The first slice should produce a thin vertical result rather than building all
 packages in isolation:
@@ -2311,7 +2510,7 @@ Slice acceptance:
 
 Only after this slice should the team broaden shell and scholarly feature work.
 
-## 26. Product decisions queued during implementation
+## 27. Product decisions queued during implementation
 
 These decisions are intentionally attached to stories rather than blocking the
 entire backlog:
@@ -2329,7 +2528,7 @@ entire backlog:
 | Semantic paged mode | V2-224 | Do not ship without prototype evidence |
 | New facsimile renderer | V2-206 | Promote only on measured resource/accessibility improvement |
 
-## 27. Backlog exit criteria
+## 28. Backlog exit criteria
 
 The backlog is ready for implementation when:
 

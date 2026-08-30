@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Experimental semantic HTML page-turn geometry prototype for the Ethical Tech CoLab book reader."
+    >
+    <title>V3 semantic page-turn geometry prototype</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📖</text></svg>">
+    <link rel="stylesheet" href="/src/v3.css">
+  </head>
+  <body class="v3-page">
+    <header class="v3-header">
+      <div>
+        <p class="v3-kicker">Ethical Tech CoLab · isolated experiment</p>
+        <h1>V3 semantic geometry</h1>
+        <p class="v3-summary">
+          Real publication HTML, a bounded live DOM, and StPageFlip-derived
+          fold geometry. V1 and V2 remain unchanged.
+        </p>
+      </div>
+      <nav aria-label="Prototype navigation">
+        <a href="../compare/">Compare all versions</a>
+        <a href="../">Overview</a>
+      </nav>
+    </header>
+
+    <main class="v3-main">
+      <section class="v3-review-note" aria-labelledby="v3-review-title">
+        <div>
+          <p>Review build</p>
+          <h2 id="v3-review-title">Geometry before integration</h2>
+        </div>
+        <ul>
+          <li>Drag any outer top or bottom page corner.</li>
+          <li>The current spread stays semantic and selectable.</li>
+          <li>Only the revealed destination and moving reverse are cloned.</li>
+          <li>No canvas, SVG page texture, or raster publication page is used.</li>
+        </ul>
+      </section>
+
+      <section
+        class="v3-reader"
+        data-v3-reader
+        aria-label="Experimental semantic book"
+        aria-busy="true"
+      >
+        <div class="v3-reader-bar">
+          <div>
+            <span class="v3-status-dot" aria-hidden="true"></span>
+            <span data-v3-status role="status">Loading semantic pages</span>
+          </div>
+          <output data-v3-counter>Preparing book</output>
+        </div>
+
+        <div class="v3-book-shell">
+          <div class="v3-board v3-board-left" aria-hidden="true"></div>
+          <div class="v3-board v3-board-right" aria-hidden="true"></div>
+          <div class="v3-page-fan v3-page-fan-left" aria-hidden="true"></div>
+          <div class="v3-page-fan v3-page-fan-right" aria-hidden="true"></div>
+          <div class="v3-spine" aria-hidden="true"></div>
+
+          <div class="v3-spread" data-v3-spread>
+            <div class="v3-stationary" data-v3-stationary></div>
+            <div class="v3-turn-layer" data-v3-turn-layer></div>
+
+            <button
+              class="v3-corner v3-corner-left v3-corner-top"
+              type="button"
+              data-v3-direction="backward"
+              data-v3-corner="top"
+              aria-label="Turn the previous page from its top corner"
+            ></button>
+            <button
+              class="v3-corner v3-corner-left v3-corner-bottom"
+              type="button"
+              data-v3-direction="backward"
+              data-v3-corner="bottom"
+              aria-label="Turn the previous page from its bottom corner"
+            ></button>
+            <button
+              class="v3-corner v3-corner-right v3-corner-top"
+              type="button"
+              data-v3-direction="forward"
+              data-v3-corner="top"
+              aria-label="Turn the next page from its top corner"
+            ></button>
+            <button
+              class="v3-corner v3-corner-right v3-corner-bottom"
+              type="button"
+              data-v3-direction="forward"
+              data-v3-corner="bottom"
+              aria-label="Turn the next page from its bottom corner"
+            ></button>
+
+            <article
+              class="v3-sheet v3-sheet-right v3-measure"
+              data-v3-measure
+              aria-hidden="true"
+            >
+              <div class="v3-sheet-running">What Is Ethical AI?</div>
+              <div class="v3-sheet-content" data-v3-measure-content></div>
+              <div class="v3-sheet-folio">0</div>
+            </article>
+          </div>
+        </div>
+
+        <div class="v3-controls">
+          <button type="button" data-v3-previous>Previous spread</button>
+          <p>
+            Drag corners for direct geometry. Arrow keys and these controls use
+            the same solver.
+          </p>
+          <button type="button" data-v3-next>Next spread</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/v3.ts"></script>
+  </body>
+</html>

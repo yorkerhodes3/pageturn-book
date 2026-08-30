@@ -3,6 +3,7 @@
 > **Published demo:** [Reader overview](https://yorkerhodes3.github.io/pageturn-book/)
 > · [Library shelf](https://yorkerhodes3.github.io/pageturn-book/shelf/)
 > · [Functionality dashboard](https://yorkerhodes3.github.io/pageturn-book/dashboard/)
+> · [V3 geometry experiment](https://yorkerhodes3.github.io/pageturn-book/v3/)
 
 This repository develops and compares two reader approaches before integration
 with the Ethical Tech CoLab website:
@@ -19,6 +20,8 @@ with the Ethical Tech CoLab website:
 - [Implementation backlog](./BACKLOG.md)
 - [Real-content and Edge investigation](./RUNTIME-INVESTIGATION.md)
 - [V2 visual fidelity review](./VISUAL-FIDELITY-REVIEW.md)
+- [Page-turn implementation estimates](./PAGE-TURN-IMPLEMENTATION-ESTIMATES.md)
+- [Semantic page-turn geometry port plan](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md)
 
 ## Implementations
 
@@ -38,13 +41,15 @@ GitHub Actions builds a Pages artifact containing:
   fixed-page publications, with a semantic reading option where available.
 - `/dashboard/` - implementation status, showcase routes, sharing/commenting
   status, and measured V2-versus-legacy payload weight.
+- `/v3/` - isolated semantic page-turn geometry experiment using real
+  publication HTML without changing V2.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
   semantic scroll reader using production content.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book` -
   V2 semantic
   open-book presentation.
-- `/compare/` - side-by-side view of the production 46-page legacy book and
-  production semantic report.
+- `/compare/` - side-by-side view of the production 46-page legacy book, the V2
+  semantic reader, and the isolated V3 geometry experiment.
 
 The Pages deployment workflow is
 [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
