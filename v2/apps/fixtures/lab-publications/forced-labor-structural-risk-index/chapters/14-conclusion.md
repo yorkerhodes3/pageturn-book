@@ -1,0 +1,11 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/forced-labor-structural-risk-index.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 14. Conclusion {#conclusion}
+
+FLSRI addresses a real and well-recognised problem: the places where forced labour is most likely are frequently the places where it is least well recorded, which leaves prevention work waiting for evidence that arrives late or not at all. By measuring conditions rather than cases, the index offers a way to prioritise attention without pretending to count what cannot yet be counted.
+
+Its most substantial contribution is conceptual and procedural rather than numerical. The insistence that a country scores high only where both an exposed population and an unchecked environment are present is a genuine structural claim, encoded in the arithmetic rather than asserted in prose. The refusal to convert missing data into zero, the exclusion of inputs that would predict forced labour from a measure of forced labour, and the decision to publish uncertainty bands wide enough to embarrass the ranking are all choices that make the index harder to over-read.
+
+The honest summary of its current state is that its structure is defensible and its individual country figures are not yet findings. Its Exploitation half rests on one domain that does not measure what it was designed to measure. It under-reads the sponsorship systems that drive some of the most thoroughly documented forced labour in the world, and it says so in the same breath as it publishes the ranks that reflect that gap. It shares a great deal of its variation with measures of institutional quality, and it demonstrates the bound rather than denying the overlap.
+
+What makes the work useful is that these limits are not concessions extracted from it but statements it makes about itself, in its documentation, in its code comments, and on the face of the published site. An index that tells its reader where not to trust it is more usable than one that does not, and that is the standard by which this prototype should be judged and, in time, improved.

@@ -1,0 +1,94 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: vango
+editionId: 2026-08
+title: "VANGO: The Art Passport"
+description: "A Digital Passport for Recording Visits to Works of Art"
+authors:
+  - name: "Melanie MacKew. Developed as part of masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Melanie MacKew. Developed as part of masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab. · NYU Center for Global Affairs · July 2026"
+  thesis: "A passport does not evaluate the traveller or rank the countries visited. It records that a person was in a particular place on a particular day. VANGO applies that idea to art: each participating artwork carries a short code, a visitor standing in front of the work scans or types it, and a dated stamp is added to a passport carried on their phone. The application is a record of attendance, not of ownership, value, or authenticity. It answers one question only: who went to see what, and when."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/vango/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#57301e"
+    foreground: "#f3ead6"
+    accent: "#d2b87c"
+    subtitle: "A Digital Passport for Recording Visits to Works of Art"
+  binding:
+    material: leather
+    color: "#57301e"
+    accent: "#d2b87c"
+    depth: slim
+    hubs: 3
+    pageCount: 16
+    shelfLabel: "VANGO: THE ART PASSPORT"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/vango/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/vango/report.pdf
+chapters:
+  - id: foreword
+    title: "Foreword"
+    source: chapters/01-foreword.md
+    slug: foreword
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/02-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/03-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How VANGO Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables Explained"
+    source: chapters/06-variables.md
+    slug: variables
+  - id: reading-the-results
+    title: "Reading the Results"
+    source: chapters/07-reading-the-results.md
+    slug: reading-the-results
+  - id: two-ways-to-use-it
+    title: "Two Ways to Use It"
+    source: chapters/08-two-ways-to-use-it.md
+    slug: two-ways-to-use-it
+  - id: language-and-reach
+    title: "Language and Reach"
+    source: chapters/09-language-and-reach.md
+    slug: language-and-reach
+  - id: cultural-property-context
+    title: "Cultural Property Context"
+    source: chapters/10-cultural-property-context.md
+    slug: cultural-property-context
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/11-limitations.md
+    slug: limitations
+  - id: practical-nature
+    title: "Practical Nature of the Tool"
+    source: chapters/12-practical-nature.md
+    slug: practical-nature
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/13-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/14-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/15-references.md
+    slug: references

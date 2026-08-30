@@ -1,0 +1,9 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/evacuation-simulation.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 12. Conclusion {#conclusion}
+
+EvacSim makes one argument well. Evacuation outcomes in armed conflict are determined less by the severity of the danger than by the interaction between how quickly information becomes credible and how long particular people take to act on it. The tool holds those two quantities apart and lets a user vary each independently, and its most valuable outputs are the ones that show where they collide: the elder still preparing when the corridor closes, the unaccompanied child awaiting an escort that arrives after the window has passed.
+
+Its treatment of vulnerability deserves particular note. By expressing protected status as time rather than as a risk score, the model produces a result that is easy to state and hard to argue with. Vulnerability is harmless until it meets a constraint, and every constraint that International Humanitarian Law regulates, the closed corridor, the checkpoint, the destroyed transmitter, the false direction, works by shortening the time available to the people who need the most of it.
+
+The prototype is modest about its status and should be. Its timings are uncalibrated, its population is small, nobody in it can be hurt, and its vulnerability categories cannot overlap in the ways that matter most in real displacement. Its legal citations require correction before it is used to teach law. What it offers is not prediction but a way of seeing, and for that purpose the choice to keep every simulated person individually visible, named, and traceable through the event log is worth more than any additional mechanic would be.

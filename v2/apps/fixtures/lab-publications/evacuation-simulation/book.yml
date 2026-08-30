@@ -1,0 +1,86 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: evacuation-simulation
+editionId: 2026-08
+title: "The Evacuation Simulator"
+description: "An Agent-Based Model of How Civilians Decide to Leave During Armed Conflict"
+authors:
+  - name: "Melanie MacKew. Developed as part of masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Melanie MacKew. Developed as part of masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab. · NYU Center for Global Affairs · July 2026"
+  thesis: "Warnings are issued more often than they are believed. Most people do not run when an alert goes out; they telephone a relative, they step outside to see whether the family next door is loading a car, they wait for a second source to say the same thing. That interval between the warning and the departure is where humanitarian evacuations are won or lost, and EvacSim is a research prototype that makes it visible: a small simulated community of six households, each person moving through hearing, believing, preparing, and leaving, with the timing driven by who they are and what information reaches them."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/evacuation-simulation/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#35251c"
+    foreground: "#f3ead6"
+    accent: "#c29a5f"
+    subtitle: "An Agent-Based Model of How Civilians Decide to Leave During Armed Conflict"
+  binding:
+    material: leather
+    color: "#35251c"
+    accent: "#c29a5f"
+    depth: standard
+    hubs: 4
+    pageCount: 22
+    shelfLabel: "THE EVACUATION SIMULATOR"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/evacuation-simulation/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/evacuation-simulation/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/03-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the Simulation Works"
+    source: chapters/04-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables Explained"
+    source: chapters/05-variables.md
+    slug: variables
+  - id: corridors
+    title: "Corridors: How People Actually Get Out"
+    source: chapters/06-corridors.md
+    slug: corridors
+  - id: results
+    title: "Reading the Results"
+    source: chapters/07-results.md
+    slug: results
+  - id: methodology
+    title: "Methodological Choices"
+    source: chapters/08-methodology.md
+    slug: methodology
+  - id: legal-grounding
+    title: "Grounding in International Humanitarian Law"
+    source: chapters/09-legal-grounding.md
+    slug: legal-grounding
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/10-limitations.md
+    slug: limitations
+  - id: audience
+    title: "Practical Nature and Intended Audience"
+    source: chapters/11-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/12-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/13-references.md
+    slug: references

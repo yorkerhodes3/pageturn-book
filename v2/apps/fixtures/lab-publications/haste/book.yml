@@ -1,0 +1,98 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: haste
+editionId: 2026-08
+title: "HASTE: High-speed Assessment and Satellite Tracking for Emergencies"
+description: "Rapid Post-Disaster Building Damage Assessment"
+authors:
+  - name: "HASTE was developed by the Microsoft AI for Good Lab and released as open-source software under the MIT Licence. The contributors recorded in the repository's commit history are Meygha Machado, Caleb Robinson, Joaquín Rivero, Cameron Birge, Marcelo Duarte, and Anthony Cintron Roman. The accompanying research paper additionally credits Anthony Ortiz, Simone Fobi Nsutezo, Kevin White, Inbal Becker-Reshef, and Juan M. Lavista Ferres. This plain-language report was prepared under the Ethical Tech CoLab at the NYU Center for Global Affairs as part of masters research (2026), on the fork of the project held at Ethical-Tech-CoLab/haste."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Software by the Microsoft AI for Good Lab · Report by Ethical Tech CoLab"
+  credits: "HASTE was developed by the Microsoft AI for Good Lab and released as open-source software under the MIT Licence. The contributors recorded in the repository's commit history are Meygha Machado, Caleb Robinson, Joaquín Rivero, Cameron Birge, Marcelo Duarte, and Anthony Cintron Roman. The accompanying research paper additionally credits Anthony Ortiz, Simone Fobi Nsutezo, Kevin White, Inbal Becker-Reshef, and Juan M. Lavista Ferres. This plain-language report was prepared under the Ethical Tech CoLab at the NYU Center for Global Affairs as part of masters research (2026), on the fork of the project held at Ethical-Tech-CoLab/haste. · NYU Center for Global Affairs · July 2026"
+  thesis: "HASTE is an open-source platform that lets a trained analyst, working without code, fit a disposable machine-learning model to a single disaster and produce a building-by-building damage estimate within hours. This report reads the platform's own source code alongside its documentation to set out what every adjustable and hardcoded setting means, what the published performance figures do and do not establish, and where the answer it produces is constrained by things the software does not control."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/haste/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#4a171c"
+    foreground: "#f3ead6"
+    accent: "#d0ad6d"
+    subtitle: "Rapid Post-Disaster Building Damage Assessment"
+  binding:
+    material: cloth
+    color: "#4a171c"
+    accent: "#d0ad6d"
+    depth: standard
+    hubs: 4
+    pageCount: 26
+    shelfLabel: "HASTE: HIGH-SPEED ASSESSMENT AND S"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/haste/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/haste/report.pdf
+chapters:
+  - id: foreword
+    title: "Foreword"
+    source: chapters/01-foreword.md
+    slug: foreword
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/02-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/03-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How HASTE Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables, Explained Simply"
+    source: chapters/06-variables.md
+    slug: variables
+  - id: reading-the-results
+    title: "Reading the Results"
+    source: chapters/07-reading-the-results.md
+    slug: reading-the-results
+  - id: data-sources
+    title: "Data Sources"
+    source: chapters/08-data-sources.md
+    slug: data-sources
+  - id: evidence
+    title: "Evidence of Performance"
+    source: chapters/09-evidence.md
+    slug: evidence
+  - id: oversight
+    title: "Human Oversight and Governance"
+    source: chapters/10-oversight.md
+    slug: oversight
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/11-limitations.md
+    slug: limitations
+  - id: practical-nature
+    title: "Practical Nature of the Platform"
+    source: chapters/12-practical-nature.md
+    slug: practical-nature
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/13-audience.md
+    slug: audience
+  - id: mariupol
+    title: "Application: the Mariupol Corridor Severity Model"
+    source: chapters/14-mariupol.md
+    slug: mariupol
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/15-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/16-references.md
+    slug: references

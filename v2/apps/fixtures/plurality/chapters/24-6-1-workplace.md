@@ -1,0 +1,191 @@
+<!-- CC0 source: pluralitybook/plurality@86158859464aee75633acd854c656928121a7fd8; generated, do not edit. -->
+
+# Workplace {#6-1}
+
+More than a billion people worldwide work outside their homes in formal organizations with at least a few other people.[1](#note-6-1-1)  These "workplaces" produce about 70% of global output and are the first thing most people think of when they hear "economy". Just as we consider the vast contribution of workplaces to the global economy, it is essential to address inefficiencies that hinder productivity. U.S. workers spend an average of 31 hours per month in meetings deemed unproductive, a significant drain on both time and resources.[16](#note-6-1-16) If ⿻ is to help re-imagine the economy, it must restructure formal work, which we turn to in this chapter.
+
+
+The advances we discuss, which are just a sampling of potential implications of ⿻ in the workplace, cover strengthening remote teams, designing effective corporate campuses, improving communication, accessing talent more inclusively and supporting more effective provision of common corporate infrastructure and more dynamic adaptation to changing industries.  We estimate that the first four of these components could increase global gross domestic product by approximately 10% in total and that the last might permanently increase the GDP growth rate by half a percentage point a year.[10](#note-6-1-10)
+
+---
+
+### Strong remote teams
+
+The COVID-19 pandemic transformed the world of work, bringing changes expected for decades to fruition in a year. A leading study by Barrero et al., for example, found that work from home rose from 5% of the American workforce to a high above 60%.[12](#note-6-1-12) Perhaps the most extreme manifestation has been the rise of so-called "digital nomads", who have harnessed the increasing opportunity for remote work to travel continuously and work a variety of remote jobs as encouraged by programs like Sardinia regional program for digital nomads and Estonia and Taiwan's [e-citizenship](https://www.e-resident.gov.ee/) and [gold cards](https://goldcard.nat.gov.tw/en/) respectively, that one author of this book holds.  While there has been a substantial return to physical work since the end of the pandemic, at least a part of the change appears here to stay; Barrero et al. find that after the pandemic, workers on average want to work about half the week from home and believe their productivity is similar or better in that setting.  While some studies have found some evidence of mildly reduced productivity, these effects do not seem large enough to overcome the persistent demands for hybrid work styles.[13](#note-6-1-13)
+
+Yet there is little question that remote work has real downsides.  Some of these, such as ensuring work-life balance, avoiding distractions and unhealthy at-home working conditions, are not easily addressed through remote collaboration tools.  But many others are: lack of organic interactions with colleagues, missing opportunities for feedback or forming deeper personal connections with colleagues, etc.[15](#note-6-1-15) While ⿻ can be used to address most of these, we will focus on one in particular: the building of strong and deeply trusting teams.
+
+Remote immersive shared reality (ISR) significantly enhances team building and training across disciplines by facilitating collaborative and creative teamwork in virtual environments. Global collaboration in virtual environments has been effective for interdisciplinary teamwork, particularly in healthcare education[21](#note-6-1-21), highlighting its utility in overcoming geographic barriers.[19](#note-6-1-19) Virtual worlds foster team creativity by providing avatars for personal expression, immersive experiences for co-presence, and tools for modifying environments, enhancing creative collaboration across distributed teams.[20](#note-6-1-20) Furthermore, 3D virtual worlds and games, like those developed in [Second Life](https://secondlife.com/) for team building, offer cost-effective solutions for enhancing communication, emotional engagement, and situational awareness among team members, proving essential for teamwork in safety-critical domains.[22](#note-6-1-22)[23](#note-6-1-23)
+
+In-person teams often engage in a variety of joint learnings or other not-directly-productive activities to build team trust, connection, and spirit.  These range from casual lunches to various kinds of extreme team sports, such as "trust falls"[18](#note-6-1-18), simulated military exercises, ropes courses, etc.  What nearly all these have in common is that they create a shared activity that benefits from and thus helps develop trust among members, in a similar manner to the way we discussed shared military service developing strong and lasting cooperative bonds in the [Post-Symbolic Communication](https://www.plurality.net/v/chapters/5-1/eng/?mode=dark) chapter.
+
+Obviously most such activities currently rely heavily on being in person, thus many hybrid and fully remote teams, especially those that have many members who started as remote employees, miss the team-building benefits created by such activities or can achieve them only at considerable travel expense.  ISR offers significant potential for overcoming this challenge.  Lunches among sufficiently realistic avatars, ones reflecting detailed facial expressions for example, may soon help bring the rich connections achieved in the office within the reach of remote teams.  While it would seem impossible to achieve the vivid connections of parties or extreme sports in remote shared reality, there is increasingly strong evidence that real experiences of fear and trust can develop in sufficiently realistic simulated environments.[2](#note-6-1-2)  As "e-sports" begin to rival the popularity and, in the right ISR environments, physical intensity of in-person physical sports, the benefits of "campus athletics" may increasingly make their way to remote work.
+
+
+Yet even more promising how recreation-at-a-distance can mimic approaches of in-person teams is the harnessing of digital tools to create even deeper connections than are possible without digital aids.  The simplest examples would be extensions to extreme sports or military scenarios that would be unsafe or unreasonably costly to simulate in person.  But these are only the beginning; eventually, direct neural interfaces may allow colleagues to remotely share a level of intimate empathy that will be bound primarily by professional propriety, rather than by the barriers of physical distance.
+
+### Designing inclusive campuses
+
+Much work, especially white-collar work, is physically localized to significant extents in large "corporate campuses".  While many of the functions these campuses bring together are fairly separate or organizationally distant, broad co-location is often a goal because of the chance intersections it is thought to allow that may stimulate work across divisions of the company.  Such "agglomeration" effects have been shown by a large economic literature to be an important source of the economic benefit of cities.[3](#note-6-1-3)  A core role of corporate campuses is to capture these benefits within a company.
+
+
+Achieving this goal, however, requires careful design.  Excessive segregation by organization and discipline or focus on core work undermines the benefit of agglomerative spontaneity.  Excessive fragmentation by organization and discipline undermines direct productivity.  Different elements of campus (walkways, dining facilities, offices, shared space, recreational facilities etc.) play diverse roles in fostering direct work and spontaneous connections.  For instance, Steve Jobs redesigned [Pixar](https://www.bizjournals.com/sanfrancisco/news/2018/11/16/pixar-s-critically-acclaimed-emeryville-campus.html)'s headquarters to include a central atrium with a large theater, cafeteria, mailboxes, and viewing rooms.[25](#note-6-1-25) By encouraging computer scientists, animators and other staff to mingle in a shared space, this layout boosts chance encounters and cross-pollination.  Yet architectural revamps pose significant challenges: they're costly and need to support other elements that are specific to each company, such as nature of the work or brand identity. It is thus little surprise that there is no standard best campus design; campuses differ radically in their design, a leading exemplar being Apple's torus spaceship shown in Figure A. Anything that could reduce the costs of exploration could significantly improve the quality.
+
+[Figure: Apple](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/apple.jpg>)
+
+*Figure 6-1-A. Apple's famously unusually shaped corporate campus. Source: [Unsplash stock photo](https://unsplash.com/photos/round-black-and-white-building-during-daytime-NXP7wGyUDeY), free for commercial use.*
+
+
+
+
+A natural way to make such experiments dramatically easier is to create ISR campuses in which employees can explore potential configurations and attend virtual meetings.  These configurations can be prototyped far more rapidly and flexibly than building a physical campus, allowing for a range of exploration in the course of time employees spend attending virtual meetings.  Based on feedback, employees can even help redesign the space and iterate on the layout.  If a potential design seems to be achieving its goals reasonably well and fits a potential site, it could then be "printed" through a more standard engineering and construction process.  In short, these tools could make the design of physical space much more like what word processing and collaborative documents have made writing: a process that is able to engage in broad experimentation and accumulate diverse feedback before it must be greatly scaled.
+
+### Difficult conversations
+
+Meetings are a central part of white-collar work, consuming on average approximately a quarter of working time.[4](#note-6-1-4)  Yet for all the time they take up, perhaps the greater cost is the meetings that do not happen because of how burdensome they are.  Business leaders frequently misunderstand the needs of their customers, the challenges within their teams and the duplication of work because meeting with the relevant stakeholders would take too long. To make matters worse, many meetings are quite ineffective, as dominant personalities carry on and the wisdom of those who are less empowered or assertive is lost. In the realm of white-collar work, meetings are a notorious time sink, with office employees dedicating about 18 hours a week on average. This not only represents approximately $25,000 in annual payroll costs per employee but also encompasses meetings that 30% of employees find unnecessary. Moreover, a reduction in meetings by 40% has been linked to a 71% surge in productivity, underlining the critical need for streamlining communication.[17](#note-6-1-17) Anything that could significantly speed meetings and increase their quality could transform organizational productivity.[14](#note-6-1-14)
+
+
+While meetings have a variety of goals and structures, perhaps the most common type is an attempt to share a variety of perspectives on a common project to achieve alignment and assignment of responsibilities.  Such meetings are closely connected to the deliberative conversations we highlighted in our chapter on [Augmented Deliberation](https://www.plurality.net/v/chapters/5-4/eng/?mode=dark).  An important reason why, despite the rise of asynchronous communication via services like [Slack](https://slack.com/), [Teams](https://www.microsoft.com/en-us/microsoft-teams/group-chat-software) and [Trello](https://trello.com/), synchronous meetings remain so prevalent is that asynchronous dialogs often suffer from the same lack of thoughtful time and attention management that are necessary to make synchronous meetings successful.  Approaches like Polis, Remesh, All Our Ideas and their increasingly sophisticated LLM-based extensions promise to significantly improve this, making it increasingly possible to have respectful, inclusive and informative asynchronous conversations that include many more stakeholders.
+
+⿻ practices and tools can also enable more open and inclusive conversations about the biggest issues facing the organization. Today, the responsibility for setting direction is typically limited to the top of the pyramid.  This simplifies strategy development, but at the cost of resilience and creativity: if a handful of executives are unwilling to adapt and learn, the whole organization stalls. And even if executives were all exceptional visionaries, their combined intellect is unlikely to suffice for the task at hand.  What is instead required is a process that harnesses the ingenuity of everyone who has a stake in the organization’s success, as highlighted by [W. Edwards Deming](https://en.wikipedia.org/wiki/W._Edwards_Deming)'s work on [Total Quality Management](https://en.wikipedia.org/wiki/Total_quality_management).[5](#note-6-1-5)   Imagine an open conversation that generates tens of thousands of insights and ideas (for instance around customers' needs or emerging trends) and uses collective intelligence to combine, prioritize, and ultimately distill them into a common point of view about what lies ahead. What are the big opportunities that can redefine who we are?  What are the biggest challenges we need to tackle head-on?  What aspiration truly reflects our common purpose?  By opening the conversation to new voices, encouraging unorthodox thinking, and fostering horizontal dialogue, it's possible to transform a top-down ritual into an exciting, participative quest to define a shared future.
+
+
+Beyond office politics, national politics are also increasingly entering and dividing workplaces, leading some executives to take extreme measures such as banning political discussions at work.[11](#note-6-1-11)  A potential alternative to such stringent restrictions, which may suppress but not resolve tensions and undermine employee morale, might be to build channels such as the above to allow thoughtful and inclusive discussions of social issues, especially those relevant to corporate policies, to take place respectfully and at scale.  Overall, these technologies promise to make workplaces more efficient, engaging, consensual and harmonious, providing the tools to help achieve the cultural goals many executives strive for.
+
+### ⿻ hiring
+
+Many businesses and roles have "standard career paths", recruiting primarily graduates from a limited number of degree programs, set of professional backgrounds/experiences, etc.  While these businesses often regret that they thereby exclude many talented and diverse candidates, recruiting from backgrounds that have lower "hit rates" is often very costly: it would require them to learn to identify promising resumés from a broader range of settings, verify accomplishments and credentials outside of typical channels,  send representatives traveling more and further, understand unfamiliar dimensions of diversity and train those who may be less prepared for the culture of their organization. The rigidity created by this hiring process is a leading reason so many are forced into the narrow paths of learning we highlighted in the previous chapter.
+
+The capabilities of social identity systems, modern large language models (LLMs) and remote shared reality technologies may help in addressing many of these challenges. Network-based verification systems, as we described in the [Identity and Personhood](https://www.plurality.net/v/chapters/4-1/eng/?mode=dark) chapter can allow the secure verification of a diversity of credentials and accomplishments across a large gulf of social distance rapidly and cheaply.  LLMs, properly trained and fine-tuned, should soon allow the "translation" of resumés not just across languages, but across diverse social contexts, helping hiring managers understand "equivalent" qualifications across a range of settings and a diversity of paths that could support performance in a role. They can similarly help applicants better understand the range of roles their background may qualify them for.
+
+They also may be able to provide a richer sense of the range of diversity spanned by a company's customer base that would be helpful to represent among employees and help them to empathize and connect with customers. It could also allow human resource departments to optimize for diversity in more sophisticated, intersectional ways rather than simply seeking to match population proportions in salient categories. Remote shared reality experiences can help them hold interactive recruiting events in a wider range of venues at lower cost and allow applicants a deeper sense of the work environment.  They can also accelerate the acculturation and onboarding processes much as we described in the previous chapter. In short, these tools can together allow for a future of human resources that reaches a far wider range of talent and allows opportunities for everyone to shine as the unique intersectional contributors they are.
+
+### Aligning wisdom and influence
+
+In most organizations, power—whether it's about controlling resources, making decisions, accessing important information, or having the power to reward or discipline others—is tied to one's position. Formal hierarchy provides clarity in terms of who is responsible for what, but this "legibility" has significant drawbacks.  Positional authority can be too expansive, like a finance executive becoming CEO and suddenly claiming expertise in product design. It is also binary (you either have it or you do not), which means that incompetent managers retain power until they’re removed (often much later than ideal).  Finally, traditional hierarchies don’t give employees a say in selecting their leaders.  This is the opposite of the social web, where power emerges from the bottom up.[6](#note-6-1-6)
+
+
+In ⿻ workplaces, the traditional single hierarchy can be complemented by multiple, issue-specific hierarchies in the spirit of the ⿻ theory of identity. Power can shift fluidly based on contribution. Emerging technologies can help match value added with decision rights. For example, natural language processing can sift through communication data to spot associates who consistently provide valuable insights on specific topics. Generative foundation models (GFMs) can create dynamic social graphs that pinpoint key network figures and provide rich context on the nature of their connections and compile feedback from various sources to present a comprehensive assessment of an individual's "natural leadership." Digital platforms like [Colony](https://colony.io/) and [GlassFrog](https://www.glassfrog.com/) can help operationalize these values, providing neutral and transparent "substrates" onto which flexible organizatonal cultures can be built. Taken together, these approaches aim to recognize and reward valuable contributions of people irrespective of role, and serve as a reality check for those who still occupy formal positions of authority.  Over time, they can reduce dependency on formal hierarchies altogether.
+
+### Supporting intrapreneurship
+
+Another effect of traditional hierarchies is that those managed by different high-level managers come to form different organizations within the parent, each with their own cultures, goals and visions.  While these internal distinctions are usually viewed as important to ensuring accountability, they are also often viewed as a barrier to organizational cooperation and dynamism, potentially undermining the collaborations needed to provide common infrastructure and meet the needs ("disruptions") of changing political, economic, social, and technological environments.  For example, the organization in which one of us works, Microsoft, has sometimes been satirized for its internal organization conflicts and, under the leadership of its current CEO Satya Nadella has worked to forge a "[One Microsoft](https://careers.microsoft.com/v2/global/en/culture)" culture to overcome this.[7](#note-6-1-7)
+
+
+While much of this has been demonstrated through exemplars of such cooperation and inspirational leadership, Nadella has also helped establish some institutions intended to help achieve the organizational equivalent of the "solidarity and dynamism" we have discussed above.  In particular, one of us had the honor to serve in the Office of Chief Technology Officer (OCTO) [Kevin Scott](https://en.wikipedia.org/wiki/Kevin_Scott_(computer_scientist)), whose duties included coordinating cross-company investments that no one organization would find it in their interest to take on and stimulating "intrapreneurship", the building of new business lines often drawing on expertise across existing organizations.[8](#note-6-1-8)
+
+
+While OCTO achieved much (including incubating the now well-known relationship with OpenAI) during the author's time there, a persistent challenge was harnessing a small staff that was necessarily much less informed than those "on the ground" about business needs and opportunities to decide on major investments and incubations intended to bring cross-cutting benefits.  A leading example was the cross-company technical project he was most involved with, around Web3 strategy, where interested and expert employees were widely scattered across the company.  This was particularly difficult because the intention was for many of these investments to accrue not directly to the bottom line of an internal start-up, but to other business lines. Because of this and the structure of jobs at Microsoft, the typical use of large incentives for eventual success to compensate for the likelihood of failure are hard to apply.  Various organizations navigate this challenge in different ways; for example, Google (now Alphabet) has traditionally given employees [20% of their time](https://en.wikipedia.org/wiki/Side_project_time) free to pursue passion projects for the organization, outside their primary organizational role.[9](#note-6-1-9)  Yet this suffers the obvious challenge that individuals may pursue idiosyncratic projects that at worst may not be aligned to the broader mission and at best usually fail to scale as they do not bring enough people together to cooperate on an ambitious project.
+
+
+A natural alternative to the extremes of centralized management and uncoordinated individual initiative would be to harness ⿻ conversational and funding tools. An organization like OCTO could have a much larger budget, but much less discretion, providing matchmaking and cross-pollination services and matching funds for investments with support from many organizations.  It could use data from or posting within internal communication platforms to identify cross-organizational clusters of interests, host free and fun events to build connections across these organizations, and then offer matching funds if a diversity of organizations are willing to invest employee time or other resources in supporting a shared investment or incubation.  Compared to the "20% time model", this would offer much more "free time" to pursue projects that have genuine cross-organizational support, but that one's direct reporting chain sees as tangential, and less support for purely idiosyncratic interests.  As such, it would empower employees to coordinate investments among themselves that could transform the business overall, allowing agility to avoid disruption.
+
+
+Putting these together, we can imagine a future where remote teams can form the same strong bonds as in-person teams, where in-person teams can co-design inclusive workplaces that foster spontaneous connections while maintaining focus, where meetings are far more efficient and inclusive even when asynchronous, where a far wider range of talent can be placed into leading roles. This could create a more inclusive and representative workplace where employees can easily collaborate across divisions and with corporate support to overcome hurdles and build the common infrastructure and new ventures their employer needs to survive and thrive in a dynamic business environment.  In short, it is not hard to see a future of truly ⿻ workplaces, embracing and harnessing collaboration across a wide range of internal and external diversity to achieve a more productive and inclusive future.
+
+
+Ibid.
+Ibid.
+
+
+## Chapter notes {#notes-6-1}
+
+### Note 1 {#note-6-1-1}
+
+International Labor Organization, " World Employment and Social Outlook: Trends" (2023) at https://www.ilo.org/wcmsp5/groups/public/---dgreports/---inst/documents/publication/wcms_865387.pdf
+
+### Note 2 {#note-6-1-2}
+
+Jih-Hsuan Tammy Lin, "Fear in Virtual Reality (VR): Fear Elements, Coping Reactions, Immediate and Next-Day Fright Responses Toward a Survival Horror Zombie Virtual Reality Game", *Computers in Human Behavior* 72 (2017): 350-361.
+
+### Note 3 {#note-6-1-3}
+
+Jane Jacobs, *The Economy of Cities* (New York: Vintage, 1969).  Edward L. Glaeser, Hedi D. Kallal, José A. Scheinkman and Andrei Shleifer, "Growth in Cities",*Journal of Political Economy* 100, no. 6 (1992): 1126-1152.
+
+### Note 4 {#note-6-1-4}
+
+Branka, "Meeting Statistics – 2024", *Truelist Blog* February 17, 2024 at https://truelist.co/blog/meeting-statistics/.
+
+### Note 5 {#note-6-1-5}
+
+W. Edwards Deming, "Improvement of Quality and Productivity through Action by Management", *National Productivity Review* 1, no. 1 (1981): 12-22.
+
+### Note 6 {#note-6-1-6}
+
+See Hamel and Zanini, op. cit. ch. 9.
+
+### Note 7 {#note-6-1-7}
+
+Satya Nadella with Greg Shaw and Jill Tracie Nichols, *Hit Refresh: The Quest to Rediscover Microsoft's Soul and Imagine a Better Future for Everyone* (New York: Harper Business, 2017).
+
+### Note 8 {#note-6-1-8}
+
+An entertaining outgrowth of corporate acronyms in this case was that he had the title OCTOPEST (Office of the Chief Technology Officer Political Economist and Social Technologist), paralleling the title of his colleague Jaron Lanier who at the time of this writing remains Microsoft's [OCTOPUS](https://www.jaronlanier.com/general.html) (Office of the Chief Technology Officer Prime Unifying Scientist).
+
+### Note 9 {#note-6-1-9}
+
+Annika Steiber and Sverker Alänge, "A Corporate System for Continuous Innovation: the Case of Google Inc.", *European Journal of Innovation Management* 16, no. 2: 243-264.
+
+### Note 10 {#note-6-1-10}
+
+If, as noted in the chapter, about 50% of formal sector work will be remote and, as in this study, if team-building exercises increase team performance by about 25%, if this applies to about half of formal sector work and if about half the benefit goes into cost, we should expect a gain of about 2% of GDP from improved remote team-building.  If agglomeration benefits are about 12% for work facilities and this applies again to half of formal sector work and can be improved by 50%, again we get 2% of GDP.  If meetings are 25% of formal sector work time and can be improved by 25%, this is about 4% of GDP. Standard economic estimates of the costs of labor search and matching are about 4% of GPD, similar to the cost spent on human resources; if mitigated by 50% this would raise GDP by 2% (not to mention significantly dampen the cost of business cycle unemployment).  Finally, most GDP growth (of roughly 2-3% annually globally) has been traced by economists to technological advance through the research and development of new products, which is now about 80% in the private sector according to the figures we discussed in the introduction.  If the efficiency of this could be increased by a quarter through more flexible intrapreneurship, this could raise global GDP growth annually by half a percent. Cameron Klein, Deborah DiazGranados, Eduardo Salas, Huy Le, Shawn Burke, Rebecca Lyons, and Gerald Goodwin, “Does Team Building Work?” _Small Group Research_ 40, no. 2 (January 16, 2009): 181–222. https://doi.org/10.1177/1046496408328821. Michael Greenstone, Richard Hornbeck, and Enrico Moretti, “Identifying Agglomeration Spillovers: Evidence from Winners and Losers of Large Plant Openings,” _Journal of Political Economy_ 118, no. 3 (June 2010): 536–98. https://doi.org/10.1086/653714.
+
+### Note 11 {#note-6-1-11}
+
+Ellen Huet, “Basecamp Follows Coinbase In Banning Politics Talk at Work,” _Bloomberg_, April 26, 2021, https://www.bloomberg.com/news/articles/2021-04-26/basecamp-follows-coinbase-in-banning-politics-talk-at-work.
+
+### Note 12 {#note-6-1-12}
+
+Jose Barrero, Nicholas Bloom, and Steven J. Davis. 2023, “The Evolution of Working from Home,” __Stanford Institute for Economic Policy Research (SIEPR) Working Paper_ no. 23-19 (July 2023): https://siepr.stanford.edu/publications/working-paper/evolution-working-home.
+
+### Note 13 {#note-6-1-13}
+
+Natalia Emanuel, Emma Harrington, and Amanda Pallais, “The Power of Proximity to Coworkers: Training for Tomorrow or Productivity Today?” _National Bureau of Economic Research Working Paper_ no 31880 (November 2023): https://doi.org/10.3386/w31880.
+
+### Note 14 {#note-6-1-14}
+
+Michael Gibbs, Friederike Mengel, and Christoph Siemroth, “Work from Home and Productivity: Evidence from Personnel and Analytics Data on Information Technology Professionals,” _Journal of Political Economy Microeconomics_ 1, no. 1 (February 1, 2023): 7–41, https://doi.org/10.1086/721803.
+
+### Note 15 {#note-6-1-15}
+
+Longqi Yang, David Holtz, Sonia Jaffe, Siddharth Suri, Shilpi Sinha, Jeffrey Weston, Connor Joyce, et al., “The Effects of Remote Work on Collaboration among Information Workers,” _Nature Human Behaviour_ 6, no. 1 (September 9, 2021): 43–54. https://doi.org/10.1038/s41562-021-01196-4.
+
+### Note 16 {#note-6-1-16}
+
+Alyson Krueger, “Fewer Work Meetings? Corporate America Is Trying,” _The New York Times_, April 10, 2023, https://www.nytimes.com/2023/04/07/business/office-meetings-time.html.
+
+### Note 17 {#note-6-1-17}
+
+Arthur Brooks, “Why Meetings Are Terrible for Happiness,” _The Atlantic_, December 15, 2022, https://www.theatlantic.com/family/archive/2022/11/why-meetings-are-terrible-happiness/672144/.
+
+### Note 18 {#note-6-1-18}
+
+A "trust fall" is an exercise where a person falls backward, counting on others to catch them. This activity is used to build trust and teamwork, as it requires relying on others to prevent injury. From the mid-2010s, the trust fall became less popular due to the potential for traumatic brain injuries if catchers fail.
+
+### Note 19 {#note-6-1-19}
+
+Rachel Umoren, Dora Stadler, Stephen L. Gasior, Deema Al-Sheikhly, Barbara Truman, and Carolyn Lowe, “Global Collaboration and Team-Building through 3D Virtual Environments,” Innovations in Global Medical and Health Education 2014, no. 1 (November 1, 2014), https://doi.org/10.5339/igmhe.2014.1.
+
+### Note 20 {#note-6-1-20}
+
+Pekka Alahuhta, Emma Nordbäck, Anu Sivunen, and Teemu Surakka, “Fostering Team Creativity in Virtual Worlds,” _Journal For Virtual Worlds Research_ 7, no. 3 (July 20, 2014): https://doi.org/10.4101/jvwr.v7i3.7062.
+
+### Note 21 {#note-6-1-21}
+
+Lin Lu, Honglin Wang, Pengran Liu, Rong Liu, Jiayao Zhang, Yi Xie, Songxiang Liu, et al., “Applications of Mixed Reality Technology in Orthopedics Surgery: A Pilot Study,” _Frontiers in Bioengineering and Biotechnology_ 10 (February 22, 2022): https://doi.org/10.3389/fbioe.2022.740507.
+
+### Note 22 {#note-6-1-22}
+
+Jason Ellis, Kurt Luther, Katherine Bessiere, and Wendy Kellogg, “Games for Virtual Team Building,” _Proceedings of the 7th ACM Conference on Designing Interactive Systems_ (February 25, 2008): pp 295–304, https://doi.org/10.1145/1394445.1394477.
+
+### Note 23 {#note-6-1-23}
+
+Heide Lukosch, Bas van Nuland, Theo van Ruijven, Linda van Veen, and Alexander Verbraeck, “Building a Virtual World for Team Work Improvement,” _Frontiers in Gaming Simulation_, 2014, 60–68, https://doi.org/10.1007/978-3-319-04954-0_8.
+
+### Note 24 {#note-6-1-24}
+
+Lin Lu, Honglin Wang, Pengran Liu, Rong Liu, Jiayao Zhang, Yi Xie, Songxiang Liu, et al., “Applications of Mixed Reality Technology in Orthopedics Surgery: A Pilot Study,” _Frontiers in Bioengineering and Biotechnology_ 10 (February 22, 2022): https://doi.org/10.3389/fbioe.2022.740507.
+
+### Note 25 {#note-6-1-25}
+
+Pixar Headquarters and the Legacy of Steve Jobs (2012) https://officesnapshots.com/2012/07/16/pixar-headquarters-and-the-legacy-of-steve-jobs/

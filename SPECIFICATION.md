@@ -1331,6 +1331,7 @@ collection, DOM ownership, continuous render loop, or all-page lifecycle.
 | TURN-P-012 | Active-frame work meets at least 55 FPS on the desktop reference profile and 45 FPS on the representative mobile profile without a task over 50 ms. |
 | TURN-P-013 | The current CSS turn remains available as an internal rollback until the geometry path passes promotion gates; the legacy fallback remains independently available. |
 | TURN-P-014 | Derived StPageFlip code and design retain the MIT copyright and permission notice in distributed source and notices. |
+| TURN-P-015 | Manifest chapter boundaries start fresh semantic pages and receive a distinct chapter-opening treatment without deriving chapter identity from visual numbering alone. |
 
 Implementation details and measurable gates are in
 [SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md).

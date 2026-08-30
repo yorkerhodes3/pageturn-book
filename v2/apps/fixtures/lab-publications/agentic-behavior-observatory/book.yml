@@ -1,0 +1,62 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: agentic-behavior-observatory
+editionId: 2026-08
+title: "The Agentic Behavior Observatory"
+description: "Reading What a Repository Models, and What It Leaves Out"
+authors:
+  - name: "Analysis and write-up by the Ethical Tech CoLab. Figures computed from the committed corpus of 22 repositories, read on 26 August 2026."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Instrument and findings · Ethical Tech CoLab"
+  credits: "Analysis and write-up by the Ethical Tech CoLab. Figures computed from the committed corpus of 22 repositories, read on 26 August 2026. · August 2026"
+  thesis: "A repository that simulates a population makes a claim about who that population contains, and the claim is legible in its source. This report describes an instrument that reads it, and what the instrument found across 22 repositories: work that models age and disability far more often than income or literacy, an evaluation layer that is strongest exactly where the subject matter is weakest, and eight repositories whose behavioral findings rest on a language model they never name."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/agentic-behavior-observatory/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17372d"
+    foreground: "#f3ead6"
+    accent: "#c7b477"
+    subtitle: "Reading What a Repository Models, and What It Leaves Out"
+  binding:
+    material: leather
+    color: "#17372d"
+    accent: "#c7b477"
+    depth: slim
+    hubs: 3
+    pageCount: 12
+    shelfLabel: "THE AGENTIC BEHAVIOR OBSERVATORY"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/agentic-behavior-observatory/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/agentic-behavior-observatory/report.pdf
+chapters:
+  - id: question
+    title: "The question the instrument exists to answer"
+    source: chapters/01-question.md
+    slug: question
+  - id: method
+    title: "How the reading is done"
+    source: chapters/02-method.md
+    slug: method
+  - id: corpus
+    title: "The corpus"
+    source: chapters/03-corpus.md
+    slug: corpus
+  - id: findings
+    title: "What the corpus turned out to model"
+    source: chapters/04-findings.md
+    slug: findings
+  - id: limits
+    title: "Limits worth stating"
+    source: chapters/05-limits.md
+    slug: limits
+  - id: use
+    title: "Using it, and extending it"
+    source: chapters/06-use.md
+    slug: use
+  - id: references
+    title: "Works Cited"
+    source: chapters/07-references.md
+    slug: references

@@ -1,0 +1,9 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/erus.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 07. The Two Distinctions the Model Insists On {#distinctions}
+
+**Known unknown against unknown unknown.** A factor recorded as Unknown with high confidence, meaning the team is sure it does not know, scores higher than the same status with low confidence, meaning the team is not even sure its ignorance is accurate. This falls directly out of the confidence adjustment. The reasoning offered is that a field team which explicitly flags a gap is providing more actionable information than one whose own reporting cannot be trusted.
+
+**Unknown against Unwilling.** When the Willingness factor is Blocked, the tool displays the word Unwilling rather than the generic Blocked, throughout the interface and in generated text. The point is not cosmetic. Unknown is an intelligence gap that better assessment can close. Unwilling is a confirmed exclusion that no further enquiry will change. A tool whose purpose is to identify where more information would help must not present a settled refusal as an open question, or it commits the very error it exists to expose.
+
+The project's backlog is honest that this change had consequences. Because gatekeeper factors are generated with a higher probability of being blocked than standard factors, promoting Willingness to gatekeeper status raised the number of excluded destinations in the default scenario from roughly two in eight to roughly five in eight. That rate has since been checked across 500 different seeds rather than just the one the project cites: the mean exclusion count is 4.48 of 8, with 5 in 8 sitting inside the two most common outcomes rather than at an extreme, confirming the rate is the model's typical behaviour rather than an artefact of that particular seed.

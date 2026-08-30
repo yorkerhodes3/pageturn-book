@@ -1,0 +1,15 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/digital-provenance-passport.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 10. The Passport and What the Seal Proves {#passport-and-seal}
+
+The output document is issued in a standard format known as a Verifiable Credential, a specification maintained by the World Wide Web Consortium for digital records that can be checked by anyone without contacting the issuer. The format matters because a provenance assessment that only one institution's software can read is of limited use to the buyer, insurer, or regulator who receives it.
+
+The record contains the object's identity, the full ownership timeline with a source address against every event, the confidence score, every red flag with its evidence, any paid checks with the amount paid and the transaction they produced, the list of checks performed, and the time of assessment. It is assembled from what the run actually collected. The code is explicit that the record is built from accumulated state rather than re-derived from a language model, so that the sealed document is always a faithful account of the run.
+
+The sealing works as follows. The record is first written out in a strictly canonical form, with every field in a fixed order, so that the same content always produces an identical text. A cryptographic signature is then computed over that text. Anyone holding the document can repeat the calculation and recover the identity of the signer. If any character of the record has been changed since signing, the recovered identity will not match and the document is exposed as altered.
+
+The prototype includes a demonstration of exactly this. Its example script signs a Passport, then alters a single field, raising the confidence score to 100, and re-checks it. The check fails and reports that the content no longer matches its seal. This is a small thing to build and a significant thing to show, because the value at stake in a provenance document is high enough to make quiet editing a genuine risk.
+
+One conceptual point in the design deserves comment. The identity that signs the Passport is the same digital wallet identity that pays for the premium check. The repository summarises this as the observation that a wallet is already a form of public-key infrastructure, applied here to an object's identity rather than to a payment. The practical effect is that the entity that spent the money and the entity that vouched for the record are provably the same, and no separate system of certificates or key distribution is required.
+
+What the seal proves, and does not prove, should be stated exactly. It proves that this document has not been altered since it was signed, and that it was signed by the holder of a particular key. It proves nothing whatever about whether the contents are true. A sealed record of a bad assessment is a bad assessment that cannot be quietly improved later. That is a genuine benefit, and it is a narrower one than the word verified tends to suggest to a general reader.

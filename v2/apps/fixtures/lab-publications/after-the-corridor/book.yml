@@ -1,0 +1,91 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: after-the-corridor
+editionId: 2026-08
+title: "After the Corridor"
+description: "From AI-Informed Evacuation to Digital Public Goods for Refugee Economic Inclusion"
+authors:
+  - name: "Carolina de Almeida Pernambuco Moron, Christine Lumen, Alana Robertson, Melanie MacKew, Carlos D. Ruiz, India Clarke, and Yago Rocha, with Teresa Cantero (PhD Candidate, Universidad Carlos III de Madrid; Adjunct Professor, IE University; Visiting Scholar, NYU CGA). Faculty directors: Prof. Yorke E. Rhodes III and Sylvia Maier."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Carolina de Almeida Pernambuco Moron, Christine Lumen, Alana Robertson, Melanie MacKew, Carlos D. Ruiz, India Clarke, and Yago Rocha, with Teresa Cantero (PhD Candidate, Universidad Carlos III de Madrid; Adjunct Professor, IE University; Visiting Scholar, NYU CGA). Faculty directors: Prof. Yorke E. Rhodes III and Sylvia Maier. · NYU Center for Global Affairs · July 2026"
+  thesis: "How can AI inform evacuation decisions, and what happens after? This report examines the CoLab's five fielded evacuation prototypes, their limitations and research frontiers, and extends the arc to the camp: the measurement, financial-modeling, and rights infrastructure that can shorten protracted displacement and improve lives. Dzaleka Refugee Camp in Malawi is the case study ground."
+  disclaimer: "The Ethical Tech CoLab is a research initiative of the NYU School of Professional Studies Center for Global Affairs, conducted in collaboration with Microsoft. Views and findings are those of the researchers and do not represent the official positions of New York University, Microsoft, UNHCR, WFP, or any partner institution. External programs cited are referenced as evidence, not as CoLab partnerships."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/after-the-corridor/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#4a171c"
+    foreground: "#f3ead6"
+    accent: "#d0ad6d"
+    subtitle: "From AI-Informed Evacuation to Digital Public Goods for Refugee Economic Inclusion"
+  binding:
+    material: leather
+    color: "#4a171c"
+    accent: "#d0ad6d"
+    depth: standard
+    hubs: 4
+    pageCount: 22
+    shelfLabel: "AFTER THE CORRIDOR"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/after-the-corridor/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/after-the-corridor/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: research-question
+    title: "The Research Question, and Why It Runs Past the Corridor"
+    source: chapters/02-research-question.md
+    slug: research-question
+  - id: built-portfolio
+    title: "The Built Portfolio"
+    source: chapters/03-built-portfolio.md
+    slug: built-portfolio
+  - id: dzaleka
+    title: "After Arrival: Dzaleka and the Second Emergency"
+    source: chapters/04-dzaleka.md
+    slug: dzaleka
+  - id: financial-model
+    title: "The Financial Model: From Evacuation Break-Even to Inclusion Break-Even"
+    source: chapters/05-financial-model.md
+    slug: financial-model
+  - id: digital-public-goods
+    title: "Digital Public Goods for Economic Inclusion"
+    source: chapters/06-digital-public-goods.md
+    slug: digital-public-goods
+  - id: digital-identity-risk
+    title: "Vulnerable Populations, Digital Identity Risk, and Mitigation"
+    source: chapters/07-digital-identity-risk.md
+    slug: digital-identity-risk
+  - id: evidence-engine
+    title: "Aggregating Evidence So Displaced People Can Argue Their Case Sooner"
+    source: chapters/08-evidence-engine.md
+    slug: evidence-engine
+  - id: infrastructure
+    title: "What Infrastructure Is Actually Needed"
+    source: chapters/09-infrastructure.md
+    slug: infrastructure
+  - id: success
+    title: "How Success Will Be Measured"
+    source: chapters/10-success.md
+    slug: success
+  - id: alignment
+    title: "Alignment with the Displaced Livelihoods Initiative and Other Funders"
+    source: chapters/11-alignment.md
+    slug: alignment
+  - id: programme-design
+    title: "Programme Design and Outlook"
+    source: chapters/12-programme-design.md
+    slug: programme-design
+  - id: limitations
+    title: "Consolidated Limitations and Future Research"
+    source: chapters/13-limitations.md
+    slug: limitations
+  - id: references
+    title: "Works Cited"
+    source: chapters/14-references.md
+    slug: references

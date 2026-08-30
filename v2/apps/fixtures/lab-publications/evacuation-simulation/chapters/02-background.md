@@ -1,0 +1,11 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/evacuation-simulation.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 02. Background and Rationale {#background}
+
+**The problem.** Evacuation planning in armed conflict is usually discussed in terms of capacity: how many buses, how many kilometres of road, how many hours of ceasefire. These are the easy quantities to count. They are also the least predictive. A corridor with ample capacity fails if the population does not believe the corridor exists, does not trust the party announcing it, or cannot physically reach it in the time allowed.
+
+**The gap.** The behavioural side of evacuation is well documented in disaster sociology, but that literature grew out of hurricanes, floods, and industrial accidents. It assumes a benign movement environment: the warning is issued in good faith, the roads are open, and nobody is trying to deceive you. Armed conflict inverts all three assumptions. The threat is deliberate, the information is contested, and movement itself may be obstructed or compelled.
+
+**The response.** EvacSim takes the established behavioural model, the confirmation-seeking household that moves as a unit, and places it inside a conflict environment. It adds the things that make conflict evacuation different: corridors that can close, checkpoints that impose delay, telecommunications that degrade under bombardment, deliberate misinformation about routes, and coercion that removes the household's choice entirely.
+
+The repository is explicit that the behavioural foundations come from two named bodies of work. Enrico Quarantelli, of the Disaster Research Center at the University of Delaware, established that people rarely panic in disasters and instead seek confirmation from multiple sources before accepting that a threat is real. Thomas Drabek, of the University of Denver, documented that families evacuate as units rather than as individuals, waiting until all members are present before departing. These two findings are the direct source of the model's two central mechanics: the confirmation counter and the household hub that waits for its slowest member.

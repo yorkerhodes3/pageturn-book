@@ -1,0 +1,78 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: ai-models-research
+editionId: 2026-08
+title: "AI Model Performance"
+description: "Capabilities, Accuracy, Speed, Energy Use, and Token Economics Across Frontier, Open-Weight, and Efficient Model Families"
+authors:
+  - name: "Carolina Morón. Prepared as a comparative research review, drawing on peer-reviewed research, institutional benchmarks, model cards, and official technical documentation. Research cut-off 22 July 2026."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Research review · Ethical Tech CoLab"
+  credits: "Carolina Morón. Prepared as a comparative research review, drawing on peer-reviewed research, institutional benchmarks, model cards, and official technical documentation. Research cut-off 22 July 2026. · Academic and primary-source synthesis · July 2026"
+  thesis: "There is no universally best AI model. Model selection is a constrained optimisation problem across verified task quality, factual reliability, latency, throughput, token consumption, energy per accepted output, privacy, controllability, and total deployment cost."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/ai-models-research/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17363e"
+    foreground: "#f3ead6"
+    accent: "#b9b075"
+    subtitle: "Capabilities, Accuracy, Speed, Energy Use, and Token Economics Across Frontier, Open-Weight, and Efficient Model Families"
+  binding:
+    material: leather
+    color: "#17363e"
+    accent: "#b9b075"
+    depth: standard
+    hubs: 4
+    pageCount: 19
+    shelfLabel: "AI MODEL PERFORMANCE"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-models-research/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-models-research/report.pdf
+chapters:
+  - id: evidence
+    title: "How to read the evidence"
+    source: chapters/01-evidence.md
+    slug: evidence
+  - id: landscape
+    title: "The 2026 landscape"
+    source: chapters/02-landscape.md
+    slug: landscape
+  - id: performance
+    title: "What performance actually means"
+    source: chapters/03-performance.md
+    slug: performance
+  - id: accuracy
+    title: "Accuracy, factuality, and hallucination"
+    source: chapters/04-accuracy.md
+    slug: accuracy
+  - id: speed
+    title: "Speed is not generation rate"
+    source: chapters/05-speed.md
+    slug: speed
+  - id: tokens
+    title: "Context windows and token economics"
+    source: chapters/06-tokens.md
+    slug: tokens
+  - id: energy
+    title: "Energy and environmental performance"
+    source: chapters/07-energy.md
+    slug: energy
+  - id: selection
+    title: "A selection framework"
+    source: chapters/08-selection.md
+    slug: selection
+  - id: gaps
+    title: "Research gaps and outlook"
+    source: chapters/09-gaps.md
+    slug: gaps
+  - id: scope
+    title: "Scope and limitations"
+    source: chapters/10-scope.md
+    slug: scope
+  - id: references
+    title: "Works Cited"
+    source: chapters/11-references.md
+    slug: references

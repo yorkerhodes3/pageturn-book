@@ -1,0 +1,9 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/digital-provenance-passport.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 14. Relationship to the Sibling Project {#sibling-project}
+
+The Ethical Tech CoLab maintains a related repository, provenance-search, which addresses the same problem from a different direction. That project is a web application that identifies an artwork, including from a photograph taken on a phone in a museum, and searches a considerably wider set of free public sources: the Metropolitan Museum, the Art Institute of Chicago, a bundled extract of the Museum of Modern Art's open collection data, Wikipedia, Wikidata, and Europeana, alongside the same commercial search service used here.
+
+The two projects share a central conviction, stated in both repositories, that the confidence score must be computed by a fixed algorithm rather than by the artificial intelligence, and both restrict their research to a list of recognised sources.
+
+They differ in emphasis. The sibling project prioritises breadth of free sources and accessibility, including identification by camera. The project described in this report prioritises the integrity of the resulting record: the enforced sourcing rule, the evidence tiers, the tamper-evident seal, and the ability to obtain paid data autonomously. Read together they suggest a natural combination, in which the wider source coverage of the one feeds the evidentiary discipline and sealed output of the other. This report treats the present repository on its own terms; the comparison is offered only because a reader encountering both should understand that they are complementary experiments rather than duplicates.

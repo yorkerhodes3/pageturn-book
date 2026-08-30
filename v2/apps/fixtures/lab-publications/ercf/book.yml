@@ -1,0 +1,114 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: ercf
+editionId: 2026-08
+title: "The Evacuation Risk and Cost Framework"
+description: "Estimating the Human and Financial Cost of Civilian Evacuation in Armed Conflict"
+authors:
+  - name: "Yago Rocha. Developed as part of research on International Humanitarian Law and civilian protection at the NYU Center for Global Affairs, under the Ethical Tech CoLab. The repository records the work as presented to Teresa Cantero, PhD Researcher, whose suggestions are cited in the project backlog."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Yago Rocha. Developed as part of research on International Humanitarian Law and civilian protection at the NYU Center for Global Affairs, under the Ethical Tech CoLab. The repository records the work as presented to Teresa Cantero, PhD Researcher, whose suggestions are cited in the project backlog. · NYU Center for Global Affairs · July 2026"
+  thesis: "A humanitarian organisation facing a besieged city has to answer a question that no manual answers well: what would it actually take to move these people, and what would it cost to keep them alive if they cannot be moved? Both questions have to be answered before a funding appeal can be written, and both are usually answered from memory, from a previous operation in a different country, or from an experienced coordinator's intuition. ERCF is a research prototype that attempts to put numbers on both and to show its working."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/ercf/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#41263d"
+    foreground: "#f3ead6"
+    accent: "#c8a96d"
+    subtitle: "Estimating the Human and Financial Cost of Civilian Evacuation in Armed Conflict"
+  binding:
+    material: leather
+    color: "#41263d"
+    accent: "#c8a96d"
+    depth: thick
+    hubs: 5
+    pageCount: 32
+    shelfLabel: "THE EVACUATION RISK AND COST FRAME"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ercf/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ercf/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/03-objectives.md
+    slug: objectives
+  - id: seven-dimensions
+    title: "How ERCF Works: The Seven Dimensions"
+    source: chapters/04-seven-dimensions.md
+    slug: seven-dimensions
+  - id: risk-level
+    title: "From Seven Scores to a Risk Level"
+    source: chapters/05-risk-level.md
+    slug: risk-level
+  - id: cost-of-evacuating
+    title: "The Cost of Evacuating: Every Variable Explained"
+    source: chapters/06-cost-of-evacuating.md
+    slug: cost-of-evacuating
+  - id: cost-of-staying
+    title: "The Cost of Staying"
+    source: chapters/07-cost-of-staying.md
+    slug: cost-of-staying
+  - id: break-even
+    title: "The Break-Even Analysis"
+    source: chapters/08-break-even.md
+    slug: break-even
+  - id: mortality-model
+    title: "Estimating Deaths: The Mortality Model"
+    source: chapters/09-mortality-model.md
+    slug: mortality-model
+  - id: calibration
+    title: "How the Model Was Fitted, and Against What"
+    source: chapters/10-calibration.md
+    slug: calibration
+  - id: data-sources
+    title: "Where the Data Comes From"
+    source: chapters/11-data-sources.md
+    slug: data-sources
+  - id: reading-results
+    title: "Reading the Results"
+    source: chapters/12-reading-results.md
+    slug: reading-results
+  - id: ihl
+    title: "Grounding in International Humanitarian Law"
+    source: chapters/13-ihl.md
+    slug: ihl
+  - id: ethical-position
+    title: "The Ethical Position"
+    source: chapters/14-ethical-position.md
+    slug: ethical-position
+  - id: inconsistencies
+    title: "Notable Inconsistencies Found in Review"
+    source: chapters/15-inconsistencies.md
+    slug: inconsistencies
+  - id: maturity
+    title: "Maturity, and What Remains Unbuilt"
+    source: chapters/16-maturity.md
+    slug: maturity
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/17-limitations.md
+    slug: limitations
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/18-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/19-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/20-references.md
+    slug: references

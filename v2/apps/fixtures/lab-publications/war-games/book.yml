@@ -1,0 +1,78 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: war-games
+editionId: 2026-08
+title: "The Only Winning Move"
+description: "Rebuilding WarGames (1983) as a Playable Study of Autonomous AI Agents"
+authors:
+  - name: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs. The playable artefact, the simulation harness, and the raw run records are in the War-Games repository."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs. The playable artefact, the simulation harness, and the raw run records are in the War-Games repository. · NYU Center for Global Affairs · July 2026"
+  thesis: "WarGames is the film in which a teenager dials into a defence computer, picks what he takes to be a game, and nearly starts a nuclear war. The machine is not malicious. It is courteous, literal, patient, and it does exactly what it was built to do. This report describes what happened when that story was rebuilt as a browser game in which the machine is a real language model, and then measured the way an engineering team measures a component. The finding that mattered was not the one anyone expected."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/war-games/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17363e"
+    foreground: "#f3ead6"
+    accent: "#b9b075"
+    subtitle: "Rebuilding WarGames (1983) as a Playable Study of Autonomous AI Agents"
+  binding:
+    material: cloth
+    color: "#17363e"
+    accent: "#b9b075"
+    depth: slim
+    hubs: 3
+    pageCount: 15
+    shelfLabel: "THE ONLY WINNING MOVE"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/war-games/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/war-games/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: the-film
+    title: "The Film as a Design Source"
+    source: chapters/02-the-film.md
+    slug: the-film
+  - id: film-to-system
+    title: "From Film to System"
+    source: chapters/03-film-to-system.md
+    slug: film-to-system
+  - id: construction
+    title: "How the Game Is Built"
+    source: chapters/04-construction.md
+    slug: construction
+  - id: futility-proof
+    title: "The Futility Proof"
+    source: chapters/05-futility-proof.md
+    slug: futility-proof
+  - id: method
+    title: "Evaluating the Machine"
+    source: chapters/06-method.md
+    slug: method
+  - id: findings
+    title: "What the Evaluation Found"
+    source: chapters/07-findings.md
+    slug: findings
+  - id: cost-and-control
+    title: "Cost, Control, and Where Inference Should Run"
+    source: chapters/08-cost-and-control.md
+    slug: cost-and-control
+  - id: limitations
+    title: "Limitations"
+    source: chapters/09-limitations.md
+    slug: limitations
+  - id: what-it-says
+    title: "What This Says About Agents"
+    source: chapters/10-what-it-says.md
+    slug: what-it-says
+  - id: references
+    title: "Works Cited"
+    source: chapters/11-references.md
+    slug: references

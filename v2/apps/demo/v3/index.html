@@ -17,11 +17,13 @@
         <p class="v3-kicker">Ethical Tech CoLab · isolated experiment</p>
         <h1>V3 semantic geometry</h1>
         <p class="v3-summary">
-          Real publication HTML, a bounded live DOM, and StPageFlip-derived
-          fold geometry. V1 and V2 remain unchanged.
+          <span data-v3-publication-title>Real publication HTML</span>, a
+          bounded live DOM, and StPageFlip-derived fold geometry. V1 and V2
+          remain unchanged.
         </p>
       </div>
       <nav aria-label="Prototype navigation">
+        <a href="../shelf/">Library shelf</a>
         <a href="../compare/">Compare all versions</a>
         <a href="../">Overview</a>
       </nav>
@@ -36,7 +38,7 @@
         <ul>
           <li>Drag any outer top or bottom page corner.</li>
           <li>The current spread stays semantic and selectable.</li>
-          <li>Only the revealed destination and moving reverse are cloned.</li>
+          <li>Only the active moving and revealed faces are cloned.</li>
           <li>No canvas, SVG page texture, or raster publication page is used.</li>
         </ul>
       </section>
@@ -52,6 +54,12 @@
             <span class="v3-status-dot" aria-hidden="true"></span>
             <span data-v3-status role="status">Loading semantic pages</span>
           </div>
+          <label class="v3-chapter-picker">
+            <span>Chapter</span>
+            <select data-v3-chapter-select disabled>
+              <option>Loading contents</option>
+            </select>
+          </label>
           <output data-v3-counter>Preparing book</output>
         </div>
 
@@ -65,6 +73,20 @@
           <div class="v3-spread" data-v3-spread>
             <div class="v3-stationary" data-v3-stationary></div>
             <div class="v3-turn-layer" data-v3-turn-layer></div>
+            <div
+              class="v3-entry-cover"
+              data-v3-entry-cover
+              aria-hidden="true"
+            >
+              <div class="v3-entry-cover-frame">
+                <span
+                  class="v3-entry-cover-kicker"
+                  data-v3-cover-kicker
+                >Publication authors</span>
+                <strong data-v3-cover-title>Semantic publication</strong>
+                <span data-v3-cover-subtitle>Complete semantic edition</span>
+              </div>
+            </div>
 
             <button
               class="v3-corner v3-corner-left v3-corner-top"

@@ -1,5 +1,6 @@
 import type { PublicationAppearance } from "@ethical-tech/book-publication-model";
 import type {
+  BookshelfAction,
   BookshelfSection,
   BookshelfVolume,
 } from "@ethical-tech/book-reader-ui";
@@ -16,6 +17,11 @@ type CatalogBook = {
   appearance: PublicationAppearance;
   subtitle?: string;
   semanticHref?: string;
+  geometryHref?: string;
+  semanticEdition: string;
+  facsimile: boolean;
+  externalHref?: string;
+  extentLabel?: string;
 };
 
 const palettes = [
@@ -63,23 +69,36 @@ const catalogSource = [
     46,
     "Ethics, Ethical Technology, and Ethical International Relations for the Age of Intelligent Machines",
     "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+    "../v3/?from=shelf",
   ],
   [
     "ai-carbon-footprint",
-    "AI Carbon Footprint",
+    "AI's Carbon Footprint",
     "AI CARBON FOOTPRINT",
     "Foundational & Policy",
     18,
   ],
   [
     "ai-models-research",
-    "AI Models Research",
+    "AI Model Performance",
     "AI MODELS RESEARCH",
     "Foundational & Policy",
     19,
   ],
-  ["erus", "ERUS", "ERUS", "Foundational & Policy", 24],
-  ["cerai", "CERAI", "CERAI", "Foundational & Policy", 13],
+  [
+    "erus",
+    "The Evacuation Readiness and Uncertainty Simulator",
+    "ERUS",
+    "Foundational & Policy",
+    24,
+  ],
+  [
+    "cerai",
+    "The Civilian Evacuation Risk Anticipation Index",
+    "CERAI",
+    "Foundational & Policy",
+    13,
+  ],
   [
     "agentic-language-development",
     "Agentic Language Development",
@@ -87,7 +106,13 @@ const catalogSource = [
     "Foundational & Policy",
     25,
   ],
-  ["war-games", "War Games", "WAR GAMES", "Foundational & Policy", 15],
+  [
+    "war-games",
+    "The Only Winning Move",
+    "WAR GAMES",
+    "Foundational & Policy",
+    15,
+  ],
   [
     "after-the-corridor",
     "After the Corridor",
@@ -96,46 +121,58 @@ const catalogSource = [
     22,
     "From AI-Informed Evacuation to Digital Public Goods for Refugee Economic Inclusion",
   ],
-  ["ercf", "ERCF", "ERCF", "Humanitarian Systems", 32],
+  [
+    "ercf",
+    "The Evacuation Risk and Cost Framework",
+    "ERCF",
+    "Humanitarian Systems",
+    32,
+  ],
   [
     "evacuation-inform-index",
-    "Evacuation INFORM Index",
+    "The Evacuation Inform Index",
     "EVACUATION INFORM",
     "Humanitarian Systems",
     11,
   ],
   [
     "evacuation-simulation",
-    "Evacuation Simulation",
+    "The Evacuation Simulator",
     "EVACUATION SIMULATION",
     "Humanitarian Systems",
     22,
   ],
-  ["haste", "HASTE", "HASTE", "Humanitarian Systems", 26],
+  [
+    "haste",
+    "HASTE: High-speed Assessment and Satellite Tracking for Emergencies",
+    "HASTE",
+    "Humanitarian Systems",
+    26,
+  ],
   [
     "mariupol-severity-model",
-    "Mariupol Severity Model",
+    "The Mariupol Corridor Severity Model",
     "MARIUPOL SEVERITY",
     "Humanitarian Systems",
     26,
   ],
   [
     "forced-labor-structural-risk-index",
-    "Forced Labor Structural Risk Index",
+    "The Forced Labor Structural Risk Index",
     "FORCED LABOR RISK",
     "Humanitarian Systems",
     25,
   ],
   [
     "agentic-behavior-observatory",
-    "Agentic Behavior Observatory",
+    "The Agentic Behavior Observatory",
     "AGENTIC OBSERVATORY",
     "Research & Public Tools",
     12,
   ],
   [
     "ai-research-assistant",
-    "AI Research Assistant",
+    "AI-Powered Research Questions",
     "AI RESEARCH ASSISTANT",
     "Research & Public Tools",
     10,
@@ -149,14 +186,14 @@ const catalogSource = [
   ],
   [
     "digital-provenance-passport",
-    "Digital Provenance Passport",
+    "The Digital Provenance Passport",
     "PROVENANCE PASSPORT",
     "Research & Public Tools",
     28,
   ],
   [
     "diplomatic-simulator",
-    "Diplomatic Simulator",
+    "The Diplomatic Simulator",
     "DIPLOMATIC SIMULATOR",
     "Research & Public Tools",
     23,
@@ -168,12 +205,27 @@ const catalogSource = [
     "Research & Public Tools",
     20,
   ],
-  ["vango", "VANGO", "VANGO", "Research & Public Tools", 16],
+  [
+    "vango",
+    "VANGO: The Art Passport",
+    "VANGO",
+    "Research & Public Tools",
+    16,
+  ],
 ] as const;
 
 export const LIBRARY_BOOKS: CatalogBook[] = catalogSource.map(
   (
-    [id, title, shelfLabel, collection, pageCount, subtitle, semanticHref],
+    [
+      id,
+      title,
+      shelfLabel,
+      collection,
+      pageCount,
+      subtitle,
+      semanticHref,
+      geometryHref,
+    ],
     index,
   ) => ({
     id,
@@ -182,10 +234,46 @@ export const LIBRARY_BOOKS: CatalogBook[] = catalogSource.map(
     collection,
     pageCount,
     appearance: appearance(index, pageCount, shelfLabel),
+    semanticEdition: id === "what-is-ethical-ai" ? "2026-07" : "2026-08",
+    facsimile: true,
     ...(subtitle ? { subtitle } : {}),
     ...(semanticHref ? { semanticHref } : {}),
+    geometryHref:
+      geometryHref ??
+      `../v3/?book=${encodeURIComponent(id)}&from=shelf`,
   }),
 );
+
+LIBRARY_BOOKS.push({
+  id: "plurality",
+  title: "Plurality",
+  shelfLabel: "PLURALITY",
+  collection: "Open Source Library",
+  pageCount: 586,
+  subtitle: "The Future of Collaborative Technology and Democracy",
+  semanticEdition: "2026-07",
+  facsimile: false,
+  geometryHref: "../v3/?book=plurality&from=shelf",
+  externalHref: "https://www.plurality.net/read/",
+  extentLabel: "586-page print edition · 30 semantic chapters",
+  appearance: {
+    cover: {
+      background: "#39295d",
+      foreground: "#f5efe2",
+      accent: "#66c5b8",
+      subtitle: "The Future of Collaborative Technology and Democracy",
+    },
+    binding: {
+      material: "cloth",
+      color: "#39295d",
+      accent: "#66c5b8",
+      depth: "thick",
+      hubs: 5,
+      pageCount: 586,
+      shelfLabel: "PLURALITY",
+    },
+  },
+});
 
 export function productionManifestUrl(bookId: string): string {
   return (
@@ -211,6 +299,38 @@ export function catalogBook(bookId: string): CatalogBook | undefined {
 
 function bookshelfVolume(book: CatalogBook): BookshelfVolume {
   const facsimileHref = `../legacy/?book=${encodeURIComponent(book.id)}&view=book`;
+  const actions: BookshelfAction[] = [];
+  if (book.semanticHref) {
+    actions.push({
+      label: "Read V2 semantic edition",
+      href: book.semanticHref,
+      description: "Open accessible native text in the V2 book reader",
+    });
+  }
+  if (book.geometryHref) {
+    actions.push({
+      label: "Read V3 geometry edition",
+      href: book.geometryHref,
+      description:
+        "Open the complete semantic edition with experimental page-turn geometry",
+    });
+  }
+  if (book.facsimile) {
+    actions.push({
+      label: book.semanticHref ? "View designed pages" : "Open designed pages",
+      href: facsimileHref,
+      description: book.semanticHref
+        ? "Open the preserved fixed-page edition"
+        : "Open the publication in the fixed-page reader",
+    });
+  }
+  if (book.externalHref) {
+    actions.push({
+      label: "Open the original flat reader",
+      href: book.externalHref,
+      description: "Read the source publication on plurality.net",
+    });
+  }
   return {
     id: book.id,
     title: book.title,
@@ -219,26 +339,8 @@ function bookshelfVolume(book: CatalogBook): BookshelfVolume {
     pageCount: book.pageCount,
     appearance: book.appearance,
     ...(book.subtitle ? { subtitle: book.subtitle } : {}),
-    actions: book.semanticHref
-      ? [
-          {
-            label: "Read semantic edition",
-            href: book.semanticHref,
-            description: "Open accessible native text in the V2 book reader",
-          },
-          {
-            label: "View designed pages",
-            href: facsimileHref,
-            description: "Open the preserved fixed-page edition",
-          },
-        ]
-      : [
-          {
-            label: "Open designed pages",
-            href: facsimileHref,
-            description: "Open the publication in the fixed-page reader",
-          },
-        ],
+    ...(book.extentLabel ? { extentLabel: book.extentLabel } : {}),
+    actions,
   };
 }
 
@@ -246,6 +348,7 @@ export const LIBRARY_SECTIONS: BookshelfSection[] = [
   "Foundational & Policy",
   "Humanitarian Systems",
   "Research & Public Tools",
+  "Open Source Library",
 ].map((title, index) => ({
   id: `shelf-${index + 1}`,
   title,

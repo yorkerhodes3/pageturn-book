@@ -30,8 +30,8 @@
     <main class="dashboard-main">
       <section class="dashboard-metrics" aria-label="Reader summary">
         <article>
-          <strong>21</strong>
-          <span>production bindings</span>
+          <strong>22</strong>
+          <span>semantic-ready bindings</span>
         </article>
         <article>
           <strong>99</strong>
@@ -56,7 +56,7 @@
           <a href="../shelf/">
             <span>Library experience</span>
             <strong>Browse all bindings</strong>
-            <small>Selection, pull-out, cover reveal, and reader handoff</small>
+            <small>All lab bindings plus the CC0 Plurality community book</small>
           </a>
           <a href="../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book">
             <span>Semantic book</span>
@@ -67,6 +67,11 @@
             <span>Geometry experiment</span>
             <strong>Review the isolated V3 fold</strong>
             <small>Real semantic pages, continuous geometry, and bounded live faces</small>
+          </a>
+          <a href="../v3/?book=plurality">
+            <span>Open source publication</span>
+            <strong>Read Plurality in V3</strong>
+            <small>30 pinned CC0 chapters, linked notes, and source attribution</small>
           </a>
           <a href="../legacy/?view=book">
             <span>Preserved fallback</span>
@@ -119,7 +124,17 @@
               <tr>
                 <th scope="row">Continuous fold geometry</th>
                 <td><span class="status status-experimental">V3 experiment</span></td>
-                <td>An isolated route projects real semantic pages through StPageFlip-derived geometry. V2 remains the rollback baseline until visual, accessibility, and performance gates pass.</td>
+                <td>The shared V3 route projects every shelf publication through StPageFlip-derived geometry. V2 remains the rollback baseline until visual, accessibility, and performance gates pass.</td>
+              </tr>
+              <tr>
+                <th scope="row">Semantic chapter openings</th>
+                <td><span class="status status-experimental">V3 implemented</span></td>
+                <td>Manifest chapters begin fresh leaves with a separate chapter-number label, prominent title, and desktop opening drop cap.</td>
+              </tr>
+              <tr>
+                <th scope="row">All-publication semantic ingest</th>
+                <td><span class="status status-experimental">V3 beta</span></td>
+                <td>All 20 report-model sources, the 542-term Cyber Dictionary, and Plurality's 30 CC0 chapters build into immutable semantic manifests and open from the shelf. Editorial parity and upstream export hardening remain.</td>
               </tr>
               <tr>
                 <th scope="row">Responsive physical pagination</th>
@@ -134,7 +149,7 @@
               <tr>
                 <th scope="row">Publication bookshelf</th>
                 <td><span class="status status-complete">Implemented</span></td>
-                <td>21 lazy-loaded production volumes with metadata-driven bindings.</td>
+                <td>22 lazy-loaded volumes with metadata-driven leather or cloth bindings and V3 geometry actions.</td>
               </tr>
               <tr>
                 <th scope="row">Share current reading location</th>
@@ -148,8 +163,8 @@
               </tr>
               <tr>
                 <th scope="row">Footnotes and endnotes</th>
-                <td><span class="status status-partial">Source blocked</span></td>
-                <td>The complete Works Cited is linkable. The canonical Markdown has no mapped footnote callouts or definitions, so PDF footnotes cannot yet become reliable semantic endnotes.</td>
+                <td><span class="status status-partial">Source dependent</span></td>
+                <td>Plurality chapter notes are linked from canonical Markdown. Ethical Tech report sources expose Works Cited but generally lack mapped footnote callouts.</td>
               </tr>
               <tr>
                 <th scope="row">Right-to-left physical book mode</th>
@@ -183,6 +198,14 @@
         </div>
         <div class="dashboard-weight-grid">
           <article>
+            <h3>V3 semantic geometry</h3>
+            <strong>~63 KB</strong>
+            <p>
+              Approximately 16.1 KB gzip for V3 CSS, JavaScript, and catalog
+              metadata plus 46.4 KB for all 17 semantic chapters.
+            </p>
+          </article>
+          <article>
             <h3>V2 semantic book</h3>
             <strong>~79 KB</strong>
             <p>
@@ -200,18 +223,19 @@
           </article>
           <article class="dashboard-weight-result">
             <h3>Complete-book reduction</h3>
-            <strong>~99.1%</strong>
+            <strong>~99.3%</strong>
             <p>
-              V2 runtime code is about 6 KB gzip larger. The major saving
-              comes from semantic text replacing raster pages—not from avoiding
-              SVG, because the legacy pages are WebP images.
+              V3's experimental shell is smaller than V2 because it omits
+              several mature reader features. Both semantic paths save weight
+              by replacing raster pages—not by avoiding SVG.
             </p>
           </article>
         </div>
         <p class="dashboard-method">
           Measurements use the production <cite>What Is Ethical AI?</cite>
-          fixture and modeled gzip sizes from the built Pages artifact. Shared
-          HTML shell overhead is excluded from both sides.
+          fixture and modeled gzip sizes from the built Pages artifact. HTML
+          and manifest overhead are excluded from the card totals for a
+          consistent runtime-plus-content comparison.
         </p>
       </section>
     </main>

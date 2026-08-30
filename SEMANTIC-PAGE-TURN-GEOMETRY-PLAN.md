@@ -301,36 +301,80 @@ V2-232 now has an isolated projector implementation exercised by V3.
 Production activation remains blocked on controller, integration, shadow-tuning,
 and promotion gates.
 
-### 10.2 Isolated V3 visual checkpoint - 2026-08-29
+### 10.2 Initial isolated V3 visual checkpoint - 2026-08-29
+
+The measurements in this subsection record the first one-book slice. The
+current multi-book measurements are in section 10.3.
 
 The geometry foundation is now reviewable without modifying the V2 book route:
 
-- `/v3/` renders real semantic HTML from the first three production chapters
-  through an isolated projector and responsive page composer.
+- `/v3/` renders the complete 17-chapter semantic edition through an isolated
+  projector and responsive page composer.
 - `/compare/` presents legacy/V1, V2, and V3 together.
 - Top and bottom corner targets, forward and backward drags, button turns, and
   keyboard turns all use the same geometry solver.
 - Stationary pages remain native and selectable. Moving and revealed clones are
   inert, `aria-hidden`, and stripped of IDs.
 - The V3 route uses no canvas, SVG page texture, or raster publication page.
-- The V3 shell adds 1.49 kB HTML, 3.09 kB CSS, 6.91 kB JavaScript, and 0.38 kB
-  module-preload support when opened, measured gzip. Publication HTML remains
-  separately fetched semantic content.
+- The full V3 shell adds 1.56 kB HTML, 3.66 kB CSS, 7.67 kB JavaScript, and
+  0.38 kB module-preload support when opened, measured gzip. With the manifest
+  and all 17 chapters, the complete path is about 63.8 kB gzip-equivalent.
 - V3 has no runtime import from the V2 reader or its manifest validator. The
   existing V2 chapter bundle remains the same 61.80 kB raw / 19.11 kB gzip
   artifact measured before V3.
-- The complete 38-test unit suite and 46-scenario browser suite pass. Dedicated
+- The complete 38-test unit suite and 49-scenario browser suite pass. Dedicated
   V3 checks cover forward/backward content mapping, ID removal, narrow
-  repagination, and the three-way comparison.
+  repagination, full-edition traversal, shelf handoff, and the three-way
+  comparison.
+- All 17 manifest chapters begin fresh semantic pages with explicit
+  chapter-opening presentation. The viewer does not infer chapter boundaries
+  from the displayed heading number.
 
-V3 is deliberately a comparison prototype, not a promoted reader. It currently
-loads three representative chapters and does not yet own canonical history,
-sharing, TOC navigation, typography controls, or cover sequencing. Those remain
-V2-owned until the geometry path passes the later integration gates.
+V3 is deliberately a comparison prototype, not a promoted reader. It does not
+yet own canonical history, sharing, TOC navigation, or typography controls.
+Those remain V2-owned until the geometry path passes the later integration
+gates.
 
 The next production-oriented work remains V2-232 through V2-236: harden the
 projector, add active-frame write coalescing, integrate the existing page and
 history model behind an internal switch, and tune fold shadows.
+
+### 10.3 Multi-book V3 library checkpoint - 2026-08-30
+
+V3 now accepts a validated shelf publication identity instead of a hard-coded
+Ethical AI manifest. The shelf contains 22 V3-capable bindings:
+
+- all 21 Ethical Tech CoLab publications;
+- the CC0 Plurality community book at pinned revision `8615885`.
+
+The committed source set contains 322 shelf-publication chapters. The build
+emits 22 shelf manifests plus the internal demo, 324 semantic chapter routes,
+and a 410-file Pages artifact measuring 6.06 MB raw / 1.67 MB gzip.
+
+The shared V3 route is 17.7 kB gzip including HTML, CSS, JavaScript, catalog
+metadata, and module-preload support. It preserves prose, lists, tables, chart
+data, formulas, glossary records, chapter notes, figure links, and H1-H6
+headings. Unsupported non-empty top-level blocks now fail explicitly instead
+of disappearing.
+
+Chapter-aware presentation includes:
+
+- a fresh page for every manifest chapter;
+- labels such as `CHAPTER 12` or Plurality's `CHAPTER 6-4`;
+- a separate, prominent title;
+- a desktop drop cap on the first prose paragraph;
+- a chapter picker and optional `?chapter=` start;
+- working internal note jumps.
+
+The complete suite contains 38 unit tests and 51 browser scenarios, including
+one that initializes every shelf publication and representative assertions for
+tables, formulas, Plurality notes, and all 28 Plurality H4-H6 headings.
+
+The largest current limitation is eager source loading. Plurality's complete
+30-chapter path is about 519 kB gzip, initializes in about 5-10 seconds on the
+desktop test profile, and retains detached parsed source documents even though
+only 116 elements are attached. Chapter-level loading and source-document
+release are the next performance priorities.
 
 ## 11. Promotion gates
 

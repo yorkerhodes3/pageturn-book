@@ -1,0 +1,25 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/after-the-corridor.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 05. The Financial Model: From Evacuation Break-Even to Inclusion Break-Even {#financial-model}
+
+The financial-modeling engine already exists, validated for one problem and now re-pointed to another, and the distinction matters. The Evacuation Risk and Cost Framework is validated for evacuation costing; its encampment-versus-inclusion parameterization is new and unvalidated, and most of its durable-solutions cost parameters are tagged Estimated or Unvalidated. What transfers cleanly is the architecture and the break-even mathematics, a one-time investment set against a mounting recurring cost, not a set of validated cost figures for the new use.
+
+The engine, re-pointed.
+
+- Trajectory A prices status-quo encampment as a recurring per-person, per-year assistance cost, covering rations, water and sanitation, health, protection, and administration, using the same Sphere, UNHCR, and WFP parameter families the framework already carries, with the same Validated, Estimated, or Unvalidated tags.
+- Trajectory B prices an inclusion or resettlement pathway as a front-loaded investment, covering documentation, recognition of qualifications, transport, start-up capital, and host co-investment.
+- The output is the break-even year after which the status quo costs more, which is the framework's break-even chart with its axes relabeled.
+
+The Resettlement and Inclusion Capacity Simulator is that engine re-pointed, and re-earning its validity in the durable-solutions domain is the work, not a formality. The capacity-and-willingness layer transfers from the readiness simulator: it maps destinations, whether resettlement states or local-integration pathways, against the non-substitutable gatekeepers of legal consent, host willingness, and security, alongside the substitutable capacities of housing, jobs, and services, while preserving the distinction between an option that is unknown and one that is refused, so that an unlobbied state is never mistaken for a closed door. The uncertainty layer carries over as well, so that thin data on host capacity or a state's posture visibly widens the confidence band and prevents false precision in an advocacy number.
+
+**What the evidence predicts.** The World Bank's recent work on refugee self-reliance in Sub-Saharan Africa indicates that if refugees had the right to move and work, they would contribute to the hosting country's economy, with real fiscal and economic gains. The honest caveat is built into that same literature. The World Bank finds that self-reliance remains elusive across much of the region, because camps often sit in marginal, high-poverty areas where even full local integration would lift incomes only a little, and the scholarship on self-reliance programming warns that the concept is often invoked to justify the withdrawal of assistance rather than to expand rights.
+
+The simulator has to be able to return the answer that inclusion does not pay here, where host markets are too thin, or it is advocacy rather than analysis. Its output is a defensible, reproducible sentence of the form: sustaining this population at Dzaleka costs approximately this much per year; this pathway costs approximately that much up front and breaks even in a given year, subject to these gatekeepers and this uncertainty band. The simulator could also provide country comparisons across different legal models and measure the economic impact of different refugee policies, and listing the policies of each hosting country would better inform humanitarian organizations and populations.
+
+What the literature says the model will find. The engine formalizes an argument the development-economics evidence already supports.
+
+- UNHCR estimates that if freedom of movement and the right to work were relaxed so refugees could earn on par with hosts, complementary assistance costs would fall from about US$3.2 billion to roughly US$900 million a year.
+- A joint World Bank and UNHCR benchmark puts the annual cost of bringing every refugee in low and middle income host countries up to the global poverty line at almost US$62 billion in a scenario where refugees earn nothing; refugees' own earnings already cover roughly US$40 billion of that, leaving about US$22 billion.
+- World Bank analysis estimates that in Uganda's inclusive regime, economic participation saves about US$150 per refugee per year, roughly US$225 million across 1.5 million refugees.
+- The same World Bank work finds that around Kakuma, refugee presence raised the host county's gross regional product by about 3.4 percent.
+- It also reports that Colombia's regularization of Venezuelan migrants raised beneficiaries' incomes by about 30 percent and their formal employment by around 10 percentage points, with little displacement of host workers.

@@ -1,0 +1,98 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: erus
+editionId: 2026-08
+title: "The Evacuation Readiness and Uncertainty Simulator"
+description: "Showing How Poor Field Information Degrades Evacuation Decisions"
+authors:
+  - name: "India Clarke. Developed as part of doctoral research on civilian protection in armed conflict, under the Ethical Tech CoLab at the NYU Center for Global Affairs."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "India Clarke. Developed as part of doctoral research on civilian protection in armed conflict, under the Ethical Tech CoLab at the NYU Center for Global Affairs. · NYU Center for Global Affairs · July 2026"
+  thesis: "When a humanitarian organisation decides where to move civilians fleeing conflict, it is rarely choosing between a good option and a bad one. It is choosing between several options it does not fully understand. ERUS exists to make one thing visible: the same underlying reality, assessed under worse information, produces materially worse predicted outcomes. Move the uncertainty slider and predicted success falls while nothing on the ground has changed at all."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/erus/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#57301e"
+    foreground: "#f3ead6"
+    accent: "#d2b87c"
+    subtitle: "Showing How Poor Field Information Degrades Evacuation Decisions"
+  binding:
+    material: cloth
+    color: "#57301e"
+    accent: "#d2b87c"
+    depth: standard
+    hubs: 4
+    pageCount: 24
+    shelfLabel: "THE EVACUATION READINESS AND UNCER"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/erus/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/erus/report.pdf
+chapters:
+  - id: foreword
+    title: "Foreword"
+    source: chapters/01-foreword.md
+    slug: foreword
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/02-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/03-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the Simulator Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables Explained"
+    source: chapters/06-variables.md
+    slug: variables
+  - id: reading-results
+    title: "Reading the Results"
+    source: chapters/07-reading-results.md
+    slug: reading-results
+  - id: distinctions
+    title: "The Two Distinctions the Model Insists On"
+    source: chapters/08-distinctions.md
+    slug: distinctions
+  - id: grounding
+    title: "Grounding in Humanitarian Standards and Law"
+    source: chapters/09-grounding.md
+    slug: grounding
+  - id: reproducibility
+    title: "Reproducibility"
+    source: chapters/10-reproducibility.md
+    slug: reproducibility
+  - id: related-projects
+    title: "Relationship to Other Ethical Tech CoLab Projects"
+    source: chapters/11-related-projects.md
+    slug: related-projects
+  - id: maturity
+    title: "Practical Nature and Maturity of the Tool"
+    source: chapters/12-maturity.md
+    slug: maturity
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/13-limitations.md
+    slug: limitations
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/14-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/15-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/16-references.md
+    slug: references

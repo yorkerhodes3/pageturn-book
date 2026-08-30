@@ -1,0 +1,90 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: diplomatic-simulator
+editionId: 2026-08
+title: "The Diplomatic Simulator"
+description: "A Multi-Party Negotiation Simulator Driven by Artificial Intelligence Agents"
+authors:
+  - name: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs. The original diplomacy table demonstration and the Strait of Hormuz session report, from which the presentation layer is adapted, were built by Yorke Rhodes III."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs. The original diplomacy table demonstration and the Strait of Hormuz session report, from which the presentation layer is adapted, were built by Yorke Rhodes III. · NYU Center for Global Affairs · July 2026"
+  thesis: "Multi-party negotiation is difficult to teach and almost impossible to rehearse. The Diplomatic Simulator asks what happens when the delegations at a crisis table are played by artificial intelligence agents instead of by people. Each delegation is given a confidential brief and nothing else, the talks are run in rounds, and every word spoken is preserved, tagged, and scored. It is a teaching and exploration tool, not a forecasting system, and there is no ground truth anywhere in it."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/diplomatic-simulator/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17372d"
+    foreground: "#f3ead6"
+    accent: "#c7b477"
+    subtitle: "A Multi-Party Negotiation Simulator Driven by Artificial Intelligence Agents"
+  binding:
+    material: leather
+    color: "#17372d"
+    accent: "#c7b477"
+    depth: standard
+    hubs: 4
+    pageCount: 23
+    shelfLabel: "THE DIPLOMATIC SIMULATOR"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/diplomatic-simulator/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/diplomatic-simulator/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/03-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the Simulator Works"
+    source: chapters/04-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables, and Why Each One Exists"
+    source: chapters/05-variables.md
+    slug: variables
+  - id: reading-results
+    title: "Reading the Results"
+    source: chapters/06-reading-results.md
+    slug: reading-results
+  - id: scenarios
+    title: "The Six Scenarios"
+    source: chapters/07-scenarios.md
+    slug: scenarios
+  - id: monte-carlo
+    title: "Testing Under Uncertainty"
+    source: chapters/08-monte-carlo.md
+    slug: monte-carlo
+  - id: negotiation-theory
+    title: "Grounding in Negotiation Theory"
+    source: chapters/09-negotiation-theory.md
+    slug: negotiation-theory
+  - id: provenance
+    title: "Provenance of the Scenario Material"
+    source: chapters/10-provenance.md
+    slug: provenance
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/11-limitations.md
+    slug: limitations
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/12-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/13-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/14-references.md
+    slug: references

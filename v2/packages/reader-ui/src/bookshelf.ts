@@ -16,6 +16,7 @@ export type BookshelfVolume = {
   appearance: PublicationAppearance;
   actions: BookshelfAction[];
   subtitle?: string;
+  extentLabel?: string;
 };
 
 export type BookshelfSection = {
@@ -127,10 +128,15 @@ export function mountBookshelf(
       const button = element("button", "bookshelf-book");
       button.type = "button";
       button.dataset.bookId = volume.id;
+      const normalizedLabel = volume.shelfLabel.toLocaleLowerCase();
+      const normalizedTitle = volume.title.toLocaleLowerCase();
+      const labelAlreadyInTitle =
+        normalizedLabel === normalizedTitle ||
+        normalizedTitle.startsWith(`${normalizedLabel}:`);
       button.setAttribute(
         "aria-label",
-        volume.shelfLabel.toLocaleLowerCase() === volume.title.toLocaleLowerCase()
-          ? `${volume.shelfLabel}, ${volume.pageCount} pages`
+        labelAlreadyInTitle
+          ? `${volume.title}, ${volume.pageCount} pages`
           : `${volume.shelfLabel}: ${volume.title}, ${volume.pageCount} pages`,
       );
       button.setAttribute("aria-pressed", "false");
@@ -340,7 +346,7 @@ export function mountBookshelf(
     selectionTitle.textContent = volume.title;
     selectionSubtitle.textContent =
       volume.subtitle ?? "Ethical Tech CoLab research publication";
-    selectionMeta.textContent = `${volume.pageCount} designed pages · ${volume.appearance.binding.material} binding`;
+    selectionMeta.textContent = `${volume.extentLabel ?? `${volume.pageCount} designed pages`} · ${volume.appearance.binding.material} binding`;
     clearActions();
     for (const action of volume.actions) {
       const link = element("a", "bookshelf-selection-action", action.label);

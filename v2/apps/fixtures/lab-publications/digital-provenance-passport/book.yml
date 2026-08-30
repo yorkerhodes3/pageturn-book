@@ -1,0 +1,102 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: digital-provenance-passport
+editionId: 2026-08
+title: "The Digital Provenance Passport"
+description: "An Automated Assistant for Tracing the Ownership History of Artworks and Cultural Objects"
+authors:
+  - name: "Carolina Morón, with a project collaborator whose contributions are noted in the repository's source comments. Prepared as masters research at the NYU Center for Global Affairs."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Carolina Morón, with a project collaborator whose contributions are noted in the repository's source comments. Prepared as masters research at the NYU Center for Global Affairs. · NYU Center for Global Affairs · July 2026"
+  thesis: "Provenance research is slow, archival, and applied to only a small fraction of the objects that need it. The Digital Provenance Passport asks what part of the first pass could be done automatically without becoming untrustworthy. It refuses to record any claim that does not carry the address of its source, computes its judgments with arithmetic a non-programmer can read and dispute, and seals its output so that an assessment cannot be quietly improved after the fact."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/digital-provenance-passport/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#4a171c"
+    foreground: "#f3ead6"
+    accent: "#d0ad6d"
+    subtitle: "An Automated Assistant for Tracing the Ownership History of Artworks and Cultural Objects"
+  binding:
+    material: leather
+    color: "#4a171c"
+    accent: "#d0ad6d"
+    depth: standard
+    hubs: 4
+    pageCount: 28
+    shelfLabel: "THE DIGITAL PROVENANCE PASSPORT"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/digital-provenance-passport/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/digital-provenance-passport/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: what-agent-means
+    title: "What Agent Means in This Context"
+    source: chapters/03-what-agent-means.md
+    slug: what-agent-means
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the System Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables Explained"
+    source: chapters/06-variables.md
+    slug: variables
+  - id: reading-results
+    title: "Reading the Results"
+    source: chapters/07-reading-results.md
+    slug: reading-results
+  - id: data-sources
+    title: "Data Sources and the Permitted-Source List"
+    source: chapters/08-data-sources.md
+    slug: data-sources
+  - id: payment-layer
+    title: "The Payment Layer, and Why It Is There"
+    source: chapters/09-payment-layer.md
+    slug: payment-layer
+  - id: passport-and-seal
+    title: "The Passport and What the Seal Proves"
+    source: chapters/10-passport-and-seal.md
+    slug: passport-and-seal
+  - id: legal-background
+    title: "The Legal and Normative Background"
+    source: chapters/11-legal-background.md
+    slug: legal-background
+  - id: methodological-choices
+    title: "Methodological Choices"
+    source: chapters/12-methodological-choices.md
+    slug: methodological-choices
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/13-limitations.md
+    slug: limitations
+  - id: sibling-project
+    title: "Relationship to the Sibling Project"
+    source: chapters/14-sibling-project.md
+    slug: sibling-project
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/15-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/16-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/17-references.md
+    slug: references

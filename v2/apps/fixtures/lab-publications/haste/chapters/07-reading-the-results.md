@@ -1,0 +1,13 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/haste.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 06. Reading the Results {#reading-the-results}
+
+**The visualiser.** The pre-event and post-event imagery are shown side by side with a swipe control between them, the predicted damage layer overlaid on both, and the raw per-pixel predictions available as an optional toggle. Opacity, contrast, hue, and saturation sliders help make damage visible in imagery that was captured in poor light.
+
+On the map, each building is shaded according to its damage fraction in five bands, cut at one fifth, two fifths, three fifths, and four fifths, running from white through pale peach and orange to red and dark red. This is a presentational scale only. It should not be read as a severity classification in the sense used by structural engineers, because the model was never taught degrees of damage. It only ever learned to separate damaged from intact, and the shading reflects how much of a roof it flagged rather than how badly the building was hurt.
+
+**The validation report.** This compares the model's predictions against the analyst's own validation labels and reports overall accuracy, precision, recall, and F1 for each class, a macro-averaged F1, and a confusion matrix. Precision answers the question: of the buildings the model called damaged, what share really were? Recall answers the opposite: of the buildings that really were damaged, what share did the model find? These two errors have different humanitarian costs, and the report deliberately does not merge them into a single figure.
+
+**The assessment report.** This summarises the whole layer: the total number of building outlines, how many were excluded as cloud-covered, how many of the remainder were predicted damaged and what percentage that represents, the accuracy metrics at the chosen threshold, a precision-and-recall curve across all thresholds, and the estimated total of damaged buildings with its 95 per cent confidence interval. Where no validation labels exist, the report still shows the prediction counts but withholds the accuracy metrics and the estimate rather than presenting an unvalidated number.
+
+**Downloads.** Results can be exported as a GeoPackage, an open standard file that opens in common mapping software, along with the training artefacts and the building outlines used. This matters for accountability: a partner receiving a HASTE layer can inspect it independently rather than taking a summary figure on trust.

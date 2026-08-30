@@ -10,19 +10,24 @@ import {
   pageTurnPolygon,
   projectPageTurn,
 } from "@ethical-tech/book-reader-ui/page-turn-projection";
+import { catalogBook } from "./library-catalog.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
   anchor: string;
   chapterTitle: string;
+  chapterLabel: string;
+  chapterStart: boolean;
 }>;
 
 type V3Chapter = Pick<
   SemanticChapter,
-  "title" | "href" | "firstAnchor"
+  "chapterId" | "title" | "href" | "firstAnchor"
 >;
 
 type V3Manifest = Readonly<{
+  bookId: string;
+  editionId: string;
   title: string;
   authors: readonly Readonly<{ name: string }>[];
   publicationDate?: string;
@@ -33,6 +38,9 @@ type V3Manifest = Readonly<{
     thesis?: string;
   }>;
   cover?: Readonly<{
+    background?: string;
+    foreground?: string;
+    accent?: string;
     subtitle?: string;
   }>;
   chapters: readonly V3Chapter[];
@@ -43,6 +51,8 @@ type PrototypePage = Readonly<{
   runningTitle: string;
   anchor: string;
   kind: "front-matter" | "content";
+  chapterOpening: boolean;
+  chapterLabel?: string;
   nodes: readonly HTMLElement[];
 }>;
 
@@ -60,9 +70,10 @@ type ActiveTurn = {
   shadow: HTMLElement;
 };
 
-const manifestRelativeUrl =
-  "../book/what-is-ethical-ai/2026-07/manifest.json";
-const selectedChapterCount = 3;
+const query = new URLSearchParams(globalThis.location.search);
+const requestedBookId = query.get("book") ?? "what-is-ethical-ai";
+const requestedChapterId = query.get("chapter");
+const selectedBook = catalogBook(requestedBookId);
 const maximumSegmentCharacters = 540;
 
 function requiredElement<T extends Element>(
@@ -74,6 +85,41 @@ function requiredElement<T extends Element>(
     throw new Error(`V3 prototype is missing required element: ${selector}`);
   }
   return node;
+}
+
+function applyPublicationIdentity(publication: V3Manifest): void {
+  publicationTitle.textContent = publication.title;
+  coverKicker.textContent =
+    publication.authors[0]?.name ?? "Semantic publication";
+  coverTitle.textContent = publication.title;
+  coverSubtitle.textContent =
+    publication.cover?.subtitle ?? "Complete semantic edition";
+  document.title = `${publication.title} - V3 semantic geometry`;
+  const catalogCover = selectedBook?.appearance.cover;
+  reader.style.setProperty(
+    "--v3-cover-background",
+    catalogCover?.background ??
+      publication.cover?.background ??
+      "#111b31",
+  );
+  reader.style.setProperty(
+    "--v3-cover-foreground",
+    catalogCover?.foreground ??
+      publication.cover?.foreground ??
+      "#f1ead8",
+  );
+  reader.style.setProperty(
+    "--v3-cover-accent",
+    catalogCover?.accent ?? publication.cover?.accent ?? "#b99a5e",
+  );
+  chapterSelect.replaceChildren(
+    new Option("Front matter", ""),
+    ...publication.chapters.map(
+      (chapter) =>
+        new Option(chapter.title, String(chapter.chapterId)),
+    ),
+  );
+  chapterSelect.disabled = false;
 }
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
@@ -116,30 +162,109 @@ function cloneNodes(
   });
 }
 
-function sentenceSegments(text: string): string[] {
-  const sentences =
-    text.trim().match(/[^.!?]+(?:[.!?]+["'”’)]*|$)/g)?.map((part) =>
-      part.trim(),
-    ) ?? [];
+function chapterOpeningLabel(text: string): HTMLElement {
+  const label = createElement(
+    "span",
+    "v3-chapter-opening-label",
+    text,
+  );
+  return label;
+}
+
+type TextRange = Readonly<{
+  start: number;
+  end: number;
+}>;
+
+function sentenceRanges(text: string): TextRange[] {
+  const sentences = Array.from(
+    new Intl.Segmenter(undefined, { granularity: "sentence" }).segment(
+      text,
+    ),
+  );
   if (sentences.length === 0) {
-    return text.trim() ? [text.trim()] : [];
+    return text.length > 0 ? [{ start: 0, end: text.length }] : [];
   }
 
-  const segments: string[] = [];
-  let current = "";
+  const ranges: TextRange[] = [];
+  let start = sentences[0]?.index ?? 0;
+  let end = start;
   for (const sentence of sentences) {
-    const candidate = current ? `${current} ${sentence}` : sentence;
-    if (candidate.length > maximumSegmentCharacters && current) {
-      segments.push(current);
-      current = sentence;
-    } else {
-      current = candidate;
+    const sentenceEnd = sentence.index + sentence.segment.length;
+    if (end > start && sentenceEnd - start > maximumSegmentCharacters) {
+      ranges.push({ start, end });
+      start = sentence.index;
     }
+    end = sentenceEnd;
   }
-  if (current) {
-    segments.push(current);
+  if (end > start) {
+    ranges.push({ start, end });
   }
-  return segments;
+  return ranges;
+}
+
+function stripIds(root: HTMLElement): void {
+  root.removeAttribute("id");
+  for (const identified of root.querySelectorAll("[id]")) {
+    identified.removeAttribute("id");
+  }
+}
+
+function cloneTextRange(
+  source: HTMLElement,
+  start: number,
+  end: number,
+  preserveIds: boolean,
+): HTMLElement {
+  const textNodes: Text[] = [];
+  const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
+  for (
+    let current = walker.nextNode();
+    current !== null;
+    current = walker.nextNode()
+  ) {
+    textNodes.push(current as Text);
+  }
+  if (textNodes.length === 0) {
+    const clone = source.cloneNode(true) as HTMLElement;
+    if (!preserveIds) {
+      stripIds(clone);
+    }
+    return clone;
+  }
+
+  const locate = (offset: number): Readonly<{ node: Text; offset: number }> => {
+    let consumed = 0;
+    for (const node of textNodes) {
+      const next = consumed + node.data.length;
+      if (offset <= next) {
+        return {
+          node,
+          offset: Math.max(0, offset - consumed),
+        };
+      }
+      consumed = next;
+    }
+    const finalNode = textNodes.at(-1);
+    if (!finalNode) {
+      throw new Error("V3 paragraph range has no final text node");
+    }
+    return { node: finalNode, offset: finalNode.data.length };
+  };
+
+  const boundedStart = Math.max(0, start);
+  const boundedEnd = Math.max(boundedStart, end);
+  const rangeStart = locate(boundedStart);
+  const rangeEnd = locate(boundedEnd);
+  const range = document.createRange();
+  range.setStart(rangeStart.node, rangeStart.offset);
+  range.setEnd(rangeEnd.node, rangeEnd.offset);
+  const clone = source.cloneNode(false) as HTMLElement;
+  clone.append(range.cloneContents());
+  if (!preserveIds) {
+    stripIds(clone);
+  }
+  return clone;
 }
 
 function record(value: unknown, path: string): Record<string, unknown> {
@@ -189,6 +314,10 @@ function parseV3Manifest(value: unknown): V3Manifest {
       `renditions.semantic.chapters[${index}]`,
     );
     return {
+      chapterId: stringValue(
+        parsed.chapterId,
+        `renditions.semantic.chapters[${index}].chapterId`,
+      ) as SemanticChapter["chapterId"],
       title: stringValue(
         parsed.title,
         `renditions.semantic.chapters[${index}].title`,
@@ -239,8 +368,22 @@ function parseV3Manifest(value: unknown): V3Manifest {
     coverRecord?.subtitle,
     "appearance.cover.subtitle",
   );
+  const coverBackground = optionalStringValue(
+    coverRecord?.background,
+    "appearance.cover.background",
+  );
+  const coverForeground = optionalStringValue(
+    coverRecord?.foreground,
+    "appearance.cover.foreground",
+  );
+  const coverAccent = optionalStringValue(
+    coverRecord?.accent,
+    "appearance.cover.accent",
+  );
 
   return {
+    bookId: stringValue(root.bookId, "bookId"),
+    editionId: stringValue(root.editionId, "editionId"),
     title: stringValue(root.title, "title"),
     authors,
     chapters,
@@ -259,6 +402,15 @@ function parseV3Manifest(value: unknown): V3Manifest {
       ? {}
       : {
           cover: {
+            ...(coverBackground === undefined
+              ? {}
+              : { background: coverBackground }),
+            ...(coverForeground === undefined
+              ? {}
+              : { foreground: coverForeground }),
+            ...(coverAccent === undefined
+              ? {}
+              : { accent: coverAccent }),
             ...(subtitle === undefined ? {} : { subtitle }),
           },
         }),
@@ -270,36 +422,78 @@ function semanticBlocks(
   chapter: V3Chapter,
 ): SemanticBlock[] {
   const blocks: SemanticBlock[] = [];
+  const chapterId = String(chapter.chapterId);
   for (const child of article.children) {
+    if (!(child instanceof HTMLElement)) {
+      continue;
+    }
+    if (child.matches("nav.book-chapter-nav")) {
+      continue;
+    }
     if (
-      !(child instanceof HTMLElement) ||
-      !child.matches("h1, h2, h3, p, blockquote, ul, ol")
+      !child.matches(
+        "h1, h2, h3, h4, h5, h6, p, blockquote, ul, ol, table, pre, figure, hr",
+      )
     ) {
+      if ((child.textContent?.trim().length ?? 0) > 0) {
+        throw new Error(
+          `V3 chapter ${chapter.title} contains unsupported ${child.tagName.toLowerCase()} content`,
+        );
+      }
       continue;
     }
     const anchor = child.id || chapter.firstAnchor;
+    const headingText = child.textContent?.trim() ?? "";
+    const displayedNumber = /^(\d+(?:[-.]\d+)*)[.)]?\s+/.exec(
+      headingText,
+    )?.[1];
+    const sourceNumber =
+      displayedNumber ??
+      (/^\d+(?:-\d+)*$/.test(chapterId) ? chapterId : undefined);
+    const chapterNumber = sourceNumber
+      ?.split("-")
+      .map((part) => String(Number(part)))
+      .join("-");
+    const chapterLabel = chapterNumber
+      ? `Chapter ${chapterNumber}`
+      : "Chapter";
     if (child.matches("p") && (child.textContent?.length ?? 0) > 680) {
-      sentenceSegments(child.textContent ?? "").forEach((text, index) => {
-        const paragraph = createElement("p", undefined, text);
+      sentenceRanges(child.textContent ?? "").forEach((range, index) => {
+        const paragraph = cloneTextRange(
+          child,
+          range.start,
+          range.end,
+          index === 0,
+        );
         paragraph.dataset.sourceAnchor = anchor;
-        if (index === 0 && child.id) {
-          paragraph.id = child.id;
-        }
         blocks.push({
           node: paragraph,
           anchor,
           chapterTitle: chapter.title,
+          chapterLabel,
+          chapterStart: false,
         });
       });
       continue;
     }
 
     const clone = child.cloneNode(true) as HTMLElement;
+    if (child.matches("h1") && displayedNumber) {
+      clone.textContent = headingText.replace(
+        /^(\d+(?:[-.]\d+)*)[.)]?\s+/,
+        "",
+      );
+    }
     clone.dataset.sourceAnchor = anchor;
     blocks.push({
       node: clone,
       anchor,
       chapterTitle: chapter.title,
+      chapterLabel,
+      chapterStart:
+        child.matches("h1") &&
+        (child.id === chapter.firstAnchor ||
+          !blocks.some(({ chapterStart }) => chapterStart)),
     });
   }
   return blocks;
@@ -309,6 +503,12 @@ async function fetchManifest(): Promise<{
   manifest: V3Manifest;
   url: URL;
 }> {
+  if (!selectedBook) {
+    throw new Error(`V3 does not know publication: ${requestedBookId}`);
+  }
+  const manifestRelativeUrl =
+    `../book/${encodeURIComponent(selectedBook.id)}/` +
+    `${encodeURIComponent(selectedBook.semanticEdition)}/manifest.json`;
   const url = new URL(manifestRelativeUrl, globalThis.location.href);
   const response = await fetch(url);
   if (!response.ok) {
@@ -361,7 +561,7 @@ function frontMatterPages(manifest: V3Manifest): PrototypePage[] {
   const titleKicker = createElement(
     "p",
     "v3-title-kicker",
-    manifest.frontMatter?.kicker ?? "Ethical Tech CoLab",
+    manifest.frontMatter?.kicker ?? "Semantic publication",
   );
   const title = createElement("h1", "v3-title", manifest.title);
   const subtitle = createElement(
@@ -383,13 +583,15 @@ function frontMatterPages(manifest: V3Manifest): PrototypePage[] {
       runningTitle: manifest.title,
       anchor: "v3-inside-cover",
       kind: "front-matter",
+      chapterOpening: false,
       nodes: [insideTitle, insideHeading, credits, date],
     },
     {
       label: "Title page",
-      runningTitle: "Ethical Tech CoLab",
+      runningTitle: manifest.authors[0]?.name ?? manifest.title,
       anchor: "v3-title-page",
       kind: "front-matter",
+      chapterOpening: false,
       nodes: [titleKicker, title, subtitle],
     },
     {
@@ -397,6 +599,7 @@ function frontMatterPages(manifest: V3Manifest): PrototypePage[] {
       runningTitle: manifest.title,
       anchor: "v3-thesis",
       kind: "front-matter",
+      chapterOpening: false,
       nodes: [thesisHeading, thesis],
     },
   ];
@@ -415,6 +618,10 @@ function pageFromBlocks(
     runningTitle: first.chapterTitle,
     anchor: first.anchor,
     kind: "content",
+    chapterOpening: first.chapterStart,
+    ...(first.chapterStart
+      ? { chapterLabel: first.chapterLabel }
+      : {}),
     nodes: blocks.map(({ node }) => node),
   };
 }
@@ -431,6 +638,7 @@ function createSheet(
       "v3-sheet",
       `v3-sheet-${side}`,
       page.kind === "front-matter" ? "v3-sheet-front-matter" : "",
+      page.chapterOpening ? "v3-sheet-chapter-opening" : "",
     ]
       .filter(Boolean)
       .join(" "),
@@ -447,6 +655,9 @@ function createSheet(
     page.runningTitle,
   );
   const content = createElement("div", "v3-sheet-content");
+  if (page.chapterOpening) {
+    content.append(chapterOpeningLabel(page.chapterLabel ?? "Chapter"));
+  }
   content.append(...cloneNodes(page.nodes, !decorative));
   const pageFolio = createElement("div", "v3-sheet-folio", String(folio));
   sheet.append(running, content, pageFolio);
@@ -468,17 +679,30 @@ const reader = requiredElement<HTMLElement>("[data-v3-reader]");
 const spread = requiredElement<HTMLElement>("[data-v3-spread]");
 const stationary = requiredElement<HTMLElement>("[data-v3-stationary]");
 const turnLayer = requiredElement<HTMLElement>("[data-v3-turn-layer]");
+const entryCover = requiredElement<HTMLElement>("[data-v3-entry-cover]");
 const measure = requiredElement<HTMLElement>("[data-v3-measure]");
 const measureContent = requiredElement<HTMLElement>(
   "[data-v3-measure-content]",
 );
 const status = requiredElement<HTMLElement>("[data-v3-status]");
+const chapterSelect = requiredElement<HTMLSelectElement>(
+  "[data-v3-chapter-select]",
+);
+const publicationTitle = requiredElement<HTMLElement>(
+  "[data-v3-publication-title]",
+);
+const coverKicker = requiredElement<HTMLElement>("[data-v3-cover-kicker]");
+const coverTitle = requiredElement<HTMLElement>("[data-v3-cover-title]");
+const coverSubtitle = requiredElement<HTMLElement>(
+  "[data-v3-cover-subtitle]",
+);
 const counter = requiredElement<HTMLOutputElement>("[data-v3-counter]");
 const previous = requiredElement<HTMLButtonElement>("[data-v3-previous]");
 const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
 const corners = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-v3-direction]"),
 );
+const singlePageMedia = globalThis.matchMedia("(max-width: 48rem)");
 const reducedMotion = globalThis.matchMedia(
   "(prefers-reduced-motion: reduce)",
 );
@@ -489,9 +713,11 @@ let pages: PrototypePage[] = [];
 let spreadStart = 0;
 let activeTurn: ActiveTurn | undefined;
 let resizeTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+let openingTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let loadedChapterCount = 0;
+let opening = true;
 
-if (new URLSearchParams(globalThis.location.search).get("embed") === "1") {
+if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
 }
 
@@ -500,7 +726,14 @@ function pageSize(): { width: number; height: number } {
   if (bounds.width <= 0 || bounds.height <= 0) {
     throw new Error("V3 book has no measurable page area");
   }
-  return { width: bounds.width / 2, height: bounds.height };
+  return {
+    width: singlePageMedia.matches ? bounds.width : bounds.width / 2,
+    height: bounds.height,
+  };
+}
+
+function pageStep(): 1 | 2 {
+  return singlePageMedia.matches ? 1 : 2;
 }
 
 function pageAt(index: number): PrototypePage {
@@ -512,21 +745,28 @@ function pageAt(index: number): PrototypePage {
 }
 
 function canTurn(direction: PageTurnDirection): boolean {
+  const step = pageStep();
   return direction === "forward"
-    ? spreadStart + 2 < pages.length
-    : spreadStart >= 2;
+    ? spreadStart + step < pages.length
+    : spreadStart >= step;
 }
 
 function targetSpread(direction: PageTurnDirection): number {
-  return direction === "forward" ? spreadStart + 2 : spreadStart - 2;
+  const step = pageStep();
+  return direction === "forward"
+    ? spreadStart + step
+    : spreadStart - step;
 }
 
 function renderControls(): void {
-  previous.disabled = !canTurn("backward") || activeTurn !== undefined;
-  next.disabled = !canTurn("forward") || activeTurn !== undefined;
+  previous.disabled =
+    opening || !canTurn("backward") || activeTurn !== undefined;
+  next.disabled =
+    opening || !canTurn("forward") || activeTurn !== undefined;
   for (const corner of corners) {
     const direction = corner.dataset.v3Direction;
     corner.disabled =
+      opening ||
       activeTurn !== undefined ||
       (direction !== "forward" && direction !== "backward") ||
       !canTurn(direction);
@@ -534,31 +774,158 @@ function renderControls(): void {
 }
 
 function renderStationary(): void {
+  const singlePage = singlePageMedia.matches;
+  spread.classList.toggle("v3-spread-single", singlePage);
   stationary.replaceChildren(
-    createSheet(pageAt(spreadStart), "left", spreadStart + 1, false),
-    createSheet(pageAt(spreadStart + 1), "right", spreadStart + 2, false),
+    ...(singlePage
+      ? [createSheet(pageAt(spreadStart), "right", spreadStart + 1, false)]
+      : [
+          createSheet(pageAt(spreadStart), "left", spreadStart + 1, false),
+          createSheet(
+            pageAt(spreadStart + 1),
+            "right",
+            spreadStart + 2,
+            false,
+          ),
+        ]),
   );
-  const totalSpreads = Math.ceil(pages.length / 2);
-  counter.value = `Spread ${spreadStart / 2 + 1} of ${totalSpreads}`;
+  counter.value = singlePage
+    ? `Page ${spreadStart + 1} of ${pages.length}`
+    : `Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`;
   reader.dataset.v3Turning = "false";
+  if (manifest) {
+    const visibleEnd = spreadStart + pageStep() - 1;
+    const starts = manifest.chapters
+      .map((chapter) => ({
+        id: String(chapter.chapterId),
+        pageIndex: pages.findIndex((page) =>
+          pageContainsAnchor(page, chapter.firstAnchor),
+        ),
+      }))
+      .filter(({ pageIndex }) => pageIndex >= 0);
+    const current = starts
+      .filter(({ pageIndex }) => pageIndex <= visibleEnd)
+      .at(-1);
+    chapterSelect.value = current?.id ?? "";
+  }
   renderControls();
+}
+
+function pageContainsAnchor(page: PrototypePage, anchor: string): boolean {
+  return page.nodes.some(
+    (node) =>
+      node.id === anchor ||
+      node.querySelector(`#${CSS.escape(anchor)}`) !== null,
+  );
+}
+
+function onStationaryClick(event: MouseEvent): void {
+  if (
+    event.button !== 0 ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    !(event.target instanceof Element)
+  ) {
+    return;
+  }
+  const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
+  const href = link?.getAttribute("href");
+  if (!link || !href || href.length <= 1) {
+    return;
+  }
+  let anchor: string;
+  try {
+    anchor = decodeURIComponent(href.slice(1));
+  } catch {
+    console.warn(`V3 ignored malformed internal anchor: ${href}`);
+    return;
+  }
+  const pageIndex = pages.findIndex((page) =>
+    pageContainsAnchor(page, anchor),
+  );
+  if (pageIndex < 0) {
+    console.warn(`V3 could not locate internal anchor: ${anchor}`);
+    return;
+  }
+  event.preventDefault();
+  const step = pageStep();
+  spreadStart = Math.floor(pageIndex / step) * step;
+  renderStationary();
+  const target = stationary.querySelector<HTMLElement>(
+    `#${CSS.escape(anchor)}`,
+  );
+  if (target) {
+    target.tabIndex = -1;
+    target.focus({ preventScroll: true });
+  }
+}
+
+function goToChapter(chapterId: string): void {
+  if (!manifest) {
+    return;
+  }
+  if (chapterId === "") {
+    spreadStart = 0;
+    renderStationary();
+    return;
+  }
+  const chapter = manifest.chapters.find(
+    ({ chapterId: candidate }) => String(candidate) === chapterId,
+  );
+  if (!chapter) {
+    throw new Error(`V3 chapter is unavailable: ${chapterId}`);
+  }
+  const pageIndex = pages.findIndex((page) =>
+    pageContainsAnchor(page, chapter.firstAnchor),
+  );
+  if (pageIndex < 0) {
+    throw new Error(`V3 could not locate chapter: ${chapter.title}`);
+  }
+  const step = pageStep();
+  spreadStart = Math.floor(pageIndex / step) * step;
+  renderStationary();
+  const heading = stationary.querySelector<HTMLElement>(
+    `#${CSS.escape(chapter.firstAnchor)}`,
+  );
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  }
 }
 
 function turnPages(direction: PageTurnDirection): {
   moving: PrototypePage;
+  movingIndex: number;
   revealed: PrototypePage;
+  revealedIndex: number;
   revealedSide: "left" | "right";
 } {
   const target = targetSpread(direction);
+  if (singlePageMedia.matches) {
+    const movingIndex = spreadStart;
+    return {
+      moving: pageAt(movingIndex),
+      movingIndex,
+      revealed: pageAt(target),
+      revealedIndex: target,
+      revealedSide: "right",
+    };
+  }
   return direction === "forward"
     ? {
         moving: pageAt(target),
+        movingIndex: target,
         revealed: pageAt(target + 1),
+        revealedIndex: target + 1,
         revealedSide: "right",
       }
     : {
         moving: pageAt(target + 1),
+        movingIndex: target + 1,
         revealed: pageAt(target),
+        revealedIndex: target,
         revealedSide: "left",
       };
 }
@@ -579,8 +946,12 @@ function beginTurn(
   moving.append(
     createSheet(
       selected.moving,
-      direction === "forward" ? "left" : "right",
-      direction === "forward" ? target + 1 : target + 2,
+      singlePageMedia.matches
+        ? "right"
+        : direction === "forward"
+          ? "left"
+          : "right",
+      selected.movingIndex + 1,
       true,
     ),
   );
@@ -591,7 +962,7 @@ function beginTurn(
     createSheet(
       selected.revealed,
       selected.revealedSide,
-      direction === "forward" ? target + 2 : target + 1,
+      selected.revealedIndex + 1,
       true,
     ),
   );
@@ -622,13 +993,18 @@ function applyFrame(frame: PageTurnFrame): void {
     return;
   }
   const projection = projectPageTurn(frame);
+  const singlePageOffset =
+    singlePageMedia.matches && frame.direction === "forward"
+      ? -frame.page.width
+      : 0;
   turn.pointer = frame.pointer;
   turn.progress = frame.progress;
+  turn.moving.dataset.v3Progress = frame.progress.toFixed(4);
 
   turn.moving.style.width = `${frame.page.width}px`;
   turn.moving.style.height = `${frame.page.height}px`;
   turn.moving.style.transform = [
-    `translate3d(${projection.moving.translate.x}px,`,
+    `translate3d(${projection.moving.translate.x + singlePageOffset}px,`,
     `${projection.moving.translate.y}px, 0)`,
     `rotate(${projection.moving.angleRadians}rad)`,
   ].join(" ");
@@ -640,7 +1016,7 @@ function applyFrame(frame: PageTurnFrame): void {
 
   turn.revealed.style.width = `${frame.page.width}px`;
   turn.revealed.style.height = `${frame.page.height}px`;
-  turn.revealed.style.transform = `translate3d(${projection.revealed.translate.x}px, ${projection.revealed.translate.y}px, 0)`;
+  turn.revealed.style.transform = `translate3d(${projection.revealed.translate.x + singlePageOffset}px, ${projection.revealed.translate.y}px, 0)`;
   turn.revealed.style.clipPath = pageTurnPolygon(projection.revealed.clip);
 
   const shadow = projection.foldShadow;
@@ -657,7 +1033,7 @@ function applyFrame(frame: PageTurnFrame): void {
       : "linear-gradient(to left, rgb(38 27 16 / 58%), transparent)";
   turn.shadow.style.transformOrigin = `${shadowTranslate}px ${frame.page.height}px`;
   turn.shadow.style.transform = [
-    `translate3d(${shadow.origin.x - shadowTranslate}px,`,
+    `translate3d(${shadow.origin.x + singlePageOffset - shadowTranslate}px,`,
     `${shadow.origin.y - frame.page.height}px, 0)`,
     `rotate(${shadow.angleRadians}rad)`,
   ].join(" ");
@@ -745,6 +1121,15 @@ function pointerForEvent(
   direction: PageTurnDirection,
 ): PageTurnPoint {
   const bounds = spread.getBoundingClientRect();
+  if (singlePageMedia.matches) {
+    return {
+      x:
+        direction === "forward"
+          ? event.clientX - bounds.left
+          : bounds.right - event.clientX,
+      y: event.clientY - bounds.top,
+    };
+  }
   const binding = bounds.left + bounds.width / 2;
   return {
     x:
@@ -837,7 +1222,14 @@ function automaticTurn(direction: PageTurnDirection): void {
 }
 
 function pageFits(blocks: readonly SemanticBlock[]): boolean {
+  measure.classList.toggle(
+    "v3-sheet-chapter-opening",
+    blocks[0]?.chapterStart ?? false,
+  );
   measureContent.replaceChildren(
+    ...(blocks[0]?.chapterStart
+      ? [chapterOpeningLabel(blocks[0].chapterLabel)]
+      : []),
     ...cloneNodes(
       blocks.map(({ node }) => node),
       false,
@@ -848,46 +1240,131 @@ function pageFits(blocks: readonly SemanticBlock[]): boolean {
 
 function paragraphFragment(
   block: SemanticBlock,
-  text: string,
+  start: number,
+  end: number,
   first: boolean,
 ): SemanticBlock {
-  const paragraph = createElement("p", undefined, text);
+  const paragraph = cloneTextRange(block.node, start, end, first);
   paragraph.dataset.sourceAnchor = block.anchor;
-  if (first && block.node.id) {
-    paragraph.id = block.node.id;
-  }
   return {
     node: paragraph,
     anchor: block.anchor,
     chapterTitle: block.chapterTitle,
+    chapterLabel: block.chapterLabel,
+    chapterStart: false,
   };
+}
+
+function atomicFit(block: SemanticBlock): SemanticBlock[] {
+  for (let scale = 0.9; scale >= 0.5; scale -= 0.1) {
+    const node = block.node.cloneNode(true) as HTMLElement;
+    node.style.fontSize = `${scale.toFixed(1)}em`;
+    node.dataset.v3FitScale = scale.toFixed(1);
+    const candidate = { ...block, node };
+    if (pageFits([candidate])) {
+      return [candidate];
+    }
+  }
+  throw new Error(
+    `V3 semantic ${block.node.tagName.toLowerCase()} at ${block.anchor} does not fit a page`,
+  );
+}
+
+function listFragment(
+  block: SemanticBlock,
+  items: readonly Element[],
+  itemOffset: number,
+): SemanticBlock {
+  const list = block.node.cloneNode(false) as HTMLOListElement | HTMLUListElement;
+  if (itemOffset > 0) {
+    list.removeAttribute("id");
+  }
+  if (list instanceof HTMLOListElement) {
+    const originalStart = Number(block.node.getAttribute("start") ?? "1");
+    list.start =
+      (Number.isFinite(originalStart) ? originalStart : 1) + itemOffset;
+  }
+  list.append(...items.map((item) => item.cloneNode(true)));
+  list.dataset.sourceAnchor = block.anchor;
+  return { ...block, node: list };
+}
+
+function fitListBlock(block: SemanticBlock): SemanticBlock[] {
+  const items = Array.from(block.node.children).filter((child) =>
+    child.matches("li"),
+  );
+  if (items.length === 0) {
+    return atomicFit(block);
+  }
+
+  const fragments: SemanticBlock[] = [];
+  let current: Element[] = [];
+  let offset = 0;
+  for (const item of items) {
+    const candidateItems = [...current, item];
+    const candidate = listFragment(block, candidateItems, offset);
+    if (pageFits([candidate])) {
+      current = candidateItems;
+      continue;
+    }
+    if (current.length > 0) {
+      fragments.push(listFragment(block, current, offset));
+      offset += current.length;
+    }
+    const single = listFragment(block, [item], offset);
+    if (pageFits([single])) {
+      current = [item];
+    } else {
+      fragments.push(...atomicFit(single));
+      offset += 1;
+      current = [];
+    }
+  }
+  if (current.length > 0) {
+    fragments.push(listFragment(block, current, offset));
+  }
+  return fragments;
 }
 
 function fitBlock(block: SemanticBlock): SemanticBlock[] {
   if (pageFits([block])) {
     return [block];
   }
+  if (block.node.matches("ul, ol")) {
+    return fitListBlock(block);
+  }
   if (!block.node.matches("p")) {
-    throw new Error(
-      `V3 semantic ${block.node.tagName.toLowerCase()} at ${block.anchor} does not fit a page`,
-    );
+    return atomicFit(block);
   }
 
-  const words = (block.node.textContent ?? "").trim().split(/\s+/);
+  const text = block.node.textContent ?? "";
+  const boundaries = Array.from(
+    text.matchAll(/\S+(?:\s+|$)/g),
+    (match) => (match.index ?? 0) + match[0].length,
+  );
+  if (boundaries.at(-1) !== text.length) {
+    boundaries.push(text.length);
+  }
   const fragments: SemanticBlock[] = [];
-  let current: string[] = [];
-  for (const word of words) {
-    const candidateWords = [...current, word];
-    const candidate = paragraphFragment(
-      block,
-      candidateWords.join(" "),
-      fragments.length === 0,
-    );
-    if (pageFits([candidate])) {
-      current = candidateWords;
-      continue;
+  let start = 0;
+  while (start < text.length) {
+    let bestEnd = start;
+    for (const end of boundaries) {
+      if (end <= start) {
+        continue;
+      }
+      const candidate = paragraphFragment(
+        block,
+        start,
+        end,
+        fragments.length === 0,
+      );
+      if (!pageFits([candidate])) {
+        break;
+      }
+      bestEnd = end;
     }
-    if (current.length === 0) {
+    if (bestEnd === start) {
       throw new Error(
         `V3 word in semantic block ${block.anchor} does not fit a page`,
       );
@@ -895,20 +1372,12 @@ function fitBlock(block: SemanticBlock): SemanticBlock[] {
     fragments.push(
       paragraphFragment(
         block,
-        current.join(" "),
+        start,
+        bestEnd,
         fragments.length === 0,
       ),
     );
-    current = [word];
-  }
-  if (current.length > 0) {
-    fragments.push(
-      paragraphFragment(
-        block,
-        current.join(" "),
-        fragments.length === 0,
-      ),
-    );
+    start = bestEnd;
   }
   return fragments;
 }
@@ -922,6 +1391,10 @@ function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
   const fittedBlocks = blocks.flatMap((block) => fitBlock(block));
 
   for (const block of fittedBlocks) {
+    if (block.chapterStart && current.length > 0) {
+      result.push(pageFromBlocks(current, result.length + 1));
+      current = [];
+    }
     const candidate = [...current, block];
     if (pageFits(candidate)) {
       current = candidate;
@@ -930,7 +1403,7 @@ function paginateContent(blocks: readonly SemanticBlock[]): PrototypePage[] {
 
     if (
       current.length > 1 &&
-      current.at(-1)?.node.matches("h1, h2, h3")
+      current.at(-1)?.node.matches("h1, h2, h3, h4, h5, h6")
     ) {
       const heading = current.pop();
       if (current.length > 0) {
@@ -969,14 +1442,19 @@ function blankPage(manifestTitle: string): PrototypePage {
     runningTitle: manifestTitle,
     anchor: "v3-blank-final",
     kind: "front-matter",
+    chapterOpening: false,
     nodes: [createElement("p", "v3-title-kicker", "End of preview")],
   };
 }
 
-function rebuildPages(preserveAnchor?: string): void {
+function rebuildPages(
+  preserveAnchor?: string,
+  preserveProgress = 0,
+): void {
   if (!manifest) {
     return;
   }
+  spread.classList.toggle("v3-spread-single", singlePageMedia.matches);
   measure.hidden = false;
   const built = [
     ...frontMatterPages(manifest),
@@ -987,13 +1465,30 @@ function rebuildPages(preserveAnchor?: string): void {
   }
   pages = built;
   measure.hidden = true;
-  const preservedIndex = preserveAnchor
-    ? pages.findIndex(({ anchor }) => anchor === preserveAnchor)
-    : -1;
+  const projectedIndex = Math.round(
+    Math.min(1, Math.max(0, preserveProgress)) *
+      Math.max(0, pages.length - 1),
+  );
+  const matchingIndices = preserveAnchor
+    ? pages.flatMap(({ anchor }, index) =>
+        anchor === preserveAnchor ? [index] : [],
+      )
+    : [];
+  const preservedIndex =
+    matchingIndices.length === 0
+      ? -1
+      : matchingIndices.reduce((closest, candidate) =>
+          Math.abs(candidate - projectedIndex) <
+          Math.abs(closest - projectedIndex)
+            ? candidate
+            : closest,
+        );
+  const step = pageStep();
+  const maximumStart = Math.max(0, pages.length - step);
+  const targetIndex =
+    preservedIndex >= 0 ? preservedIndex : projectedIndex;
   spreadStart =
-    preservedIndex >= 0
-      ? Math.max(0, Math.floor(preservedIndex / 2) * 2)
-      : Math.min(spreadStart, Math.max(0, pages.length - 2));
+    Math.floor(Math.min(targetIndex, maximumStart) / step) * step;
   renderStationary();
 }
 
@@ -1014,18 +1509,77 @@ function reportFailure(context: string, error: unknown): void {
   console.error(error);
 }
 
+function finishOpening(): void {
+  if (!opening) {
+    return;
+  }
+  opening = false;
+  if (openingTimer !== undefined) {
+    clearTimeout(openingTimer);
+    openingTimer = undefined;
+  }
+  reader.dataset.v3Opening = "false";
+  reportReady();
+  renderControls();
+}
+
+function startOpening(): void {
+  reader.dataset.v3Opening = "true";
+  if (reducedMotion.matches) {
+    finishOpening();
+    return;
+  }
+  status.textContent = `Opening complete semantic edition · ${loadedChapterCount} chapters`;
+  entryCover.addEventListener("animationend", finishOpening, { once: true });
+  openingTimer = globalThis.setTimeout(finishOpening, 1_300);
+}
+
 async function initialize(): Promise<void> {
   const loaded = await fetchManifest();
   manifest = loaded.manifest;
-  const chapters = loaded.manifest.chapters.slice(0, selectedChapterCount);
+  if (manifest.bookId !== requestedBookId) {
+    throw new Error(
+      `V3 requested ${requestedBookId} but loaded ${manifest.bookId}`,
+    );
+  }
+  applyPublicationIdentity(manifest);
+  const chapters = loaded.manifest.chapters;
   const blocks = await Promise.all(
     chapters.map((chapter) => fetchChapterBlocks(chapter, loaded.url)),
   );
   contentBlocks = blocks.flat();
+  reader.dataset.v3Tables = String(
+    contentBlocks.filter(({ node }) => node.matches("table")).length,
+  );
+  reader.dataset.v3CodeBlocks = String(
+    contentBlocks.filter(({ node }) => node.matches("pre")).length,
+  );
+  reader.dataset.v3NoteLinks = String(
+    contentBlocks.reduce(
+      (total, { node }) =>
+        total + node.querySelectorAll('a[href^="#note-"]').length,
+      0,
+    ),
+  );
+  reader.dataset.v3DeepHeadings = String(
+    contentBlocks.filter(({ node }) => node.matches("h4, h5, h6")).length,
+  );
+  reader.dataset.v3FigureLinks = String(
+    contentBlocks.reduce(
+      (total, { node }) =>
+        total + node.querySelectorAll('a[href*="/figs/"]').length,
+      0,
+    ),
+  );
+  reader.dataset.v3Blocks = String(contentBlocks.length);
   loadedChapterCount = chapters.length;
   await document.fonts.ready;
   rebuildPages();
+  if (requestedChapterId) {
+    goToChapter(requestedChapterId);
+  }
   reportReady();
+  startOpening();
 }
 
 for (const corner of corners) {
@@ -1034,8 +1588,12 @@ for (const corner of corners) {
 spread.addEventListener("pointermove", onPointerMove);
 spread.addEventListener("pointerup", onPointerEnd);
 spread.addEventListener("pointercancel", onPointerCancel);
+stationary.addEventListener("click", onStationaryClick);
 previous.addEventListener("click", () => automaticTurn("backward"));
 next.addEventListener("click", () => automaticTurn("forward"));
+chapterSelect.addEventListener("change", () =>
+  goToChapter(chapterSelect.value),
+);
 
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
@@ -1058,13 +1616,18 @@ const observer = new ResizeObserver(() => {
   if (resizeTimer !== undefined) {
     clearTimeout(resizeTimer);
   }
+  if (openingTimer !== undefined) {
+    clearTimeout(openingTimer);
+  }
   resizeTimer = globalThis.setTimeout(() => {
     const anchor = pages[spreadStart]?.anchor;
+    const progress =
+      pages.length <= 1 ? 0 : spreadStart / (pages.length - 1);
     if (activeTurn) {
       finishTurn(false);
     }
     try {
-      rebuildPages(anchor);
+      rebuildPages(anchor, progress);
       reportReady();
     } catch (error: unknown) {
       reportFailure("V3 could not repaginate", error);
@@ -1078,6 +1641,8 @@ globalThis.addEventListener(
   () => {
     observer.disconnect();
     document.removeEventListener("keydown", onKeyDown);
+    stationary.removeEventListener("click", onStationaryClick);
+    chapterSelect.replaceChildren();
     if (resizeTimer !== undefined) {
       clearTimeout(resizeTimer);
     }

@@ -1,0 +1,90 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: provenance-search
+editionId: 2026-08
+title: "Provenance Search"
+description: "An Automated Ownership-History Check for Artworks and Cultural Objects"
+authors:
+  - name: "Developed under the Ethical Tech CoLab at the NYU Center for Global Affairs as part of masters research, 2026. The repository's commit history records a single contributor, working under the identifier yagorocha-web."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Developed under the Ethical Tech CoLab at the NYU Center for Global Affairs as part of masters research, 2026. The repository's commit history records a single contributor, working under the identifier yagorocha-web. · NYU Center for Global Affairs · July 2026"
+  thesis: "Every object in a museum, a saleroom, or a private collection carries an invisible second history alongside its artistic one: the record of who has owned it, when, and how it passed from hand to hand. The problem is not that this information does not exist. It is that it is scattered. Provenance Search assembles what the free public sources say into a single ownership timeline, marks the places where the timeline has holes, and puts a transparent number on how much of the picture is actually supported by retrieved evidence."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/provenance-search/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#41263d"
+    foreground: "#f3ead6"
+    accent: "#c8a96d"
+    subtitle: "An Automated Ownership-History Check for Artworks and Cultural Objects"
+  binding:
+    material: leather
+    color: "#41263d"
+    accent: "#c8a96d"
+    depth: standard
+    hubs: 4
+    pageCount: 20
+    shelfLabel: "PROVENANCE SEARCH"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/provenance-search/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/provenance-search/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/03-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the Tool Works"
+    source: chapters/04-how-it-works.md
+    slug: how-it-works
+  - id: variables
+    title: "The Variables Explained"
+    source: chapters/05-variables.md
+    slug: variables
+  - id: reading-the-results
+    title: "Reading the Results"
+    source: chapters/06-reading-the-results.md
+    slug: reading-the-results
+  - id: data-sources
+    title: "The Data Sources in Plain Terms"
+    source: chapters/07-data-sources.md
+    slug: data-sources
+  - id: legal-backdrop
+    title: "The Legal and Ethical Backdrop"
+    source: chapters/08-legal-backdrop.md
+    slug: legal-backdrop
+  - id: design-choices
+    title: "Design Choices"
+    source: chapters/09-design-choices.md
+    slug: design-choices
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/10-limitations.md
+    slug: limitations
+  - id: deployment
+    title: "Practical Nature and Deployment"
+    source: chapters/11-deployment.md
+    slug: deployment
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/12-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/13-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/14-references.md
+    slug: references

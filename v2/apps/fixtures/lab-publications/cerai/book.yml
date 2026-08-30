@@ -1,0 +1,94 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: cerai
+editionId: 2026-08
+title: "The Civilian Evacuation Risk Anticipation Index"
+description: "A Decision-Support Tool for Protecting Civilians During Evacuations in Armed Conflict"
+authors:
+  - name: "Development advised by Teresa Cantero, PhD candidate in Spain and an alum of the NYU Center for Global Affairs, as part of masters research on International Humanitarian Law and artificial intelligence."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Development advised by Teresa Cantero, PhD candidate in Spain and an alum of the NYU Center for Global Affairs, as part of masters research on International Humanitarian Law and artificial intelligence. · Advised by Teresa Cantero · July 2026"
+  thesis: "When war forces people to flee, the decision to move a community or shelter it in place is made under extreme time pressure, with incomplete information, and with lives hanging on the outcome. CERAI keeps two questions apart that other tools tend to blend together: how dangerous it is for civilians to remain where they are, and whether an organised evacuation is actually possible right now. Keeping them apart matters legally, because the obligation to protect arises from the danger civilians face, not from whether an evacuation happens to be operationally easy."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/cerai/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#1f2947"
+    foreground: "#f3ead6"
+    accent: "#c4a568"
+    subtitle: "A Decision-Support Tool for Protecting Civilians During Evacuations in Armed Conflict"
+  binding:
+    material: cloth
+    color: "#1f2947"
+    accent: "#c4a568"
+    depth: slim
+    hubs: 3
+    pageCount: 13
+    shelfLabel: "THE CIVILIAN EVACUATION RISK ANTIC"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/cerai/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/cerai/report.pdf
+chapters:
+  - id: foreword
+    title: "Foreword"
+    source: chapters/01-foreword.md
+    slug: foreword
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/02-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/03-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How CERAI Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: reading-the-results
+    title: "Reading the Results"
+    source: chapters/06-reading-the-results.md
+    slug: reading-the-results
+  - id: sensitivity
+    title: "Testing Assumptions"
+    source: chapters/07-sensitivity.md
+    slug: sensitivity
+  - id: live-data
+    title: "Connections to Live Data"
+    source: chapters/08-live-data.md
+    slug: live-data
+  - id: ihl-grounding
+    title: "Grounding in International Humanitarian Law"
+    source: chapters/09-ihl-grounding.md
+    slug: ihl-grounding
+  - id: methodology
+    title: "Methodological Choices"
+    source: chapters/10-methodology.md
+    slug: methodology
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/11-limitations.md
+    slug: limitations
+  - id: practical-nature
+    title: "Practical Nature of the Tool"
+    source: chapters/12-practical-nature.md
+    slug: practical-nature
+  - id: audience
+    title: "Intended Audience and Use"
+    source: chapters/13-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/14-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/15-references.md
+    slug: references

@@ -1,0 +1,98 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: mariupol-severity-model
+editionId: 2026-08
+title: "The Mariupol Corridor Severity Model"
+description: "A Daily Measure of Civilian Danger During the Siege of Mariupol, March to May 2022"
+authors:
+  - name: "Christine, GitHub user ChristineLumen. Prepared as masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab. Repository version 0.9."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Christine, GitHub user ChristineLumen. Prepared as masters research at the NYU Center for Global Affairs, under the Ethical Tech CoLab. Repository version 0.9. · NYU Center for Global Affairs · July 2026"
+  thesis: "A siege does not kill people at a steady rate, and it does not kill them only by shelling. Some days the shells fall. Other days the guns are quiet, and what is killing people is that there has been no heating for three weeks, no running water, no medicine, and no convoy has come through. From a distance, the quiet days can look like improvement. This model produces one number for every day of the siege of Mariupol, built so that a lull in shelling cannot by itself lower the assessment."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/mariupol-severity-model/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17372d"
+    foreground: "#f3ead6"
+    accent: "#c7b477"
+    subtitle: "A Daily Measure of Civilian Danger During the Siege of Mariupol, March to May 2022"
+  binding:
+    material: leather
+    color: "#17372d"
+    accent: "#c7b477"
+    depth: standard
+    hubs: 4
+    pageCount: 26
+    shelfLabel: "THE MARIUPOL CORRIDOR SEVERITY MOD"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/mariupol-severity-model/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/mariupol-severity-model/report.pdf
+chapters:
+  - id: foreword
+    title: "Foreword"
+    source: chapters/01-foreword.md
+    slug: foreword
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/02-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/03-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/04-objectives.md
+    slug: objectives
+  - id: how-it-works
+    title: "How the Model Works"
+    source: chapters/05-how-it-works.md
+    slug: how-it-works
+  - id: worked-example
+    title: "A Worked Example: 14 March 2022"
+    source: chapters/06-worked-example.md
+    slug: worked-example
+  - id: reading-the-results
+    title: "Reading the Results"
+    source: chapters/07-reading-the-results.md
+    slug: reading-the-results
+  - id: where-the-numbers-come-from
+    title: "Where the Numbers Come From"
+    source: chapters/08-where-the-numbers-come-from.md
+    slug: where-the-numbers-come-from
+  - id: corridor-record
+    title: "The Corridor Record"
+    source: chapters/09-corridor-record.md
+    slug: corridor-record
+  - id: ihl
+    title: "Grounding in International Humanitarian Law"
+    source: chapters/10-ihl.md
+    slug: ihl
+  - id: methodological-choices
+    title: "Methodological Choices"
+    source: chapters/11-methodological-choices.md
+    slug: methodological-choices
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/12-limitations.md
+    slug: limitations
+  - id: reviewer-checks
+    title: "Points a Reviewer Should Verify"
+    source: chapters/13-reviewer-checks.md
+    slug: reviewer-checks
+  - id: audience
+    title: "Practical Nature and Intended Audience"
+    source: chapters/14-audience.md
+    slug: audience
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/15-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/16-references.md
+    slug: references

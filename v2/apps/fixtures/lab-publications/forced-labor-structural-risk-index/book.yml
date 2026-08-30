@@ -1,0 +1,94 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: forced-labor-structural-risk-index
+editionId: 2026-08
+title: "The Forced Labor Structural Risk Index"
+description: "A Country-Level Measure of the Conditions Under Which Forced Labour Becomes More Likely"
+authors:
+  - name: "Prepared as masters research at the NYU Center for Global Affairs."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Prepared as masters research at the NYU Center for Global Affairs. · NYU Center for Global Affairs · December 2025"
+  thesis: "Forced labour is one of the few large-scale human rights violations that almost nobody can count, and the countries where the risk is gravest are frequently the countries where the evidence is thinnest, because the same institutional weakness that permits exploitation also prevents it from being recorded. FLSRI does not try to estimate how many people are in forced labour. It measures something different and, for prevention purposes, more tractable: how strongly the structural conditions that make forced labour more likely are present, and how those conditions combine."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/forced-labor-structural-risk-index/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#1f2947"
+    foreground: "#f3ead6"
+    accent: "#c4a568"
+    subtitle: "A Country-Level Measure of the Conditions Under Which Forced Labour Becomes More Likely"
+  binding:
+    material: leather
+    color: "#1f2947"
+    accent: "#c4a568"
+    depth: standard
+    hubs: 4
+    pageCount: 25
+    shelfLabel: "THE FORCED LABOR STRUCTURAL RISK I"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/forced-labor-structural-risk-index/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/forced-labor-structural-risk-index/report.pdf
+chapters:
+  - id: executive-summary
+    title: "Executive Summary"
+    source: chapters/01-executive-summary.md
+    slug: executive-summary
+  - id: background
+    title: "Background and Rationale"
+    source: chapters/02-background.md
+    slug: background
+  - id: objectives
+    title: "Objectives"
+    source: chapters/03-objectives.md
+    slug: objectives
+  - id: legal-frame
+    title: "The Legal and Normative Frame"
+    source: chapters/04-legal-frame.md
+    slug: legal-frame
+  - id: how-its-built
+    title: "How the Index Is Built"
+    source: chapters/05-how-its-built.md
+    slug: how-its-built
+  - id: variables
+    title: "The Variables, Explained in Plain Terms"
+    source: chapters/06-variables.md
+    slug: variables
+  - id: circularity-governance
+    title: "Guarding Against Circularity and the Governance Problem"
+    source: chapters/07-circularity-governance.md
+    slug: circularity-governance
+  - id: reading-results
+    title: "Reading the Results"
+    source: chapters/08-reading-results.md
+    slug: reading-results
+  - id: sub-national
+    title: "Beyond the National Average"
+    source: chapters/09-sub-national.md
+    slug: sub-national
+  - id: validation
+    title: "Validation"
+    source: chapters/10-validation.md
+    slug: validation
+  - id: limitations
+    title: "Limitations and Caveats"
+    source: chapters/11-limitations.md
+    slug: limitations
+  - id: what-is-published
+    title: "What Is Published, and How It Can Be Checked"
+    source: chapters/12-what-is-published.md
+    slug: what-is-published
+  - id: audience-and-use
+    title: "Intended Audience and Use"
+    source: chapters/13-audience-and-use.md
+    slug: audience-and-use
+  - id: conclusion
+    title: "Conclusion"
+    source: chapters/14-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/15-references.md
+    slug: references

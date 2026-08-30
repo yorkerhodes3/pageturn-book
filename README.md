@@ -5,12 +5,14 @@
 > · [Functionality dashboard](https://yorkerhodes3.github.io/pageturn-book/dashboard/)
 > · [V3 geometry experiment](https://yorkerhodes3.github.io/pageturn-book/v3/)
 
-This repository develops and compares two reader approaches before integration
-with the Ethical Tech CoLab website:
+This repository develops and compares three reader presentation paths before
+integration with the Ethical Tech CoLab website:
 
 - The original fixed-page `read-as-book` viewer, preserved at revision
   `d1d1ec6`.
 - The new semantic-first Book Reader V2.
+- The isolated V3 semantic geometry reader, now exercised across the full
+  22-volume shelf.
 
 ## Project documents
 
@@ -22,6 +24,10 @@ with the Ethical Tech CoLab website:
 - [V2 visual fidelity review](./VISUAL-FIDELITY-REVIEW.md)
 - [Page-turn implementation estimates](./PAGE-TURN-IMPLEMENTATION-ESTIMATES.md)
 - [Semantic page-turn geometry port plan](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md)
+- [Publication ingest pipeline and all-book enablement](./PUBLICATION-INGEST-PIPELINE.md)
+- [V3 full-book measurements and visual review](./V3-FULL-BOOK-REVIEW.md)
+- [V3 22-book library and Plurality review](./V3-LIBRARY-REVIEW.md)
+- [Plurality pinned source and CC0 record](./v2/apps/fixtures/plurality/SOURCE.md)
 
 ## Implementations
 
@@ -37,8 +43,9 @@ GitHub Actions builds a Pages artifact containing:
 
 - `/` - comparison overview.
 - `/legacy/` - pinned fixed-page viewer.
-- `/shelf/` - responsive mahogany library shelf containing all 21 production
-  fixed-page publications, with a semantic reading option where available.
+- `/shelf/` - responsive mahogany library shelf containing 21 Ethical Tech
+  CoLab publications plus the CC0 Plurality community book. Every binding opens
+  in V3; available V2, designed-page, and source-reader options remain separate.
 - `/dashboard/` - implementation status, showcase routes, sharing/commenting
   status, and measured V2-versus-legacy payload weight.
 - `/v3/` - isolated semantic page-turn geometry experiment using real

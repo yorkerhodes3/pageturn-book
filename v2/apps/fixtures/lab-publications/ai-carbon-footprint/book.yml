@@ -1,0 +1,66 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: ai-carbon-footprint
+editionId: 2026-08
+title: "AI's Carbon Footprint"
+description: "The Environmental Impact of Artificial Intelligence"
+authors:
+  - name: "Alexandra Du, Elizabeth Matthews, Emily Harrington, Hannah Zhao, Jennifer Hofmann, Natasha Nagarajan, Renata Gladkikh, and Smita Samanta"
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Alexandra Du, Elizabeth Matthews, Emily Harrington, Hannah Zhao, Jennifer Hofmann, Natasha Nagarajan, Renata Gladkikh, and Smita Samanta · Professor Yorke Rhodes III · May 2025"
+  thesis: "AI's increasing environmental costs — energy-intensive training and inference, data centers, and hardware — require urgent action. A combination of sustainable AI practices, policy interventions, and technological innovations can significantly reduce AI's ecological footprint without hindering its development and role in advancing society."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/ai-carbon-footprint/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#57301e"
+    foreground: "#f3ead6"
+    accent: "#d2b87c"
+    subtitle: "The Environmental Impact of Artificial Intelligence"
+  binding:
+    material: leather
+    color: "#57301e"
+    accent: "#d2b87c"
+    depth: standard
+    hubs: 4
+    pageCount: 18
+    shelfLabel: "AI'S CARBON FOOTPRINT"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-carbon-footprint/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-carbon-footprint/report.pdf
+chapters:
+  - id: introduction
+    title: "Introduction"
+    source: chapters/01-introduction.md
+    slug: introduction
+  - id: energy-consumption
+    title: "AI's Energy Consumption"
+    source: chapters/02-energy-consumption.md
+    slug: energy-consumption
+  - id: data-centers-hardware
+    title: "Data Centers & Hardware Impact"
+    source: chapters/03-data-centers-hardware.md
+    slug: data-centers-hardware
+  - id: mitigation
+    title: "Mitigation Strategies & Sustainable AI"
+    source: chapters/04-mitigation.md
+    slug: mitigation
+  - id: regulatory-frameworks
+    title: "Regulatory Frameworks"
+    source: chapters/05-regulatory-frameworks.md
+    slug: regulatory-frameworks
+  - id: ethics-policy
+    title: "Ethical & Policy Considerations"
+    source: chapters/06-ethics-policy.md
+    slug: ethics-policy
+  - id: conclusion
+    title: "Conclusion & Future Directions"
+    source: chapters/07-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/08-references.md
+    slug: references

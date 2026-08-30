@@ -83,6 +83,18 @@ npm run build
 npm run test:browser
 ```
 
+Refresh the pinned multi-book semantic sources with explicit maintenance
+commands:
+
+```powershell
+npm run sync:production-fixture
+npm run sync:lab-publications
+npm run sync:plurality
+npm run build:fixture
+```
+
+Ordinary builds use the committed fixtures and do not fetch upstream content.
+
 Preview the built demo:
 
 ```powershell
@@ -99,8 +111,10 @@ The landing page links to:
 
 - The pinned legacy fixed-page viewer.
 - The V2 semantic reader.
+- The V3 geometry reader for every shelf publication.
 - A side-by-side iframe comparison.
-- A responsive 21-volume library shelf with selectable bindings.
+- A responsive 22-volume library shelf with selectable bindings: 21 Ethical
+  Tech CoLab publications plus the CC0 Plurality community book.
 - A functionality and payload dashboard.
 
 Published routes:
@@ -108,6 +122,8 @@ Published routes:
 - <https://yorkerhodes3.github.io/pageturn-book/>
 - <https://yorkerhodes3.github.io/pageturn-book/shelf/>
 - <https://yorkerhodes3.github.io/pageturn-book/dashboard/>
+- <https://yorkerhodes3.github.io/pageturn-book/v3/>
+- <https://yorkerhodes3.github.io/pageturn-book/v3/?book=plurality>
 
 The direct semantic chapter is:
 

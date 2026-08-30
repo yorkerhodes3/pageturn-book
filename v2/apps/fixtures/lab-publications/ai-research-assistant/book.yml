@@ -1,0 +1,90 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: ai-research-assistant
+editionId: 2026-08
+title: "AI-Powered Research Questions"
+description: "AI-Powered Assistance Across the Researcher's Workflow"
+authors:
+  - name: "Yorke E. Rhodes III, Nathaniel Fossella, Alexa Shamie, Kirsten Co, Taylor Badt, Amanda Lindsey, Grace Driscoll, Mohagani Townsend, Pegi Bracaj, and Vedant Jain"
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Yorke E. Rhodes III, Nathaniel Fossella, Alexa Shamie, Kirsten Co, Taylor Badt, Amanda Lindsey, Grace Driscoll, Mohagani Townsend, Pegi Bracaj, and Vedant Jain · October 2025"
+  thesis: "AI is increasingly used to help academic researchers pose relevant research questions by mining vast literature for insights. This paper is an overview of how AI techniques and tools address key tasks in a researcher's workflow — finding research gaps, generating candidate questions, summarizing the state of the art, and comparing conflicting results."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/ai-research-assistant/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#35251c"
+    foreground: "#f3ead6"
+    accent: "#c29a5f"
+    subtitle: "AI-Powered Assistance Across the Researcher's Workflow"
+  binding:
+    material: leather
+    color: "#35251c"
+    accent: "#c29a5f"
+    depth: slim
+    hubs: 3
+    pageCount: 10
+    shelfLabel: "AI-POWERED RESEARCH QUESTIONS"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-research-assistant/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/ai-research-assistant/report.pdf
+chapters:
+  - id: identifying-gaps
+    title: "AI for Identifying Research Gaps"
+    source: chapters/01-identifying-gaps.md
+    slug: identifying-gaps
+  - id: formulating-questions
+    title: "AI for Formulating New Research Questions"
+    source: chapters/02-formulating-questions.md
+    slug: formulating-questions
+  - id: summarizing-sota
+    title: "AI for Summarizing the State of the Art"
+    source: chapters/03-summarizing-sota.md
+    slug: summarizing-sota
+  - id: contrasting-findings
+    title: "AI for Comparing and Contrasting Research Findings"
+    source: chapters/04-contrasting-findings.md
+    slug: contrasting-findings
+  - id: integrated-systems
+    title: "Integrated AI Systems for Research-Question Generation"
+    source: chapters/05-integrated-systems.md
+    slug: integrated-systems
+  - id: emotional-dimension
+    title: "The Emotional Dimension of Research in the Age of AI"
+    source: chapters/06-emotional-dimension.md
+    slug: emotional-dimension
+  - id: guardrails
+    title: "Guardrails for AI-Assisted Research Questioning"
+    source: chapters/07-guardrails.md
+    slug: guardrails
+  - id: conflicts-of-interest
+    title: "AI-Enabled Detection of Conflicts of Interest"
+    source: chapters/08-conflicts-of-interest.md
+    slug: conflicts-of-interest
+  - id: capabilities-comparison
+    title: "Capabilities at a Glance"
+    source: chapters/09-capabilities-comparison.md
+    slug: capabilities-comparison
+  - id: red-team-verification
+    title: "A Red-Team Verification Layer"
+    source: chapters/10-red-team-verification.md
+    slug: red-team-verification
+  - id: researcher-prompt
+    title: "The Reusable 'Researcher' Prompt"
+    source: chapters/11-researcher-prompt.md
+    slug: researcher-prompt
+  - id: journal-credibility-rubric
+    title: "A Journal-Credibility Rubric"
+    source: chapters/12-journal-credibility-rubric.md
+    slug: journal-credibility-rubric
+  - id: acknowledgements
+    title: "Acknowledgements"
+    source: chapters/13-acknowledgements.md
+    slug: acknowledgements
+  - id: references
+    title: "Works Cited"
+    source: chapters/14-references.md
+    slug: references

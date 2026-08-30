@@ -2192,7 +2192,7 @@ Acceptance:
 | Size | L |
 | Status | Ready |
 | Depends on | V2-231 |
-| Requirements | TURN-P-004, TURN-P-005, TURN-P-006 |
+| Requirements | TURN-P-004, TURN-P-005, TURN-P-006, TURN-P-015 |
 
 Translate a geometry frame into bounded transforms, clip paths, face
 visibility, and inner/outer shadow styles on V2's existing virtualized semantic
@@ -2205,6 +2205,8 @@ Acceptance:
 - The stationary spread remains normal semantic HTML.
 - Moving clones remain inert, hidden from assistive technology, and stripped of
   IDs.
+- Manifest chapter boundaries force fresh pages with a separate chapter label,
+  prominent title, and first-prose treatment.
 
 ### V2-233 - unify pointer turn interaction
 

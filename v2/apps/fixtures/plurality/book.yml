@@ -1,0 +1,152 @@
+# Generated from https://github.com/pluralitybook/plurality/tree/86158859464aee75633acd854c656928121a7fd8.
+bookId: plurality
+editionId: 2026-07
+title: "Plurality"
+description: "The Future of Collaborative Technology and Democracy"
+authors:
+  - name: "E. Glen Weyl, Audrey Tang, and the Plurality Community"
+    url: https://github.com/pluralitybook/plurality
+language: en
+direction: ltr
+publicationDate: 2026-07-12
+frontMatter:
+  kicker: "⿻數位 · Open source community book · CC0 1.0 Universal"
+  credits: "E. Glen Weyl, Audrey Tang, and the Plurality Community. Dedicated to the public domain under CC0."
+  thesis: "Digital technology can support democracy when it enables collaboration across difference rather than concentrating power or forcing uniformity."
+  canonicalUrl: https://www.plurality.net/read/
+  notesStatus: "Chapter footnotes are preserved as linked chapter notes in this semantic edition. Figure assets remain pinned links during the lightweight V3 prototype."
+appearance:
+  cover:
+    background: "#39295d"
+    foreground: "#f5efe2"
+    accent: "#66c5b8"
+    subtitle: "The Future of Collaborative Technology and Democracy"
+  binding:
+    material: cloth
+    color: "#39295d"
+    accent: "#66c5b8"
+    depth: thick
+    hubs: 5
+    pageCount: 586
+    shelfLabel: "PLURALITY"
+chapters:
+  - id: "1"
+    title: "Seeing Plural"
+    source: chapters/01-1-preface.md
+    slug: "1"
+  - id: "2-0"
+    title: "Information Technology and Democracy: a Widening Gulf"
+    source: chapters/02-2-0-information-technology-and-democracy-a-widening-gulf.md
+    slug: "2-0"
+  - id: "2-1"
+    title: "A View From Yushan"
+    source: chapters/03-2-1-a-view-from-yushan.md
+    slug: "2-1"
+  - id: "2-2"
+    title: "The Life of a Digital Democracy"
+    source: chapters/04-2-2-the-life-of-a-digital-democracy.md
+    slug: "2-2"
+  - id: "3-0"
+    title: "What is ⿻?"
+    source: chapters/05-3-0-what-is.md
+    slug: "3-0"
+  - id: "3-1"
+    title: "Living in a ⿻ World"
+    source: chapters/06-3-1-living-in-a-world.md
+    slug: "3-1"
+  - id: "3-2"
+    title: "Connected Society"
+    source: chapters/07-3-2-connected-society.md
+    slug: "3-2"
+  - id: "3-3"
+    title: "The Lost Dao"
+    source: chapters/08-3-3-the-lost-dao.md
+    slug: "3-3"
+  - id: "4-0"
+    title: "Rights, Operating Systems and ⿻ Freedom"
+    source: chapters/09-4-0-rights-os-and-freedom.md
+    slug: "4-0"
+  - id: "4-1"
+    title: "Identity and Personhood"
+    source: chapters/10-4-1-identity-and-personhood.md
+    slug: "4-1"
+  - id: "4-2"
+    title: "Association and ⿻ Publics"
+    source: chapters/11-4-2-association-and-publics.md
+    slug: "4-2"
+  - id: "4-3"
+    title: "Commerce and Trust"
+    source: chapters/12-4-3-commerce-and-trust.md
+    slug: "4-3"
+  - id: "4-4"
+    title: "Property and Contract"
+    source: chapters/13-4-4-property-and-contract.md
+    slug: "4-4"
+  - id: "4-5"
+    title: "Access"
+    source: chapters/14-4-5-access.md
+    slug: "4-5"
+  - id: "5-0"
+    title: "Collaborative Technology and Democracy"
+    source: chapters/15-5-0-collaborative-technology-and-democracy.md
+    slug: "5-0"
+  - id: "5-1"
+    title: "Post-Symbolic Communication"
+    source: chapters/16-5-1-post-symbolic-communication.md
+    slug: "5-1"
+  - id: "5-2"
+    title: "Immersive Shared Reality"
+    source: chapters/17-5-2-immersive-shared-reality.md
+    slug: "5-2"
+  - id: "5-3"
+    title: "Creative Collaborations"
+    source: chapters/18-5-3-creative-collaborations.md
+    slug: "5-3"
+  - id: "5-4"
+    title: "Augmented Deliberation"
+    source: chapters/19-5-4-augmented-deliberation.md
+    slug: "5-4"
+  - id: "5-5"
+    title: "Adaptive Administration"
+    source: chapters/20-5-5-adaptive-administration.md
+    slug: "5-5"
+  - id: "5-6"
+    title: "⿻ Voting"
+    source: chapters/21-5-6-voting.md
+    slug: "5-6"
+  - id: "5-7"
+    title: "Social Markets"
+    source: chapters/22-5-7-social-markets.md
+    slug: "5-7"
+  - id: "6-0"
+    title: "From ⿻ to Reality"
+    source: chapters/23-6-0-from-to-reality.md
+    slug: "6-0"
+  - id: "6-1"
+    title: "Workplace"
+    source: chapters/24-6-1-workplace.md
+    slug: "6-1"
+  - id: "6-2"
+    title: "Health"
+    source: chapters/25-6-2-health.md
+    slug: "6-2"
+  - id: "6-3"
+    title: "Media"
+    source: chapters/26-6-3-media.md
+    slug: "6-3"
+  - id: "6-4"
+    title: "Environment"
+    source: chapters/27-6-4-environment.md
+    slug: "6-4"
+  - id: "6-5"
+    title: "Learning"
+    source: chapters/28-6-5-learning.md
+    slug: "6-5"
+  - id: "7-0"
+    title: "Policy"
+    source: chapters/29-7-0-policy.md
+    slug: "7-0"
+  - id: "7-1"
+    title: "Conclusion"
+    source: chapters/30-7-1-conclusion.md
+    slug: "7-1"

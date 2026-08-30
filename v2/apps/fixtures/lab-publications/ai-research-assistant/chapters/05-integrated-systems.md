@@ -1,0 +1,13 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/ai-research-assistant.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 05. Integrated AI Systems for Research-Question Generation {#integrated-systems}
+
+Bringing these capabilities together, modern AI research assistants provide end-to-end support — from mapping existing knowledge to highlighting gaps and inconsistencies, often in an interactive workflow.
+
+**Consolidated Platforms** New research-assistant tools — commercial and experimental platforms such as Semantic Scholar's AI, IBM Watson Discovery for science, and academic prototypes — integrate search, summarization, and analysis. Some AI writing assistants (e.g. Jenni.ai, Silatus) let a user enter a tentative topic, then automatically fetch relevant literature, summarize it, and suggest next questions. As Bolaños et al. (2024) describe, such systems can iteratively build a literature review, surfacing open questions during the writing process — noting, for instance, that 'few studies address Z,' cueing a potential new question.
+
+**Hypothesis and Idea Suggestion** Integrated agents can propose questions in context. A researcher might upload a set of papers and ask 'what is a good next research question here?' The AI combines the findings, points out a missing piece, and phrases a candidate question. Some systems use retrieval-augmented generation (RAG) to pull specifics from documents and have an LLM draft open-problem paragraphs, explicitly listing unsolved problems gleaned from the literature.
+
+**Workflow Efficiency** The overall impact is on efficiency and comprehensiveness. By the time a researcher formulates a question, they have already seen the summarized state of the art, the known gaps, and the controversial findings — reducing the chance of proposing something trivial or already answered. As surveys note, current tools are not flawless (hallucinations and gaps in coverage exist), but the trend is for AI to handle more of the heavy lifting, leaving researchers to concentrate on creative and critical thinking. Human insight remains crucial: the AI provides options and evidence, but the researcher chooses and refines the question.
+
+AI contributes at every stage of question formulation — scouting the landscape of knowledge, spotlighting what is unknown or disputed, and even drafting candidate questions. For a researcher, these tools act like a smart assistant, ensuring the questions they pose are informed, significant, and address genuine gaps: a faster, more focused path to high-impact research.

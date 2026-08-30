@@ -1,0 +1,351 @@
+# Publication ingest pipeline and V3 enablement
+
+| Field | Value |
+|---|---|
+| Status | Generalized V3 beta implemented; production/editorial hardening remains |
+| Inventory revision | `b456e8e137a0b6ce9a51799b71c6091f5241b5d7` |
+| Plurality revision | `86158859464aee75633acd854c656928121a7fd8` |
+| Shelf publications | 22 |
+| Shared report-model sources | 20 |
+| Bespoke structured sources | 1 - Cyber Dictionary |
+| External open-source Markdown books | 1 - Plurality |
+| Current semantic V3 builds in this repository | 22 |
+
+## 1. Executive answer
+
+The other books are not absent because their content is unavailable.
+
+At the pinned Ethical Tech CoLab website revision:
+
+- all 21 shelf books have a PDF, WebP page set, and fixed-page manifest;
+- 20 books have complete structured TypeScript report content in the shared
+  `PrintableReport` registry;
+- the Cyber Dictionary has a separate but complete structured source containing
+  542 terms and 105 library sources.
+
+Only *What Is Ethical AI?* originally worked in V2/V3 semantic mode because
+`v2/scripts/sync-production-fixture.mjs` was written as a one-book validation
+adapter. It hard-codes that source URL, export name, output directory, metadata,
+and edition. Its block converter supports only strings, lead paragraphs, and
+simple lists. There is no generalized report export, no automatic fixture
+discovery, and no catalog rule that enables semantic actions whenever a
+manifest exists.
+
+That was a prototype sequencing decision, not a source-access limitation.
+
+The V3 beta now adds:
+
+- a pinned-source importer for the other 19 reports;
+- a dedicated 542-term Cyber Dictionary adapter;
+- a pinned CC0 Markdown importer for Plurality's 30 English chapters;
+- automatic discovery and build of 23 fixtures, including the internal demo;
+- 22 shelf bindings with V3 actions;
+- table, chart-data, formula/code, glossary, chapter-note, and figure-link
+  preservation.
+
+The remaining platform task is to move report export into the website that owns
+the TypeScript content, then complete publication-by-publication editorial QA.
+
+## 2. Existing website pipeline
+
+The current production website owns both semantic content and fixed-page
+facsimiles.
+
+### 2.1 Canonical content
+
+Narrative publications live in:
+
+```text
+src/content/publications/<slug>.ts
+```
+
+Twenty are registered in
+[`reports.ts`](https://github.com/Ethical-Tech-CoLab/website/blob/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/reports.ts).
+That registry normalizes:
+
+- report metadata;
+- sections;
+- `paragraphs` or the one `blocks` variant;
+- strings;
+- lead paragraphs;
+- formulas;
+- ordered and unordered lists;
+- tables;
+- accessible chart data;
+- citations.
+
+The shared block types are in
+[`types.ts`](https://github.com/Ethical-Tech-CoLab/website/blob/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/types.ts).
+
+The Cyber Dictionary is intentionally separate. Its generated
+[`cyber-dictionary-data.ts`](https://github.com/Ethical-Tech-CoLab/website/blob/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/cyber-dictionary-data.ts)
+contains glossary and library records rather than report sections.
+
+### 2.2 Printable HTML
+
+The website's generic `/print/<slug>` route reads the 20-report registry and
+renders the shared block union. The Cyber Dictionary has a bespoke print route.
+
+Each publication also has a hand-composed public report page. Those pages are
+not the right ingest boundary because their layout differs by publication.
+The normalized report registry is the more stable source.
+
+### 2.3 PDF and fixed-page book
+
+The website's current fixed-page build is:
+
+```text
+structured TypeScript content
+  -> Next.js printable HTML
+  -> headless Chrome PDF
+  -> read-as-book PDF-to-WebP CLI
+  -> pNN.webp + manifest.json + <slug>-book.ts
+  -> legacy StPageFlip viewer
+```
+
+Details:
+
+1. Eighteen narrative reports are printed from `/print/<slug>`.
+2. *After the Corridor* and *What Is Ethical AI?* use higher-fidelity designed
+   PDFs supplied separately.
+3. The Cyber Dictionary uses its bespoke printable route.
+4. The `read-as-book` CLI rasterizes each PDF and emits its fixed-page manifest.
+5. Generated `*-book.ts` files are collected in
+   [`books.ts`](https://github.com/Ethical-Tech-CoLab/website/blob/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/books.ts).
+
+This explains why every shelf volume already works in the legacy viewer: that
+pipeline operates on PDFs, not semantic publication manifests.
+
+## 3. Current pageturn-book semantic pipelines
+
+The Ethical Tech CoLab report path is:
+
+```text
+reports.ts and cyber-dictionary-data.ts at a pinned website revision
+  -> sync-lab-publications.mjs
+  -> book.yml + chapter Markdown
+  -> publication CLI validation and stable anchors
+  -> immutable manifest + semantic chapter HTML
+  -> isolated V3 geometry mode
+```
+
+The tailored *What Is Ethical AI?* fixture remains separately generated by
+`sync-production-fixture.mjs` because it has richer front matter and established
+V2 regression coverage.
+
+The Plurality path is:
+
+```text
+30 contents/english Markdown chapters at a pinned CC0 revision
+  -> sync-plurality-fixture.mjs
+  -> pinned figure links + linked chapter notes + book.yml
+  -> publication CLI validation and stable anchors
+  -> Plurality V3 binding and semantic book spread
+```
+
+These outputs are substantially smaller and more capable than facsimiles:
+
+- selectable native text;
+- stable source anchors;
+- responsive pagination;
+- linkable contents and references;
+- no per-page image transfer;
+- bounded attached page faces.
+
+The beta intentionally compiles the pinned public TypeScript sources in a
+temporary directory during explicit synchronization. Production should replace
+that downstream compilation with a versioned JSON/AST export from the website.
+
+## 4. Source inventory and conversion effort
+
+Estimates below are per-book content adaptation and QA after the shared report
+exporter exists. They do not repeat the one-time platform work.
+
+| Group | Publications | Source/block characteristics | Per-book effort |
+|---|---|---|---:|
+| Ready baseline | What Is Ethical AI? | String, lead, list; semantic fixture already built | Validation only |
+| Low | AI Carbon Footprint; CERAI; Evacuation INFORM Index; Evacuation Simulation; Digital Provenance Passport; Diplomatic Simulator; Provenance Search; VANGO | Shared report shape; strings, leads, lists, and ordinary tables | 0.5-1 day |
+| Medium | AI Models Research; ERUS; Agentic Language Development; War Games; After the Corridor; HASTE; Forced Labor Structural Risk Index; Agentic Behavior Observatory | Table-dense content and/or chart blocks whose accessible data tables must be preserved | 1-2 days |
+| High | ERCF; Mariupol Severity Model; AI Research Assistant | Formula blocks, local type variants, `blocks` field, or comparison/rubric data outside the shared section body | 2-4 days |
+| Bespoke | Cyber Dictionary | 542-term glossary plus 105-source library; not a `PrintableReport` | 5-8 days |
+| External open source | Plurality | 30 canonical English Markdown chapters, CC0, linked notes, pinned figure links | 2-4 days |
+
+### 4.1 Plurality source and license
+
+Plurality is pinned at revision
+`86158859464aee75633acd854c656928121a7fd8`. Its canonical English source is the
+30 numbered Markdown files under `contents/english/`, ordered by the project's
+own manifest convention. The root license is CC0 1.0 Universal.
+
+The importer does not scrape plurality.net or use the stale assembled
+`english.md`. It rewrites floating figure references to the pinned revision,
+converts figures to immutable lightweight links, and turns Pandoc-style
+footnotes into linked chapter notes. The complete source/license record is
+[v2/apps/fixtures/plurality/SOURCE.md](./v2/apps/fixtures/plurality/SOURCE.md).
+
+### 4.2 Specific risks
+
+- **Charts:** AI Models Research, War Games, and Agentic Behavior Observatory
+  include chart blocks. Every chart already carries an accessible data table;
+  the semantic edition should emit that table first and progressively enhance a
+  chart later.
+- **Formulas:** ERCF and Mariupol Severity Model need formula-preserving output,
+  preferably semantic code/MathML with the existing plain-language note.
+- **AI Research Assistant:** its comparison and rubric rows sit outside the
+  generic section-body field. A naive registry conversion would silently omit
+  useful content.
+- **Cyber Dictionary:** a glossary is not a report. It needs term/domain
+  navigation, chunked chapters, and a source-library section rather than fake
+  report paragraphs.
+- **Notes:** reports provide Works Cited lists, but reliable footnote/endnote
+  callouts require source mappings that are not consistently present.
+
+## 5. Target semantic ingest pipeline
+
+The recommended boundary is a versioned publication intermediate
+representation, exported by the website that owns the content:
+
+```text
+website TypeScript sources
+  -> versioned publication JSON/AST export
+  -> schema validation
+  -> Markdown or direct semantic-HTML chapters
+  -> stable IDs + source map + immutable manifest
+  -> V2 and V3 renderers
+  -> optional PDF/WebP facsimile remains separate
+```
+
+### 5.1 Website-side export
+
+Add a script in the website repository that imports `reports.ts` normally and
+emits one JSON document per slug. Do not make downstream projects parse
+TypeScript source text with regular expressions.
+
+The intermediate schema should include:
+
+- publication and edition identity;
+- title, subtitle, credits, date, thesis, and disclaimer;
+- ordered sections with stable source keys;
+- the complete block union;
+- chart data tables;
+- citations and any explicit note callouts;
+- appearance and shelf metadata;
+- source revision and content hash.
+
+The Cyber Dictionary exporter should emit a sibling `glossary` publication
+kind, not force its records into report sections.
+
+### 5.2 pageturn-book import
+
+The beta exposes these synchronization and build commands:
+
+```powershell
+npm run sync:lab-publications
+npm run sync:plurality
+npm run build:fixture
+```
+
+The importer should:
+
+1. validate the intermediate schema;
+2. preserve section and block structure;
+3. emit deterministic chapter sources and `book.yml`;
+4. map tables, formulas, charts, glossary entries, and citations without loss;
+5. add explicit notes-status metadata where callout mappings are absent;
+6. run the existing publication CLI;
+7. update the demo catalog from built manifests rather than hand-written
+   `semanticHref` flags;
+8. fail the build if a registered source lacks an output manifest.
+
+### 5.3 Runtime behavior
+
+V3 accepts a validated shelf publication identity and resolves its immutable
+local manifest. It no longer contains a hard-coded Ethical AI manifest URL.
+
+The current full-book test deliberately fetches all 17 Ethical AI chapters so
+payload and end-to-end fidelity can be measured. General multi-book production
+should restore chapter-level loading and adjacent prefetch, particularly for
+the 542-term Cyber Dictionary, rather than requiring every publication to load
+all content before its first page opens.
+
+The shelf can then offer:
+
+- V2 semantic edition;
+- V3 geometry edition;
+- designed fixed-page edition;
+
+based on capabilities discovered from the built catalog.
+
+## 6. Effective delivery estimate
+
+### 6.1 Functional beta for all books
+
+The functional-beta scope below is now implemented. The estimate is retained to
+show the effective size of the work and to budget future source additions.
+
+| Work | Effort |
+|---|---:|
+| Versioned website report exporter | 3-5 person-days |
+| Generic report importer and block mapping | 5-8 person-days |
+| Automated fixture/build/catalog discovery | 2-4 person-days |
+| Cyber Dictionary adapter | 4-6 person-days |
+| Smoke conversion and representative tests | 3-5 person-days |
+| Plurality Markdown importer and attribution | 2-4 person-days |
+| **Functional beta total** | **19-32 person-days** |
+
+One experienced engineer could produce a broad beta in roughly 4-6 calendar
+weeks. Two engineers splitting pipeline and renderer/content QA could reduce
+calendar time to about 3-4 weeks.
+
+### 6.2 Production-quality enablement
+
+Production quality adds:
+
+- per-book editorial comparison against the public report and PDF;
+- tables, formulas, charts, long links, and glossary navigation QA;
+- citation and notes-status review;
+- responsive pagination across desktop, short landscape, tablet, and phone;
+- browser/accessibility testing;
+- payload, page-count, and frame-performance baselines;
+- error reporting, incremental rebuilds, and CI drift detection.
+
+The remaining production-quality work is approximately **25-40 person-days**,
+or roughly **5-8 person-weeks**. With a pipeline engineer and a
+content/accessibility QA owner, expect approximately **3-5 calendar weeks**.
+
+The cost is not 22 independent reader integrations. Most work is one reusable
+export/import platform plus bounded book-specific QA.
+
+## 7. Recommended rollout
+
+1. **Wave 1 - prove generic report ingest:** AI Carbon Footprint, CERAI, and
+   Evacuation INFORM Index.
+2. **Wave 2 - structural blocks:** Digital Provenance Passport, Diplomatic
+   Simulator, Evacuation Simulation, Provenance Search, VANGO, and ERUS.
+3. **Wave 3 - charts and dense tables:** AI Models Research, War Games, Agentic
+   Behavior Observatory, Agentic Language Development, HASTE, Forced Labor
+   Structural Risk Index, and After the Corridor.
+4. **Wave 4 - special report shapes:** ERCF, Mariupol Severity Model, and AI
+   Research Assistant.
+5. **Wave 5 - reference and external publications:** Cyber Dictionary and
+   Plurality.
+
+Every wave should publish V2 and V3 semantic links together while retaining the
+designed fixed-page edition.
+
+## 8. Definition of done per publication
+
+A shelf book is V3-ready only when:
+
+- every canonical source section is present;
+- non-prose structures are preserved semantically;
+- stable anchors and chapter URLs work;
+- references and notes limitations are explicit;
+- desktop and phone pagination have no internal scrollbars or clipped content;
+- forward/backward page faces show the correct content;
+- shelf departure and cover opening reach the selected edition;
+- the publication adds no page-image requests to its semantic path;
+- semantic payload, page count, DOM, heap, and turn-frame measurements are
+  recorded;
+- V3 and every available V2, designed-page, or external source-reader action
+  remain independently available.

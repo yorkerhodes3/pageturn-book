@@ -1,0 +1,11 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/diplomatic-simulator.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 09. Grounding in Negotiation Theory {#negotiation-theory}
+
+The variables are not arbitrary. Recording a BATNA, red lines, and a set of tradeable concessions for every party reproduces the standard analytic apparatus of the Harvard Negotiation Project, and it is what allows the simulator to distinguish a delegation that conceded from a delegation that had nothing to gain by holding out.
+
+The distinction between claiming value and creating value, developed in the study of labour negotiations by Richard Walton and Robert McKersie in 1965, appears in the structure of the tactic vocabulary. Anchoring, counter-anchoring, and deadline-pressure are moves that divide a fixed quantity. Issue-linkage, side-payments, and conditional offers are moves that enlarge what is available to divide. The counts therefore say something about what kind of negotiation took place, not merely how much of it there was.
+
+One well-established feature of real diplomacy is deliberately absent. Robert Putnam's account of two-level games, published in International Organization in 1988, describes negotiators bargaining simultaneously at an international table and a domestic one, where a leader whose parliament will reject a deal has less room to agree but more leverage to refuse. The simulator captures a trace of this in the delegation role field, which records how much authority a delegation holds, but it does not model the domestic table. No agent faces a legislature, a coalition partner, or an election. This is a substantial simplification of what constrains real negotiators.
+
+The convening role is modelled at a similarly light touch. The public brief provides that a Special Representative chairs the plenary and may invite proposals and summarise, and the analyst writes in that voice afterwards. But no agent plays the mediator during the talks. Mediator pressure appears only as a randomised condition in the Monte Carlo layer, never as an actor making choices in the room.

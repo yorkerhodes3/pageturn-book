@@ -1,0 +1,89 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: cyber-dictionary
+editionId: 2026-08
+title: "Cyber Dictionary"
+description: "A practical reference to cybersecurity language, systems, and sources."
+authors:
+  - name: Ethical Tech CoLab
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Ethical Tech CoLab · Open reference publication"
+  credits: "542 terms · 105 library sources"
+  thesis: "Cybersecurity becomes more accessible when its vocabulary, systems, threats, and defenses are explained in direct language."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/cyber-dictionary/
+appearance:
+  cover:
+    background: "#1f2947"
+    foreground: "#f3ead6"
+    accent: "#c4a568"
+    subtitle: "A practical cybersecurity reference"
+  binding:
+    material: leather
+    color: "#1f2947"
+    accent: "#c4a568"
+    depth: thick
+    hubs: 5
+    pageCount: 44
+    shelfLabel: "CYBER DICTIONARY"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/cyber-dictionary/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/cyber-dictionary/report.pdf
+chapters:
+  - id: networking-protocols
+    title: "Networking & Protocols"
+    source: chapters/01-networking-protocols.md
+    slug: networking-protocols
+  - id: cryptography
+    title: "Cryptography"
+    source: chapters/02-cryptography.md
+    slug: cryptography
+  - id: identity-access
+    title: "Identity & Access"
+    source: chapters/03-identity-access.md
+    slug: identity-access
+  - id: attacks-exploitation
+    title: "Attacks & Exploitation"
+    source: chapters/04-attacks-exploitation.md
+    slug: attacks-exploitation
+  - id: malware-threat-actors
+    title: "Malware & Threat Actors"
+    source: chapters/05-malware-threat-actors.md
+    slug: malware-threat-actors
+  - id: application-security
+    title: "Application Security"
+    source: chapters/06-application-security.md
+    slug: application-security
+  - id: cloud-infrastructure
+    title: "Cloud & Infrastructure"
+    source: chapters/07-cloud-infrastructure.md
+    slug: cloud-infrastructure
+  - id: endpoints-systems
+    title: "Endpoints & Systems"
+    source: chapters/08-endpoints-systems.md
+    slug: endpoints-systems
+  - id: defense-operations
+    title: "Defense & Operations"
+    source: chapters/09-defense-operations.md
+    slug: defense-operations
+  - id: governance-risk-compliance
+    title: "Governance, Risk & Compliance"
+    source: chapters/10-governance-risk-compliance.md
+    slug: governance-risk-compliance
+  - id: ai-emerging-tech
+    title: "AI & Emerging Tech"
+    source: chapters/11-ai-emerging-tech.md
+    slug: ai-emerging-tech
+  - id: dev-delivery
+    title: "Dev & Delivery"
+    source: chapters/12-dev-delivery.md
+    slug: dev-delivery
+  - id: compute-hardware
+    title: "Compute & Hardware"
+    source: chapters/13-compute-hardware.md
+    slug: compute-hardware
+  - id: source-library
+    title: "Source Library"
+    source: chapters/14-source-library.md
+    slug: source-library

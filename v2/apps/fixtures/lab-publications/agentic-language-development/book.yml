@@ -1,0 +1,98 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: agentic-language-development
+editionId: 2026-08
+title: "Agentic Language Development"
+description: "Can Two Isolated Agents Invent a Grounded, Auditable Language Through Shared Experience?"
+authors:
+  - name: "Yorke Rhodes III, Ethical Tech CoLab. Prepared from the project concept document, the ledger integrity design, and the experiment notebook. The literature scan behind Section 12 was run on 24 August 2026. No experiment in this programme has been executed, and no result is claimed."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Concept and research programme · Ethical Tech CoLab"
+  credits: "Yorke Rhodes III, Ethical Tech CoLab. Prepared from the project concept document, the ledger integrity design, and the experiment notebook. The literature scan behind Section 12 was run on 24 August 2026. No experiment in this programme has been executed, and no result is claimed. · Concept and pre-specification research report · August 2026"
+  thesis: "Two agents can be placed in a room where the only route between them is a channel that carries no human language, given nothing but shared tasks and the consequences of getting them right or wrong, and asked to build a protocol from scratch. The interesting part is not whether they succeed at the task. It is whether the meanings they each privately record turn out to be the meanings their behaviour actually runs on, and whether an outsider can prove it afterwards from an evidence trail nobody could have edited."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/agentic-language-development/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#41263d"
+    foreground: "#f3ead6"
+    accent: "#c8a96d"
+    subtitle: "Can Two Isolated Agents Invent a Grounded, Auditable Language Through Shared Experience?"
+  binding:
+    material: cloth
+    color: "#41263d"
+    accent: "#c8a96d"
+    depth: standard
+    hubs: 4
+    pageCount: 25
+    shelfLabel: "AGENTIC LANGUAGE DEVELOPMENT"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/agentic-language-development/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/agentic-language-development/report.pdf
+chapters:
+  - id: question
+    title: "The question"
+    source: chapters/01-question.md
+    slug: question
+  - id: caveat
+    title: "What infant-like does and does not mean"
+    source: chapters/02-caveat.md
+    slug: caveat
+  - id: architecture
+    title: "The nursery: three twins and one gateway"
+    source: chapters/03-architecture.md
+    slug: architecture
+  - id: grounding
+    title: "Shared experience is the necessary ingredient"
+    source: chapters/04-grounding.md
+    slug: grounding
+  - id: channel
+    title: "The channel, and the honest limits of isolation"
+    source: chapters/05-channel.md
+    slug: channel
+  - id: ledgers
+    title: "Two ledgers that never meet"
+    source: chapters/06-ledgers.md
+    slug: ledgers
+  - id: integrity
+    title: "Anchoring the evidence"
+    source: chapters/07-integrity.md
+    slug: integrity
+  - id: success
+    title: "What should count as success"
+    source: chapters/08-success.md
+    slug: success
+  - id: matrix
+    title: "The experimental matrix"
+    source: chapters/09-matrix.md
+    slug: matrix
+  - id: learners
+    title: "Building learners rather than personas"
+    source: chapters/10-learners.md
+    slug: learners
+  - id: affect
+    title: "Six faces, and why even six is a risk"
+    source: chapters/11-affect.md
+    slug: affect
+  - id: ciphers
+    title: "Ephemeral encodings: novelty is not security"
+    source: chapters/12-ciphers.md
+    slug: ciphers
+  - id: landscape
+    title: "Where the field already stands"
+    source: chapters/13-landscape.md
+    slug: landscape
+  - id: programme
+    title: "The programme, and its current status"
+    source: chapters/14-programme.md
+    slug: programme
+  - id: risks
+    title: "Risks, integrity, and what stays open"
+    source: chapters/15-risks.md
+    slug: risks
+  - id: references
+    title: "Works Cited"
+    source: chapters/16-references.md
+    slug: references

@@ -1,0 +1,11 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/mariupol-severity-model.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 02. Background and Rationale {#background}
+
+**The problem.** During a siege, the people who might intervene are almost always working from partial information, and the information that is available degrades exactly when conditions are worst. Reporters leave or are killed. Communications fail. The number of recorded incidents falls, not because less is happening but because fewer people are left to record it. A decision-maker watching a feed of reported attacks can therefore watch a city get quieter on the page while it gets deadlier on the ground.
+
+**The gap.** Existing humanitarian severity measures are built to rank crises against each other, usually monthly and usually at the level of a whole country or a whole emergency. They are not built to answer the question a siege poses, which is a question about a single place on a single day: is it, today, sufficiently dangerous here that the obligations owed to these civilians are plainly engaged? Nor do the standard measures put any weight on whether promises of safe passage were kept, which in a siege is often the decisive variable.
+
+**The response.** This repository proposes a daily, place-specific severity signal assembled entirely from information that was publicly available at the time: recorded conflict events, temperature, satellite damage assessments, population estimates, and the documented record of what corridors were announced and what became of them. It then attaches each of the six ingredients to the legal provision it bears on, so that a rise in the number can be read as a rise in the strength of a specific legal claim rather than as a general worsening.
+
+The research question the repository sets itself is stated at the top of its own interface: how can and should artificial intelligence tools be used to enhance the protection and evacuation of civilians during armed conflict, and in what ways do they support or challenge the implementation of existing obligations under International Humanitarian Law? The model is offered as one empirical answer, worked through a single case.

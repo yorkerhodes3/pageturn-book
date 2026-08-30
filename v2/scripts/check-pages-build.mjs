@@ -17,6 +17,10 @@ const required = [
   "book/what-is-ethical-ai/2026-07/manifest.json",
   "book/what-is-ethical-ai/2026-07/chapters/executive-summary/index.html",
   "book/what-is-ethical-ai/2026-07/chapters/conclusion/index.html",
+  "book/ai-models-research/2026-08/manifest.json",
+  "book/cyber-dictionary/2026-08/manifest.json",
+  "book/plurality/2026-07/manifest.json",
+  "book/plurality/2026-07/chapters/1/index.html",
 ];
 
 for (const path of required) {

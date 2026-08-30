@@ -1,0 +1,13 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/provenance-search.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 02. Background and Rationale {#background}
+
+**The problem.** The trade in art and cultural objects is among the largest asset markets with comparatively little mandatory disclosure. Ownership history is held in records that were built for different purposes by institutions with no obligation to share, and there is no single register that a buyer, journalist, heir, or customs officer can consult to see the whole chain.
+
+**Why gaps matter.** Provenance research does not usually produce a clean finding of theft. It produces an absence. An object whose recorded ownership jumps from 1932 to 1948 with nothing in between is not thereby proven to have been looted, but the years between 1933 and 1945 are precisely the window in which Jewish and other persecuted owners across continental Europe were dispossessed by confiscation, forced sale, and sale under duress. An unexplained gap in that period is what a suppressed transfer looks like from the outside. The professional convention, reflected in museum guidance in both the United States and Europe, is to treat such a gap as a trigger for further research rather than as a verdict.
+
+**The gap in tooling.** The public resources that do exist are good but fragmented, and most require the researcher to know which one to consult and what to type into it. Assembling a first-pass picture across all of them is slow, repetitive clerical work. It is exactly the kind of work that software can usefully do, provided the software is honest about the difference between finding a record and establishing a fact.
+
+**The response.** Provenance Search automates the first pass. It runs the same query against several sources at once, gathers what comes back, arranges it in date order, names the holes, and puts a transparent number on how much of the picture is actually supported by retrieved evidence. It is presented by its own interface as a tool that flags what cannot be verified rather than one that confirms what can.
+
+**Relationship to related work.** The repository's package metadata, its earliest commit, and the identifier embedded in every passport signature all carry the name arts and artifacts, which is also the name of a sibling repository in the same organisation. Provenance Search is best understood as the deployed, publicly hosted web version of that line of work. This report describes only what is present in this repository.

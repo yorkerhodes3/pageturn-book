@@ -1,0 +1,70 @@
+# GENERATED from Ethical-Tech-CoLab/website at b456e8e137a0b6ce9a51799b71c6091f5241b5d7.
+bookId: evacuation-inform-index
+editionId: 2026-08
+title: "The Evacuation Inform Index"
+description: "Weighing the Risk of Leaving Against the Risk of Staying"
+authors:
+  - name: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs."
+language: en
+direction: ltr
+frontMatter:
+  kicker: "Publications · Academic report · Ethical Tech CoLab"
+  credits: "Carolina Morón. Prepared as masters research at the NYU Center for Global Affairs. · NYU Center for Global Affairs · July 2026"
+  thesis: "Humanitarian practice tends to treat evacuation as the obvious good. In practice the journey carries its own risk, and a crisis can be both catastrophic to endure and impossible to escape. The Evacuation Inform Index scores those two risks separately, side by side, so that the comparison between them becomes visible and can be argued with."
+  canonicalUrl: https://ethical-tech-colab.github.io/website/publications/evacuation-inform-index/
+  notesStatus: "The source provides a complete Works Cited list but does not provide a consistent citation-to-footnote mapping for semantic endnotes."
+appearance:
+  cover:
+    background: "#17363e"
+    foreground: "#f3ead6"
+    accent: "#b9b075"
+    subtitle: "Weighing the Risk of Leaving Against the Risk of Staying"
+  binding:
+    material: leather
+    color: "#17363e"
+    accent: "#b9b075"
+    depth: slim
+    hubs: 3
+    pageCount: 11
+    shelfLabel: "THE EVACUATION INFORM INDEX"
+legacyFacsimile:
+  revision: b456e8e137a0b6ce9a51799b71c6091f5241b5d7
+  manifestHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/evacuation-inform-index/pages/manifest.json
+  pdfHref: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/evacuation-inform-index/report.pdf
+chapters:
+  - id: problem
+    title: "The Question Nobody Asks"
+    source: chapters/01-problem.md
+    slug: problem
+  - id: what-it-is
+    title: "What the Index Is"
+    source: chapters/02-what-it-is.md
+    slug: what-it-is
+  - id: how-it-works
+    title: "How It Works"
+    source: chapters/03-how-it-works.md
+    slug: how-it-works
+  - id: danger-and-feasibility
+    title: "Keeping Danger and Feasibility Apart"
+    source: chapters/04-danger-and-feasibility.md
+    slug: danger-and-feasibility
+  - id: vulnerability
+    title: "Who Is Exposed"
+    source: chapters/05-vulnerability.md
+    slug: vulnerability
+  - id: evidence
+    title: "How the Index Treats Evidence"
+    source: chapters/06-evidence.md
+    slug: evidence
+  - id: limitations
+    title: "What the Index Does Not Do"
+    source: chapters/07-limitations.md
+    slug: limitations
+  - id: conclusion
+    title: "What It Contributes"
+    source: chapters/08-conclusion.md
+    slug: conclusion
+  - id: references
+    title: "Works Cited"
+    source: chapters/09-references.md
+    slug: references

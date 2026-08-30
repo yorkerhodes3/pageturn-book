@@ -1,0 +1,17 @@
+<!-- GENERATED from https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/mariupol-severity-model.ts at b456e8e137a0b6ce9a51799b71c6091f5241b5d7; do not edit. -->
+
+# 08. The Corridor Record {#corridor-record}
+
+The model divides the siege window into four regimes, each with its own scores for corridor violation history and consent exposure. These are the two variables that carry the model's legal argument, so it is worth setting the regimes out as the repository defines them.
+
+**Announced corridors that failed, 5 to 13 March.** Violation history 1.00, consent 0.50. The repository records that corridors announced for 5 to 7 March collapsed under renewed shelling, with each party attributing responsibility to the other, and that a proposal on 7 March routing corridors toward Russia and Belarus was rejected by Kyiv. The consent value of 0.50 reflects unilateral announcement rather than negotiated agreement.
+
+**Self-evacuation, 14 March to 29 April.** Violation history 0.67, consent 0.75. The repository describes private vehicles departing toward Zaporizhzhia without any ceasefire in effect, crossing Russian-held territory and multiple checkpoints between Manhush and Vasylivka, with passage intermittently permitted and convoys turned back on some days. The consent value of 0.75 is the model's score for movement occurring with no agreement at all. Eastbound movement into Russian-controlled territory via Bezimenne is recorded as continuing in parallel throughout.
+
+**Organised humanitarian evacuation, 30 April to 7 May.** Violation history 0.60, consent 0.25. The repository records that following the United Nations Secretary-General's meetings in Moscow on 26 April, an arrangement involving the United Nations and the International Committee of the Red Cross took civilians out of the Azovstal plant, with evacuees exiting through a Russian-controlled screening point at Bezimenne before onward transfer to Zaporizhzhia, and some proceeding to Russian-controlled territory rather than to Zaporizhzhia. The consent value of 0.25 is the model's lowest, reserved for passage negotiated with a neutral third-party escort.
+
+**No organised corridor, 8 to 20 May.** Violation history 0.70, consent 0.90. The repository records that no agreed civilian passage was in effect and that remaining movement was subject to filtration screening, citing reporting by the Office of the United Nations High Commissioner for Human Rights and its Human Rights Monitoring Mission in Ukraine, including reported onward transfers to the Russian Federation.
+
+The repository adds one observation that deserves emphasis, because it is the reason the whole exercise has a point. The macro front line in the Zaporizhzhia sector was static throughout the siege window. The routes out did not become unsafe because the battlefield shifted underneath them. They were unsafe, or usable, according to whether passage was permitted. In the repository's phrase, corridor insecurity was a consent problem across stable territory, not a shifting-battlefield problem.
+
+All conduct summaries above are the repository's, attributed by it to reporting by the Office for the Coordination of Humanitarian Affairs, the International Committee of the Red Cross, and the Office of the High Commissioner for Human Rights. They are descriptive, and the repository is careful to state that they are not adjudicative.
