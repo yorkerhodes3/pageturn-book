@@ -8,6 +8,7 @@ To this end, learners can fully explore their own and society's potential, avoid
 
 With the popularization of the Internet, collaborative learning environments have become more prevalent. The compound annual growth rate of the online learning market is estimated to exceed 10%[1](#note-6-5-1). The improvement of cognitive skills is expected to increase the long-term economic growth rate of developing countries by 2%. Reports indicate[4](#note-6-5-4) that a workforce with such skills can achieve stable GDP growth (annual increment of 0.6%). Interactive and personalized collaborative learning environments can help more people achieve learning goals, master key skills[3](#note-6-5-3), and meet society's resource development needs[2](#note-6-5-2).
 
+{#note-ref-6-5-1}
 
 This chapter will depict how to empower communities to overcome rigid teaching models and adapt to the ⿻ environment of lifelong learning. Through these entertaining, collaborative problem-solving, and mission-oriented projects, we can bridge cultural divides.
 
@@ -15,9 +16,11 @@ This chapter will depict how to empower communities to overcome rigid teaching m
 
 The 2022 global reports of PISA[6](#note-6-5-6) & ICCS[5](#note-6-5-5) point out that Taiwan, Japan, South Korea, and Lithuania grew against the trend during the pandemic, and are considered to have resilient education systems[7](#note-6-5-7). One of the outstanding factors for Taiwan is the diverse co-creation teaching model of 2019 Basic Education Curriculum, which successfully combines physical and digital learning tools, and regards "spontaneity, interaction, and common good" as new core values, inspiring a sense of mission towards global sustainable development[8](#note-6-5-8).
 
+{#note-ref-6-5-2}
 
 For example, the "Chenyuluoyan" font[9](#note-6-5-9) on the cover of this book comes from the autonomous learning project of two high school students, leveraging social networks and related team co-learning. Such independent creation demonstrates the spirit of open-source collaboration starting from one's own interests. The knowledge and creativity in the learning process shine in open sharing, inspiring more people to participate[10](#note-6-5-10).
 
+{#note-ref-6-5-3}
 
 In the educational institutions of the last century, learning often relied on rote memorization and detailed recall; while the lack of open content made problem-solving and teamwork fragmented. With the rise of experimental education in various countries, self-directed learning models that encompass both critical thinking and interpersonal communication skills have emerged. These two abilities are not mutually exclusive but complementary, and with the assistance of ⿻ technology, they transcend the limitations of each other's ideologies and strengthen social resilience.
 
@@ -29,13 +32,19 @@ The pandemic has accelerated the popularization of self-directed learning and th
 
 "FutureLearn" is Europe's largest online course platform, bringing together course resources from universities and professional institutions, covering multiple specialized fields such as social sciences, humanities and arts, and programming. It also collaborates with UNESCO on global lifelong learning[11](#note-6-5-11) projects; furthermore, the platform offers free courses including those providing basic English online learning for refugees[12](#note-6-5-12), allowing anyone to access quality education at low or zero cost, meet diverse learning goals, and have flexibility.
 
+{#note-ref-6-5-4}
+
 The mobile university education system Minerva[13](#note-6-5-13) breaks the limitations of traditional campuses. Students migrate to different cities every semester, interacting with diverse teaching methods and cultural characteristics through practical application. Minerva differs from traditional universities in student selection and learning methods, adopting global recruitment and online small group models, encouraging critical thinking and practical application-oriented cooperation, which has drawn attention for its innovation[14](#note-6-5-14).
 
+{#note-ref-6-5-5}
 
 The civic tech collaboration mentioned in Taiwan's vibrant tech society (2-2 The Life of a Digital Democracy) has also promoted the open-source "Moedict"[15](#note-6-5-15) project, which involves teachers, students, and parents learning by doing. This service has uploaded 160,000 Mandarin entries, 20,000 Taiwanese entries, and 14,000 Hakka entries, with an open and diverse compilation mechanism, making it a multilingual interactive online civic dictionary, demonstrating a global yet localized "collaborative cataloging" paradigm. It not only supports a broad community writing space but also serves as a platform for exchanges between different languages and cultures.
 
+{#note-ref-6-5-6}
+
 Moedict has prompted the public sector to actively adopt the "Creative Commons" license[16](#note-6-5-16), contributing value to the development of AI models like TAIDE in Taiwan[17](#note-6-5-17). Local languages and public knowledge can be interconnected into collaborative networks. The application of such an open-source paradigm as "Moedict" established close ties with official educational institutions and social innovation organizations a decade ago, demonstrating the interoperability between open-source co-editing culture and the formal education system.
 
+{#note-ref-6-5-7}
 
 Online libraries, Wikipedia, and CC-licensed image and text sharing described in (3-3 The Lost Dao) are all valuable global assets comparable to commons, generated based on open-source collaboration. Like in a vast world park, works co-created by citizens from different countries and languages can be understood and actively maintained by more people, further promoting the democratization of knowledge and filling the gaps in civic education. These are practical examples of learning evolving towards the ⿻ path and mutually benefiting the public.
 
@@ -49,6 +58,7 @@ The wisdom of different groups, through open collaboration, converges into a mor
 
 In the face of breakthroughs in AI technology, we can actively try to apply innovative thinking to areas such as deliberation, the workplace, and health. Through open-source concepts, neutral datasets, and bias detection tools, AI can help us build more flexible cross-cultural communication models and enhance organizations' ability to address complex problems. Taiwan has used augmented deliberation technologies such as "Talk to the City"[18](#note-6-5-18), based on the concept of open source, to mitigate the impact of AI. Through public participation, it ensures the completeness of information, transcends cultural understanding, and ensures social resilience.
 
+{#note-ref-6-5-8}
 
 AI can help build more broadly inclusive cross-cultural communication models by analyzing cultural norms, social customs, and subtle differences in language. By understanding these factors and feasible directions, AI can also help individuals overcome potential cultural barriers and adjust their communication styles to ensure mutual understanding. It can identify and address potentially harmful or biased language. These neutral datasets can also be used to eliminate discrimination and malicious attacks, serving as an alternative suggestion tool to control dangerous biases that may exist in new datasets, aligning in real-time with diverse collaborative open-source tools. If not done so, these datasets may corrupt or influence generations of AI.
 
@@ -70,6 +80,7 @@ Anderson's analysis emphasizes the importance of narrative and discourse in cons
 
 However, the values instilled by society, government, and capitalism often stem from collective dependence, such as parents' expectations of children, mutual demands between partners, peer pressure, and self-expectations, both rational and irrational factors. But these should not become the sole compass for personal growth and learning. As Taylor Swift shared in her commencement speech at New York University[19](#note-6-5-19) — bravely becoming the person you want to be in your heart—the way we encourage is natural, allowing the discovery of self and enjoyment of learning in an open, diverse learning journey, which is the driving force for people to explore.
 
+{#note-ref-6-5-9}
 
 The knowledge and skills learned from group life, such as etiquette in school, are tools for dealing with people, respecting human rights, understanding freedom and diversity, and coping with various situations after graduation, in the workplace, and in life. This reminds us that learning is not only a process of knowledge accumulation but also a process of "establishing identity and a sense of community belonging," and it is an even richer intertwined state. For example, the significant contributions of the Amateur Radio (also known as Ham Radio) community to science, industry, social services, and satellite communications are based on the joy of learning and a strong sense of community identity.
 
@@ -81,81 +92,118 @@ Gamified learning environments break down traditional teacher-student boundaries
 
 Each collaboration and each project is a continuation of the game, where individual uniqueness can be highlighted and collective wisdom can be gathered. It is a dance with oneself, with others, and with the world in an infinite game. In this game, the concept of edutainment comes from the investment of participation, and meaning comes from the process of exploration. Let us embrace this infinite possibility, so that learning is no longer a finite game oriented towards results, but an ⿻ infinite game full of surprises and unleashing potential, in which every participant is an indispensable co-creator.
 
-
 ## Chapter notes {#notes-6-5}
 
 ### Note 1 {#note-6-5-1}
 
 https://www.renub.com/online-education-market-p.php
 
+[Back to text](#note-ref-6-5-1)
+
 ### Note 2 {#note-6-5-2}
 
 https://www.oecd-ilibrary.org/education/oecd-skills-outlook-2023\_27452f29-en
+
+[Back to text](#note-ref-6-5-1)
 
 ### Note 3 {#note-6-5-3}
 
 Economist Eric Hanushek's [research](https://www.educationnext.org/education-and-economic-growth/) shows that in developing countries, for each standard deviation increase in cognitive skills, the long-term economic growth rate can increase by 2 percentage points. This means that the impact of improving education quality on economic growth is even greater than years of schooling.
 
+[Back to text](#note-ref-6-5-1)
+
 ### Note 4 {#note-6-5-4}
 
 [Eric A. Hanushek and Ludger Woessmann's paper](https://www.aeaweb.org/articles?id=10.1257/jel.46.3.607), published in the 2008 Journal of Economic Literature, analyzed the relationship between cognitive skills and economic growth in 50 countries and found a significant positive correlation between the two.
+
+[Back to text](#note-ref-6-5-1)
 
 ### Note 5 {#note-6-5-5}
 
 https://www.iea.nl/studies/iea/iccs/2022
 
+[Back to text](#note-ref-6-5-2)
+
 ### Note 6 {#note-6-5-6}
 
 https://www.oecd.org/pisa/ & https://focustaiwan.tw/culture/202312060017
+
+[Back to text](#note-ref-6-5-2)
 
 ### Note 7 {#note-6-5-7}
 
 https://www.cna.com.tw/news/ahel/202312050365.aspx
 
+[Back to text](#note-ref-6-5-2)
+
 ### Note 8 {#note-6-5-8}
 
 https://en.rti.org.tw/news/view/id/2010665
+
+[Back to text](#note-ref-6-5-2)
 
 ### Note 9 {#note-6-5-9}
 
 https://github.com/Chenyu-otf/chenyuluoyan\_thin
 
+[Back to text](#note-ref-6-5-3)
+
 ### Note 10 {#note-6-5-10}
 
 https://blog.luckertw.com/chenyuluoyan-interview/
+
+[Back to text](#note-ref-6-5-3)
 
 ### Note 11 {#note-6-5-11}
 
 https://www.uil.unesco.org/en/learning-cities
 
+[Back to text](#note-ref-6-5-4)
+
 ### Note 12 {#note-6-5-12}
 
 https://www.futurelearn.com/courses/collections/refugees-displaced-people
+
+[Back to text](#note-ref-6-5-4)
 
 ### Note 13 {#note-6-5-13}
 
 https://www.minerva.edu/
 
+[Back to text](#note-ref-6-5-5)
+
 ### Note 14 {#note-6-5-14}
 
 https://www.wuri.world/2023-global-top-100
+
+[Back to text](#note-ref-6-5-5)
 
 ### Note 15 {#note-6-5-15}
 
 https://www.moedict.tw/
 
+[Back to text](#note-ref-6-5-6)
+
 ### Note 16 {#note-6-5-16}
 
 https://language.moe.gov.tw/001/Upload/Files/site\_content/M0001/respub/index.html
+
+[Back to text](#note-ref-6-5-7)
 
 ### Note 17 {#note-6-5-17}
 
 https://taide.tw/index/training-data?type=2
 
+[Back to text](#note-ref-6-5-7)
+
 ### Note 18 {#note-6-5-18}
 
 https://moda.gov.tw/major-policies/alignment-assemblies/2023-ideathon/1459
 
+[Back to text](#note-ref-6-5-8)
+
 ### Note 19 {#note-6-5-19}
 
 https://www.youtube.com/watch?v=OBG50aoUwlI
+
+[Back to text](#note-ref-6-5-9)

@@ -25,6 +25,7 @@ Without living in Taiwan and experiencing it regularly, it is hard to grasp what
 
 More than any other institution, [g0v](https://g0v.tw/) (pronounced gov-zero) symbolizes the civil-society foundation of digital democracy in Taiwan. Founded in 2012 by civic hackers including Kao Chia-liang, g0v arose from discontent with the quality of government digital services and data transparency.[1](#note-2-2-1) Civic hackers began to scrape government websites (usually with the suffix gov.tw) and build alternative formats for data display and interaction for the same website, hosting them at g0v.tw. These "forked" versions of government websites often ended up being more popular, leading some government ministers, like Simon Chang to begin "merging" these designs back into government services.
 
+{#note-ref-2-2-1}
 
 [Figure: Venn diagram of g0v principles of being open-source, hands-on and public-spirited. The intersection of the first two is free software, of the second two is social activism and of the first and third is civic media. g0v lies at the center](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/g0v-venn.png>)
 
@@ -44,7 +45,7 @@ Many Sunflower participants devoted themselves to the open government movement; 
 
 #### vTaiwan and Join
 
-During this process of institutionalization of g0v, there was growing demand to apply the methods that had allowed for these dispute resolutions to a broader range of policy issues.  This led to the establishment of [vTaiwan](https://vtaiwan.tw/intro/), a platform and project developed by g0v for facilitating deliberation on public policy controversies.  The process involved many steps (proposal, opinion expression, reflection and legislation) each harnessing a range of open source software tools, but has become best known for its use of the at-the-time(2015)-novel machine learning based open-source "wikisurvey"/social media tool Polis, which we discuss further in our chapter on [Augmented Deliberation](https://www.plurality.net/v/chapters/5-4/eng/?mode=dark) below.  In short, Polis functions similarly to conventional microblogging services like X (formerly Twitter), except that it employs dimension reduction techniques to cluster opinions as shown in Figure B. Instead of displaying content that maximizes engagement, Polis shows the clusters of opinion that exist and highlights statements that bridge them. This approach facilitates both consensus formation and a better understanding of the lines of division.
+During this process of institutionalization of g0v, there was growing demand to apply the methods that had allowed for these dispute resolutions to a broader range of policy issues.  This led to the establishment of [vTaiwan](https://vtaiwan.tw/intro/), a platform and project developed by g0v for facilitating deliberation on public policy controversies.  The process involved many steps (proposal, opinion expression, reflection and legislation) each harnessing a range of open source software tools, but has become best known for its use of the at-the-time(2015)-novel machine learning based open-source "wikisurvey"/social media tool Polis, which we discuss further in our chapter on [Augmented Deliberation](../5-4/) below.  In short, Polis functions similarly to conventional microblogging services like X (formerly Twitter), except that it employs dimension reduction techniques to cluster opinions as shown in Figure B. Instead of displaying content that maximizes engagement, Polis shows the clusters of opinion that exist and highlights statements that bridge them. This approach facilitates both consensus formation and a better understanding of the lines of division.
 
 [Figure: Diagram of an opinion displayed by polis on vtaiwan, with similar views clustered.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/vtaiwan-polis-ai.png>)
 
@@ -62,10 +63,9 @@ The Public Digital Innovation Space (PDIS) that one of us established in 2016 to
 
 While such levels of digital civic engagement may seem surprising to many Westerners, they can be seen simply as the harnessing of a small portion of the energy typically wasted on conflict on (anti-)social media towards solving public problems.  Even more concentrated applications of this principle have come by placing the weight of government behind  the g0v practice of hackathons through the Presidential Hackathon (PH) and a variety of supporting institutions.
 
-The PH convened mixed teams of civil servants, academics, activists and technologists to propose tools, social practices and collective data custody arrangements that allowed them to "collectively bargain" with their data for cooperation with government and private actors supported by the government-supported program of "data coalitions" to address civic problems.  Examples have included the monitoring of air quality and early warning systems for wildfires.   Participants and broader citizens were asked to help select the winners using a voting system called Quadratic Voting that allows people to express the extent of their support across a range of projects and that we discuss in our [⿻ Voting](https://www.plurality.net/v/chapters/5-6/eng/?mode=dark) chapter below.  This allowed a wide range of participants to be at least partial winners, by making it likely everyone would have supported some winner and that if someone felt very strongly in favor of one project they could give it a significant boost.  Winning projects received a trophy -- a microprojector showing the President of Taiwan giving the award to the winners, leverage they could use to induce relevant government agencies or localities to cooperate in their mission, given the legitimacy g0v has gained as noted above.
+The PH convened mixed teams of civil servants, academics, activists and technologists to propose tools, social practices and collective data custody arrangements that allowed them to "collectively bargain" with their data for cooperation with government and private actors supported by the government-supported program of "data coalitions" to address civic problems.  Examples have included the monitoring of air quality and early warning systems for wildfires.   Participants and broader citizens were asked to help select the winners using a voting system called Quadratic Voting that allows people to express the extent of their support across a range of projects and that we discuss in our [⿻ Voting](../5-6/) chapter below.  This allowed a wide range of participants to be at least partial winners, by making it likely everyone would have supported some winner and that if someone felt very strongly in favor of one project they could give it a significant boost.  Winning projects received a trophy -- a microprojector showing the President of Taiwan giving the award to the winners, leverage they could use to induce relevant government agencies or localities to cooperate in their mission, given the legitimacy g0v has gained as noted above.
 
-More recently, this practice has been extended beyond developing technical solutions to envisioning of alternative futures and production of media content to support this through "ideathons".  It has also gone beyond symbolic support to awarding real funding to valued projects (such as around agricultural and food safety inspections) using an extension of Quadratic Voting to Funding as we discuss in our [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter.
-
+More recently, this practice has been extended beyond developing technical solutions to envisioning of alternative futures and production of media content to support this through "ideathons".  It has also gone beyond symbolic support to awarding real funding to valued projects (such as around agricultural and food safety inspections) using an extension of Quadratic Voting to Funding as we discuss in our [Social Markets](../5-7/) chapter.
 
 #### Pandemic
 
@@ -75,14 +75,13 @@ The best documented example and the one most consistent with the previous exampl
 
 Another critical aspect of the Taiwanese response was the rigorous use of testing, tracing and supported isolation to avoid community spread of the disease. While most tracing occurred by more traditional means, Taiwan was among the only places that was able to reach the prevalence of adoption of phone-based social distancing and tracing systems necessary to make these an important and effective part of their response. This was, in turn, largely because of the close cooperation facilitated by PDIS between government health officials and members of the g0v community deeply concerned about privacy, especially given the lack in Taiwan of an independent privacy protection regime, a point we return to below. This led to the design of systems with strong anonymization and decentralization features that received broad acceptance.
 
-
-
 #### Information integrity
 
 Yet perhaps the single most important digital contributor to Taiwan's pandemic response was its ability to rapidly and effectively respond to misinformation and deliberate attempts to spread disinformation.  This "superpower" has extended, however, well beyond the pandemic and been critical to the successful elections Taiwan has held during a time when a lack of information integrity has challenged many other jurisdictions.
 
 Central to those efforts, in turn, has been the g0v spin-off project "Cofacts," in which participating citizens rapidly respond to both trending social media content and to messages from private channels forwarded to a public comment box for requested response.  [Recent research](https://tech.cornell.edu/news/crowdsourced-fact-checking-fights-misinformation-in-taiwan/) shows that these systems can typically respond faster, equally accurately and more engagingly to rumors than can professional fact checkers, who are much more bandwidth constrained.[2](#note-2-2-2)
 
+{#note-ref-2-2-2}
 
 The technical sophistication of Taiwan's civil sector and its support from the public sector have aided in other ways as well.  This has allowed organizations like MyGoPen and private sector companies like Gogolook to develop and, with public support, rapidly spread chatbots for private messaging services like Line that make it fast and easy for citizens to anonymously receive rapid responses to possibly misleading information.  Government leaders' close cooperation with such civil groups has allowed them to model and thus encourage policies of "humor over rumor" and "fast, fun and fair" responses.  For example, when a rumor began to spread during the pandemic that there would be a shortage of toilet paper created by the mass production of masks, Taiwan's Premier Su Tseng-chang famously circulated a picture of himself wagging his rear to indicate it had nothing to fear.
 
@@ -97,7 +96,7 @@ While these are some of the most prominent examples of Taiwanese digital democra
 3. [Gold cards](https://goldcard.nat.gov.tw/en/): Taiwan has among the most diversely accessible paths to permanent residence through its "gold card" program, including in a "digital field" to those who have contributed to open source and public interest software.
 4. Transparency: Building on and extending broader government policies of data transparency, one of us has modeled this idea by making recordings and/or transcripts all of her official meetings public without copyrights.
 5. Digital competence education: Since 2019, Taiwan has pioneered a 12-Year Basic Education Curriculum that enshrines "tech, info & media literacy" as a core competency, empowering students to become active co-creators and discerning arbiters of media, rather than passive consumers.
-6. Land and spectrum: Building on the ideas of Henry George, Taiwan has among the most innovative policies in the world to ensure full utilization of natural resources, land and electromagnetic spectrum through taxes that include rights of compulsory sale (as we discuss further in our [Property and Contract](https://www.plurality.net/v/chapters/4-4/eng/?mode=dark) and [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapters).
+6. Land and spectrum: Building on the ideas of Henry George, Taiwan has among the most innovative policies in the world to ensure full utilization of natural resources, land and electromagnetic spectrum through taxes that include rights of compulsory sale (as we discuss further in our [Property and Contract](../4-4/) and [Social Markets](../5-7/) chapters).
 7. [Participation Officer Network](https://po.pdis.nat.gov.tw/en/po/): PDIS helped create a network of civil servants across departments committed to citizen participation, collaboration across government departments and digital feedback, who could act as supporters and conduits of practices such as these.
 8. Broadband access: Taiwan has one of the most universal internet access rates and has been recognized two years in a row as the fastest average internet in the world.
 9. Open parliament: Taiwan has become a leader in the global "open parliament" movement, experimenting with a range of ways to make parliamentary procedures transparent to the public and experimenting with innovative voting methods.
@@ -113,9 +112,15 @@ While this is an interesting set of programs, one might naturally inquire about 
 
 While the economic lens of Taiwan's performance is far from the most important, it is one of the easier to quantify and provides a useful baseline for understanding the starting point for the rest.  In one sense, Taiwan is an upper-middle income country, like much of Europe, with a Gross Domestic Product (GDP) per capita of $34,000 per person in 2024 according to the International Monetary Fund (IMF).[8](#note-2-2-8)  However, prices are much lower in Taiwan on average than in almost any other rich country; making this adjustment (which economists call "purchasing power parity") makes Taiwan the second richest country on average other than the US with more than 10 million people in the world.  Furthermore, as we discuss below, most sources suggest that Taiwan is much more equal than the US, which means it is likely the country of that size with the highest typical living standards in the world.  Thus Taiwan is best thought of as among the absolute most developed economies in the world, rather than as a middle-income country.
 
+{#note-ref-2-2-3}
+
 The sectoral focus of Taiwan's economy stands out as well.  While perfectly comparable data are hard to come by, Taiwan is almost certainly the most digital export-intensive economy in the world, with exports of electronics and information and communication products accounting for roughly 31% of the economy, compared to less than half that fraction in other leading technology exporters such as Israel and South Korea.[9](#note-2-2-9)  This fact is best known to the world for what it reflects: that most of the world's semiconductors, especially the most advanced ones, are manufactured in Taiwan and Taiwan is also a major both manufacturer and domicile for manufacturers of smartphones such as Foxconn.
 
+{#note-ref-2-2-4}
+
 Taiwan is also unusual among rich countries in its relatively low tax take; according to the Asia Development Bank, Taiwan collected only 11% of GDP in taxes compared to 34% on average in the Organization of Economic Cooperation and Development (OECD) club of rich countries.[10](#note-2-2-10) Relatedly, Taiwan ranked 4th in the world in the Heritage Foundation's Economic Freedom Index.[12](#note-2-2-12)
+
+{#note-ref-2-2-5}
 
 Given this background, several features of Taiwan's economic performance in the last decade stand out.
 
@@ -124,27 +129,39 @@ Given this background, several features of Taiwan's economic performance in the 
 3. Inflation: While inflation has spiked and wildly fluctuated around the world including almost all rich countries, Taiwan's inflation rate has remained relatively steady the last decade in the 0-2% range, averaging 1.3% according to the IMF.
 4. Inequality: The last decade has seen significant debate about methods in calculating inequality statistics.  Using more traditional methods, Taiwan's Survey of Family Income and Expenditure has found that Taiwan's Gini Index of inequality (ranging from 0 for perfectly equal to 1 for perfectly unequal) has been steady at around .28 for the last decade, placing it around the level of Austria on the lower end of global inequality and far lower than the roughly .4 of the US.  Other analyses, using innovative but controversial administrative approaches pioneered by economists including Emmanuel Saez, Thomas Piketty, and Gabriel Zucman show Taiwan's top 1% income share at 19%, not far behind the US at 21% and well above a country like France at 13%.  However, even in these data, Taiwan's top 1% share has fallen by about a tenth in the last decade, while in both France and the US it has risen by a similar proportion.  Furthermore, a number of studies have recently argued these methods tend to find higher inequality in countries and time periods with lower and less progressive taxes as they rely on tax administration data and struggle to fully account for induced avoidance.[13](#note-2-2-13) Given Taiwan's dramatically lower tax take than either the US or France, it seems likely that if these issues apply anywhere, they would lead to a substantial overstatement of Taiwanese inequality.[14](#note-2-2-14)
 
-Putting these facts together, what is notable is that Taiwan's economic performance has been strong and fairly egalitarian or at least not becoming more unequal *despite its wealth and extreme tech-intensity*. As we documented above, economists have widely blamed the role of technology for many recent economic woes, including slow growth, unemployment and rising inequality.  In the world's most tech-intensive economy, this seems not to be the case.
+{#note-ref-2-2-6}
 
+Putting these facts together, what is notable is that Taiwan's economic performance has been strong and fairly egalitarian or at least not becoming more unequal *despite its wealth and extreme tech-intensity*. As we documented above, economists have widely blamed the role of technology for many recent economic woes, including slow growth, unemployment and rising inequality.  In the world's most tech-intensive economy, this seems not to be the case.
 
 #### Social
 
 Internationally comparable social indicators are far more difficult than even economic ones for Taiwan, given that it is excluded from the World Health Organization (WHO).  However, we were able to find roughly comparable data on two commonly cited social indicators: loneliness and self-reported technology addiction. Loneliness among older adults (above 65) in Taiwan stands at roughly 10%, which puts it around similar rates in the least affected countries in the world (mostly in Northern Europe), better than in North America (roughly 20%) and much better than in the PRC (more than 30%).[15](#note-2-2-15)  Another comparison is self reported cellphone addiction rates, which are fairly high in Taiwan (at roughly 28%) but much lower than in the US (at 58%).[16](#note-2-2-16)  Differences in rates of addiction to controlled substances are even more dramatically different, with about 10 times as many Americans reporting using illegal drugs at least monthly than Taiwanese *who have ever tried an illegal drug*.[17](#note-2-2-17)
 
+{#note-ref-2-2-7}
+
 Taiwan is also marked by a unique experience with religion among rich countries, almost all of which (especially the United States) are both dominated by a single broad religious group (e.g. Christianity) and have seen dramatic declines in a range of measures of religiosity including affiliation and participation in the past decades.[18](#note-2-2-18)  Religion in Taiwan, by contrast, is far more diverse with a roughly equal mix of followers of four distinct religious traditions: folk religion, Taoism, Buddhism, Western and minority religions, with about an equal proportion as each of these being non-believers.[19](#note-2-2-19)  At the same time, while there has been some shift among these groups, there has hardly been any significant increase in non-belief or non-practicing in Taiwan in the past decades.[20](#note-2-2-20)
 
+{#note-ref-2-2-8}
 
 #### Political
 
 Taiwan is widely recognized both for the quality of its democracy and its resilience against technology-driven information manipulation.  Several indices, published by organizations such as Freedom House[28](#note-2-2-28), the Economist Intelligence Unit[29](#note-2-2-29), the Bertelsmann Foundation and V-Dem, consistently rank Taiwan as among the freest and most effective democracies on earth.[21](#note-2-2-21)  While Taiwan's precise ranking differs across these indices (ranging from first to merely in the top 15%), it nearly always stands out as the strongest democracy in Asia and the strongest democracy younger than 30 years old; even if one includes the wave of post-Soviet democracies immediately before this, almost all are less than half Taiwan's size, typically an order of magnitude smaller.  Thus Taiwan is at least regarded as Asia's strongest democracy and the strongest young democracy of reasonable size and by many as the world's absolute strongest.  Furthermore, while democracy has generally declined in every region of the world in the last decade according to these indices, Taiwan's democratic scores have substantially increased.
 
+{#note-ref-2-2-9}
+
 In addition to this overall strength, Taiwan is noted for its resistance to polarization and threats to information integrity. A variety of studies using a range of methodologies have found that Taiwan is one of the least socially, ethnically and religiously polarized developed countries in the world, though some have found a slight upward trend in political polarization since the Sunflower movement.[22](#note-2-2-22)  This is especially true in *affective polarization*, the holding of negative or hostile personal attitudes towards political opponents, with Taiwan consistently among the 5 least affectively polarized countries.[23](#note-2-2-23)
 
+{#note-ref-2-2-10}
+
 This is despite analyses consistently finding Taiwan to be the jurisdiction targeted for the largest volume of disinformation on earth.[24](#note-2-2-24)  One reason for this paradoxical result may be the finding by political scientists  Bauer and Wilson  that unlike in many other contexts, foreign manipulation fails to exacerbate partisan divides in Taiwan. Instead, it tends to galvanize a unified stance among Taiwanese against external interference.[25](#note-2-2-25)
+
+{#note-ref-2-2-11}
 
 #### Legal
 
 Taiwan is consistently ranked as one of the five safest countries in the world and the safest democracy in the world with more than 100,000 people by a very large margin.[26](#note-2-2-26)  When one of us first traveled to Taiwan, he was shocked to receive compensation for his flight as a large envelope of cash, which most Taiwanese feel comfortable carrying given the extreme safety.  Furthermore, crime in Taiwan continues to trend steadily downward even as countries like the US have seen dramatic surges in especially violent crime.[27](#note-2-2-27)  It is worth noting, however, that it has achieved this historically with a fairly strong police presence (somewhat higher than the US) and an incarceration rate that while far short of the US is high by global standards.
+
+{#note-ref-2-2-12}
 
 Taiwan's legal-political system has also distinguished itself for its ability to adapt to inclusively resolve long-standing social conflicts.  In 2017, the Constitutional Court ruled that the government must pass a law to legalize same-sex marriage within two years.  After the failure of a referendum on a straightforward same-sex marriage proposal in 2018, the government found a creative way to respond to the interests of all sides.  Many who opposed same-sex marriage were concerned that because of traditions of extended families being bound together by marriage, family members opposing the practice could be forced to participate.  At the same time, most young people who planned to take advantage of the new provision had more individualistic, partner-based visions of marriage and had no desire to bind their families either, leading the government to pass a legalization bill that exempted kin from the same-sex marriage process.
 
@@ -154,22 +171,21 @@ Crises come rarely and with low probability.  It is thus hard to know how well T
 
 The exceptional performance that won Taiwan this international acclaim occurred during the focal early stages of the pandemic, during which much of the world was in rolling lockdowns prior to the availability of the vaccine.  We can call this the "crisis" stage of the pandemic and declare it to have ended in April 2021, when vaccines were widely available in the US.  From the start of the pandemic to April 2021, Taiwan suffered only 12 deaths to the pandemic, giving it by far the lowest death rate to that point of any jurisdiction with estimates considered internationally accurate.  Furthermore, Taiwan achieved this without any lockdowns and achieved the fastest economic growth of any rich country bar Ireland in 2020.   More broadly, Taiwan's health system has for the better part of a decade been ranked as the world's most efficiently performing by Numbeo, though life expectancy in Taiwan is merely among the highest in the world.[3](#note-2-2-3)
 
+{#note-ref-2-2-13}
 
 It is important to note, however, that Taiwan performed much less impressively during the "post-crisis" phase following mid-2021, during which vaccine availability and uptake were the most critical components of response and challenges with domestic vaccine production and distribution led to significant loss of life in the coming years.  Taiwan still had among the lowest death rates and best economic performance reliably measured by a rich jurisdiction of significant size, but its exceptional leadership early in the pandemic did not fully persist after the crisis phase. This may indicate that the cohesion and civic engagement fostered by crises (like Sunflower and the Pandemic) allow Taiwan to respond more effectively than anywhere in the world, but that additional care and focus is needed to ensure these efforts are institutionalized and sustainable, an important direction for the future we discuss further below.
 
 Another slow-burning crisis that may illustrate this challenge is climate change.  While Taiwan has joined many other countries in enshrining its 2050 net zero ambitions into law and has won praise for its plans to reach this goal, its progress thus far has been modest.[4](#note-2-2-4)  More broadly, Taiwan has a strong but not outstanding record on environmental protection.[5](#note-2-2-5)
 
+{#note-ref-2-2-14}
 
 Taiwan nonetheless exhibits unusually high levels of participation and trust in institutions, particularly in its democracy.  Voter turnout is among the highest in the world outside countries where voting is compulsory.[6](#note-2-2-6)  91% consider democracy to be at least "fairly good", a sharp contrast to the dramatic declines in recent years in support for democracy even in many long-established democracies.[7](#note-2-2-7)
 
-
+{#note-ref-2-2-15}
 
 In short, while like all countries it has key limitations, Taiwan deserves a leading place among global exemplars that it is too rarely afforded. Admiration for Scandinavian countries is a constant refrain on the left in the West, as is praise for Singapore on the right.  While all these jurisdictions have important lessons and in fact many important points of overlap with Taiwan, few places offer the breadth of promise in addressing today's leading challenges that Taiwan does and appeal across the typical divides as it does. As an economically free, vibrantly participatory liberal democracy Taiwan both has something to offer all points on the political spectrum of the West and holds arguably the most compelling example available to those looking to leapfrog the practices of increasingly ailing Western democracies.  This is especially true given its starting point: without abundant natural resources or strategic position, in a fragile geopolitical setting, with a deeply divided rather than homogeneous and robust sized population and only democratizing a few decades ago, rising from abject poverty in less than a century.
 
 It will doubtless take decades of study to understand the precise causal connections between Taiwan's unique and dramatic digital democratic practices and the range of success it has found in confronting today's most vexing challenges.  Yet given this appeal, in the interim, it seems critical to articulate as so many have done for Scandinavia and Singapore, the generalizable philosophy behind the strategies of the world's most admired digital democracy.  It is to that task that the rest of this book is devoted.
-
-
-
 
 ## Chapter notes {#notes-2-2}
 
@@ -177,114 +193,172 @@ It will doubtless take decades of study to understand the precise causal connect
 
 [g0v Manifesto](https://g0v.tw/intl/en/manifesto/en/) defines it as "a non-partisan, not-for-profit, grassroots movement". [MoeDict](https://moedict.tw/), an early g0v project, was led by one of the authors of this book.
 
+[Back to text](#note-ref-2-2-1)
+
 ### Note 2 {#note-2-2-2}
 
 Andy Zhao and Mor Naaman, "Insights from a Comparative Study on the Variety, Velocity, Veracity, and Viability of Crowdsourced and Professional Fact-Checking Services", *Journal of Online Trust and Safety* 2, no. 1. https://doi.org/10.54501/jots.v2i1.118.
+
+[Back to text](#note-ref-2-2-2)
 
 ### Note 3 {#note-2-2-3}
 
 https://www.numbeo.com/health-care/rankings_by_country.jsp
 
+[Back to text](#note-ref-2-2-13)
+
 ### Note 4 {#note-2-2-4}
 
 “Net Zero Tracker,” Energy & Climate Intelligence Unit, 2023. https://eciu.net/netzerotracker.
+
+[Back to text](#note-ref-2-2-14)
 
 ### Note 5 {#note-2-2-5}
 
 “2022 EPI Results,” Environmental Performance Index, 2022, https://epi.yale.edu/epi-results/2022/component/epi.
 
+[Back to text](#note-ref-2-2-14)
+
 ### Note 6 {#note-2-2-6}
 
 Drew DeSilver, “Turnout in U.S. Has Soared in Recent Elections but by Some Measures Still Trails that of Many Other Countries.” Pew Research Center, November 1, 2022. https://www.pewresearch.org/short-reads/2022/11/01/turnout-in-u-s-has-soared-in-recent-elections-but-by-some-measures-still-trails-that-of-many-other-countries/.
+
+[Back to text](#note-ref-2-2-15)
 
 ### Note 7 {#note-2-2-7}
 
 “Taiwan Country Report Report,” BTI Transformation Index, n.d., https://bti-project.org/en/reports/country-report/TWN.
 
+[Back to text](#note-ref-2-2-15)
+
 ### Note 8 {#note-2-2-8}
 
 “GDP per Capita, Current Prices,” International Monetary Fund, n.d., https://www.imf.org/external/datamapper/NGDPDPC@WEO/ADVEC/WEOWORLD/TWN/CHN.
+
+[Back to text](#note-ref-2-2-3)
 
 ### Note 9 {#note-2-2-9}
 
 “Exports,” Trading Economics, n.d., https://tradingeconomics.com/country-list/exports.
 
+[Back to text](#note-ref-2-2-4)
+
 ### Note 10 {#note-2-2-10}
 
 “Key Indicators Database,” Asian Development Bank,  n.d., https://kidb.adb.org/economies/taipeichina; “Revenue Statistics 2015 - the United States,” OECD, 2015, https://www.oecd.org/tax/revenue-statistics-united-states.pdf.
+
+[Back to text](#note-ref-2-2-5)
 
 ### Note 11 {#note-2-2-11}
 
 “GDP Growth (Annual %),” World Bank, 2023. https://data.worldbank.org/indicator/ny.gdp.mktp.kd.zg;  “GDP per Capita, Current Prices,” International Monetary Fund, n.d., https://www.imf.org/external/datamapper/NGDPDPC@WEO/ADVEC/WEOWORLD/TWN/CHN.
 
+[Back to text](#note-ref-2-2-6)
+
 ### Note 12 {#note-2-2-12}
 
 “Index of Economic Freedom.” The Heritage Foundation, 2023. https://www.heritage.org/index/.
+
+[Back to text](#note-ref-2-2-5)
 
 ### Note 13 {#note-2-2-13}
 
 Gerald Auten, and David Splinter, “Income Inequality in the United States: Using Tax Data to Measure Long-Term Trends,” _Journal of Political Economy_, November 14, 2023. https://doi.org/10.1086/728741.
 
+[Back to text](#note-ref-2-2-6)
+
 ### Note 14 {#note-2-2-14}
 
 The most interesting statistic we would like to report on is labor's share of income and its trends in Taiwan.  However, to our knowledge no persuasive and internationally comparable study of this exists.  We hope to see more research on this soon.
+
+[Back to text](#note-ref-2-2-6)
 
 ### Note 15 {#note-2-2-15}
 
 S. Schroyen, N. Janssen, L. A. Duffner, M. Veenstra, E. Pyrovolaki, E. Salmon, and S. Adam, “Prevalence of Loneliness in Older Adults: A Scoping Review.” _Health & Social Care in the Community 2023_ (September 14, 2023): e7726692. https://doi.org/10.1155/2023/7726692.
 
+[Back to text](#note-ref-2-2-7)
+
 ### Note 16 {#note-2-2-16}
 
 “More than Half of Teens Admit Phone Addiction .” Taipei Times, February 4, 2020. https://www.taipeitimes.com/News/biz/archives/2020/02/04/2003730302; “Study Finds Nearly 57% of Americans Admit to Being Addicted to Their Phones - CBS Pittsburgh.” CBS News, August 30, 2023. https://www.cbsnews.com/pittsburgh/news/study-finds-nearly-57-of-americans-admit-to-being-addicted-to-their-phones/.
+
+[Back to text](#note-ref-2-2-7)
 
 ### Note 17 {#note-2-2-17}
 
 “NCDAS: Substance Abuse and Addiction Statistics [2020],” National Center for Drug Abuse Statistics, 2020, https://drugabusestatistics.org/; Ling-Yi Feng, and Jih-Heng Li, “New Psychoactive Substances in Taiwan,” _Current Opinion in Psychiatry_ 33, no. 4 (March 2020): 1, https://doi.org/10.1097/yco.0000000000000604.
 
+[Back to text](#note-ref-2-2-7)
+
 ### Note 18 {#note-2-2-18}
 
 Ronald Inglehart, “Giving up on God: The Global Decline of Religion,” _Foreign Affairs_ 99 (2020): 110. https://heinonline.org/HOL/LandingPage?handle=hein.journals/fora99&div=123&id=&page=.
+
+[Back to text](#note-ref-2-2-8)
 
 ### Note 19 {#note-2-2-19}
 
 “2022 Report on International Religious Freedom: Taiwan,” American Institute in Taiwan, June 8, 2023, https://www.ait.org.tw/2022-report-on-international-religious-freedom-taiwan/#:~:text=According%20to%20a%20survey%20by.
 
+[Back to text](#note-ref-2-2-8)
+
 ### Note 20 {#note-2-2-20}
 
 “Religion in Taiwan,” Wikipedia, Wikimedia Foundation, January 12, 2020. https://en.wikipedia.org/wiki/Religion_in_Taiwan.
+
+[Back to text](#note-ref-2-2-8)
 
 ### Note 21 {#note-2-2-21}
 
 “Democracy Indices,” Wikipedia, Wikimedia Foundation, March 5, 2024. https://en.wikipedia.org/wiki/Democracy_indices#:~:text=Democracy%20indices%20are%20quantitative%20and..
 
+[Back to text](#note-ref-2-2-9)
+
 ### Note 22 {#note-2-2-22}
 
 Laura Silver, Janell Fetterolf, and Aidan Connaughton, “Diversity and Division in Advanced Economies,” Pew Research Center, October 13, 2021, https://www.pewresearch.org/global/2021/10/13/diversity-and-division-in-advanced-economies/.;
+
+[Back to text](#note-ref-2-2-10)
 
 ### Note 23 {#note-2-2-23}
 
 Andres Reiljan, Diego Garzia, Frederico Ferreira da Silva, and Alexander H. Trechsel. “Patterns of Affective Polarization toward Parties and Leaders across the Democratic World.” American Political Science Review 118, no. 2 (2024): 654–70. https://doi.org/10.1017/S0003055423000485.
 
+[Back to text](#note-ref-2-2-10)
+
 ### Note 24 {#note-2-2-24}
 
 Adrian Rauchfleisch, Tzu-Hsuan Tseng, Jo-Ju Kao, and Yi-Ting Liu, “Taiwan’s Public Discourse about Disinformation: The Role of Journalism, Academia, and Politics,” _Journalism Practice_ 17, no. 10 (August 18, 2022): 1–21, https://doi.org/10.1080/17512786.2022.2110928.
+
+[Back to text](#note-ref-2-2-11)
 
 ### Note 25 {#note-2-2-25}
 
 Fin Bauer, and Kimberly Wilson, “Reactions to China-Linked Fake News: Experimental Evidence from Taiwan,” The China Quarterly 249 (March 2022): 1–26. https://doi.org/10.1017/S030574102100134X.
 
+[Back to text](#note-ref-2-2-11)
+
 ### Note 26 {#note-2-2-26}
 
 “Crime Index by Country,” Numbeo, 2023, https://www.numbeo.com/crime/rankings_by_country.jsp.
+
+[Back to text](#note-ref-2-2-12)
 
 ### Note 27 {#note-2-2-27}
 
 “Taiwan: Crime Rate,” Statista, n.d, https://www.statista.com/statistics/319861/taiwan-crime-rate/#:~:text=In%202022%2C%20around%201%2C139%20crimes.
 
+[Back to text](#note-ref-2-2-12)
+
 ### Note 28 {#note-2-2-28}
 
 “Freedom in the World,” Freedom House, 2023, https://freedomhouse.org/report/freedom-world.
 
+[Back to text](#note-ref-2-2-9)
+
 ### Note 29 {#note-2-2-29}
 
 “Democracy Index 2023,” Economist Intelligence Unit, n.d., https://www.eiu.com/n/campaigns/democracy-index-2023.
+
+[Back to text](#note-ref-2-2-9)

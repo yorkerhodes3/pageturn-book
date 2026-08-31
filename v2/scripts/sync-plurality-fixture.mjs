@@ -80,6 +80,62 @@ function preserveFigures(markdown) {
   return result;
 }
 
+function markdownBlocks(lines) {
+  const blocks = [];
+  let index = 0;
+  const listItem = /^(?:[-+*]|\d+[.)])\s+/;
+  while (index < lines.length) {
+    while (lines[index] === "") {
+      index += 1;
+    }
+    if (index >= lines.length) {
+      break;
+    }
+    const grouped = listItem.test(lines[index]) || /^>\s?/.test(lines[index]);
+    const block = [lines[index]];
+    index += 1;
+    while (index < lines.length) {
+      const line = lines[index];
+      if (line !== "") {
+        if (
+          grouped &&
+          (listItem.test(line) ||
+            /^>\s?/.test(line) ||
+            /^(?: {2,}|\t)\S/.test(line))
+        ) {
+          block.push(line);
+          index += 1;
+          continue;
+        }
+        if (!grouped) {
+          block.push(line);
+          index += 1;
+          continue;
+        }
+        break;
+      }
+      let next = index + 1;
+      while (lines[next] === "") {
+        next += 1;
+      }
+      if (
+        grouped &&
+        next < lines.length &&
+        (listItem.test(lines[next]) ||
+          /^>\s?/.test(lines[next]) ||
+          /^(?: {2,}|\t)\S/.test(lines[next]))
+      ) {
+        block.push("");
+        index += 1;
+        continue;
+      }
+      break;
+    }
+    blocks.push(block.join("\n").trimEnd());
+  }
+  return blocks;
+}
+
 function preserveFootnotes(markdown, chapterId) {
   const lines = markdown.split(/\r?\n/);
   const definitions = [];
@@ -105,12 +161,32 @@ function preserveFootnotes(markdown, chapterId) {
   const numbers = new Map(
     definitions.map(({ id }, index) => [id, index + 1]),
   );
-  const linkedBody = body
-    .join("\n")
-    .replace(/\[\^([^\]]+)\]/g, (_, id) => {
-      const number = numbers.get(id);
-      return number ? `[${number}](#note-${chapterId}-${number})` : `[${id}]`;
-    });
+  const backlinks = new Map();
+  let referenceBlock = 0;
+  const linkedBody = markdownBlocks(body)
+    .flatMap((block) => {
+      const referenced = new Set();
+      const linked = block.replace(/\[\^([^\]]+)\]/g, (_, id) => {
+        const number = numbers.get(id);
+        if (!number) {
+          return `[${id}]`;
+        }
+        referenced.add(id);
+        return `[${number}](#note-${chapterId}-${number})`;
+      });
+      if (referenced.size === 0) {
+        return [linked];
+      }
+      referenceBlock += 1;
+      const anchor = `note-ref-${chapterId}-${referenceBlock}`;
+      for (const id of referenced) {
+        const anchors = backlinks.get(id) ?? [];
+        anchors.push(anchor);
+        backlinks.set(id, anchors);
+      }
+      return [linked, `{#${anchor}}`];
+    })
+    .join("\n\n");
   if (definitions.length === 0) {
     return linkedBody;
   }
@@ -119,22 +195,49 @@ function preserveFootnotes(markdown, chapterId) {
     "",
     `## Chapter notes {#notes-${chapterId}}`,
     "",
-    ...definitions.flatMap(({ text }, index) => [
-      `### Note ${index + 1} {#note-${chapterId}-${index + 1}}`,
-      "",
-      text,
-      "",
-    ]),
+    ...definitions.flatMap(({ id, text }, index) => {
+      const anchors =
+        numbers.get(id) === index + 1 ? (backlinks.get(id) ?? []) : [];
+      return [
+        `### Note ${index + 1} {#note-${chapterId}-${index + 1}}`,
+        "",
+        text,
+        "",
+        ...anchors.map(
+          (anchor, anchorIndex) =>
+            `[Back to text${anchors.length > 1 ? ` ${anchorIndex + 1}` : ""}](#${anchor})`,
+        ),
+        "",
+      ];
+    }),
   ].join("\n");
 }
 
-function normalizeChapter(markdown, chapterId) {
+function localizeChapterLinks(markdown, chapterIds) {
+  let localized = 0;
+  const unresolved = new Set();
+  const output = markdown.replace(
+    /https:\/\/www\.plurality\.net\/v\/chapters\/([0-9]+(?:-[0-9]+)?)\/eng\/?(?:\?[^)\s#]*)?(#[^)\s]+)?/g,
+    (url, chapterId, hash = "") => {
+      if (!chapterIds.has(chapterId)) {
+        unresolved.add(chapterId);
+        return url;
+      }
+      localized += 1;
+      return `../${chapterId}/${hash}`;
+    },
+  );
+  return { output, localized, unresolved };
+}
+
+function normalizeChapter(markdown, chapterId, chapterIds) {
   let result = preserveFigures(markdown);
   result = result.replace(
     /https:\/\/raw\.githubusercontent\.com\/pluralitybook\/plurality\/main\//g,
     `${sourceRoot}/`,
   );
-  result = preserveFootnotes(result, chapterId);
+  const localized = localizeChapterLinks(result, chapterIds);
+  result = preserveFootnotes(localized.output, chapterId);
   result = result.replace(/<br\s*\/?>\s*<\/br>/gi, "\n");
   result = result.replace(/<br\s*\/?>/gi, "\n");
   result = result.replace(/\\ (?=\S)/g, " ");
@@ -150,12 +253,16 @@ function normalizeChapter(markdown, chapterId) {
   if (!headingFound) {
     throw new Error(`Plurality chapter ${chapterId} has no H1`);
   }
-  return [
-    `<!-- CC0 source: ${repository}@${revision}; generated, do not edit. -->`,
-    "",
-    result.trim(),
-    "",
-  ].join("\n");
+  return {
+    markdown: [
+      `<!-- CC0 source: ${repository}@${revision}; generated, do not edit. -->`,
+      "",
+      result.trim(),
+      "",
+    ].join("\n"),
+    localizedLinks: localized.localized,
+    unresolvedLinks: localized.unresolved,
+  };
 }
 
 const listingResponse = await fetch(
@@ -192,7 +299,11 @@ await rm(outputRoot, { recursive: true, force: true });
 await mkdir(join(outputRoot, "chapters"), { recursive: true });
 let noteLinks = 0;
 let noteDefinitions = 0;
+let noteBacklinks = 0;
 let figureLinks = 0;
+let localizedChapterLinks = 0;
+const unresolvedChapterLinks = new Set();
+const chapterIds = new Set(chapters.map(({ id }) => id));
 for (const [index, chapter] of chapters.entries()) {
   const response = await fetch(chapter.sourceUrl);
   if (!response.ok) {
@@ -200,7 +311,16 @@ for (const [index, chapter] of chapters.entries()) {
       `Could not fetch Plurality ${chapter.sourceName} (${response.status})`,
     );
   }
-  const markdown = normalizeChapter(await response.text(), chapter.id);
+  const normalized = normalizeChapter(
+    await response.text(),
+    chapter.id,
+    chapterIds,
+  );
+  const markdown = normalized.markdown;
+  localizedChapterLinks += normalized.localizedLinks;
+  for (const chapterId of normalized.unresolvedLinks) {
+    unresolvedChapterLinks.add(chapterId);
+  }
   const anchors = Array.from(
     markdown.matchAll(/\{#([^}]+)\}/g),
     (match) => match[1],
@@ -213,8 +333,9 @@ for (const [index, chapter] of chapters.entries()) {
       `Plurality chapter ${chapter.id} duplicates anchor ${duplicateAnchor}`,
     );
   }
-  noteLinks += (markdown.match(/\]\(#note-/g) ?? []).length;
+  noteLinks += (markdown.match(/\]\(#note-(?!ref-)/g) ?? []).length;
   noteDefinitions += (markdown.match(/^### Note \d+/gm) ?? []).length;
+  noteBacklinks += (markdown.match(/\]\(#note-ref-/g) ?? []).length;
   figureLinks += (markdown.match(/^\[Figure:/gm) ?? []).length;
   const title = /^#\s+(.+?)\s+\{#/m.exec(markdown)?.[1];
   if (!title) {
@@ -224,9 +345,19 @@ for (const [index, chapter] of chapters.entries()) {
   chapter.localSource = `chapters/${String(index + 1).padStart(2, "0")}-${chapter.id}-${chapter.slug}.md`;
   await writeFile(join(outputRoot, chapter.localSource), markdown);
 }
-if (noteLinks !== 586 || noteDefinitions !== 607 || figureLinks !== 37) {
+if (
+  noteLinks !== 586 ||
+  noteDefinitions !== 607 ||
+  noteBacklinks !== 585 ||
+  figureLinks !== 37
+) {
   throw new Error(
-    `Unexpected Plurality source counts: ${noteLinks} note links, ${noteDefinitions} note definitions, ${figureLinks} figure links`,
+    `Unexpected Plurality source counts: ${noteLinks} note links, ${noteDefinitions} note definitions, ${noteBacklinks} note backlinks, ${figureLinks} figure links`,
+  );
+}
+if (localizedChapterLinks === 0 || [...unresolvedChapterLinks].some((id) => id !== "0-1")) {
+  throw new Error(
+    `Unexpected Plurality chapter-link mapping: ${localizedChapterLinks} localized, unresolved ${[...unresolvedChapterLinks].join(", ")}`,
   );
 }
 
@@ -285,7 +416,11 @@ await writeFile(
     "",
     "Voluntary citation: E. Glen Weyl, Audrey Tang, and the Plurality Community. *Plurality: The Future of Collaborative Technology and Democracy*. 2023.",
     "",
-    "Figure images are represented as pinned source links in the lightweight V3 prototype.",
+    `Localized chapter links: ${localizedChapterLinks}.`,
+    "",
+    `Note backlinks: ${noteBacklinks}.`,
+    "",
+    "Figures remain pinned source links in semantic HTML. V3 maps only figures whose captions carry explicit reusable-license metadata.",
     "",
   ].join("\n"),
 );

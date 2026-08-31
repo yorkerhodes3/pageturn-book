@@ -17,7 +17,9 @@ integration with the Ethical Tech CoLab website:
   canonical sharing in a compact reading-only shell. A link-addressable
   *Human Choice* source guide extends V3 to the field guide's nine-source
   analysis without adding it to the CoLab shelf. Ethical AI also demonstrates
-  configurable Off, On-page, and Pop-out figure treatments.
+  configurable Off, On-page, and Pop-out figure treatments. V3 now includes
+  hierarchical contents, demand search, bookmarks, resume restart, local-only
+  annotations/export, and selected-text sharing.
 
 ## Project documents
 
@@ -32,6 +34,8 @@ integration with the Ethical Tech CoLab website:
 - [Publication ingest pipeline and all-book enablement](./PUBLICATION-INGEST-PIPELINE.md)
 - [V3 full-book measurements and visual review](./V3-FULL-BOOK-REVIEW.md)
 - [V3 library, Plurality, and linked source-guide review](./V3-LIBRARY-REVIEW.md)
+- [V3 mobile page-turn performance](./V3-MOBILE-PERFORMANCE.md)
+- [V3 local data and sharing privacy review](./V3-LOCAL-DATA-PRIVACY-REVIEW.md)
 - [Plurality pinned source and CC0 record](./v2/apps/fixtures/plurality/SOURCE.md)
 - [Human Choice pinned source and rights record](./v2/apps/fixtures/human-choice-source-guide/SOURCE.md)
 

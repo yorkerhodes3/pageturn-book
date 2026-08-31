@@ -59,6 +59,30 @@ async function advanceBookPage(page: Page): Promise<string> {
   return (await counter.textContent()) ?? "";
 }
 
+async function selectLeadingText(
+  page: Page,
+  locator: Locator,
+  maximumCharacters = 52,
+): Promise<string> {
+  return locator.evaluate((node, maximum) => {
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    const text = walker.nextNode();
+    if (!(text instanceof Text) || text.data.trim().length < 8) {
+      throw new Error("Expected selectable paragraph text");
+    }
+    const start = text.data.search(/\S/);
+    const end = Math.min(text.data.length, start + maximum);
+    const range = document.createRange();
+    range.setStart(text, start);
+    range.setEnd(text, end);
+    const selection = document.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+    return selection?.toString().trim() ?? "";
+  }, maximumCharacters);
+}
+
 test("presents both reader versions from the comparison landing page", async ({
   page,
 }) => {
@@ -115,9 +139,9 @@ test("documents implemented and planned capabilities on the dashboard", async ({
     page.getByRole("row", { name: /Durable V3 reading location V3 implemented/ }),
   ).toBeVisible();
   await expect(
-    page.getByRole("row", { name: /Local comments and annotations Planned/ }),
+    page.getByRole("row", { name: /Local comments and annotations V3 beta/ }),
   ).toBeVisible();
-  await expect(page.getByText("~99.7%")).toBeVisible();
+  await expect(page.getByText("~99.6%")).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Read What Is Ethical AI/ }),
   ).toHaveAttribute(
@@ -190,14 +214,16 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await expect(revealed).toHaveAttribute("aria-hidden", "true");
   const opaqueTurn = await moving.evaluate((node) => {
     const sheet = node.querySelector(".v3-sheet");
+    const backing = node.querySelector(".v3-paper-occluder");
     const surface = getComputedStyle(node);
-    const backing = getComputedStyle(node, "::before");
+    const backingStyle = backing ? getComputedStyle(backing) : undefined;
     const paper = sheet ? getComputedStyle(sheet) : undefined;
     return {
       surfaceColor: surface.backgroundColor,
       surfaceOpacity: surface.opacity,
-      backingContent: backing.content,
-      backingImage: backing.backgroundImage,
+      backingColor: backingStyle?.backgroundColor,
+      backingOpacity: backingStyle?.opacity,
+      backingInset: backingStyle?.inset,
       paperColor: paper?.backgroundColor,
       paperOpacity: paper?.opacity,
     };
@@ -205,11 +231,12 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   expect(opaqueTurn).toMatchObject({
     surfaceColor: "rgb(255, 253, 248)",
     surfaceOpacity: "1",
-    backingContent: '""',
+    backingColor: "rgb(255, 253, 248)",
+    backingOpacity: "1",
+    backingInset: "-1px",
     paperColor: "rgb(255, 253, 248)",
     paperOpacity: "1",
   });
-  expect(opaqueTurn.backingImage).not.toBe("none");
   expect(
   await moving.evaluate((node) => getComputedStyle(node).clipPath),
   ).toMatch(/^polygon\(/);
@@ -326,6 +353,9 @@ test("uses the library as the direct-entry back destination", async ({
   await expect(toolbar).toBeVisible();
   const toolbarLayout = await toolbar.evaluate((node) => {
     const back = node.querySelector("[data-v3-back]")?.getBoundingClientRect();
+    const explore = node
+      .querySelector("[data-v3-explore]")
+      ?.getBoundingClientRect();
     const counter = node
       .querySelector("[data-v3-counter]")
       ?.getBoundingClientRect();
@@ -339,17 +369,25 @@ test("uses the library as the direct-entry back destination", async ({
     return {
       rows: getComputedStyle(node).gridTemplateRows.trim().split(/\s+/).length,
       height: node.getBoundingClientRect().height,
-      firstRowCenters: [back, counter, font, share].map((bounds) =>
+      firstRowCenters: [back, explore, counter].map((bounds) =>
+        bounds ? bounds.top + bounds.height / 2 : undefined,
+      ),
+      thirdRowCenters: [font, share].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
       chapterTop: chapter?.top,
+      chapterBottom: chapter?.bottom,
+      thirdRowTop: Math.min(
+        font?.top ?? Number.POSITIVE_INFINITY,
+        share?.top ?? Number.POSITIVE_INFINITY,
+      ),
       overflow:
         document.documentElement.scrollWidth -
         document.documentElement.clientWidth,
     };
   });
-  expect(toolbarLayout.rows).toBe(2);
-  expect(toolbarLayout.height).toBeLessThanOrEqual(96);
+  expect(toolbarLayout.rows).toBe(3);
+  expect(toolbarLayout.height).toBeLessThanOrEqual(132);
   const rowCenters = toolbarLayout.firstRowCenters.filter(
     (value): value is number => value !== undefined,
   );
@@ -358,6 +396,15 @@ test("uses the library as the direct-entry back destination", async ({
   ).toBeLessThanOrEqual(1);
   expect(toolbarLayout.chapterTop).toBeGreaterThan(
     toolbarLayout.firstRowCenters[0] ?? 0,
+  );
+  const thirdRowCenters = toolbarLayout.thirdRowCenters.filter(
+    (value): value is number => value !== undefined,
+  );
+  expect(
+    Math.max(...thirdRowCenters) - Math.min(...thirdRowCenters),
+  ).toBeLessThanOrEqual(1);
+  expect(toolbarLayout.thirdRowTop).toBeGreaterThanOrEqual(
+    toolbarLayout.chapterBottom ?? 0,
   );
   expect(toolbarLayout.overflow).toBeLessThanOrEqual(1);
   await expect(
@@ -370,6 +417,64 @@ test("uses the library as the direct-entry back destination", async ({
   const back = page.getByRole("link", { name: "Library" });
   await expect(back).toHaveAttribute("data-v3-back-mode", "library");
   await expect(back).toHaveAttribute("href", /\/shelf\/$/);
+});
+
+test("uses clean opening focus and compact mobile running heads", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai#responsible-ai",
+    ),
+  );
+  const heading = page.getByRole("heading", {
+    level: 1,
+    name: "The Rise of Responsible AI",
+  });
+  await expect(heading).toBeFocused();
+  const focusStyle = await heading.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { outline: style.outlineStyle, shadow: style.boxShadow };
+  });
+  expect(focusStyle.outline).toBe("none");
+  expect(focusStyle.shadow).not.toBe("none");
+
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto(
+    route(
+      "/v3/?book=plurality&chapter=2-0#2-0",
+    ),
+  );
+  const mobileHeading = page.getByRole("heading", {
+    level: 1,
+    name: "Information Technology and Democracy: a Widening Gulf",
+  });
+  await expect(mobileHeading).toBeVisible();
+  const openingSheet = mobileHeading.locator("xpath=ancestor::article[1]");
+  await expect(openingSheet.locator(".v3-sheet-running")).toHaveCSS(
+    "display",
+    "none",
+  );
+  const overlap = await openingSheet.evaluate((sheet) => {
+    const label = sheet.querySelector(".v3-chapter-opening-label");
+    const title = sheet.querySelector("h1");
+    if (!label || !title) {
+      throw new Error("Expected a mobile chapter label and title");
+    }
+    const labelBox = label.getBoundingClientRect();
+    const titleBox = title.getBoundingClientRect();
+    return labelBox.bottom - titleBox.top;
+  });
+  expect(overlap).toBeLessThanOrEqual(0);
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    ),
+  ).toBeLessThanOrEqual(1);
 });
 
 test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
@@ -862,6 +967,223 @@ test("inserts Ethical AI figures after complete source blocks", async ({
     return "";
   });
   expect(continuationAfterFigure).toBe("");
+});
+
+test("opens hierarchical contents and builds search only on demand", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const chapterResponses: string[] = [];
+  page.on("response", (response) => {
+    if (response.ok() && response.url().includes("/chapters/")) {
+      chapterResponses.push(response.url());
+    }
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=executive-summary#executive-summary",
+    ),
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-loaded-chapters",
+    "2",
+  );
+  const requestsBeforeExplore = chapterResponses.length;
+
+  await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator("[data-v3-contents] > ol > li")).toHaveCount(17);
+  expect(
+    await dialog.locator("[data-v3-contents] ol ol").count(),
+  ).toBeGreaterThan(0);
+  expect(chapterResponses.length).toBe(requestsBeforeExplore);
+
+  await dialog.getByRole("searchbox", { name: "Search this book" }).fill(
+    "technocolonialism",
+  );
+  await dialog.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(dialog.locator("[data-v3-search-status]")).toContainText(
+    /result/,
+    { timeout: 30_000 },
+  );
+  expect(chapterResponses.length).toBeGreaterThan(requestsBeforeExplore);
+  const result = dialog.locator("[data-v3-search-results] button").first();
+  await expect(result).toContainText(/humanitarian|technocolonialism/i);
+  await result.click();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(/chapter=/);
+  await expect(page.locator("[data-v3-stationary]")).toContainText(
+    /technocolonialism/i,
+  );
+});
+
+test("persists bookmarks and offers a visible resume restart", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(
+    route("/v3/?book=vango&chapter=background#background"),
+  );
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-loaded-chapters",
+    "3",
+    { timeout: 30_000 },
+  );
+  await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  const bookmark = dialog.locator("[data-v3-bookmark-current]");
+  await bookmark.click();
+  await expect(bookmark).toHaveAttribute("aria-pressed", "true");
+  await expect(bookmark).toHaveText("Remove current bookmark");
+  await expect(dialog.locator("[data-v3-bookmark-list] > li")).toHaveCount(1);
+  await dialog.getByRole("button", { name: "Close book tools" }).click();
+
+  await page.goto(route("/v3/?book=vango"));
+  const resume = page.locator("[data-v3-resume-notice]");
+  await expect(resume).toBeVisible();
+  await expect(resume).toContainText("Background and Rationale");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Background and Rationale" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Start from beginning" }).click();
+  await expect(resume).toBeHidden();
+  await expect(page.locator("[data-v3-counter]")).toContainText("Front matter");
+  await expect(page).not.toHaveURL(/chapter=/);
+
+  await page.getByRole("button", { name: "Explore" }).click();
+  const saved = dialog.locator("[data-v3-bookmark-list] > li button").first();
+  await expect(saved).toContainText("Background and Rationale");
+  await saved.click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Background and Rationale" }),
+  ).toBeVisible();
+});
+
+test("shares selected text and exports local-only annotations", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.clear();
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: (data: ShareData) => {
+        (
+          globalThis as typeof globalThis & {
+            __sharedV3Selection?: ShareData;
+          }
+        ).__sharedV3Selection = data;
+        return Promise.resolve();
+      },
+    });
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=power&media=off#power",
+    ),
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-loaded-chapters",
+    "3",
+  );
+  const paragraph = page.locator(
+    "[data-v3-stationary] .v3-sheet-left .v3-sheet-content p[data-source-anchor]",
+  ).first();
+  const selectedLocation = await paragraph.evaluate((node) => ({
+    chapterId:
+      node.closest<HTMLElement>(".v3-sheet")?.dataset.v3Chapter ?? "",
+    anchor: (node as HTMLElement).dataset.sourceAnchor ?? "",
+  }));
+  const selected = await selectLeadingText(page, paragraph);
+  expect(selected.length).toBeGreaterThan(10);
+  await page
+    .getByRole("button", { name: "Share selected text and location" })
+    .click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (
+            globalThis as typeof globalThis & {
+              __sharedV3Selection?: ShareData;
+            }
+          ).__sharedV3Selection?.text,
+      ),
+    )
+    .toBe(selected);
+  const sharedUrl = await page.evaluate(
+    () =>
+      (
+        globalThis as typeof globalThis & {
+          __sharedV3Selection?: ShareData;
+        }
+      ).__sharedV3Selection?.url ?? "",
+  );
+  const parsedSharedUrl = new URL(sharedUrl);
+  expect(parsedSharedUrl.searchParams.get("chapter")).toBe(
+    selectedLocation.chapterId,
+  );
+  expect(decodeURIComponent(parsedSharedUrl.hash.slice(1))).toBe(
+    selectedLocation.anchor,
+  );
+
+  await selectLeadingText(page, paragraph);
+  await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  await expect(dialog.getByText("Nothing is uploaded")).toBeVisible();
+  await expect(dialog.locator("[data-v3-selection-preview]")).toContainText(
+    selected,
+  );
+  await dialog
+    .getByRole("textbox", { name: "Note on selected text" })
+    .fill("Connect this passage to institutional accountability.");
+  await dialog.getByRole("button", { name: "Save selected text" }).click();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
+  await dialog.getByRole("button", { name: "Close book tools" }).click();
+  await expect(
+    page.locator("[data-v3-stationary] .v3-annotated"),
+  ).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Explore" }).click();
+  const downloadPromise = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Export Markdown" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe(
+    "what-is-ethical-ai-annotations.md",
+  );
+  const stream = await download.createReadStream();
+  if (!stream) {
+    throw new Error("Expected annotation export stream");
+  }
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.from(chunk));
+  }
+  const markdown = Buffer.concat(chunks).toString("utf8");
+  expect(markdown).toContain("local-only V3 reader");
+  expect(markdown).toContain(selected);
+  expect(markdown).toContain("institutional accountability");
+  await dialog
+    .getByRole("button", { name: "Delete private annotation" })
+    .click();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(0);
+  await page.goto(sharedUrl);
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  await expect(page).toHaveURL(
+    new RegExp(
+      `chapter=${encodeURIComponent(selectedLocation.chapterId)}.*#${selectedLocation.anchor}$`,
+    ),
+  );
 });
 
 test("defaults chapters to right pages and lets short books flow", async ({
@@ -1684,6 +2006,74 @@ test("preserves representative rich structures in V3", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 3, name: "Note 1" }),
   ).toBeFocused();
+  const backToText = page.getByRole("link", { name: "Back to text" });
+  await expect(backToText).toBeVisible();
+  await backToText.click();
+  await expect(page.locator("#note-ref-1-1")).toBeFocused();
+});
+
+test("keeps Plurality chapter links local and maps licensed figures", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const figureResponses: string[] = [];
+  page.on("response", (response) => {
+    if (
+      response.ok() &&
+      response.url().includes(
+        "/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/",
+      )
+    ) {
+      figureResponses.push(response.url());
+    }
+  });
+  const policyAnchor =
+    "p-the-principle-of-circular-investment-that-we-des-4cb5ed5d63";
+  await page.goto(
+    route(`/v3/?book=plurality&chapter=7-0#${policyAnchor}`),
+  );
+  const socialMarkets = page.getByRole("link", { name: "Social Markets" });
+  await expect(socialMarkets).toHaveAttribute("href", "../5-7/");
+  await socialMarkets.click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Social Markets" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/chapter=5-7.*#5-7$/);
+
+  await page.goto(
+    route(
+      "/v3/?book=plurality&chapter=2-2&media=popout#v3-media-plurality-2-2-b-polis",
+    ),
+  );
+  const openFigure = page.getByRole("button", {
+    name: /Open Figure 2-2-B/,
+  });
+  await expect(openFigure).toBeVisible();
+  expect(figureResponses).toEqual([]);
+  await openFigure.click();
+  const dialogImage = page.locator("[data-v3-media-dialog-image]");
+  await expect
+    .poll(() =>
+      dialogImage.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBe(824);
+  expect(new Set(figureResponses).size).toBe(1);
+  await expect(
+    page.locator("[data-v3-media-dialog-caption]"),
+  ).toContainText("CC0");
+
+  await page.goto(
+    route(
+      "/book/plurality/2026-07/chapters/2-0/",
+    ),
+  );
+  const listItemCounts = await page
+    .locator("[data-reader-content] > ul")
+    .evaluateAll((lists) =>
+      lists.map((list) => list.querySelectorAll(":scope > li").length),
+    );
+  expect(listItemCounts).toEqual([5, 4]);
 });
 
 test("pulls a shelf volume into the semantic reader", async ({ page }) => {

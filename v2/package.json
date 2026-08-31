@@ -28,6 +28,7 @@
     "sync:lab-publications": "node scripts/sync-lab-publications.mjs",
     "sync:field-guide-sourcebook": "node scripts/sync-field-guide-sourcebook.mjs",
     "sync:plurality": "node scripts/sync-plurality-fixture.mjs",
+    "measure:v3-mobile": "node scripts/measure-v3-mobile.mjs",
     "preview:demo": "vite preview --config apps/demo/vite.config.ts --host 127.0.0.1 --port 4174"
   },
   "devDependencies": {

@@ -24,10 +24,13 @@ To overcome this, a number of new matching platforms, such as [GitCoin Grants](h
 
 No institutions connect more people across broader social diversity in collaborative exchange than those of global capitalism.  The limited remit and strength of international governance create severe limits on the ability to provide transnational public goods through voting and deliberation, but the almighty dollar (and yuan) is respected in most corners of the planet. Capital flows and the technology it is invested in shape lives around the world. International trade and other commercial agreements are among the strongest and nearly universally respected agreements. Private ownership has become a far more consistent pattern across the planet than any other feature of the "rule of law".[1](#note-5-7-1)  Since the fall of the Soviet Union, while national borders have hardly budged and few new nations have been born, companies like Amazon, Google and Meta have arguably grown to a position of prominence around the planet exceeding all but a handful of nation states.
 
+{#note-ref-5-7-1}
 
 At the same time, for all the elaborate financial and corporate structures built on top of them, markets are perhaps the most simplistic structure conceivable as a pattern for human cooperation.  While they can be applied more broadly, as we will see, the argument for their desirability rests on a vision of bilateral transactions between a buyer-seller pair, each of which is representative of a sea of similarly situated and thus equally powerless buyers and sellers, all engaging in a transaction whose effects are bounded by a predetermined set of private property rights that avoid any "externalities" on non-transacting parties.  Any notion of emergent, surprising, group level effects, of supermodularity and shared goods, of heterogeneity, or of diversity of information are bracketed as "imperfections" or "frictions" that impede the natural, ideal functioning of markets.
 
 This debate has been at the core of the conflict over capitalism, long before its ascendancy, as documented by social scientist Albert Hirschman.[21](#note-5-7-21)  On the one hand, markets have been seen to be almost uniquely universally "civilizing", alleviating the potential for conflict across social groups, and "dynamic", allowing entrepreneurship to create new forms of large scale social organization that foster and support (social) innovation.[22](#note-5-7-22)  On the other hand, markets are poor at supporting the flourishing of other forms of scaled social interaction. They corrode many of the other technologies of collaboration we describe.  While allowing the creation of some new forms, they tend to turn these into exploitative, socially irresponsible, and often reckless monopolies.  In this chapter we will explore this paradox and how radical new forms of markets, like those we described above, can maintain, and extend this inclusive and dynamic character while fostering a far more diverse range of rich human collaboration.
+
+{#note-ref-5-7-2}
 
 ### Capitalism today
 
@@ -42,6 +45,7 @@ Capitalism is typically understood as a system based on private property in the 
 
 Many textbooks have been written, including some by some of our close friends, on this structure.[2](#note-5-7-2)  It is hard to doubt that it is one of the most powerful modes of cooperation humans have ever devised and has been central to the unprecedented progress in material conditions around the world in the last two centuries.  Furthermore, the most famous theoretical results in economics are the "[fundamental welfare theorems](https://en.wikipedia.org/wiki/Fundamental_theorems_of_welfare_economics)", which assert that under certain conditions markets lead selfish individuals "by an invisible hand" to serve the common good.[3](#note-5-7-3)  Yet the conditions and scope of this result are quite circumscribed, which is why capitalism has so many familiar problems.
 
+{#note-ref-5-7-3}
 
 [Figure: Illustration of the incompatibility of increasing returns with a profitable efficient market. A chart on the left depicts decreasing returns with a positive profit and a chart on the right depicts increasing returns with a negative profit.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/Returnsfig.png>)
 
@@ -54,6 +58,7 @@ Many textbooks have been written, including some by some of our close friends, o
 3. Externalities: At the core of John Dewey's 1927 classic *The Public and its Problems*, is recognizing  the genius of innovation to create new forms of interdependence, both for good and ill.[5](#note-5-7-5)  The motors of the nineteenth century transformed human life, yet also turned out to transfigure the environment in unanticipated ways.  Radio, flight, chemicals...all redesigned how we can cooperate, but also created risks and harms that previous systems of "property rights" and rules generally did not account for.  The victims (or in some cases beneficiaries) of these "externalities" are, by construction, not directly party to market transactions.  Thus, precisely to the extent that new means of collaboration developed in markets are revolutionary, markets and the corporations they spawn will not directly involve those affected by their innovations, preventing either their benefits from being fully tapped or their risks from being mitigated.
 4. Distribution: Theoretically, markets are simply indifferent to distribution and "endowments" can be rearranged to achieve desired distributive goals.  But achieving this ideal redistribution faces enormous practical hurdles and thus markets tend to often yield shockingly inegalitarian outcomes, sometimes for reasons fairly divorced from their alleged "efficiency" benefits.  In addition to the direct concerns these create, they also often help undermine the greater equality often assumed or harnessed in other collaborative forms described in previous chapters.
 
+{#note-ref-5-7-4}
 
 Recognition of and response to these challenges are arguably the leading currents of the politics of the last hundred and fifty years in much of the world, so we must review them only very superficially.
 
@@ -65,20 +70,24 @@ Recognition of and response to these challenges are arguably the leading current
 6. Zoning and regulation: The risk of markets failing to account for external harms and benefits are generally addressed by government-imposed restrictions on market activity, usually called "regulation" at broader levels and "zoning restrictions" on more local levels.  Occasionally, especially in environmental matters, economists' preferred solutions of "Pigouvian" taxes or tradeable permits are used.  While these restrictions are the central and thus indispensable way to address externalities, they are beset by all the limits of rigid, nation-state- (or corresponding local justification) based decision-making we discussed above, and given their economic stakes are often captured/controlled by interest groups imperfectly aligned to the interests of even the supposedly relevant public.[8](#note-5-7-8)
 7. Redistribution: Most developed capitalist nations have extensive systems of taxation of income and commerce that fund, among other things, social insurance and public welfare schemes that ensure the availability of a range of services and fiscal support as a check against extreme inequality. In contrast to the promise of land and wealth taxes, however, these primary income sources generally partly impede the functioning of markets, struggle to extract many of the most runaway fortunes and only imperfectly correct the structural ways inequality impedes other forms of collaboration.
 
+{#note-ref-5-7-5}
 
 The limitations of these solutions are so widely understood that they led to a significant backlash in many countries beginning in the 1970s, the so-called "neoliberal reaction".  Yet the limits of markets persist and there has been a resurgence in the last decade of both of these solutions, but also of creative attempts to transcend them and avoid many of the trade-offs they create.
 
 ### Social markets tomorrow
 
-As we highlighted in the [Connected Society](https://www.plurality.net/v/chapters/3-2/eng/?mode=dark) chapter above, the desire to combine and even enhance the dynamism of markets while at the same time addressing their limits was a primary motivation for ⿻, especially the thought of Henry George and his followers, including economics Nobel Laureate [William Vickrey](https://en.wikipedia.org/wiki/William_Vickrey), to whom the [previous book](https://press.princeton.edu/books/hardcover/9780691177502/radical-markets) written by one of the authors of this one was dedicated.[9](#note-5-7-9)  Vickrey pioneered the economics subfield of "[mechanism design](https://en.wikipedia.org/wiki/Mechanism_design)", which explores these possibilities and has led to many of the creative possibilities that have been deployed in the past decades.
+As we highlighted in the [Connected Society](../3-2/) chapter above, the desire to combine and even enhance the dynamism of markets while at the same time addressing their limits was a primary motivation for ⿻, especially the thought of Henry George and his followers, including economics Nobel Laureate [William Vickrey](https://en.wikipedia.org/wiki/William_Vickrey), to whom the [previous book](https://press.princeton.edu/books/hardcover/9780691177502/radical-markets) written by one of the authors of this one was dedicated.[9](#note-5-7-9)  Vickrey pioneered the economics subfield of "[mechanism design](https://en.wikipedia.org/wiki/Mechanism_design)", which explores these possibilities and has led to many of the creative possibilities that have been deployed in the past decades.
 
-- Partial common ownership: To overcome the challenges of administering land taxes, a variety of historical thinkers, including Founder of the Chinese Republic Sun Yat-Sen (who we discussed extensively in our [A View from Yushan](https://www.plurality.net/v/chapters/2-1/eng/?mode=dark) chapter) and economist [Arnold Harberger](https://en.wikipedia.org/wiki/Arnold_Harberger), have proposed having owners self-assess the value of their property under penalty of having to sell at this self-assessed value.[10](#note-5-7-10)  This has the simultaneous effect of forcing truthful valuations for taxation and of forcing turnover of underutilized or monopolized assets to broader publics.  It is particularly easy to enforce in digital asset registries, such as blockchains, and thus has gained popularity in recent years, especially for non-fungible token (NFT) [art works](https://www.radicalxchange.org/wiki/pco-art/), as well having been used for many years for land in Taiwan.[11](#note-5-7-11)
+{#note-ref-5-7-6}
+
+- Partial common ownership: To overcome the challenges of administering land taxes, a variety of historical thinkers, including Founder of the Chinese Republic Sun Yat-Sen (who we discussed extensively in our [A View from Yushan](../2-1/) chapter) and economist [Arnold Harberger](https://en.wikipedia.org/wiki/Arnold_Harberger), have proposed having owners self-assess the value of their property under penalty of having to sell at this self-assessed value.[10](#note-5-7-10)  This has the simultaneous effect of forcing truthful valuations for taxation and of forcing turnover of underutilized or monopolized assets to broader publics.  It is particularly easy to enforce in digital asset registries, such as blockchains, and thus has gained popularity in recent years, especially for non-fungible token (NFT) [art works](https://www.radicalxchange.org/wiki/pco-art/), as well having been used for many years for land in Taiwan.[11](#note-5-7-11)
 - Quadratic and ⿻ funding: As described at the start of this chapter, a natural way to fund public/supermodular goods without relying excessively on the limited knowledge of administrators is for such an administrator, philanthropist, or public authority to match contributions by distributed individuals.  Mechanism design theory, similar to the logic supporting quadratic voting in the previous chapter, can be used to show that under similar assumptions of atomized behavior, matching funds should be proportioned to the square of the sum of square roots of individual contributions, giving greater weight to a large number of small contributors than to a few large ones.[12](#note-5-7-12)  Recently designs have stretched beyond traditional individualistic designs to account for ⿻ group interests and affiliations.[13](#note-5-7-13)
 - Stakeholder corporation: While partial common ownership and quadratic funding may help ensure the turnover of organization and asset control, they do not directly ensure that organizations serve rather than exercise illegitimate power over their "stakeholders", such as customers and workers.  Drawing on the traditions we described above, there a variety of renewed movements in recent years to create a "stakeholder" corporation, including  Environmental, Social and Governance principles, the platform cooperativism, the distributed autonomous organizations (DAOs), "stakeholder remedies" in antitrust (viz. using antitrust violations to mandate abused stakeholders have a voice), data unions and the organization of many of the most important large foundation model companies (e.g. OpenAI and Anthropic) as partial non-profits or long-term benefit corporations.[14](#note-5-7-14)
 - Participatory design and prediction markets: Digital platforms and mechanisms are also increasingly used to allow more dynamic resource allocation both within corporations and in connections between corporations and their customers.[23](#note-5-7-23)  Examples include ways for customers to contribute and be rewarded for new product designs, such as in entertainment platforms like [Roblox](https://www.roblox.com/) or [Lego Ideas](https://ideas.lego.com/), and prediction markets where stakeholders can be rewarded to predict company-relevant outcomes like sales of a new product.
-- Market design: The field of market design, for which several Nobel Prizes have recently been awarded, applies mechanism design to create market institutions that mitigate problems of market power or externalities created by ignoring the social implications of transactions.  Examples include markets for tradable carbon permits, the auction design examples we discussed in the [Property and Contract](https://www.plurality.net/v/chapters/4-4/eng/?mode=dark) chapter above and a number of markets using community currencies or other devices to facilitate market-like institutions in communities (e.g. education, public housing or organ donation) where using external currency can severely undermine core values.[15](#note-5-7-15)
+- Market design: The field of market design, for which several Nobel Prizes have recently been awarded, applies mechanism design to create market institutions that mitigate problems of market power or externalities created by ignoring the social implications of transactions.  Examples include markets for tradable carbon permits, the auction design examples we discussed in the [Property and Contract](../4-4/) chapter above and a number of markets using community currencies or other devices to facilitate market-like institutions in communities (e.g. education, public housing or organ donation) where using external currency can severely undermine core values.[15](#note-5-7-15)
 - Economies esteem: Related to these local currency markets are online systems where various quantitative markers of social esteem/capital (e.g. badges, followers, leaderboards, links) partly or fully replace transferable money as the "currency" of accomplishment.[16](#note-5-7-16) [17](#note-5-7-17)  These can often, in turn, partly interoperate with broader markets through various monetization channels such as advertising, sponsorship and crowdfunding.
 
+{#note-ref-5-7-7}
 
 While this blossoming of alternatives to simplistic markets is a powerful proof of concept for moving beyond the traditional limits of the market, they represent the beginning, not the end, of the possibilities for the technologically enabled social markets of the future.
 
@@ -93,6 +102,7 @@ Building off these experiments, we are just able to glimpse what a comprehensive
 5. ⿻ management: Internally, it is also increasingly possible to see past the hierarchical structure that typically dominates corporate control.  The [Plural Management Protocol](https://github.com/pluralitybook/plurality/issues/333) we used to create this book tracks the types and extent of contributions from diverse participants and harnesses mechanisms like we have described above to allow them to prioritize work (which then determines the recognition of those who address those issues) and determine which work should be incorporated into a project though a basis of exerting authority and predicting what others will decide.[19](#note-5-7-19)  This allows for some of the important components of hierarchy (evaluation by trusted authorities, migration of this authority based on performance according to those authorities) without any direct hierarchical reporting structure, allowing networks to potentially supplant strict hierarchies. [Reinventing Organizations](https://en.wikipedia.org/wiki/Reinventing_Organizations) provides a useful overview of organizational practices we might now understand as ⿻.
 6. Polypolitan migration policy: It is also increasingly possible to imagine breaking down the stringency of international labor markets through related mechanisms.  As philosopher Danielle Allen has proposed, migration could be conditioned upon endorsement or support from one or more civil society groups in the receiving country, extending and combining existing practices in countries like Canada and Taiwan that respectively allow private community-based sponsorship and allow a diversity of qualifying pathways for long-term work permits.[20](#note-5-7-20)  These could diffuse the stringent control of labor mobility by nation states while maintaining accountability to avoid harms or challenges with social integration.
 
+{#note-ref-5-7-8}
 
 While these only begin to scratch the surface of possibilities, they hopefully illustrate how completely markets could be re-conceived harnessing ⿻ principles.  While the debates over markets and the state often falls into predictable patterns, the possibilities for moving radically beyond this simplistic binary are just as broad as for any other area of ⿻.
 
@@ -102,9 +112,9 @@ Yet the potential of markets should not be mistaken for being a miracle cure or 
 
 What we must guard against most rigorously is the tendency of markets to concentrate power in private organizations or limited cultural groups in ways that homogenize and erode diversity.  Achieving this requires institutions that deliberately encourage new diversity, while eroding existing concentrations of power, like those we have highlighted.  It also requires, as we have suggested, constantly bringing other forms of collaboration across diversity[27](#note-5-7-27) to intersect with markets, whether voting, deliberation, or creative collaboration, while creating market systems (like ⿻ money) that can deliberately insulate these from broader market forces.
 
+{#note-ref-5-7-9}
+
 Yet despite all their manifest dangers and limitations, those pursuing ⿻  should not wish markets away.  Something must coordinate at least coexistence if not collaboration across the broadest social distances and many other ways to achieve this, even ones as thin as voting, carry much greater risks of homogenization precisely because they involve deeper ties.  Socially aware global markets offer much greater prospect for ⿻ than a global government.  Markets must evolve and thrive, along with so many other modes of collaboration, to secure a ⿻ future.
-
-
 
 ## Chapter notes {#notes-5-7}
 
@@ -112,106 +122,160 @@ Yet despite all their manifest dangers and limitations, those pursuing ⿻  shou
 
 Pistor, op. cit.
 
+[Back to text](#note-ref-5-7-1)
+
 ### Note 2 {#note-5-7-2}
 
 Daron Acemoglu, David Laibson and John List, *Economics* (Upper Saddle River, NJ: Pearson, 2021).
+
+[Back to text](#note-ref-5-7-3)
 
 ### Note 3 {#note-5-7-3}
 
 Adam Smith, *An Inquiry into the Nature and Causes of the Wealth of Nations* (London: W. Strahan and T. Cadell, 1776).
 
+[Back to text](#note-ref-5-7-3)
+
 ### Note 4 {#note-5-7-4}
 
 Paul Krugman, "Scale Economies, Product Differentiation and the Pattern of Trade", *American Economic Review* 70, no. 5 (1980): 950-959.  Paul Romer, "Increasing Returns and Long-Term Growth", *Journal of Political Economy* 94, no. 5 (1986):1002-1037.
+
+[Back to text](#note-ref-5-7-4)
 
 ### Note 5 {#note-5-7-5}
 
 John Dewey, *The Public and its Problems*, op. cit.
 
+[Back to text](#note-ref-5-7-4)
+
 ### Note 6 {#note-5-7-6}
 
 Matt Stoller, *Goliath: The 100-Year War Between Monopoly Power and Democracy* (New York: Simon & Schuster, 2020).
+
+[Back to text](#note-ref-5-7-5)
 
 ### Note 7 {#note-5-7-7}
 
 John Kenneth Galbraith, *American Capitalism: The Concept of Countervailing Power* (New York: Houghton Mifflin, 1952).
 
+[Back to text](#note-ref-5-7-5)
+
 ### Note 8 {#note-5-7-8}
 
 Edward L. Glaeser and Joseph Gyourko, "The Impact of Zoning on Housing Affordability" (2002) at https://www.nber.org/papers/w8835.
+
+[Back to text](#note-ref-5-7-5)
 
 ### Note 9 {#note-5-7-9}
 
 Eric A. Posner and E. Glen Weyl, *Radical Markets: Uprooting Capitalism and Democracy for a Just Society* (Princeton, NJ: Princeton University Press, 2018).
 
+[Back to text](#note-ref-5-7-6)
+
 ### Note 10 {#note-5-7-10}
 
 Sun, op. cit. Arnold C. Harberger, "Issues of Tax Reform for Latin America" in Joint Tax Program of the Organization of American States eds., *Fiscal Policy for Economic Growth in Latin America* (Baltimore, MD: Johns Hopkins Press, 1965).
+
+[Back to text](#note-ref-5-7-7)
 
 ### Note 11 {#note-5-7-11}
 
 Emerson M. S. Niou and Guofu Tan, "An Analysis of Dr. Sun Yat-Sen's Self-Assessment Scheme for Land Taxation", *Public Choice* 78, no. 1: 103-114. Yun-chien Chang, "Self-Assessment of Takings Compensation: An Empirical Analysis", *Journal of Law, Economics and Organization* 28, no. 2 (2012: 265-285.
 
+[Back to text](#note-ref-5-7-7)
+
 ### Note 12 {#note-5-7-12}
 
 Vitalik Buterin, Zoë Hitzig and E. Glen Weyl, "A Flexible Design for Funding Public Goods", *Management Science* 65, no. 11 (2019): 4951-5448.
+
+[Back to text](#note-ref-5-7-7)
 
 ### Note 13 {#note-5-7-13}
 
 Ohlhaver et al., op. cit. and Miler et al., op. cit.
 
+[Back to text](#note-ref-5-7-7)
+
 ### Note 14 {#note-5-7-14}
 
 Colin Mayer, *Prosperity: Better Business Makes the Greater Good* (Oxford, UK: Oxford University Press, 2019). Zoë Hitzig, Michelle Meagher, André Veig and E. Glen Weyl, "Economic Democracy and Market Power", *CPI Antitrust Chronicle* April 2020. Michelle Meagher, *Competition is Killing us: How Big Business is Harming our Society and Planet - and What to Do About It* (New York: Penguin Business, 2020).
+
+[Back to text](#note-ref-5-7-7)
 
 ### Note 15 {#note-5-7-15}
 
 Atila Abdulkadiroğlu, Parag A. Pathak and Alvin E. Roth, "The New York City High School Match", *American Economic Review* 95, no. 2 (2005): 365-367.  Nicole Immorlica, Brendan Lucier, Glen Weyl and Joshua Mollner, "Approximate Efficiency in Matching Markets" *International Conference on Web and Internet Economics* (2017): 252-265. Roth et al., op. cit.
 
+[Back to text](#note-ref-5-7-7)
+
 ### Note 16 {#note-5-7-16}
 
 Nicole Immorlica, Greg Stoddard and Vasilis Syrgkanis, "Social Status and Badge Design", *WWW '15: Proceedings of the 24th International Conference on World Wide Web* (2015: 473-483.
+
+[Back to text](#note-ref-5-7-7)
 
 ### Note 17 {#note-5-7-17}
 
 Daniel Kronovet, Seth Frey, and Joseph DeSimone, "Cybernetic Governance in a Coliving House" (May 28, 2024). Available at SSRN: https://ssrn.com/abstract=4856267
 
+[Back to text](#note-ref-5-7-7)
+
 ### Note 18 {#note-5-7-18}
 
 An interesting first experiment in this direction is being undertaken by the Web3 protocol [Optimism](https://community.optimism.io/docs/governance/), which uses a mixture of one-share-one-vote and more democratic methods in different "houses" to govern its protocol.
+
+[Back to text](#note-ref-5-7-8)
 
 ### Note 19 {#note-5-7-19}
 
 South et al., op. cit.
 
+[Back to text](#note-ref-5-7-8)
+
 ### Note 20 {#note-5-7-20}
 
 Danielle Allen, "Polypolitanism: An Approach to Immigration Policy to Support a Just Political Economy" in Danielle Allen, Yochai Benkler, Leah Downey, Rebecca Henderson & Josh Simons, etc., *A Political Economy of Justice* (Chicago, IL: University of Chicago Press, 2022): ch. 14.
+
+[Back to text](#note-ref-5-7-8)
 
 ### Note 21 {#note-5-7-21}
 
 Albert Hirschman, _The Passions and the Interests_, (Princeton: Princeton University Press, 1997).
 
+[Back to text](#note-ref-5-7-2)
+
 ### Note 22 {#note-5-7-22}
 
 Joseph Schumpeter, *Capitalism, Socialism and Democracy* (New York: Harper & Brothers: 1942). Quinn Slobodian, *Globalists: The End of Empire and the Birth of Neoliberalism* (Cambridge, MA: Harvard University Press, 2018).
+
+[Back to text](#note-ref-5-7-2)
 
 ### Note 23 {#note-5-7-23}
 
 See Erich Joachimsthaler, _The Interaction Field: The Revolutionary New Way to Create Shared Value for Businesses, Customers, and Society_, PublicAffairs, 2019. See also Gary Hamel, and Michele Zanini, _Humanocracy: Creating Organizations as Amazing as the People inside Them_, (Boston, Massachusetts: Harvard Business Review Press, 2020).
 
+[Back to text](#note-ref-5-7-7)
+
 ### Note 24 {#note-5-7-24}
 
 William Vickrey, "The City as a Firm" in Martin S. Feldstein and Robert P. Inman, eds., *The Economics of Public Services*: 334-343. Richard  Arnott, and Joseph Stiglitz, “Aggregate Land Rents, Expenditure on Public Goods, and Optimal City Size,” _The Quarterly Journal of Economics_ 93, no. 4 (November 1979): 471. https://doi.org/10.2307/1884466.
+
+[Back to text](#note-ref-5-7-8)
 
 ### Note 25 {#note-5-7-25}
 
 A notable example of inter-temporal economic systems is PICSY (Propagational Investment Currency SYstem) developed by Ken Suzuki. PICSY is a value propagation system which tracks past transactions as contributions and assign a portion of recent contributions to past contributors. Thus, in the framework of PICSY, transactions are track records for investments. Ken Suzuki, Propagational investment currency system (PICSY): proposing a new currency system using social computing. PhD diss., Tokyo University, 2009. Ken Suzuki, "The Nameraka Society and its Enemies", Keiso Shobo Publishing (2013).
 
+[Back to text](#note-ref-5-7-8)
+
 ### Note 26 {#note-5-7-26}
 
 Robinson, op. cit.
 
+[Back to text](#note-ref-5-7-8)
+
 ### Note 27 {#note-5-7-27}
 
 Pooling across diversity is a very general principle.  Although size matters, bigger is not always better, and the strength of the connections formed can matter more. For example, families, teams or troops – small networks connected by high-value interactions – can outperform much larger ones in the production of ⿻ goods.  If we consider the record of Paleolithic art, banding together to perform key social functions is extremely ancient, so collaborative pooling at a range of scales, albeit by non-state and non-market actors, seems an exception to the rule that 'public goods' are always under-supplied.
+
+[Back to text](#note-ref-5-7-9)

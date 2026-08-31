@@ -2,25 +2,25 @@
 
 # Collaborative Technology and Democracy {#5-0}
 
-This book was created to demonstrate ⿻ in action and as well as describe it: to show as well as tell.  As such, it was created using many of the tools we describe in this section.  The text was [stored on and updated](https://github.com/pluralitybook/plurality) using the [Git protocol](https://git-scm.com/) that open source coders use to control versions of their software.  The text is shared freely under a [Creative Commons 0](https://creativecommons.org/share-your-work/cclicenses/) license, implying that no rights to any content herein are reserved to the community creating it and it may be freely reused.  At the time of this writing, dozens of diverse experts and citizens from every continent contributed to the writing as highlighted in our [credits](https://www.plurality.net/v/chapters/0-1/eng/?mode=dark) above and we hope many more will the continued evolution of the text after physical publication, embodying the practices we describe in our [Creative Collaboration](https://www.plurality.net/v/chapters/5-3/eng/?mode=dark) chapter.
+This book was created to demonstrate ⿻ in action and as well as describe it: to show as well as tell.  As such, it was created using many of the tools we describe in this section.  The text was [stored on and updated](https://github.com/pluralitybook/plurality) using the [Git protocol](https://git-scm.com/) that open source coders use to control versions of their software.  The text is shared freely under a [Creative Commons 0](https://creativecommons.org/share-your-work/cclicenses/) license, implying that no rights to any content herein are reserved to the community creating it and it may be freely reused.  At the time of this writing, dozens of diverse experts and citizens from every continent contributed to the writing as highlighted in our [credits](https://www.plurality.net/v/chapters/0-1/eng/?mode=dark) above and we hope many more will the continued evolution of the text after physical publication, embodying the practices we describe in our [Creative Collaboration](../5-3/) chapter.
 
-Work was collectively prioritized and rewards determined using a "crowd-funding" approach we describe in our [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter below. Changes to the text in future evolution will be approved collectively by the community using a mixture of the advanced voting procedures described in our [⿻ Voting](https://www.plurality.net/v/chapters/5-6/eng/?mode=dark) chapter below and prediction markets.  Contributors were recognized using a community currency and group identity tokens as we described in our [Identity and Personhood](https://www.plurality.net/v/chapters/4-1/eng/?mode=dark) and [Commerce and Trust](https://www.plurality.net/v/chapters/4-3/eng/?mode=dark) chapters above, which in turn was used in voting and prioritization of outstanding issues for the book.  These priorities in turn determined the quantitative recognition received by those whose contributions addressed these challenges, an approach we have described with others as a "[⿻ Management Protocol](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4688040)".[1](#note-5-0-1) All this was recorded on a distributed ledger through an open-source protocol, [GitRules](https://gitrules.ai/), grounded on open-source participation rather than financial incentives.   Contentious issues were resolved through tools we discuss in the [Augmented Deliberation](https://www.plurality.net/v/chapters/5-4/eng/?mode=dark) chapter below.  The book has been translated and copy-edited by the community augmented by many of the cross-linguistic and subcultural translation tools we discuss in our [Adaptive Administration](https://www.plurality.net/v/chapters/5-5/eng/?mode=dark) chapter.
+Work was collectively prioritized and rewards determined using a "crowd-funding" approach we describe in our [Social Markets](../5-7/) chapter below. Changes to the text in future evolution will be approved collectively by the community using a mixture of the advanced voting procedures described in our [⿻ Voting](../5-6/) chapter below and prediction markets.  Contributors were recognized using a community currency and group identity tokens as we described in our [Identity and Personhood](../4-1/) and [Commerce and Trust](../4-3/) chapters above, which in turn was used in voting and prioritization of outstanding issues for the book.  These priorities in turn determined the quantitative recognition received by those whose contributions addressed these challenges, an approach we have described with others as a "[⿻ Management Protocol](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4688040)".[1](#note-5-0-1) All this was recorded on a distributed ledger through an open-source protocol, [GitRules](https://gitrules.ai/), grounded on open-source participation rather than financial incentives.   Contentious issues were resolved through tools we discuss in the [Augmented Deliberation](../5-4/) chapter below.  The book has been translated and copy-edited by the community augmented by many of the cross-linguistic and subcultural translation tools we discuss in our [Adaptive Administration](../5-5/) chapter.
 
+{#note-ref-5-0-1}
 
-
-To support the financial needs of the book during the publication process, we harnessed several of the tools we describe in the [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter.  We hope to harness technologies from the Immersive Shared Reality chapter to communicate and explore the ideas from the book with audiences around the world.
+To support the financial needs of the book during the publication process, we harnessed several of the tools we describe in the [Social Markets](../5-7/) chapter.  We hope to harness technologies from the Immersive Shared Reality chapter to communicate and explore the ideas from the book with audiences around the world.
 
 For all these reasons, as you read this book you are both learning about the ideas and evaluating them on their merits and at the same time experiencing what they put into practice, can create.  If you are inspired by that content, especially critically, we encourage you to contribute to the living and community managed continuations of this document and all its translations by submitting changes through a git pull request or by reaching out to one of the many contributors to become part of the community.  We hope as many criticisms of this work as possible will be inspired by the open-source mantra "so fix it!"
 
 ---
 
-
 While a human rights operating system is the foundation, the point of the system for most people is what is built on top of it.  On top of the bedrock of human rights, liberal democratic societies run open societies democracies, and welfare capitalism.  On top of operating systems, customers run productivity tools, games, and a range of internet-based communication media.  In this chapter, we will illustrate the collaboration technologies that can be built on the foundation of ⿻ social protocols of the previous section.
 
 While we have titled this section of the book "democracy", what we plan to describe goes well beyond many conventional descriptions of democracy as a system of governance of nations.  Instead, to build ⿻ on top of fundamental social protocols, we must explore the full range of ways in which applications can facilitate collaboration and cooperation, the working of several entities (people or groups) together towards a common goal.   Yet even these phrases miss something crucial that we focus on the power that working together has to create something greater than the sum of what the parts  could have created separately.
 
-Mathematically, this idea is known as "[supermodularity](https://cip.org/supermodular)" and captures the classic idea attributed to Aristotle that "the whole is greater than the sum of the parts".[2](#note-5-0-2)  An early example of the quantitative application of supermodularity is the idea of "comparative advantage", the first comprehensive description of which that we are aware of presented by the English economist David Ricardo in 1817.[15](#note-5-0-15)  "Comparative advantage" says, roughly, that overall welfare will be maximized when all trading partners specialize in making their most efficient product, even when some other partner can make *everything* more efficiently.  Comparative advantage is understood as an 'economic law' stating in effect that there are guaranteed gains from diversity that can be realized through the market mechanism.  This idea has been extremely influential in neoliberal economics (see [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark)), although later iterations are more sophisticated than the Ricardian version and one need not accept the simplistic "free trade" implications to appreciate the benefits of gains from trade.  Furthermore, given our emphasis on diversity, what we mean by "gains"  here is context specific and need not be simplistically economic; instead, it will be defined by the norms and values of the individuals and communities coming together.  Furthermore, our focus is less on people or groups *per se* than on the fabric running through and separating them, social difference.  Thus, what we will describe in this part of the book is, most precisely, how technology can empower supermodularity across social difference or, more colloquially, "collaboration across diversity".
+Mathematically, this idea is known as "[supermodularity](https://cip.org/supermodular)" and captures the classic idea attributed to Aristotle that "the whole is greater than the sum of the parts".[2](#note-5-0-2)  An early example of the quantitative application of supermodularity is the idea of "comparative advantage", the first comprehensive description of which that we are aware of presented by the English economist David Ricardo in 1817.[15](#note-5-0-15)  "Comparative advantage" says, roughly, that overall welfare will be maximized when all trading partners specialize in making their most efficient product, even when some other partner can make *everything* more efficiently.  Comparative advantage is understood as an 'economic law' stating in effect that there are guaranteed gains from diversity that can be realized through the market mechanism.  This idea has been extremely influential in neoliberal economics (see [Social Markets](../5-7/)), although later iterations are more sophisticated than the Ricardian version and one need not accept the simplistic "free trade" implications to appreciate the benefits of gains from trade.  Furthermore, given our emphasis on diversity, what we mean by "gains"  here is context specific and need not be simplistically economic; instead, it will be defined by the norms and values of the individuals and communities coming together.  Furthermore, our focus is less on people or groups *per se* than on the fabric running through and separating them, social difference.  Thus, what we will describe in this part of the book is, most precisely, how technology can empower supermodularity across social difference or, more colloquially, "collaboration across diversity".
 
+{#note-ref-5-0-2}
 
 This chapter, which lays out the framework for the rest of this part of the book, will highlight why collaboration across diversity is such a fundamental and ambitious goal.  We then define a spectrum of domains where it can be pursued based on the trade-off between depth and breadth of collaboration.  Next, we  highlight a framework for  design in the space that navigates between the dangers of premature optimization and chaotic experimentation.  Yet harnessing the potential of collaboration across diversity also holds the risk of reducing the diversity available for future collaboration.  To guard against this we discuss the necessity of *regenerating* diversity.  We round out this chapter by describing the structure followed in each subsequent chapter in this part.
 
@@ -28,14 +28,17 @@ This chapter, which lays out the framework for the rest of this part of the book
 
 Why are we so focused on collaboration across diversity?  A simple way to understand this is by analogy to energy systems. Prior to industrialism, rare encounters with powerful thermodynamic effects (such as oil fires in the ground) were met with fear and attempts to suppress these conflagrations.  Yet with the advent of industrial harnessing of fossil fuels, it became more common to greet such explosions with a prospector's eye, looking to harness the potential energy that led to these explosions productively. In a world beset by conflict, we must learn to build engines that, just as in the Taiwanese example we opened with, convert the potential energy driving these conflicts into useful work.  The ⿻ age must learn to harness social and informational potential energy as the industrial age did for fossil fuels and the nuclear age did for atomic energy.[3](#note-5-0-3)  Such an age may fulfill the prophecy of Matthew 20:16, "[So the last shall be first, and the first last](https://www.biblegateway.com/passage/?search=Matthew%2020%3A16&version=KJV)", as the most diverse and conflict-plagued places on earth (especially in Africa) hold arguably more potential energy than anywhere on the planet.
 
-
+{#note-ref-5-0-3}
 
 While novel in a certain sense, this is also one of the oldest and most universally resonant of all human ideas.  All life depends on survival and reproduction, and cooperation across difference is critical to both: avoiding deadly conflict, but also reproduction that requires the unlike to come together, especially if inbreeding is to be avoided. Perhaps the most universal feature of religions around the world and across history have been their celebration of those who have achieved peace and cooperation across difference.
 
 For those with a more practical and quantitative orientation, however, perhaps one of the most compelling bodies of evidence is the finding, popularized by economist Oded Galor in his Journey of Humanity.[4](#note-5-0-4)  Building on his work with Quamrul Ashraf charting long-term comparative economic development, he argues that perhaps the most robust and fundamental driver of economic growth is societies' ability to productively and cooperatively harness the potential of social diversity.[5](#note-5-0-5)
 
+{#note-ref-5-0-4}
 
 While using migratory distance from Africa (where diversity is maximum as noted above) as a proxy for "diversity", Galor and collaborators have [since argued](https://cepr.org/voxeu/columns/roots-cultural-diversity) that diversity takes a wide range of forms and leads to a broad range of divergent outcomes.[6](#note-5-0-6)  Today the word "diversity" is in many contexts used to specify some dimensions along which oppression was historically organized in societies like the US that are particularly culturally dominant in the world today.  Yet such a definition is simplistic relative to the tremendous diversity of forms of diversity that define our world:
+
+{#note-ref-5-0-5}
 
 * Religion and religiosity: A diverse range of religious practices, including secularism, agnosticism, and forms of atheism, are central to the metaphysical, epistemological and ethical perspective of most people around the world.
 * Jurisdiction: People are citizens of a range of jurisdictions, including nation states, provinces, cities etc.
@@ -52,17 +55,15 @@ While using migratory distance from Africa (where diversity is maximum as noted 
 * Generation: People differ by age and life experiences.
 * Species: Nearly all the above has assumed that we are talking exclusively about humans, but some of the technologies we will discuss may be used to facilitate communication and collaboration between humans and other life forms or even the nonbiological natural or spiritual worlds, which is obviously richly diverse internally and from human life.
 
-
 Furthermore, as we have emphasized repeatedly above, human identities are defined by combinations and intersections of these forms of diversity, rather than their mere accumulations, just as the simple building blocks of DNA's four base pairs give rise to life's manifold diversity.
-
 
 Yet, if history teaches anything, it is that for all its potential, collaboration across diversity is challenging.  Social differences typically create divergences in goals, beliefs, values, solidarities/attachments, and culture/paradigm.  Simple differences in beliefs and goals alone are the easiest to overcome by sharing information or agreeing to disagree, many differences in beliefs can be bridged and with common understanding of objective circumstances, compromises on goals are fairly straightforward.  Values are more challenging, as they involve things that both sides will be reluctant to compromise over and tolerate.
 
 But the hardest differences to bridge are typically those related to systems of identification (solidarity/attachment) of meaning-making (culture).  Solidarity and attachment relate to the others to which one feels allied or sharing in a "community of fate" and interests, groups by which one defines who and what one is.  Cultures are systems of meaning-making that allow us to attach significance to otherwise arbitrary symbols.  Languages are the simplest example, but all kinds of actions and behaviors carry differing meaning depending on cultural contexts.[7](#note-5-0-7)
 
+{#note-ref-5-0-6}
 
 Solidarity and culture are so challenging because they stand in the way not of specific agreements about information or goals but of communication, mutual comprehension, and the ability to regard someone else as a partner capable and worthy of such exchange. While they are in an abstract sense related to beliefs and values, solidarities and culture in practice precede these in human development: we are aware of our family and those who will protect us and learn to communicate long before we consciously hold any views or aim for any goals.  Being so foundational, they are the hardest to safely adjust or change, usually requiring shared life-shaping experiences or powerful intimacy to reform.
-
 
 Beyond the difficulty of overcoming difference, it also holds an important peril. Bridging differences for collaboration often erodes them, harnessing their potential but also reducing that potential in the future.  While this may be desirable for protection against conflict, it is an important cost to the productive capacity of diversity in the future.  The classic illustration is the way that globalization has both brought gains from trade, such as diversifying cuisine, while at the same time arguably homogenizing culture and thus possibly reducing the opportunity for such gains in the future.  A critical concern  in ⿻ is not just harnessing collaboration across diversity but also *regenerating* diversity, ensuring that in the process of harnessing diversity it is also replenished by the creation of new forms of social difference. Again, this is analogous to energy systems which must ensure that they not only harvest but also regenerate the sources of their energy to achieve sustainable growth.
 
@@ -72,6 +73,7 @@ Because of the tensions between collaboration and diversity, one would naturally
 
 One rough way to think about quantifying the differences between these interaction modes is in terms of the information theoretical concept of *bandwidth*.  Capitalism tends to reduce everything to a single number (scalar) of money.  Intimacy, on the other hand, typically not only immerses all senses but goes beyond this to touch "[proprioception](https://en.wikipedia.org/wiki/Proprioception)" (also known as kinesthesia), the internal sensations of one's own body and being that neuroscientists believe constitute a majority of all sensory input.[8](#note-5-0-8)  Intermediate modalities lie between, activating structured forms of symbols or limited sets of sense.
 
+{#note-ref-5-0-7}
 
 The natural trade-off, however, that is the reason capitalism has not been superseded by universal intimacy is that high bandwidth communication is challenging to establish among large and diverse groups.  Thinner and shallower collaboration scales more easily.  While the simplest notion of scale is the number of people involved, this is shorthand.  Breadth is best understood in terms of inclusion across lines of social and cultural distance rather than simply large numbers of people.  For example, deep collaboration may well be easier among a large extended family, physically co-located and sharing a language and religion than among a handful of people scattered around the world, speaking different languages, etc.
 
@@ -83,20 +85,19 @@ The natural trade-off, however, that is the reason capitalism has not been super
 
 We can see there being a full spectrum of depth and breadth, representing the trade-off between the two. Economists often describe technologies by "production possibilities frontiers" (PPF) illustrating the currently possible trade-offs between two desirable things that are in tension.  In Figure A, we plot this spectrum of cooperation as such a PPF, grouping different specific modalities that we study below into broad categories of "communities" with rich but narrow communication, "states" with intermediate on both and "commodities" with thin but broad cooperative modes. The goal of ⿻ is to push this frontier outward at every point along it, as we have illustrated in these seven points, each becoming a technologically enhanced extension.[9](#note-5-0-9)
 
+{#note-ref-5-0-8}
 
 One example illustrating this trade-off is common in political science: the debate over the value of deliberation compared to voting in democratic polities.  High quality deliberation is traditionally thought to only be feasible in small groups and thus require processes of selection of a small group to represent a larger population such as representative government elections or sortition (choosing participants at random), but is believed to lead to richer collaboration, more complete airing of participant perspectives and therefore better eventual collective choices.  On the other hand, voting can involve much larger and more diverse populations at much lower cost but comes at the cost of each participant providing thin signals of their perspectives in the form (usually) of assent for one among a predetermined list of options.
 
-
 But for all the debate between the proponents of "deliberative" and "electoral" democracy, it is important to note that these are just two points along a spectrum (both mostly within the "state" category) and far from even representing the endpoints of that spectrum.  As rich as in-person deliberations can be, they provide nowhere near the depth of sharing, connection and building of common purpose and identity that the building of committed teams (as in e.g. the military) and long-term intimate relationships do.  And while voting can allow hundreds of millions to have a say on a decision, it has never cut across social boundaries in any way close to what impersonal, globalized markets do everyday.  All these forms have trade-offs and the very diversity of the ways in which we have historically navigated them and the ways in which these have improved overtime (e.g. the advent of video conferencing)  should be a source of hope that concerted development can radically improve these trade-offs, allowing richer collaboration across a broader diversity of social differences than in the past.
-
 
 ### Goals, affordances and multipolarity
 
 Yet aiming at "improving" this trade-off requires us to specify at least something about what would count as an improvement.   What makes a collaboration good or meaningful?  What precisely constitutes social difference and diversity?  How can we measure both?
 
-
 One standard perspective, especially in economics and quantitatively inclined fields is to insist that we should specify a global "objective" or "social welfare" function against which progress should be judged.  The difficulty, of course, is that, in the face of the limitless possibilities of social life, any attempt to specify such a criterion is destined to crash land on the shores of the unknown and possibly unknowable. The more ambitiously we apply such a criterion in pursuing ⿻, the less robust it will prove, because the more deeply we connect to others across greater difference, the more likely we are to realize the failings of our initial vision of the good.  Insisting on specifying such a criterion in advance of learning about the shape of the world leads to premature optimization, which prominent British computer scientist Tony Hoare once labeled "[the root of all evil](https://ubiquity.acm.org/article.cfm?id=1513451)".[10](#note-5-0-10)
 
+{#note-ref-5-0-9}
 
 One of the worst such evils is papering over the richness and diversity of the world.  Perhaps the archetypal example is conclusions about the optimality of markets in neoclassical economics, which depend on extremely simplistic assumptions and have often been used to short-circuit attempts to discover systems for social resource management that deal with problems of increasing returns, sociality, incomplete information, limited rationality, etc.  As will become evident in the coming chapters, we know very little about how to even build social systems that are sensitive to these features, much less even approximately optimal in the face of them.  This shows why the desire to optimize, chasing some simple notion of the good, often seduces us away from the aspirations of ⿻ as much as it aids us in pursuing it.  We can be tempted to maximize what is simple to describe and easy to achieve, rather than anything we are really after.
 
@@ -110,20 +111,21 @@ Luckily, a middle, pragmatic, ⿻ path is possible.  We need neither take a God'
 
 We can do this guided by a common principle of cooperation across difference that is too broad to be formulated as a consistent objective function, yet elegant enough to unify a wide range of technologies: **we develop tools that allow greater cooperation and consensus at the same time as they make space for greater diversity**.  Consider two extremely different examples we will discuss below that both can be justified by this logic: [brain-to-brain interfaces](https://www.ise.ncsu.edu/bci/projects/brain-to-brain-interfaces/) and [approval voting](https://en.wikipedia.org/wiki/Approval_voting).  While the first is a wildly futuristic and disturbingly invasive concept, the second is an old and widely applied voting method.  Yet the simple idea of cooperation across difference helps justify both: a key aspiration of brain-to-brain interface is to allow children to retain more of their imagination as they grow to adulthood by allowing them to directly share this imagination rather than having to fit it into what they can write or draw.[11](#note-5-0-11)  This allows much greater diversity and much greater common understanding.  Similarly, a key goal of approval voting (where citizens can vote for as many candidates as they wish and the one with the most votes wins) is to simultaneously ensure that the elected candidate has very wide general consensus *and* enable there to exist a much broader diversity of candidates because voters are not afraid a "third party" will act as a spoiler as voters can choose both the third party and one of the leading ones.[12](#note-5-0-12)
 
+{#note-ref-5-0-10}
 
 Each of these technologies carries its risks: brain-to-brain interfaces could easily be used to manipulate, and approval voting could create a race towards mediocrity, as we discuss in relevant chapters below.  Yet the diversity of modes highlighted by this approach gives hope that any connections we make and conflicts we resolve are but one stage in a process of collaboration across diversity.  Every successful step forward should bring even more challenging forms of diversity into the world we can perceive, reshaping our understanding of ourselves and our aspirations and demanding that we struggle that much harder to bridge them.  While such an aspiration lacks the satisfying simplicity of maximizing an objective function or pursuing technical advance and social richness wherever they lead, this is precisely why it is the hard path worth pursuing. Following another *Star Trek* slogan, *[ad astra per aspera](https://www.imdb.com/title/tt18971274/)*: "to the stars, through adversity" or in the words of Nobel laureate André Gide, "Trust those who seek trust, but fear those who have found it."
 
-
 ### Regenerating diversity
-
 
 Yet, as noted above, even if we manage to avoid these pitfalls and successfully bridge and harness diversity, we run the risk, in the process, of depleting the resource diversity provides. This is possible at any point along the spectrum and at any level of technological sophistication. Intimate relationships that form families can homogenize participants, undermining the very sparks of complementarity that ignited love.  Building political consensus can undermine the dynamism and creativity of party politics.[13](#note-5-0-13)  Translation and language learning can undermine interest in the subtleties of other languages and cultures.
 
+{#note-ref-5-0-11}
 
 Yet homogenization is not an inevitable outgrowth of bridging, even when one effect is to recombine existing culture and thus lessen their average divides. The reason is that bridging plays a positive, productive role, not just a defensive one.  Yes, interdisciplinary bridging of scientific fields may loosen the internal standards of a field and thus the distinctive perspective it brings to bear.  But it may also give rise to new, equally distinctive fields.  For example, the encounter between psychology and economics has created a new "behavioral economics" field; encounters between biology, physics and computer science have birthed the blossoming field of "systems biology"; the encounter between computer science and statistics has helped launch "data science" and artificial intelligence.
 
 Similar phenomena emerge throughout history.  Bridging political divides may lead to excess homogenization, but it can also lead to the birth of new political cleavages.  Families often bear children, who diverge from their parents and bring new perspectives.  Most artistic  and culinary novelty is born of "bricolage" or "fusion" of existing styles.[17](#note-5-0-17)  The syntheses that emerge when thesis and antithesis meet are not always compromises, but instead there may be new perspectives that realign a debate.[14](#note-5-0-14)
 
+{#note-ref-5-0-12}
 
 None of this is inevitable and of course there are many stories of intersections that undermine diversity.  But this range of possibilities gives hope that with careful attention to the issue, it is possible in many cases to design approaches to collaboration that renew the diversity that powers them.
 
@@ -131,74 +133,105 @@ None of this is inevitable and of course there are many stories of intersections
 
 In this part of the book, we will (far from exhaustively) explore a range of approaches to collaboration across difference and how further advances to ⿻ can extend and build on them.  Each chapter will begin, as this one did, with an illustration of technology near the cutting edge of what is possible that is in use today.  It will then describe the landscape of approaches that are common and emerging in its area. Next it will highlight the promise of future developments that are being researched, as well as risks these tools might pose to ⿻ (such as homogenization) and approaches to mitigating them, including by harnessing tools described in other chapters.  We hope that the wide range of approaches we highlight draws out not just the substance of ⿻, but also the consistency of its approach with its substance.  Only a ⿻ complementary and networked directions can support the development of a ⿻ future.
 
-
-
 ## Chapter notes {#notes-5-0}
 
 ### Note 1 {#note-5-0-1}
 
 Tobin South, Leon Erichsen, Shrey Jain, Petar Maymounkov, Scott Moore and E. Glen Weyl, "Plural Management" (2024) at https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4688040.
 
+[Back to text](#note-ref-5-0-1)
+
 ### Note 2 {#note-5-0-2}
 
 Divya Siddarth, Matt Prewitt and Glen Weyl, "Beyond Public and Private: Collective Provision Under Conditions of Supermodularity" (2024) at https://cip.org/supermodular.
+
+[Back to text](#note-ref-5-0-2)
 
 ### Note 3 {#note-5-0-3}
 
 The analogy here is even tighter than it might seem at first.  What is usually called "energy" is actually "low entropy"; a uniformly hot system has lots of "energy" but this is not actually useful.   All systems for producing "energy" work by harnessing this low entropy ("diversity") to produce work; such systems also have the advantage of avoiding "uncontrolled" releases of heat through explosions ("conflict").  There is thus a quite literal and direct analogy between ⿻'s goal of harnessing social low entropy and industrialism's goal of harnessing physical low entropy.
 
+[Back to text](#note-ref-5-0-3)
+
 ### Note 4 {#note-5-0-4}
 
 Oded Galor, *The Journey of Humanity: A New History of Wealth and Inequality with Implications for our Future* (New York: Penguin Random House, 2022).
+
+[Back to text](#note-ref-5-0-4)
 
 ### Note 5 {#note-5-0-5}
 
 Quamrul Ashraf and Oded Galor, "The 'Out of Africa' Hypothesis, Human Genetic Diversity, and Comparative Economic Development", *American Economic Review* 103, no.1 (2013): 1-46.
 
+[Back to text](#note-ref-5-0-4)
+
 ### Note 6 {#note-5-0-6}
 
 Oded Galor, Marc Klemp and Daniel Wainstock, "The Impact of the Prehistoric Out of Africa Migration on Cultural Diversity" (2023) at https://www.nber.org/papers/w31274.
+
+[Back to text](#note-ref-5-0-5)
 
 ### Note 7 {#note-5-0-7}
 
 Lisa Wedeen, "Conceptualizing Culture: Possibilities for Political Science", *American Political Science Review* 96, no. 4 (2002): 713--728.
 
+[Back to text](#note-ref-5-0-6)
+
 ### Note 8 {#note-5-0-8}
 
 Uwe Proske and Simon C. Gandevia, "The Proprioceptive Senses: Their Roles in Signaling Body Shape, Body Position and Movement, and Muscle Force", *Physiological Review* 92, no. 4: 1651-1697.
+
+[Back to text](#note-ref-5-0-7)
 
 ### Note 9 {#note-5-0-9}
 
 This tripartite division of modes of exchange into communities, state, and commodities is inspired by Kojin Karatani, *The Structure of World History: From Modes of Production to Modes of Exchange* (Durham, NC: Duke University Press, 2014). Karatani's aspiration to achieve the return of community at a broader scale can be seen as an ambitious example of ⿻.
 
+[Back to text](#note-ref-5-0-8)
+
 ### Note 10 {#note-5-0-10}
 
 Randall Hyde, "The Fallacy of Premature Optimization" *Ubiquity* February, 2009 available at https://ubiquity.acm.org/article.cfm?id=1513451.
+
+[Back to text](#note-ref-5-0-9)
 
 ### Note 11 {#note-5-0-11}
 
 Rajesh P. N. Rao, Andrea Stocco, Matthew Bryan, Devapratim Sarma, Tiffany M. Youngquist ,Joseph Wu and Chantel S. Prat, "A Direct Brain-to-Brain Interface in Humans" *PLOS One* 9, no. 11: e111322 at https://doi.org/10.1371/journal.pone.0111332.
 
+[Back to text](#note-ref-5-0-10)
+
 ### Note 12 {#note-5-0-12}
 
 Steven J. Brams and Peter C. Fishburn, "Approval Voting", *American Political Science Review* 72, no. 3: 831-847.
+
+[Back to text](#note-ref-5-0-10)
 
 ### Note 13 {#note-5-0-13}
 
 Nancy L. Rosenblum, *On the Side of the Angels: An Appreciation of Parties and Partisanship* (Princeton, NJ: Princeton University Press, 2010).
 
+[Back to text](#note-ref-5-0-11)
+
 ### Note 14 {#note-5-0-14}
 
 This concept is often erroneously attributed to the work of G.W.F. Hegel, but actually originates with Johann Gottlieb Fichte and was not an important part of Hegel's thought. Johann Gottlieb Fichte, "Renzension des Aenesidemus", *Allgemeine Literatur-Zeitung* 11-12 (1794).
+
+[Back to text](#note-ref-5-0-12)
 
 ### Note 15 {#note-5-0-15}
 
 David Ricardo, _On the Principles of Political Economy and Taxation_, (London: John Murray, 1817).
 
+[Back to text](#note-ref-5-0-2)
+
 ### Note 16 {#note-5-0-16}
 
 One possible disanalogy is that the Second Law of Thermodynamics implies that in a long-term and broad scope sense, regeneration  can never succeed.  Whether the same applies to diversity is less clear, though given how long term the relevance of the Second Law is, the analogy is quite strong for practical purposes.  In the long run, we're all dead.
 
+
 ### Note 17 {#note-5-0-17}
 
 Claude Lévi-Strauss, _The Elementary Structures of Kinship_, (Boston: Beacon Press, 1969).
+
+[Back to text](#note-ref-5-0-12)

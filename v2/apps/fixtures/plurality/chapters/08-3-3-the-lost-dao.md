@@ -4,6 +4,7 @@
 
 > (D)ecisions about the development and exploitation of computer technology must be made not only "in the public interest" but in the interest of giving the public itself the means to enter into the decision-making processes that will shape their future. — J. C. R. Licklider, "Computers and Government", 1980[1](#note-3-3-1)
 
+{#note-ref-3-3-1}
 
 ---
 
@@ -13,11 +14,13 @@ Can a ⿻ understanding of society lay the foundation for social transformations
 
 This was the mission pursued by the younger generation that followed in Wiener's lead but had a more human/social scientific background. This generation included a range of pioneers of applied cybernetics such as the anthropologist Margaret Mead[2](#note-3-3-2) (who heavily influenced the aesthetics of the internet), W. Edwards Deming[19](#note-3-3-19) (whose influence on Japanese and to a lesser extent Taiwanese inclusive industrial quality practices we saw above) and [Stafford Beer](https://profilebooks.com/work/the-unaccountability-machine/)[4](#note-3-3-4) (who pioneered business cybernetics and has become something of a guru for social applications of Wiener's ideas including in Chile's brief cybernetic socialist regime of the early 1970s). They built on his vision in a more pragmatic mode, shaping technologies that defined the information era. Yet the most ambitious and systemic impact of this work was heralded by a blip moving across the sky in October 1957, a story masterfully narrated by M. Mitchell Waldrop in his _The Dream Machine_, from which much of what follows derives.[5](#note-3-3-5)
 
+{#note-ref-3-3-2}
 
 #### Sputnik and the Advanced Research Projects Agency
 
 The launch by the Soviet Union of the first orbital satellite was followed a month later by the Gaither Committee report, claiming that the US had fallen behind the Soviets in missile production. The ensuing moral panic forced the Eisenhower administration into emergency action to reassure the public of American strategic superiority. Yet despite, or perhaps because of, his own martial background, Eisenhower deeply distrusted what he labeled America's "military industrial complex", while having boundless admiration for scientists.[6](#note-3-3-6) He thus aimed to channel the passions of the Cold War into a national strategy to improve scientific research and education.[47](#note-3-3-47)
 
+{#note-ref-3-3-3}
 
 While that strategy had many prongs, a central one was the establishment, within the Department of Defense, of a quasi-independent, scientifically administered Advanced Research Projects Agency (ARPA) that would harness expertise from universities to accelerate ambitious and potentially transformative scientific projects with potential defense applications.
 
@@ -27,6 +30,8 @@ Licklider hailed from a different field still from the political economy of Geor
 
 Having persuaded BBN's leadership to shift their attention towards computing devices, Lick began to develop an alternative technological vision to the then-emerging field of Artificial Intelligence that drew on his psychological background to propose "Man-Computer Symbiosis", as his path-breaking 1960 paper was titled. Lick hypothesized that while "in due course...'machines' will outdo the human brain in most of the functions we now consider exclusively within its province...(t)here will...be a fairly long interim during which the main advances will be made by men and computers working together...those years should be intellectually the most creative and exciting in the history of mankind."[48](#note-3-3-48)
 
+{#note-ref-3-3-4}
+
 These visions turned out to arrive at precisely the right moment for ARPA, as it was in search of bold missions with which it could secure its place in the rapidly coalescing national science administration landscape. Ruina appointed Lick to lead the newly formed Information Processing Techniques Office (IPTO). Lick harnessed the opportunity to build and shape much of the structure of what became the field of Computer Science.
 
 #### The Intergalactic Computer Network
@@ -35,17 +40,21 @@ While Lick spent only two years at ARPA, they laid the groundwork for much of wh
 
 Beyond establishing the computational and scientific backbone of modern computing, Lick was particularly focused on the "human factors" in which he specialized. He aimed to make the network represent these ambitions in two ways that paralleled the social and personal aspects of humanity. On the one hand, he gave particular attention and support to projects he believed could bring computing closer to the lives of more people, integrating with the functioning of human minds. The leading example of this was the Augmentation Research Center established by Douglas Engelbart at Stanford.[46](#note-3-3-46) On the other hand, he dubbed the network of collaboration between these hubs, with his usual tongue-in-cheek, the "[Intergalactic Computer Network](https://worrydream.com/refs/Licklider_1963_-_Members_and_Affiliates_of_the_Intergalactic_Computer_Network.pdf)", and hoped it would provide a model of computer-mediated collaboration and co-governance.[7](#note-3-3-7)
 
+{#note-ref-3-3-5}
 
 This project bore fruit in a variety of ways, both immediately and longer term. Engelbart quickly invented many foundational elements of personal computing, including the mouse, a bitmapped screen that was a core precursor to the graphical user interface and hypertext; his demonstration of this work, six short years after Lick's initial funding, as the "oNLine system" (NLS) is remembered as "[the mother of all demos](https://www.youtube.com/watch?v=yJDv-zdhzMY)" and a defining moment in the development of personal computers.[44](#note-3-3-44) This in turn helped persuade Xerox Corporation to establish their Palo Alto Research Center (PARC), which went on to pioneer much of personal computing. [US News and World Report](https://www.usnews.com/best-colleges/rankings/computer-science-overall) ranks four of these five universities in the top 10 computer science departments in the US.[8](#note-3-3-8)
 
+{#note-ref-3-3-6}
 
 #### A network of networks
 
 Taylor and Lick were naturally colleagues. While Taylor never completed his PhD, his research field was also psychoacoustics and he served as Lick's counterpart at NASA, which had just split from ARPA, during Lick's leadership at IPTO. Shortly following Lick's departure (in 1965), Taylor moved to IPTO to help develop Lick's networking vision under the leadership of Ivan Sutherland, who then returned to academia, leaving Taylor in charge of IPTO and the network that he more modestly labeled the ARPANET. He used his authority to commission Lick's former home of BBN to build the first working prototype of the ARPANET backbone. With momentum growing through Engelbart's demonstration of personal computing and ARPANET's first successful trials, Lick and Taylor articulated their vision for the future possibilities of personal and social computing in their 1968 article "[The Computer as a Communication Device](https://moodlearchive.epfl.ch/2021-2022/pluginfile.php/2704820/mod_resource/content/3/LickliderApr68.pdf)", describing much of what would become the culture of personal computing, internet and even smartphones several decades later.[9](#note-3-3-9)
 
+{#note-ref-3-3-7}
 
 By 1969, Taylor felt the mission of the ARPANET was on track to success and moved on to Xerox PARC, where he led the Computer Science Laboratory in developing much of this vision into working prototypes. These in turn became the core of the modern personal computer that Steve Jobs famously "stole" from Xerox to build the Macintosh, while ARPANET evolved into the modern internet.[10](#note-3-3-10) In short, the technological revolutions of the 1980s and 1990s trace clearly back to this quite small group of innovators in the 1960s. While we will turn to these more broadly known later developments shortly, it is worth lingering on the core of the research program that made them possible.
 
+{#note-ref-3-3-8}
 
 At the core of the development of what became the internet was replacing centralized, linear, and atomized structures with ⿻ relationships and governance. This happened at three levels that eventually converged in the early 1990s as the World Wide Web:
 
@@ -57,6 +66,7 @@ All three ideas had their seeds at the edges of the early community Lick formed 
 
 While the concept of networks, redundancy and sharing permeate Lick's original vision, it was Paul Baran's 1964 report "On Distributed Communications" that clearly articulated how and why communications networks should strive for a ⿻ rather than centralized structure.[11](#note-3-3-11)
 
+{#note-ref-3-3-9}
 
 Baran argued that while centralized switchboards achieved high reliability at low cost under normal conditions, they were fragile to disruptions. Conversely, networks with many centers could be built with cheap and unreliable components and still withstand even quite devastating attacks by "routing around damage", taking a dynamic path through the network based on availability rather than prespecified planning. While Baran received support and encouragement from scientists at Bell Labs, his ideas were roundly dismissed by AT&T, the national telephone monopoly in whose culture high-quality centralized dedicated machinery was deeply entrenched.
 
@@ -72,6 +82,7 @@ If one path to networked thinking was thus motivated by technical resilience, an
 
 Nelson imagined hypertext as a way to liberate communication from the tyranny of a linear interpretation imposed by an original author, empowering a "[pluralism](https://cs.brown.edu/people/nmeyrowi/LiteraryMachinesChapter2.pdf)" (as he labeled it) of paths through material through a network of (bidirectional) links connecting material in a variety of sequences.[12](#note-3-3-12) This "choose your own adventure"[43](#note-3-3-43) quality is most familiar today to internet users in their browsing experiences but showed up earlier in commercial products in the 1980s (such as computer games based on hypercard). Nelson imagined that such ease of navigation and recombination would enable the formation of new cultures and narratives at unprecedented speed and scope. The power of this approach became apparent to the broader world when Tim Berners-Lee made it central to his "[World Wide Web](https://www.w3.org/History.html)" approach to navigation in the early 1990s, ushering in the era of broad adoption of the internet.
 
+{#note-ref-3-3-10}
 
 While Engelbart and Nelson were lifelong friends and shared many similar visions, they took very different paths to realizing them, each of which (as we will see) held an important seed of truth. Engelbart, while also a visionary, was a consummate pragmatist and a smooth political operator, and went on to be recognized as the pioneer of personal computing. Nelson was an artistic purist whose relentless pursuit over decades of Xanadu embodying all of his [seventeen enumerated principles](https://en.wikipedia.org/wiki/Project_Xanadu#Original_17_rules) buried his career.
 
@@ -79,6 +90,7 @@ As an active participant in Lick's network, Engelbart conversely tempered his am
 
 This culture manifested in the development of the "Request for Comments" (RFC) process by Steve Crocker, arguably one of the first "wiki"-like processes of informal and mostly additive collaboration across many geographically and sectorally (governmental, corporate, university) dispersed collaborators. This in turn contributed to the common Network Control Protocol and, eventually, Transmission Control and Internet Protocols (TCP/IP) under the famously mission-driven but inclusive and responsive leadership of Vint Cerf and Bob Kahn between 1974 when TCP was first circulated as RFC 675 and 1983 when they became the official ARPANET protocols. At the core of the approach was the vision of a "network of networks" that gave the "internet" its name: that many diverse and local networks (at universities, corporations and government agencies) could inter-operate sufficiently to permit the near-seamless communication across long distances, in contrast to centralized networks (such as France's concurrent Minitel) that were standardized from the top down by a government.[13](#note-3-3-13) Together these three dimensions of networking (of technical communication protocols, communicative content and governance of standards) converged to create the internet we know today.
 
+{#note-ref-3-3-11}
 
 ### Triumph and tragedy
 
@@ -90,6 +102,7 @@ Much of what resulted from this project is so broadly known it hardly bears repe
 
 
 
+{#note-ref-3-3-12}
 
 #### The internet and its discontents
 
@@ -97,10 +110,13 @@ And much as it had developed in parallel from the start, the internet grew to co
 
 One of those was the United Kingdom, where researcher Tim Berners-Lee in 1989 proposed a "web browser", "web server" and a Hypertext Mark-Up Language (HTML) that fully connected hypertext to packet-switching and made internet content far more available to a broad set of end users. From the launch of Berners-Lee's World Wide Web (WWW) in 1991, internet usage grew from roughly 4 million people (mostly in North America) to over 400 million (mostly around the world) by the end of the millennium. With internet start-ups booming in Silicon Valley and life for many beginning its migration online though the computers many now had in their home, the era of networked personal computing (of "The Computer as a Communication Device") had arrived.[45](#note-3-3-45)
 
+{#note-ref-3-3-13}
+
 In the boom and bust euphoria of the turn of the millennium, few people in the tech world paid attention to the specter haunting the industry, the long-forgotten Ted Nelson. Stuck on his decades-long quest for the ideal networking and communication system, Nelson ceaselessly warned of the insecurity, exploitative structure and inhumane features of the emerging WWW design. Without secure identity systems (Xanadu Principles 1 and 3), a mixture of anarchy and land-grabs by nation states and corporate actors would be inevitable. Without embedded protocols for commerce (Xanadu Principles 9 and 15), online work would become devalued or the financial system controlled by monopolies. Without better structures for secure information sharing and control (Xanadu Principles 8 and 16), both surveillance and information siloing would be pervasive. Whatever its apparent success, the WWW-Internet was doomed to end badly.
 
 While Nelson was something of an oddball, his concerns were surprisingly broadly shared among even the mainstream internet pioneers who would seem to have every reason to celebrate their success. As early as 1980, while TCP/IP was coalescing, Lick foresaw in his classic essay "Computers and Government" "two scenarios" (one good, the other bad) for the future of computing: it could be dominated and its potential stifled by monopolistic corporate control or there could be a full societal mobilization that made computing serve and support democracy.[15](#note-3-3-15) In the former scenario, Lick projected all kinds of social ills, one that might make the advent of the information age a net detractor to democratic social flourishing. These included:
 
+{#note-ref-3-3-14}
 
 1. Pervasive surveillance and public distrust of government.
 2. Paralysis of government's ability to regulate or enforce laws, as they fall behind the dominant technologies citizens use.
@@ -111,8 +127,9 @@ While Nelson was something of an oddball, his concerns were surprisingly broadly
 7. Government data and statistics becoming increasingly inaccurate and irrelevant.
 8. Control by private entities of the fundamental platforms for speech and public discourse.
 
-The wider internet adoption spread, the less relevant such complaints appeared. Government did not end up playing as central of a role as he imagined, but by 2000 most of the few commentators who were even aware of his warnings assumed we were surely on the path of Lick's scenario 2. Yet in a few places, concern was growing by late in the first decade of the new millennium. Virtual reality pioneer Jaron Lanier sounded the alarm in two books _[You are Not a Gadget](https://www.amazon.com/You-Are-Not-Gadget-Manifesto/dp/0307389979)_ and _[Who Owns The Future?](https://www.simonandschuster.com/books/Who-Owns-the-Future/Jaron-Lanier/9781451654974)_, highlighting Nelson's and his own version of Lick's concerns about the future of the internet.[16](#note-3-3-16) While these initially appeared simply an amplification of Nelson's fringe ideas, a series of world events that we discuss in the [Information Technology and Democracy: a Widening Gulf](https://www.plurality.net/v/chapters/2-0/eng/?mode=dark) above eventually brought much of the world around to seeing the limitations of the internet economy and society that had developed, helping ignite the Techlash. These patterns bore a striking resemblance to Lick and Nelson's warnings. The victory of the internet may have been far more Pyrrhic than it at first seemed.
+The wider internet adoption spread, the less relevant such complaints appeared. Government did not end up playing as central of a role as he imagined, but by 2000 most of the few commentators who were even aware of his warnings assumed we were surely on the path of Lick's scenario 2. Yet in a few places, concern was growing by late in the first decade of the new millennium. Virtual reality pioneer Jaron Lanier sounded the alarm in two books _[You are Not a Gadget](https://www.amazon.com/You-Are-Not-Gadget-Manifesto/dp/0307389979)_ and _[Who Owns The Future?](https://www.simonandschuster.com/books/Who-Owns-the-Future/Jaron-Lanier/9781451654974)_, highlighting Nelson's and his own version of Lick's concerns about the future of the internet.[16](#note-3-3-16) While these initially appeared simply an amplification of Nelson's fringe ideas, a series of world events that we discuss in the [Information Technology and Democracy: a Widening Gulf](../2-0/) above eventually brought much of the world around to seeing the limitations of the internet economy and society that had developed, helping ignite the Techlash. These patterns bore a striking resemblance to Lick and Nelson's warnings. The victory of the internet may have been far more Pyrrhic than it at first seemed.
 
+{#note-ref-3-3-15}
 
 ### Losing our dao
 
@@ -120,6 +137,7 @@ How did we fall into a trap clearly described by the founders of hypertext and t
 
 It was the warning signs that motivated Lick to put pen to paper in 1980 as the focus of ARPA (now DARPA) shifted away from support for networking protocols towards more directly weapons-oriented research. Lick saw this resulting from two forces on opposite ends of the political spectrum. On the one hand, with the rise of "small government conservatism" that would later be labeled "neoliberalism", government was retreating from proactively funding and shaping industry and technology. On the other hand, the Vietnam War turned much of the left against the role of the defense establishment in shaping research, leading to the [Mansfield Amendments](https://link.springer.com/chapter/10.1007/978-1-349-06430-4_6) of 1970, 1971 and 1973 that prohibited ARPA from funding any research not directly related to the "defense function".[17](#note-3-3-17) Together these were redirecting DARPA's focus to technologies like cryptography and artificial intelligence that were seen as directly supporting military objectives.
 
+{#note-ref-3-3-16}
 
 Yet even if the attention of the US government had not shifted, the internet was quickly growing out of its purview and control. As it became an increasingly global network, there was (as Dewey predicted) no clear public authority to make the investments needed to deal with the socio-technical challenges needed to make a network society a broader success. To quote Lick
 
@@ -129,6 +147,7 @@ The declining role of public and social sector investment left core functions/la
 
 Into the resulting vacuum stepped the increasingly eager private sector, flush with the success of the personal computer and inflated by the stirring celebrations of Reagan and Thatcher. While the International Business Machines (IBM) that Lick feared would dominate and hamper the internet's development proved unable to keep pace with technological change, it found many willing and able successors. A small group of telecommunications companies took over the internet backbone that the NSF freely relinquished. Web portals, like America Online and Prodigy came to dominate most Americans' interactions with the web, as Netscape and Microsoft vied to dominate web browsing. The neglected identity functions were filled by the rise of Google and Facebook. Absent digital payments were filled in by PayPal and Stripe. Absent the protocols for sharing data, computational power and storage that motivated work on the Intergalactic Computer Network in the first place, private infrastructures (often called "cloud providers") that empowered such sharing (such as Amazon Web Services and Microsoft Azure) became the platforms for building applications.[18](#note-3-3-18)
 
+{#note-ref-3-3-17}
 
 While the internet backbone continued to improve in limited ways, adding security layers and some encryption, the basic features Lick and Nelson saw as essential were never integrated. Public financial support for the networking protocols largely dried up, with remaining open-source development largely consisting of volunteer work or work supported by private corporations. As the world woke to the Age of the Internet, the dreams of its founders faded.
 
@@ -141,8 +160,12 @@ In the early postwar period, Japan had yet to develop robust infrastructure for 
 Deming emphasized that QC should not be viewed simply as the problem of “weeding out defective products through inspection” but rather as a total process in which the production loop itself is statistically managed and repeatedly improved. Deming also urged top management to engage in communications with engineers and workers and to build an organizational culture that improves processes by recognizing their awareness of total QC for manufacturing. This move toward process-focused improvement changed the fundamental way of Japanese manufacturing.
 In 1951, JUSE solidified Deming's ideas by establishing the Deming Prize. The award celebrates companies and individuals who made remarkable contributions to the advancement of QC. Around the same time, Toyota—a corporation that would later become one of the world’s largest—shifted from inspection-centric QC to a more process-centric approach. [21](#note-3-3-21) Over the years, these evolving practices came to be known collectively as the PDCA cycle and Kaizen, eventually gaining widespread acceptance across Japanese industries. The practices are one of achievements by demonstrating Wiener's cybernetic concept of feedback loops for self-adaptation.
 
+{#note-ref-3-3-18}
+
 Wiener’s cybernetic feedback loops also provided the groundwork for what would later be called “complex systems” in the 1980s. Complex systems, initiated by Stuart Kauffman and others, focuses on the higher-order patterns and order (self-organization and emergent phenomena) that emerge from the interactions among numerous elements—be they humans, cells, molecules, or computers—patterns that would not otherwise arise from the individual elements alone. Cybernetics and complex systems share a common question about how systems dynamically change, learn, and maintain or create order.
 Building on the basis of cybernetics, fields including complex systems, artificial life, artificial intelligence, and internet technology flourished in natural science and engineering. As the internet rapidly expanded in the 1990s, questions arose about how these technologies could be used to improve social systems. Ken Suzuki, both a researcher in complex systems and artificial life as well as an entrepreneur, presented his vision of the "Nameraka Society" in the 2000s that might be realized 300 years in the future. He later summarized his ideas in his influential Japanese book "The Nameraka Society and Its Enemies" (なめらかな社会とその敵). [22](#note-3-3-22)
+
+{#note-ref-3-3-19}
 
 "Nameraka Society" is a vision for creating systems that transcend human cognitive limitations through technology, and generates a more network-like society where people can live with full complexity. Suzuki understands the world as a complex web-like network. Within this world, systems emerge that, like cell membranes, create boundaries between inside (body) and outside (environment), leading to self-adaptive systems for the body to recognize its environment.
 
@@ -150,10 +173,13 @@ This membrane-like existence is scale-free and, through our evolutionary history
 
 Through technology, his vision attempts to resolve such membranes and nuclei structures, and make our lives a more network-like structure. In a Nameraka Society, individuals no longer exist as such, but rather as "dividuals" (分人) - multi-agent systems constructed through the collaboration of multiple cells, including neural networks in the brain.[23](#note-3-3-23) Drawing on Carl Schmitt's concept of friend and enemy, Suzuki also pointed out that Nameraka society must overcome boundaries between friend and enemy by smooth technological management of violence [24](#note-3-3-24). As a result, people can belong to multiple communities simultaneously without society expecting them to maintain a single identity.
 
+{#note-ref-3-3-20}
+
 Around 2005, Suzuki further proposed the concept of "Constructive Social Contract Theory." This aimed to create a society under the law which could be automatically executed using human-and-machine-readable legal languages. This vision preceded the 2014 invention of Ethereum, which built a foundation for social contracts based on automatically executing smart contracts with blockchain. Suzuki seems to believe that for Dewey's emergent publics to flourish, the source of power itself must be emergent. Based on these ideas, he has also proposed experimental ideas and social systems such as dividual democracy a.k.a. “divicracy" (分人民主主義) [25](#note-3-3-25), which allows for division and delegation of votes, and PICSY (Propagational Investment Currency SYstem) [26](#note-3-3-26), a monetary system where contributions and value propagate. The Nameraka Society’s vision and initiatives continue to influence many Japanese social scientists and engineers including Takahiro Anno, who ran for the 2024 Tokyo gubernatorial election demonstrating digital democracy. [27](#note-3-3-27)
 
-The insights taken from Japan's postwar recovery—namely, the practices of feedback loops and the culture of continuous improvement—reflect the principles of cybernetics. Suzuki's vision for applying these insights to today's digital, networked world can be seen as a project to rediscover and reconstruct "another lost dao". While these developments occurred largely in parallel to and separate from the internet evolution, they represent another path toward realizing cybernetic thinking.
+{#note-ref-3-3-21}
 
+The insights taken from Japan's postwar recovery—namely, the practices of feedback loops and the culture of continuous improvement—reflect the principles of cybernetics. Suzuki's vision for applying these insights to today's digital, networked world can be seen as a project to rediscover and reconstruct "another lost dao". While these developments occurred largely in parallel to and separate from the internet evolution, they represent another path toward realizing cybernetic thinking.
 
 ### Flashbacks
 
@@ -173,11 +199,15 @@ While, as we highlighted in the introduction, the dominant thrust of technology 
 
 This open, non-profit collaborative project has become the leading global resource for reference and broadly shared factual information.[37](#note-3-3-37) In contrast to the informational fragmentation and conflict that pervades much of the digital sphere that we highlighted in the introduction, Wikipedia has become a widely accepted source of shared understanding. It has done this through harnessing large-scale, open, collaborative self-governance.[38](#note-3-3-38) Many aspects of this success are idiosyncratic and attempts to directly extend the model have had mixed success; trying to make such approaches more systematic and pervasive is much of our focus below. But the scale of the success is quite remarkable.[39](#note-3-3-39) Recent analysis suggests that most web searches lead to results that prominently include Wikipedia entries. For all the celebration of the commercial internet, this one public, deliberative, participatory, and roughly consensual resource is perhaps its most common endpoint.
 
+{#note-ref-3-3-22}
+
 The concept of "Wiki," from which Wikipedia derives its name, comes from a Hawaiian word meaning "quick," and was coined by Ward Cunningham in 1995 when he created the first wiki software, WikiWikiWeb. Cunningham aimed to extend the web principles highlighted above of hypertextual navigation and inclusive ⿻ governance by allowing the rapid creation of linked databases.[28](#note-3-3-28) Wikis invite all users, not just experts, to edit or create new pages using a standard web browser and to link them to one another, creating a dynamic and evolving web landscape in the spirit of ⿻.
 
+{#note-ref-3-3-23}
 
 While Wikis themselves have found significant applications, they have had an even broader impact in helping stimulate the "groupware" revolution that many internet users associate with products like Google docs but has its roots in the open source WebSocket protocol.[29](#note-3-3-29) [HackMD](https://hackmd.io/), a collaborative real-time Markdown editor, is used within the g0v community to collaboratively edit and openly share documents such as meeting minutes.[30](#note-3-3-30) While collaboratively constructed documents illustrate this ethos, it more broadly pervades the very foundation of the online world itself. Open-source software (OSS) embodies this ethos of participatory, networked, transnational self-governance. Significantly represented by the Linux operating system, OSS underlies the majority of public cloud infrastructures and connects with many through platforms like GitHub, boasting over 100 million contributors, growing rapidly in recent years especially in the developed world as pictured in Figure D. The Android OS, which powers over 70% of all smartphones, is an OSS project, despite being primarily maintained by Google. The success and impact of such "peer production" has forced the broad reconsideration of many assumptions underlying standard economic analysis.[40](#note-3-3-40)
 
+{#note-ref-3-3-24}
 
 [Figure: Gif showing the share of working age population that are contributors to open source software overtime by countries of the work over the last few years. Share rises from about 1 to 2% in most countries and concentrates in North America, Europe, Oceania and East Asia, especially Taiwan.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/data/oss_impact/oss_impact.gif>)
 
@@ -195,25 +225,29 @@ OSS has expanded across various internet and computing sectors, even earning sup
 
 However, OSS faces challenges such as chronic financial support shortage due to the withdrawal of public funding, as explored by Nadia Eghbal (now Asparouhova) in her book _Working in Public_. Maintainers are often unrewarded, and the community's growth increases the burden on them. Nonetheless, these challenges are addressable, and OSS, despite its business model limitations, exemplifies the continuance of the open collaboration ethos (the lost dao) that ⿻ aims to support. Hence, OSS projects will be frequent examples in this book.
 
-
 Another contrasting reaction to the shift away from public investment in communication networking was exemplified by the work of Lanier from above. A student and critic of AI pioneer Marvin Minsky, he sought to develop a technological program of the same ambition as AI, but centered around human experience and communication. Seeing existing forms of communication as being constrained by symbols that can be processed by the ears and eyes like words and pictures, he aspired to empower deeper sharing of and empathy for experiences only expressible by sense like touch and proprioception (the internal sense). Through his research and entrepreneurship during the 1980s, this developed into the field of "virtual reality", one that has been a continual source of innovation in user interaction since, from the wired glove[41](#note-3-3-41) to Apple's release of the Vision Pro [42](#note-3-3-42).
+
+{#note-ref-3-3-25}
 
 Yet, as we highlighted above, Lanier carried forward not only the cultural vision of the computer as a communication device; he also championed Nelson's critique of the gaps and failings of what became the internet. He particularly emphasized the lack of base layer protocols supporting payments, secure data sharing and provenance and financial support for OSS. This advocacy combined with the emergence of (pseudonymous) Satoshi Nakamoto's invention of the Bitcoin protocol in 2008 to inspire a wave of work on these topics in and around "web3" communities that harnesses cryptography and blockchains to create shared understanding of provenance and value.[32](#note-3-3-32) While many projects in the space have been influenced by Libertarianism and hyper-financialization, the enduring connection to original aspirations of the internet, especially under the leadership of Vitalik Buterin (who founded [Ethereum](https://ethereum.org/en/), the largest smart contract platform), has inspired a number of projects, like [GitCoin](https://www.gitcoin.co/) and [decentralized identity](https://en.wikipedia.org/wiki/Decentralized_identifier), that are central inspirations for ⿻ today as we explore below.
 
+{#note-ref-3-3-26}
 
 Other pioneers on these issues focused more on layers of communication and association, rather than provenance and value. Calling their work the "Decentralized Web" or the "Fediverse", they built protocols like [Christine Lemmer-Webber](https://dustycloud.org/)'s [ActivityPub](https://en.wikipedia.org/wiki/ActivityPub) that became the basis for non-commercial, community based alternatives to mainstream social media, ranging from [Mastodon](https://joinmastodon.org/) to Twitter's now-independent and non-profit [BlueSky](https://bsky.app/) initiative. This space has also produced many of the most creative ideas for re-imagining identity and privacy with a foundation in social and community relationships.
 
 Finally and perhaps most closely connected to our own paths to ⿻ have been the movements to revive the public and multisectoral spirit and ideals of the early internet by strengthening the digital participation of governments and democratic civil society. These "GovTech" and "Civic Tech" movements have harnessed OSS-style development practices to improve the delivery of government services and bring the public into the process in a more diverse range of ways. Leaders in the US include Jennifer Pahlka, founder of GovTech pioneer [Code for America](https://codeforamerica.org/), and Beth Simone Noveck, Founder of [The GovLab](https://thegovlab.org/).[33](#note-3-3-33) Hal Seki, a leader in Japan's Civic Tech movement, led the creation of sinsai.info, a data collection and visualization platform developed after the Great East Japan Earthquake in 2011, and later founded [Code for Japan](https://www.code4japan.org/en).
 
+{#note-ref-3-3-27}
 
 Noveck, in particular, is a powerful bridge between the early development of ⿻ and its future, having been a driving force behind the Online Deliberation workshops mentioned above, having developed Unchat, one of the earliest attempts at software to serve these goals and which helped inspire the work of vTaiwan and more.[35](#note-3-3-35) She went on to pioneer, in her work with the US Patent and Trademark Office and later as Deputy Chief Technology Officer of the US many of the transparent and inclusive practices that formed the core of the g0v movement we highlighted above.[36](#note-3-3-36) Noveck was a critical mentor not just to g0v but to a range of other ambitious civic technology projects around the world from the Kenya collective crisis reporting platform [Ushahidi](https://www.ushahidi.com/) founded by [Juliana Rotich](https://en.wikipedia.org/wiki/Juliana_Rotich) and collaborators to a variety of European participative policy-making platforms like [Decidim](https://decidim.org/) founded by [Francesca Bria](https://www.francescabria.com/) and collaborators and [CONSUL](https://consuldemocracy.org/) that arose from the "Indignado" movement parallel to g0v in Spain, on the board of which one of us sits. Yet despite these important impacts, a variety of features of these settings has made it challenging for these examples to have the systemic, national and thus easily traceable macrolevel impacts that g0v had in Taiwan.
 
+{#note-ref-3-3-28}
+
 Other countries have, of course, excelled in various elements of ⿻. Estonia is perhaps the leading example and shares with Taiwan a strong history of Georgism and land taxes, is often cited as the most digitized democratic government in the world and pioneered digital democracy earlier than almost any other country, starting in the late 1990s.[34](#note-3-3-34) Finland has built on and scaled the success of its neighbor, extending digital inclusion deeper into society, the educational system and the economy than Estonia, as well as adopting elements of digitized democratic participation. Singapore has the most ambitious Georgist-style policies on earth and harnesses more creative ⿻ economic mechanisms and fundamental protocols than any other jurisdiction. South Korea has invested extensively in both digital services and digital competence education. New Zealand has pioneered internet-based voting and harnessed civil society to improve public service inclusion. Iceland has harnessed digital tools to extend democratic participation more extensively than any other jurisdiction. Kenya, Brazil and especially India have pioneered digital infrastructure for development. We will return to many of these examples in what follows.
 
+{#note-ref-3-3-29}
 
 Yet none of these have institutionalized the breadth and depth of ⿻ approaches to socio-technical organization across sectors that Taiwan has. It is thus more challenging to take these cases as broad national examples on which to found imagination of what ⿻ could mean to the world if it could scale up to bridge the divides of nation, culture and sector and forming both the infrastructural foundation and the mission of global digital society. With that anchoring example and additional hope from these other cases, we now turn to painting in greater depth the opportunity a ⿻ global future holds.
-
-
 
 ## Chapter notes {#notes-3-3}
 
@@ -221,190 +255,285 @@ Yet none of these have institutionalized the breadth and depth of ⿻ approaches
 
 J.C.R. Licklider, "Computers and Government" in Michael L. Dertouzos and Joel Moses eds., _The Computer Age: A Twenty-Year View_ (Cambridge, MA: MIT Press, 1980)
 
+[Back to text](#note-ref-3-3-1)
+
 ### Note 2 {#note-3-3-2}
 
 Fred Turner, _The Democratic Surround: Multimedia and American Liberalism from World War II to the Psychedelic Sixties_ (Chicago: University of Chicago Press, 2013).
+
+[Back to text](#note-ref-3-3-2)
 
 ### Note 3 {#note-3-3-3}
 
 While we do not have space to pursue Deming's or Mead's stories in anything like the depth we do the development of the internet, in many ways the work of these two pioneers parallels many of the themes we develop and in the industrial and cultural spheres laid the groundwork for ⿻ just as Licklider and his disciples did in computation. UTHSC. “Deming’s 14 Points,” May 26, 2022. https://www.uthsc.edu/its/business-productivity-solutions/lean-uthsc/deming.php.
 
+
 ### Note 4 {#note-3-3-4}
 
 Dan Davies, _The Unaccountability Machine: Why Big Systems Make Terrible Decisions - and How The World Lost its Mind_ (London: Profile Books, 2024).
+
+[Back to text](#note-ref-3-3-2)
 
 ### Note 5 {#note-3-3-5}
 
 M. Mitchell Waldrop, _The Dream Machine_ (New York: Penguin, 2002).
 
+[Back to text](#note-ref-3-3-2)
+
 ### Note 6 {#note-3-3-6}
 
 Katie Hafner and Matthew Lyon, _Where the Wizards Stay up Late: The Origins of the Internet_ (New York: Simon & Schuster, 1998).
+
+[Back to text](#note-ref-3-3-3)
 
 ### Note 7 {#note-3-3-7}
 
 J.C.R. Licklider, "Memorandum For: Members and Affiliates of the Intergalactic Computer Network", 1963 available at https://worrydream.com/refs/Licklider_1963_-_Members_and_Affiliates_of_the_Intergalactic_Computer_Network.pdf.
 
+[Back to text](#note-ref-3-3-5)
+
 ### Note 8 {#note-3-3-8}
 
 https://www.usnews.com/best-colleges/rankings/computer-science-overall
+
+[Back to text](#note-ref-3-3-6)
 
 ### Note 9 {#note-3-3-9}
 
 J.C.R. Licklider and Robert Taylor, "The Computer as a Communication Device" _Science and Technology_ 76, no. 2 (1967): 1-3.
 
+[Back to text](#note-ref-3-3-7)
+
 ### Note 10 {#note-3-3-10}
 
 Michael A. Hiltzik, _Dealers of Lightning: Xerox PARC and the Dawn of the Computer Age_ (New York: Harper Business, 2000).
+
+[Back to text](#note-ref-3-3-8)
 
 ### Note 11 {#note-3-3-11}
 
 Paul Baran, "On Distributed Communications Networks," *IEEE Transactions on Communications Systems* 12, no. 1 (1964): 1-9.
 
+[Back to text](#note-ref-3-3-9)
+
 ### Note 12 {#note-3-3-12}
 
 Theodor Holm Nelson, _Literary Machines_ (Self-published, 1981), available at https://cs.brown.edu/people/nmeyrowi/LiteraryMachinesChapter2.pdf
+
+[Back to text](#note-ref-3-3-10)
 
 ### Note 13 {#note-3-3-13}
 
 Mailland and Driscoll, op. cit.
 
+[Back to text](#note-ref-3-3-11)
+
 ### Note 14 {#note-3-3-14}
 
 World Bank, "World Development Indicators" December 20, 2023 at https://datacatalog.worldbank.org/search/dataset/0037712/World-Development-Indicators.
+
+[Back to text](#note-ref-3-3-12)
 
 ### Note 15 {#note-3-3-15}
 
 Licklider, "Computers and Government", op. cit.
 
+[Back to text](#note-ref-3-3-14)
+
 ### Note 16 {#note-3-3-16}
 
 Jaron Lanier, _You Are Not a Gadget: A Manifesto_ (New York: Vintage, 2011) and _Who Owns the Future?_ (New York: Simon & Schuster, 2014).
+
+[Back to text](#note-ref-3-3-15)
 
 ### Note 17 {#note-3-3-17}
 
 Phil Williams, "Whatever Happened to the Mansfield Amendment?" _Survival: Global Politics and Strategy_ 18, no. 4 (1976): 146-153 and "The Mansfield Amendment of 1971" in _The Senate and US Troops in Europe_ (London, Palgrave Macmillan: 1985): pp. 169-204.
 
+[Back to text](#note-ref-3-3-16)
+
 ### Note 18 {#note-3-3-18}
 
 Ben Tarnoff, _Internet for the People: The Fight for Our Digital Future_ (New York: Verso, 2022).
+
+[Back to text](#note-ref-3-3-17)
 
 ### Note 19 {#note-3-3-19}
 
 Deming was a member of the Teleological Society with Wiener, Turing, von Neumann, and others during and after World War II. The society was an antecedent to the worldwide groundwork for cybernetics. It is uncertain that Deming had direct influence from Wiener’s cybernetics but his system design of total quality management has been recognized as a cybernetic organization. Jenkinson, A. “Management,” Cybernetics Society., Dec 22, 2024. https://cybsoc.org/?page_id=1489
 
+[Back to text 1](#note-ref-3-3-2)
+[Back to text 2](#note-ref-3-3-18)
+
 ### Note 20 {#note-3-3-20}
 
 JUSE. “How was the Deming Prize Established,” Dec 22, 2024. https://www.juse.or.jp/deming_en/award/
+
+[Back to text](#note-ref-3-3-18)
 
 ### Note 21 {#note-3-3-21}
 
 Toyota introduced QC in the early 1950s, and won the Deming Prize in 1965. Toyota Motor Corporation. "Changes and Innovations - Total Quality Management (TQM)," 75 Years of TOYOTA., Dec 22, 2024.　https://www.toyota-global.com/company/history_of_toyota/75years/data/management/tqm/changes.html
 
+[Back to text](#note-ref-3-3-18)
+
 ### Note 22 {#note-3-3-22}
 
 Ken Suzuki, "The Nameraka Society and Its Enemies" (なめらかな社会とその敵), (Keiso Shobo publishing, 2013).
+
+[Back to text](#note-ref-3-3-19)
 
 ### Note 23 {#note-3-3-23}
 
 ジンメルの交差的(非)個人との共通性もみられる。ジンメルが社会的関係性からdividualを見たのに加えたが、鈴木はより生物学的視点から考察を試みたドゥルーズの”dividual”から着想している。 Gilles Deleuze, “Pourparlers” (Paris: les Editions de Minui, 1990)
 
+[Back to text](#note-ref-3-3-20)
+
 ### Note 24 {#note-3-3-24}
 
 Carl Schmitt, Der Begriff des Politischen (Berlin: Duncker & Humbolt, 1932)
+
+[Back to text](#note-ref-3-3-20)
 
 ### Note 25 {#note-3-3-25}
 
 Dividual democracy allows delegation of one's vote to others and splitting one's vote to multiple political issues. We will return to dividual democracy in the 5-6 voting - ⿻ Voting tomorrow footnote.
 
+[Back to text](#note-ref-3-3-21)
+
 ### Note 26 {#note-3-3-26}
 
 PICSY (Propagational Investment Currency SYstem) is a kind of currency system. We will return to PICSY in the 5-7 social markets - Frontiers of social markets footnote.
+
+[Back to text](#note-ref-3-3-21)
 
 ### Note 27 {#note-3-3-27}
 
 We will return to his detailed campaign during the 2024 Tokyo gubernatorial election in the 5-4 augmented-deliberation section.
 
+[Back to text](#note-ref-3-3-21)
+
 ### Note 28 {#note-3-3-28}
 
 Bo Leuf and Ward Cunningham, _The Wiki Way: Quick Collaboration on the Web_ (Boston: Addison-Wesley, 2001).
+
+[Back to text](#note-ref-3-3-23)
 
 ### Note 29 {#note-3-3-29}
 
 The term "groupware" was coined by Peter and Trudy Johnson-Lenz in 1978, with early commercial products appearing in the 1990s, such as Lotus Notes, enabling remote group collaboration. Google Docs, originated from Writely launched in 2005, has widely popularized the concept of collaborative real-time editing.
 
+[Back to text](#note-ref-3-3-24)
+
 ### Note 30 {#note-3-3-30}
 
 [Scrapbox](https://scrapbox.io/product), a combination of real-time editor with a wiki system, is utilized by the Japanese forum of this book. Visitors of the forum can read the drafts and add questions, explanations, or links to related topics in real time. This interactive environment supports activities like book reading events, where participants can write questions, engage in oral discussions, or take minutes of these discussions. The feature to rename keywords while maintaining the network structure helps the unification of variations in terminology and provides a process to find the good translation. As more people read through, a network of knowledge is nurtured to aid the understanding of subsequent readers.
+
+[Back to text](#note-ref-3-3-24)
 
 ### Note 31 {#note-3-3-31}
 
 Nadia Eghbal, _Working in Public: The Making and Maintenance of Open Source Software_ (South San Francisco, CA: Stripe Press, 2020).
 
+
 ### Note 32 {#note-3-3-32}
 
 Satoshi Nakamoto, "Bitcoin: A Peer-to-Peer Electronic Cash System" at https://assets.pubpub.org/d8wct41f/31611263538139.pdf.
+
+[Back to text](#note-ref-3-3-26)
 
 ### Note 33 {#note-3-3-33}
 
 Jennifer Pahlka, _Recoding America: Why Government is Failing in the Digital Age and How We Can Do Better_ (New York: Macmillan, 2023). Beth Simone Noveck, _Wiki Government: How Technology Can Make Government Better, Democracy Stronger, and Citizens More Powerful_ (New York: Brookings Institution Press, 2010).
 
+[Back to text](#note-ref-3-3-27)
+
 ### Note 34 {#note-3-3-34}
 
 Gary Anthes, "Estonia: a Model for e-Government" _Communications of the ACM_ 58, no. 6 (2015): 18-20.
+
+[Back to text](#note-ref-3-3-29)
 
 ### Note 35 {#note-3-3-35}
 
 Beth Noveck, “Designing Deliberative Democracy in Cyberspace: The Role of the Cyber-Lawyer,” New York Law School, n.d. https://digitalcommons.nyls.edu/cgi/viewcontent.cgi?article=1580&context=fac_articles_chapters; Beth Noveck, “A Democracy of Groups,” _First Monday_ 10, no. 11 (November 7, 2005), https://doi.org/10.5210/fm.v10i11.1289.
 
+[Back to text](#note-ref-3-3-28)
+
 ### Note 36 {#note-3-3-36}
 
 Beth Simone Noveck, _Wiki Government_ op. cit.; Vivek Kundra, and Beth Noveck, “Open Government Initiative,” Internet Archive, June 3, 2009, https://web.archive.org/web/20090603192345/http://www.whitehouse.gov/open/.
+
+[Back to text](#note-ref-3-3-28)
 
 ### Note 37 {#note-3-3-37}
 
 In fact, researchers have studied reading patterns in terms of time spent by users across the globe. Nathan TeBlunthuis, Tilman Bayer, and Olga Vasileva, “Dwelling on Wikipedia,” _Proceedings of the 15th International Symposium on Open Collaboration_, August 20, 2019, https://doi.org/10.1145/3306446.3340829, (pp. 1-14).
 
+[Back to text](#note-ref-3-3-22)
+
 ### Note 38 {#note-3-3-38}
 
 Sohyeon Hwang, and Aaron Shaw. “Rules and Rule-Making in the Five Largest Wikipedias.” _Proceedings of the International AAAI Conference on Web and Social Media_ 16 (May 31, 2022): 347–57, https://doi.org/10.1609/icwsm.v16i1.19297 studied rule-making on Wikipedia using 20 years of trace data.
+
+[Back to text](#note-ref-3-3-22)
 
 ### Note 39 {#note-3-3-39}
 
 In an experiment, McMahon and colleagues found that a search engine with Wikipedia links increased relative click-through-rate (a key search metric) by 80% compared to a search engine without Wikipedia links. Connor McMahon, Isaac Johnson, and Brent Hecht, “The Substantial Interdependence of Wikipedia and Google: A Case Study on the Relationship between Peer Production Communities and Information Technologies,” _Proceedings of the International AAAI Conference on Web and Social Media_ 11, no. 1 (May 3, 2017): 142–51, https://doi.org/10.1609/icwsm.v11i1.14883. Motivated by this work, an audit study found that Wikipedia appears in roughly 70 to 80% of all search results pages for "common" and "trending" queries. Nicholas Vincent, and Brent Hecht, “A Deeper Investigation of the Importance of Wikipedia Links to Search Engine Results,” _Proceedings of the ACM on Human-Computer Interaction_ 5, no. CSCW1 (April 13, 2021): 1–15, https://doi.org/10.1145/3449078.
 
+[Back to text](#note-ref-3-3-22)
+
 ### Note 40 {#note-3-3-40}
 
 Yochai Benkler, “Coase’s Penguin, Or, Linux and the Nature of the Firm,” n.d. http://www.benkler.org/CoasesPenguin.PDF.
+
+[Back to text](#note-ref-3-3-24)
 
 ### Note 41 {#note-3-3-41}
 
 A wired glove is an input device like a glove. It allows users to interact with digital environments through gestures and movements, translating physical hand actions into digital responses. Jaron Lanier, _Dawn of the New Everything: Encounters with Reality and Virtual Reality_ (New York: Henry Holt and Co., 2017).
 
+[Back to text](#note-ref-3-3-25)
+
 ### Note 42 {#note-3-3-42}
 
 The Vision Pro is a head mount display, released by Apple in 2024. This device integrates high-resolution displays with sensors capable of tracking the user's movements, hand actions and the environment to offer an immersive mixed reality experience.
+
+[Back to text](#note-ref-3-3-25)
 
 ### Note 43 {#note-3-3-43}
 
 "Choose Your Own Adventure," interactive gamebooks based on Edward Packard's concept from 1976, peaked in popularity under Bantam Books in the '80s and '90s, with 250+ million copies sold. It declined in the '90s due to competition from computer games.
 
+[Back to text](#note-ref-3-3-10)
+
 ### Note 44 {#note-3-3-44}
 
 Engelbart, Christina. “Firsts: The Demo - Doug Engelbart Institute.” Doug Engelbart Institute, n.d. https://dougengelbart.org/content/view/209/.
+
+[Back to text](#note-ref-3-3-6)
 
 ### Note 45 {#note-3-3-45}
 
 Licklider and Taylor, op. cit.
 
+[Back to text](#note-ref-3-3-13)
+
 ### Note 46 {#note-3-3-46}
 
 “Douglas Engelbart Issues ‘Augmenting Human Intellect: A Conceptual Framework’ : History of Information,” October 1962. https://www.historyofinformation.com/detail.php?id=801.
+
+[Back to text](#note-ref-3-3-5)
 
 ### Note 47 {#note-3-3-47}
 
 Dickson, Paul. “Sputnik’s Impact on America.” NOVA | PBS, November 6, 2007. https://www.pbs.org/wgbh/nova/article/sputnik-impact-on-america/.
 
+[Back to text](#note-ref-3-3-3)
+
 ### Note 48 {#note-3-3-48}
 
 J. C. R. Licklider. “Man-Computer Symbiosis,” March 1960. https://groups.csail.mit.edu/medg/people/psz/Licklider.html.
+
+[Back to text](#note-ref-3-3-4)

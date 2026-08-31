@@ -2341,12 +2341,15 @@ reference-styling, and back-navigation pass.
 |---|---|---|---|
 | V3-400 | P1 | Ready | Move adjacent prefetch to an idle scheduler, abort obsolete chapter requests, and incrementally paginate unusually long chapters. |
 | V3-401 | P1 | Ready | Complete publication-by-publication editorial parity, table splitting, responsive tables, formula typography, chart labels, and the AI Research Assistant appendix comparison. |
-| V3-402 | P2 | Ready | Verify all Plurality cross-chapter links and note back-links; map licensed figures into the bounded Off/On-page/Pop-out treatment proven by Ethical AI. |
-| V3-403 | P1 | Ready | Measure and tune turn frames on representative low-end mobile hardware, then record browser/device budgets. |
+| V3-402 | P2 | Complete | Localized 99 Plurality chapter links, added 585 note return targets for 586 callouts, and mapped the 11 figures with explicit reusable-license text. The other 26 remain pinned links pending rights metadata. |
+| V3-403 | P1 | Complete | Coalesced pointer input to animation frames and measured 54.9 p95 FPS at 1x, 54.1 at 2x, and 38.5 at 4x CPU throttle with no long tasks. |
 | V3-404 | P1 | Ready | Move the demo figure catalog into the validated publication manifest/build pipeline, generate measurement-driven responsive variants, and complete provenance/editorial mapping across the library. |
-| V3-410 | P2 | Ready | Add hierarchical contents navigation and in-book search for long publications. |
-| V3-411 | P2 | Ready | Add bookmarks and a visible start-from-beginning action for resumed books. |
-| V3-412 | P3 | Future | Extend sharing to selected text and exported annotations after privacy and content-boundary review. |
+| V3-405 | P1 | Ready | Reduce the 4x-throttle p95 frame interval from 26.0 ms to at most 22.2 ms before claiming broad low-end mobile promotion. |
+| V3-406 | P2 | Ready | Obtain explicit rights metadata for the 26 unmapped Plurality figure links before enabling image rendering. |
+| V3-410 | P2 | Complete | Added hierarchical manifest contents and abortable, bounded-concurrency search that fetches chapter text only after a query. |
+| V3-411 | P2 | Complete | Added edition-scoped local bookmarks and a visible start-from-beginning action on automatic resume. |
+| V3-412 | P3 | Complete (beta) | Added explicit selected-text sharing plus local-only quote/note storage, deletion, navigation, and Markdown export after privacy review. |
+| V3-413 | P2 | Ready | Migrate beta bookmark/annotation arrays to the versioned IndexedDB schemas, add whole-publication deletion/import, and complete assistive-technology review. |
 
 These V3 items are independent of V2-232 through V2-238, which still govern
 whether the same geometry path is promoted into the V2 production reader.

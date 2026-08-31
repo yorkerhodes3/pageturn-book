@@ -6,18 +6,13 @@ In 79 AD, the cataclysmic eruption of Mount Vesuvius entombed the Roman cities o
 
 To counter information siloing, the organizers introduced smaller “progress prizes” awarded bi-monthly that required participants to publish their code or research open source, enriching the entire community's shared knowledge base. Notable contributions included the “[Volume Cartographer](https://github.com/educelab/volume-cartographer)” by Seth Parker and others in Brent Seales’ lab, and Casey Handmer's [identification of a unique 'crackle' pattern](https://caseyhandmer.wordpress.com/2023/08/05/reading-ancient-scrolls/) forming letters.[1](#note-5-3-1) Youssef Nader later [harnessed domain adaptation techniques](https://www.theguardian.com/science/2024/feb/05/ai-helps-scholars-read-scroll-buried-when-vesuvius-erupted-in-ad79) on these findings.[2](#note-5-3-2) As the competition progressed, its structure fostered a dynamic where winners not only shared their findings and methodologies but were also able to reinvest their winnings into enhancing their equipment and refining their techniques. This environment also proved fertile for the formation of new collaborations, as exemplified by the Grand Prize winners.
 
+{#note-ref-5-3-1}
+
 Announced [February 5, 2024](https://scrollprize.org/grandprize), the Grand Prize of $700,000 criterion was to decipher 4 passages of 140 characters each, with at least 85% of characters recoverable. In a demonstration of interdisciplinary and global cross-collaboration, a team comprising [Luke Farritor](https://lukefarritor.com/about/) (a 21-year-old college student and SpaceX intern), Nader (a doctoral student in Berlin), and [Julian Schilliger](https://inf.ethz.ch/news-and-events/spotlights/infk-news-channel/2024/02/durchbruch-in-der-erforschung-antiker-schriftrollen.html) (a recent master's graduate in robotics at ETH Zurich) shared a breakthrough victory to win. Together they exceeded expectations by recovering an additional 11 columns of text, containing more than 2000 characters. Each team member brought their expertise and earlier achievements to this collaborative effort. Their success not only marked a significant academic milestone but also propelled the entire field of digital archaeology forward.
 
 ---
 
-
-
 Artistic expression through media such as music, visual arts, theater, architecture, film and even cuisine are among the most powerful and canonical foundations for forming the shared cultures that define social groups.  While not as powerfully engaging as full multisensory shared experience, they can spread much farther and engage fully one and sometimes more sensory experiences in a richer way than verbal communication.  Today, the boundaries of geography, expertise, and even audience are dissolving thanks to a mix of digital tools and platforms that unlock creative collaboration. This chapter explores how these technologies are fostering a new era of collaborative creation, characterized by unprecedented accessibility, real-time interaction, and a shared creative space.  We will  see how artists, educators, and entrepreneurs can harness the power of crowdsourcing and online platforms to break down barriers and expand the creative process. These technologies not only connect individuals but also foster a shared creative process that is more inclusive, dynamic, and expansive than ever before.
-
-
-
-
-
 
 ### Cocreation today
 
@@ -25,7 +20,7 @@ Artistic cocreation is nothing new.  For thousands of years, musicians, dancers 
 
 Yet these culture-defining collaborative projects have traditionally been slow and expensive, limiting both access to outputs and participation in the process of creation.  Cowriting, for example, has traditionally involved months, years or even generations of retelling, adaptation, rewriting, etc. to achieve a coherent and digestible narrative.  The massive live entertainment industry testifies to the expense of flying teams around the world to present the experience of creative collaboration to diverse audiences. Other forms of joint creativity, such as scientific collaborations like those highlighted above, have traditionally taken place in massive physically co-located laboratories like Los Alamos.
 
-Yet early ⿻ technologies that became part of the fabric of the internet, imagined by people like Ted Nelson as we highlighted in [The Lost Dao](https://www.plurality.net/v/chapters/3-3/eng/?mode=dark), have already transformed the possibilities of collaborative creative practice and sharing.
+Yet early ⿻ technologies that became part of the fabric of the internet, imagined by people like Ted Nelson as we highlighted in [The Lost Dao](../3-3/), have already transformed the possibilities of collaborative creative practice and sharing.
 
 - Online collaboration: Tools like [Slack](https://slack.com/), [Asana](https://www.asana.com) and [Notion](https://www.notion.so/) (which we used in this project) have revolutionized the workspace by enabling teams to collaborate in real-time, regardless of geographic location. These platforms support a wide range of creative projects, from software development to marketing campaigns, by providing an infrastructure for communication, project management, and document sharing. They exemplify how digital workspaces can enhance productivity and foster a sense of community among team members.
 - Cloud-based creative software: [Adobe Creative Cloud](https://www.adobe.com/creativecloud/), [Autodesk](https://www.autodesk.com), and [GitHub](https://www.github.com) (which was the primary platform for writing this book) offer sophisticated tools for designers, engineers, and developers to work on shared projects simultaneously. This technology allows for real-time feedback and iteration, reducing the time from concept to creation and enabling a more fluid and dynamic creative process. Even more prominently, collaborative word processing software such as [Google docs](https://docs.google.com) has enabled real-time collaborative editing by many people in diverse geographies.
@@ -40,6 +35,7 @@ Yet early ⿻ technologies that became part of the fabric of the internet, imagi
 
 At the boundaries of ⿻ practice we are already seeing a world  where real-time global collaboration assisted by advance computational models  become the norm, propelling the creative process to new heights of inclusivity and innovation. The story of the Herculaneum scrolls encapsulates the essence of collaborative innovation—bridging the past with the future, merging diverse expertise to illuminate the unknown. It serves as an emblematic beginning to our exploration, reminding us that at the heart of every great discovery lies the spirit of collaboration, a spirit that continues to drive humanity forward, beyond the limits of our imagination.  Rather than exceptional, the Vesuvius Challenge and its winners trace a common pattern. Consider the 2009 [Netflix Prize](https://en.wikipedia.org/wiki/Netflix_Prize), which offered a million dollars to the team that could beat their internal movie recommendation algorithm by 10%. The prize competition dragged on for more than two and a half years and only succeeded in the end when the leading teams gave up working alone, but instead combined with diverse other teams and their diverse algorithms.[3](#note-5-3-3)  One might even use this conception to reimagine neural networks as social networks, simulating diversity and disputes between people with diverse perspectives. Arguably this simultaneous simulation of multiple perspectives is precisely what may account for their increasing dominance in a wide range of tasks.[4](#note-5-3-4)
 
+{#note-ref-5-3-2}
 
 We are seeing the beginnings of this future in a diversity of emerging practices.
 
@@ -48,8 +44,9 @@ We are seeing the beginnings of this future in a diversity of emerging practices
 - Alien art: While GFMs can mimic and automate the way humans generate ideas, we could instead aspire to generate “alien intelligence” that takes our thought in directions humans are unlikely to identify, thus generating new fodder for collaboration across diversity.[5](#note-5-3-5) For instance, Google DeepMind initially trained AlphaGo to mimic human strategies in playing Go games. Conversely, their next version, AlphaGo Zero, was trained solely against other model adversaries like itself, generating an unfamiliar and disconcerting yet effective “alien” strategy that surprised many master Go players. Research demonstrates that interacting with these diverse AI strategies has increased the novelty and diversity of the human Go-playing population [6](#note-5-3-6). If such approaches were applied to the cultural sphere rather than to games, we might find novel artistic forms emerging to inspire "awe" or resonance in alien machine intelligences, then feeding back to provoke new artistic forms among humans, just as the "encounter with the East" was critical to creating modern art in the West.
 - Digital twins and simulation for creative testing: Advanced simulations and digital twin technology will enable creative teams to test and refine their ideas in virtual replicas of real-world environments. With digital twins driven by GFMs that accurately mimics human behaviors, we could conduct in-silico social experiments at an unprecedented speed and scale. For instance, by deploying alternative news feed algorithms on in-silico social media platforms, where large language model (LLM) agents that mimic human social media users interact with one another, we can explore and test the impact of these alternative algorithms on macro-level social outcomes, such as conflicts and polarization.[7](#note-5-3-7)
 
-Tomorrow, we expect digital tools to unlock a symphony of minds, amplified and harmonized by GFMs and real-time high bandwidth remote synchronization. Yet, this is merely the prelude to a grand concerto of human and digital collaboration. As we wield these digital tools to broaden the space of creative collaboration, we will find ourselves in an ever-evolving dance, one where technology not only aids us but also reshapes our perspectives, fostering a rapid integration of diverse ideas and talents.  We are not just witnessing the emergence of new creative processes; we are participating in the birth of a globally inclusive, multidisciplinary renaissance, one that promises to redefine the landscape of creativity and problem-solving for generations to come.
+{#note-ref-5-3-3}
 
+Tomorrow, we expect digital tools to unlock a symphony of minds, amplified and harmonized by GFMs and real-time high bandwidth remote synchronization. Yet, this is merely the prelude to a grand concerto of human and digital collaboration. As we wield these digital tools to broaden the space of creative collaboration, we will find ourselves in an ever-evolving dance, one where technology not only aids us but also reshapes our perspectives, fostering a rapid integration of diverse ideas and talents.  We are not just witnessing the emergence of new creative processes; we are participating in the birth of a globally inclusive, multidisciplinary renaissance, one that promises to redefine the landscape of creativity and problem-solving for generations to come.
 
 ### Frontiers of creative collaboration
 
@@ -62,7 +59,6 @@ Tomorrow, we expect digital tools to unlock a symphony of minds, amplified and h
 
  As we embark on this collaborative odyssey, humanity stands poised to redefine creativity itself.  It is a future where creativity is not just a shared endeavor but a shared experience, connecting participants in a web of collective imagination and innovation. Yet, as we approach this crescendo of human potential—where the symphony of collaborative genius reaches its zenith—we also have to explore its ethical considerations and limitations.
 
-
 ### Limits of creative collaboration
 
 The future of creative collaborations, while pregnant with potential for novel collaboration paradigms, also has a range of limitations and ethical dilemmas. As we envision the zenith of creative synergy enabled by technologies that dissolve the barriers of distance, language, and even individual cognition, the shadow of potential dystopian outcomes looms large. Dave Eggers's classic *The Circle* highlights the dangers of constant creative sharing to erode the very sense of self that is the locus of creative genius.  As we pursue increasing collaboration, we must constantly guard against:
@@ -74,6 +70,8 @@ The future of creative collaborations, while pregnant with potential for novel c
 5. Manipulation, exploitation, and collapse: The potential for exploitation of creative content and ideas by corporate overreach is a significant concern. As creative collaborations increasingly occur within digital platforms owned by corporations, the risk of intellectual property being co-opted, monetized, or used for surveillance and manipulation grows, threatening the integrity of the creative process.  By reducing the incentive for creativity, such traps risk killing the goose of creativity and diversity that lays the golden eggs of training GFMs in the first place.
 6. Erosion of cultural diversity: In a world where creative collaborations are mediated by global platforms, there's a risk that local cultural expressions and minority voices are overshadowed by dominant narratives. This could lead to a dilution of cultural diversity in creative outputs, ending in monolithic culture that neutralizes dissent and diversity.
 
+{#note-ref-5-3-4}
+
 In addressing these challenges, the future of creative collaboration must navigate the delicate balance between leveraging the immense potential of technology to enhance human creativity and ensuring that this does not come at the expense of privacy, autonomy, and cultural diversity. Central to this journey is the leveraging of open-source technologies and the principles of ⿻. Open-source platforms, by their very nature, encourage transparency and collective ownership, countering the risks of hidden monopolies and collusion that can arise in proprietary systems. These can be further augmented by many of the economic and governance models we highlight in what follows. Something that is already beginning to happen as leading ⿻ artists like [Holly Herndon](https://spawning.ai/), [Joseph Gordon-Levitt](https://hitrecord.org/) and [will.i.am](https://www.economist.com/open-future/2019/01/21/we-need-to-own-our-data-as-a-human-right-and-be-compensated-for-it) champion not only harnessing GFMs but also ensuring they are designed to attribute, celebrate and empower creators to live sustainably.
 
 Furthermore, many of the risks of cultural homogenization arise from the encroachment of a single medium, with all its sensory limits, into a broader range of life.  To preserve creativity, we must bolster the space for the even deeper intimate connections and reflection on which creativity depends.  Luckily, this is precisely the role that the even-more-intimate technologies we discussed in the preceding chapters can play, ensuring that an endless stream of shared music and artistic mashups do not crowd out the deep relationships that are the foundation of  physical and cultural reproduction.
@@ -81,42 +79,52 @@ Furthermore, many of the risks of cultural homogenization arise from the encroac
 https://doi.org/10.48550/arXiv.2310.05984](
 https://doi.org/10.48550/arXiv.2310.05984).
 
-
-
-
-
-
-
 ## Chapter notes {#notes-5-3}
 
 ### Note 1 {#note-5-3-1}
 
 Stephen Parsons, C. Seth Parker, Christy Chapman, Mami Hayashida and W. Brent Seales, "EduceLab-Scrolls: Verifiable Recovery of Text from Herculaneum Papyri using X-ray CT" (2023) at https://arxiv.org/abs/2304.02084. Casey Handmer, "Reading Ancient Scrolls" August 5, 2023 at https://caseyhandmer.wordpress.com/2023/08/05/reading-ancient-scrolls/
 
+[Back to text](#note-ref-5-3-1)
+
 ### Note 2 {#note-5-3-2}
 
 Youssef Nader, "The Ink Detection Journey of the Vesuvius Challenge" February 6, 2024 at https://youssefnader.com/2024/02/06/the-ink-detection-journey-of-the-vesuvius-challenge/.
+
+[Back to text](#note-ref-5-3-1)
 
 ### Note 3 {#note-5-3-3}
 
 Scott E. Page, _The diversity bonus: How great teams pay off in the knowledge economy_ (Princeton, NJ: Princeton University Press, 2019).
 
+[Back to text](#note-ref-5-3-2)
+
 ### Note 4 {#note-5-3-4}
 
 James Evans. “The case for alien AI,” _TedxChicago2024_, October 6th, 2023, [https://www.youtube.com/watch?v=87zET-4IQws](https://www.youtube.com/watch?v=87zET-4IQws).
+
+[Back to text](#note-ref-5-3-2)
 
 ### Note 5 {#note-5-3-5}
 
 Jamshid Sourati and James Evans, “Complementary artificial intelligence designed to augment human discovery,” _arXiv preprint arXiv:2207.00902_ (2022), [https://doi.org/10.48550/arXiv.2207.00902](https://doi.org/10.48550/arXiv.2207.00902).
 
+[Back to text](#note-ref-5-3-3)
+
 ### Note 6 {#note-5-3-6}
 
 Minkyu Shin, Jin Kim, Bas van Opheusden, and Thomas L. Griffiths, “Superhuman artificial intelligence can improve human decision-making by increasing novelty,” _Proceedings of the National Academy of Sciences_ 120, no. 12 (2023): e2214840120, [https://doi.org/10.1073/pnas.2214840120](https://doi.org/10.1073/pnas.2214840120).
+
+[Back to text](#note-ref-5-3-3)
 
 ### Note 7 {#note-5-3-7}
 
 Petter Törnberg, Diliara Valeeva, Justus Uitermark, and Christopher Bail. “Simulating social media using large language models to evaluate alternative news feed algorithms,” _arXiv preprint arXiv:2310.05984_ (2023), [
 
+[Back to text](#note-ref-5-3-3)
+
 ### Note 8 {#note-5-3-8}
 
 Feng Shi and James Evans, “Surprising combinations of research contents and contexts are related to impact and emerge with scientific outsiders from distant disciplines,” _Nature Communications_ 14, no. 1 (2023): 1641, [https://doi.org/10.1038/s41467-023-36741-4](https://doi.org/10.1038/s41467-023-36741-4).
+
+[Back to text](#note-ref-5-3-4)

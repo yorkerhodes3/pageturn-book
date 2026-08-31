@@ -14,6 +14,7 @@ The internet is a powerful technology for tying people together in new collabora
 
 It is no coincidence that democracy now finds itself at a low tide. Authoritarian regimes now command [nearly half](https://www.v-dem.net/documents/29/V-dem_democracyreport2023_lowres.pdf) of the global GDP. Only a modest one billion people find solace under the umbrella of democratic systems, while over two billion dwell under authoritarian rule.[1](#note-1-1)
 
+{#note-ref-1-1}
 
 Every culture, akin to a river, tells its own tale. We see the river of democracy as a conduit of hope. As its waters wane, we must replenish it.
 
@@ -25,9 +26,10 @@ Plurality captures the symbiotic relationship between democracy and collaborativ
 
 Let's free the future — together.
 
-
 ## Chapter notes {#notes-1}
 
 ### Note 1 {#note-1-1}
 
 *Democracy Report 2023* (Gothenburg, Sweden: V-Dem Institute, 2023), p. 7.
+
+[Back to text](#note-ref-1-1)

@@ -85,9 +85,15 @@ The Plurality importer preserves:
 - stable numeric chapter IDs such as `5-7`;
 - 586 linked chapter-note references and 607 preserved note definitions in the
   built snapshot;
+- 585 local return targets for the 586 note callouts (one paragraph repeats the
+  same note and shares one return target);
+- 99 links to available Plurality chapters rewritten to local semantic routes;
 - thematic breaks, blockquotes, lists, and ordinary Markdown structure;
-- figure captions and immutable figure links without eagerly loading the
-  roughly 30 MB image library (37 figure links in the built snapshot);
+- 37 pinned figure links without eagerly loading the roughly 30 MB image
+  library;
+- Off/On-page/Pop-out rendering for the 11 figures whose captions state
+  explicit CC, public-domain, or commercial-use rights; the other 26 remain
+  links pending V3-406;
 - CC0 source and voluntary attribution metadata.
 
 ## 4. Controlled chapter-window measurements
@@ -128,13 +134,13 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 33.2 kB | 75.0 kB | 56% |
-| Plurality | 77.9 kB | 519.9 kB | 85% |
-| Cyber Dictionary | 46.9 kB | 133.1 kB | 65% |
-| AI Models Research | 30.4 kB | 52.1 kB | 42% |
+| What Is Ethical AI? | 39.9 kB | 81.7 kB | 51% |
+| Plurality | 83.3 kB | 521.2 kB | 84% |
+| Cyber Dictionary | 53.6 kB | 139.8 kB | 62% |
+| AI Models Research | 37.2 kB | 58.8 kB | 37% |
 
-These gzip paths include the 24.1 kB shared V3 route (22,368-byte assets plus
-1.7 kB route HTML), the publication manifest, and either the first two chapters
+These gzip paths include the 30.8 kB shared V3 route (28,349-byte assets plus
+2.4 kB route HTML), the publication manifest, and either the first two chapters
 or the complete semantic corpus.
 
 The three optional Ethical AI figure files add 123.0 kB to static hosting. They
@@ -146,7 +152,7 @@ opening or reaching one figure transfers only that asset.
 
 - 24 fixtures build through the same publication CLI.
 - 333 static semantic chapter routes are emitted.
-- The build artifact contains 427 files totaling 6.62 MB raw / 1.85 MB gzip.
+- The build artifact contains 428 files totaling 6.65 MB raw / 1.84 MB gzip.
 - The Vite multi-page build processes 339 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
@@ -158,7 +164,7 @@ opening or reaching one figure transfers only that asset.
   are retained.
 - The complete Ethical AI traversal confirms all 17 chapter openings, all 122
   references, and the disclaimer.
-- All 40 unit tests and 67 browser scenarios pass against both root and GitHub
+- All 42 unit tests and 73 browser scenarios pass against both root and GitHub
   Pages base paths. The browser matrix includes lazy-window release, load
   failure/retry, turn/rebuild races, superseded navigation, resume/history,
   deep-anchor typography, configurable chapter flow, bidirectional VANGO
@@ -188,6 +194,13 @@ opening or reaching one figure transfers only that asset.
 - Added configurable `off`, `on`, and `popout` treatments. Ethical AI defaults
   to Pop-out, which transfers no image until a reader opens one; On page waits
   until the figure page is reached.
+- Added hierarchical manifest contents, abortable four-worker on-demand search,
+  local bookmarks, a visible resume restart, selected-text sharing, private
+  local annotations, and Markdown export.
+- Localized 99 Plurality chapter links, added note return links, and mapped the
+  11 explicitly licensed Plurality figures through the same treatment.
+- Coalesced pointer input to one latest-value update per animation frame and
+  recorded reproducible 1x/2x/4x mobile CPU profiles.
 
 ### 6.1 Runtime - open
 
@@ -203,24 +216,23 @@ opening or reaching one figure transfers only that asset.
 - Compare every generated lab chapter with its hand-composed report page.
 - Complete table splitting and responsive table presentation.
 - Review formula typography and chart-table labels.
-- Decide which Plurality figures should become bounded lazy images instead of
-  pinned links, then map them through the proven media treatment.
-- Verify all Plurality internal cross-chapter links and note back-links.
+- Obtain explicit rights metadata for the remaining 26 Plurality figure links.
 - Finish the AI Research Assistant appendix comparison against its bespoke page.
 - Move the V3 demo media catalog into publication manifests and the image build
   pipeline with responsive variants and edition-level integrity metadata.
 
 ### 6.3 Reader features - open
 
-- Add hierarchical contents navigation and search for long books.
-- Add bookmarks and a visible "start from beginning" action for resumed books.
-- Extend sharing to selected text and exported annotations.
-- Measure turn frames on representative low-end mobile hardware.
+- Move beta bookmark/annotation arrays to the versioned IndexedDB schemas.
+- Add whole-publication local-data deletion/import and finish annotation
+  assistive-technology review.
+- Reduce the 4x-throttle p95 frame interval from 26.0 ms to 22.2 ms before
+  low-end promotion.
 
 V3 now includes a manifest-driven chapter picker, canonical
 `?book=<id>&chapter=<id>#<source-anchor>` locations, browser history, per-edition
-resume, per-publication 80%-130% typography, and Web Share/clipboard links. A
-hierarchical contents view and search remain future work.
+resume, per-publication 80%-130% typography, hierarchical contents, demand
+search, bookmarks, private annotations/export, and Web Share/clipboard links.
 
 The remaining production-quality estimate is 25-40 person-days, with
 chapter-level loading and editorial QA now the dominant work rather than basic

@@ -22,7 +22,22 @@ describe("V3 publication media", () => {
     ).toBe(true);
   });
 
-  it("leaves publications without pinned figure assets unconfigured", () => {
-    expect(publicationMedia("plurality")).toBeUndefined();
+  it("maps only the explicitly licensed Plurality figures", () => {
+    const media = publicationMedia("plurality");
+
+    expect(media?.defaultTreatment).toBe("popout");
+    expect(media?.figures).toHaveLength(11);
+    expect(
+      media?.figures.every(
+        ({ src, replaceAnchors }) =>
+          src.includes(
+            "pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/",
+          ) && replaceAnchors?.length === 2,
+      ),
+    ).toBe(true);
+  });
+
+  it("leaves publications without reviewed figure assets unconfigured", () => {
+    expect(publicationMedia("vango")).toBeUndefined();
   });
 });

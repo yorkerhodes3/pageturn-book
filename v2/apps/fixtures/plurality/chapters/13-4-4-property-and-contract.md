@@ -33,12 +33,11 @@ A core aim of Lick's  "Intergalactic Computer Network" was to facilitate the sha
 
 As with the other fundamental protocols we have discussed in this part of the book,  there have been significant recent efforts to address these gaps.  In this chapter, we will review the potential of digital asset sharing and survey existing digital asset sharing efforts. We will highlight the accomplishments and limitations of the existing efforts and sketch a path towards a robust and ⿻ online asset-sharing ecosystem.
 
-
-
-
 ### Assets in the digital age
 
 As highlighted perhaps most dramatically in Kate Crawford's beautifully drawn *[Atlas of AI](https://yalebooks.yale.edu/book/9780300264630/atlas-of-ai/)*, the digital world is built on top of the physical world: computer circuits are made from rare metals mined with all the ensuing social challenges, data centers work much like and are often co-located with power plants, data is created by people like the "[ghost workers](https://marylgray.org/bio/on-demand/)" documented by Mary Gray and Siddarth Suri etc.[15](#note-4-4-15)  Any serious account of the digital realm must thus grapple with real property relations.  Yet there are crucial assets that emerge from these physical substrates as digital-native abstractions and that are the crucial components of life online.
+
+{#note-ref-4-4-1}
 
 We will focus on three categories that are most ubiquitous: storage, computation and data.  Yet there are many other examples that intersect with these and have many related challenges, including the electromagnetic spectrum, code, names and other addresses (e.g. Uniform Resource Locator/URLs), "physical" space in virtual worlds and non-fungible tokens (NFTs).
 
@@ -46,31 +45,29 @@ Storage, computation and data lie at the core of essentially every online intera
 
 While land, fuel, labor and capital are often treated as homogeneous "commodities", as social theorist Karl Polanyi famously argued this is a simplifying fiction.[1](#note-4-4-1)  Storage, computation and especially data are heterogeneous, tied to places, people and cultures and these connections affect both their performance characteristics and the social impacts and meanings of using them in a digital economy and society. While these challenges are significant for fictitious commodities "in real life", in some ways they are even more severe for digital assets and at the very least societies have had far less time to jointly adapt economic and social structures around them. These challenges are among the key inhibitors to a functional digital system of sharing, property and contract.
 
-
-
-
+{#note-ref-4-4-2}
 
 ### The Intergalactic Computer Network
 
-
 Lick's 1963 "[Memorandum For Members and Affiliates of the Intergalactic Computer Network](https://www.thekurzweillibrary.com/memorandum-for-members-and-affiliates-of-the-intergalactic-computer-network)" did not focus on the potential for online socialization or commerce that characterized so much of his contemporary and later writing.[2](#note-4-4-2)  Instead, perhaps because of his scientific audience at the time, he emphasized the potential for scientists to massively increase their productivity through computer networks by sharing analytic tools, memory, storage, computation, research findings and the promise this might have for related military applications.  This was also a natural extension of the "time-sharing" systems that were one of the first projects Lick funded and aimed to allow a semblance of what would become the "personal computing" experience in the era of large mainframe computers by allowing many users to share access to a larger machine's capacity.  In this sense, the internet began, above all, as a platform for precisely the sort of large-scale computational resource sharing that we focus on in this chapter.[3](#note-4-4-3)
 
+{#note-ref-4-4-3}
 
 To appreciate why such an apparently dull topic excited such an (otherwise) expansive mind, it is useful both to look back from today at the limits he was trying to overcome and forward to the limits we might, in delivering on his vision, overcome ourselves.  During the 1950s and 1960s, the dominant paradigm of computing was large "mainframes" sold primarily by International Business Machines (IBM).  These were expensive machines intended to serve the needs of an entire business, university department or other large grouping.  To access these machines, users would have to bring programs to a central administrator, and they would, infrequently, have a single "high risk" chance to run their desired computation.  If it turned out to have a bug, as it often did, they would have to return later, having meticulously and without practical tests attempted to fix these errors.  At the same time, because preparing programs and managing the machine was so challenging, much of their time was spent idling, waiting for programs to arrive.
-
 
 Contrast this to today's world of personal computing, where most people in developed countries today have computers on their desks, laps, wrists and in their pockets that perform a dizzying array of computations with near-instant feedback.  Of course, much of this has been empowered by Moore's Law of doubling computational power per unit price every eighteen months.  But what Lick and some of the early projects he funded at the Massachusetts Institute of Technology and other universities saw was that at least some of this was possible even with the computers of the time if they were used more efficiently and with greater attention to the human need for feedback that he had studied in his work on designing airplane interfaces.
 
 Much of the limited computation power then available was wasted in idle time and the feedback desired by users did not require a full machine at every desk.  Instead, every user could have a basic display and input station ("client") connected via a network to a central machine ("server") whose time they shared, a set-up first pioneered a few years earlier in the [Plato project](http://friendlyorangeglow.com/) at the University of Illinois Urbana-Champaign as a computer-based teaching system.[4](#note-4-4-4)  This allowed ARPANET members, such as Douglas Engelbart, to simulate a future of personal computing in the era of the mainframe.
 
+{#note-ref-4-4-4}
 
 What amazing future could we simulate if we could more effectively share our computational assets? It is hard to know without a tighter accounting of the underutilization of digital assets than we currently have.  But it seems likely that we could at least buy half a decade more of effective Moore's Law simply by utilizing more effective digital assets that lay fallow. The possibilities for data sharing are richer and potentially even more transformative.  Many of the most intractable problems today have answers if the power we see being unleashed by generative foundation models (GFMs) could be applied to medical diagnosis, environmental resource optimization, industrial production and more that is limited by the challenges today of sharing data across organizational and jurisdictional boundaries.
-
 
 ### The state of sharing
 
 [Studies](https://www.gartner.com/en/newsroom/press-releases/2023-12-04-gartner-forecasts-worldwide-semiconductor-revenue-to-grow-17-percent-in-2024) of the semiconductor industry indicate that several times as many semiconductors are used in personal devices (e.g. PCs, smartphones, smartwatches, video game consoles) as go into cloud infrastructure and data centers.[5](#note-4-4-5)  While there is little systematic study, personal experience indicates that most of these devices are mostly little used most of the day.  This is likely particularly true of video game consoles, which disproportionately hold exceptionally valuable graphics processing units (GPUs).  This suggests that a majority if not a large majority of computation and storage lies fallow at any time, not even accounting for the prevalent waste even in cloud infrastructure.  Data are even more extreme; while these are even harder to quantify, the experience of any data scientist suggests that the overwhelming majority of desperately needed data sits in organizational or jurisdictional silos, unable to power collaborative intelligence or the building of GFMs.
 
+{#note-ref-4-4-5}
 
 Asset sharing may have important implications for values such as national security and the environment.  Waste of resources effectively reduces the supply of semiconductors that national security policies have aimed at maximizing and, like any waste, increases the demand for environmental resources per unit of output.  However, it is important to bear in mind that the sources of energy employed by distributed devices and their efficiency in converting this energy to computation may in some cases be lower than those of cloud providers, making it important to pair improvements to digital asset sharing with the greening of the consumer electrical grid.  Perhaps the most important implication of digital asset sharing for security may be increased interdependence between participants in these sharing networks which may bring them into tighter geopolitical alignment, especially given the requisite alignments of privacy and collaboration regulations.
 
@@ -78,21 +75,23 @@ What is most shocking about these figures is perhaps their comparison to physica
 
 The key reason why this silent crisis is a bit less surprising than the figures suggest is that these purely digital assets are comparatively new.  Societies have had thousands if not tens of thousands of years to experiment with various social organizational systems to provide for the needs of the people within them [17](#note-4-4-17). The origins of our contemporary systems of property (rental systems, capital management), labor, and practices that involve the abstract representation of value [18](#note-4-4-18) (with deeds, documents issued to people, supply chain transactions, and money) can be traced to certain social-psychological qualities that arose after 1000 years of cultural practices. The ban on cousin marriages in Christian Europe led to the emergence of people who were free to form new institutions and re-constitute how property was held which created new types of democratic institutions that didn't exist before [19](#note-4-4-19). There have been decades to figure out how to efficiently rent cars and increasingly harness digital tools to improve the sharing of these assets (e.g. ride and house-sharing platforms).  Digital assets, especially those in the hands of large groups of non-technical people, date back only a few decades.  A vital task before us, then, is to determine the crucial social and technical barriers to utilizing digital assets with the same effectiveness we have come to expect of physical assets.
 
+{#note-ref-4-4-6}
+
 One way to consider what stands in the way of computational asset sharing is to consider the areas where it has been relatively successful and draw out the differences between these domains and those where it has thus far mostly failed.  To do so, we will run through the three areas of focus above: storage, computation and data.
 
 The closest framework to an open standard for asset sharing exists in storage, through the [Interplanetary File System](https://ipfs.tech/) (IPFS) explicitly modeled on Lick's vision and pioneered by [Juan Benet](https://research.protocol.ai/authors/juan-benet/) and his [Protocol Labs](https://protocol.ai/) (PL), which was a partner on some of the software that supported building this book.  This open protocol allows computers around the world to offer storage to each other at a reasonable cost in a peer-to-peer, fragmented, encrypted and distributed manner that helps ensure redundancy, robustness and data secrecy/integrity. Prominent services built on the protocol include the use by Taiwan's [Ministry of Digital Affairs](https://moda.gov.tw/en/press/press-releases/6237) and other governments facing strong adversaries who may hold leverage over more centralized service providers. To ensure the persistence of their data and the storage market PL also created the [Filecoin](https://filecoin.io/) system to allow commercial transactions and incent users to store as much of the entire network’s data as they can. Yet even IPFS has been a limited success for "real-time" storage, where files need to be stored to allow their rapid access from many places around the world.  It thus seems to be the relative simplicity of "deep" storage (think of the equivalent of the "public storage" spaces provided as a commodity service in real life) that has allowed IPFS to survive.
 
 The more complicated challenge of optimizing for latency has been handled overwhelmingly by large corporate "cloud" providers such as [Microsoft Azure](https://azure.microsoft.com/en-us/free/search/?&ef_id=_k_CjwKCAjw7-SvBhB6EiwAwYdCAZyVp_ZRUmtgM9ifoW7jlenw15zBcyUVxBnOn82Iw-_cNSmPowbtFxoC_d4QAvD_BwE_k_&OCID=AIDcmm5edswduu_SEM__k_CjwKCAjw7-SvBhB6EiwAwYdCAZyVp_ZRUmtgM9ifoW7jlenw15zBcyUVxBnOn82Iw-_cNSmPowbtFxoC_d4QAvD_BwE_k_&gad_source=1&gclid=CjwKCAjw7-SvBhB6EiwAwYdCAZyVp_ZRUmtgM9ifoW7jlenw15zBcyUVxBnOn82Iw-_cNSmPowbtFxoC_d4QAvD_BwE), [Amazon Web Services](https://aws.amazon.com/free/?gclid=CjwKCAjw7-SvBhB6EiwAwYdCAY85xACIrCpNfds9hVa24Mm0DcTppvb68oqfxB-2DMPqgi7UfVufnxoC-LAQAvD_BwE&trk=6a4c3e9d-cdc9-4e25-8dd9-2bd8d15afbca&sc_channel=ps&ef_id=CjwKCAjw7-SvBhB6EiwAwYdCAY85xACIrCpNfds9hVa24Mm0DcTppvb68oqfxB-2DMPqgi7UfVufnxoC-LAQAvD_BwE:G:s&s_kwcid=AL!4422!3!651751059777!e!!g!!amazon%20web%20services!19852662197!145019195737&all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc&awsf.Free%20Tier%20Types=*all&awsf.Free%20Tier%20Categories=*all) [Google Cloud Platform](https://cloud.google.com/) and [Salesforce](https://www.salesforce.com/).  Most of the digital services familiar to consumers in the developed world (remote storage of personal files across devices, streaming of audio and video content, shared documents, etc.) depend on these providers.  They are also at the core of most digital businesses today, with [60% of business data](https://explodingtopics.com/blog/cloud-computing-stats) being stored in proprietary clouds and the top two proprietary cloud providers (Amazon and Microsoft) capturing almost [two-thirds](https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/) of the market.[6](#note-4-4-6)
 
+{#note-ref-4-4-7}
 
 Yet even beyond the drawbacks of this space being controlled by a few for-profit companies, these cloud systems have achieved, in many ways, far less than the visionaries like Lick imagined.
 
-
 First, heralds of the "cloud era" such as the Microsoft team that helped persuade the company to pursue the opportunity saw many of the gains from the cloud arising from more efficient resource sharing across tenants and applications to ensure full utilization.[16](#note-4-4-16)  Yet, in practice, most of the gains from the cloud have come from physical cost savings of data centers co-located with abundant power sources and efficiently maintained, rather than from meaningful cross-tenant resource-sharing as few cloud providers have effectively facilitated this kind of market and few customers have found ways to make sharing resources work for them.
 
+{#note-ref-4-4-8}
+
 More dramatically, the cloud has largely been built in new data centers around the world, even as most available computation and storage remains severely underutilized in the pockets and on the laps and desks of personal computer owners around the world.  Furthermore, these computers are physically closer and often more tightly networked to the consumers of computational resources than the bespoke cloud data centers...and yet the "genius" of the cloud system has systematically wasted them.  In short, despite its many successes, the cloud has to a large extent involved a reversion to an even more centralized version of the "mainframe" model that preceded the time-sharing work Lick helped support, rather than a realization of its ambitions.
-
-
 
 Yet even these limited successes have been far more encouraging than what has been achieved in data sharing.  The largest-scale uses of data today are either extremely siloed not just within corporate or institutional boundaries but even highly subdivided by privacy policies within these or otherwise based on the ingestion of publicly available data online without even the awareness, much less consent, of the data creators.  The leading example of the latter is the still-undisclosed data sets on which the GFMs were trained.  The movement to allow data sharing even for clear public interest cases, such as public health or the curing of diseases, has been held out for years under a variety of names and yet has made very little progress either in the private sector or in open standards-based collaborations.
 
@@ -104,16 +103,13 @@ What lessons can we glean from these failures about the impediments to more effe
 
 A basic contrast between data and many real-world assets is important in understanding these challenges.  Lending and pooling of assets is ubiquitous in the economy as we discussed above.  Critical to it is the possibility of decomposing the rights one has to an asset.  Legal scholars typically describe three attributes of property: "usus" (the right to use something), "abusus" (the right to alter or dispose of it) and "fructus" (the right to the value it creates).  A standard rental contract, for example, transfers to the renter the usus rights, while retaining abusus and fructus for the landlord.  A corporation grants usus of many assets to employees, abusus only to senior managers (and often only with checks and balances), and reserves fructus for shareholders.
 
-
-
 Achieving this crucial separation is different and arguably more challenging for data.  The simplest ways of giving access to usus of data also allow the person granted access the ability to abuse or transfer the data to others (abusus) and the ability for others to gain financial benefit from those data (fructus), possibly at the expense of the person sharing it.  Many who chose to publish data online that has now been incorporated into GFMs believed they were sharing information for others to use, but they did not perceive the full implications that sharing would have.  Of course, norms, laws and cryptography could all potentially play a role in correcting this situation, and we turn to these shortly. At present these are all underdeveloped relative to expectations in, for example, corporate governance or housing rentals, impairing the ability of data sharing to thrive.
 
-To make matters more complicated, settling on such a set of standards is, for the reasons we highlighted in the [Association and ⿻ Publics chapter](https://www.plurality.net/v/chapters/4-2/eng/), challenged by the other key property of data: that interests in it are rarely if ever usefully understood as mostly individual rights.  Data are inherently associational, social and intersectional, making many of the simplest "quick fixes" for this problem (in terms of privacy regulations and cryptography) so misfitting that they impede progress more than they facilitate it.
-
+To make matters more complicated, settling on such a set of standards is, for the reasons we highlighted in the [Association and ⿻ Publics chapter](../4-2/), challenged by the other key property of data: that interests in it are rarely if ever usefully understood as mostly individual rights.  Data are inherently associational, social and intersectional, making many of the simplest "quick fixes" for this problem (in terms of privacy regulations and cryptography) so misfitting that they impede progress more than they facilitate it.
 
 Furthermore, even if there were a clear set of solutions to these challenges, there is no straightforward way to implement them directly.  The most simplistic understanding of contracts is that they are commitments between parties described and mutually agreed to in a document. The freedom of contract simply requires these be enforced.  The reality is much richer, however: it is impossible to specify in a contract how to resolve many conflicts that may arise and no one could read and process such a detailed document if it were.[7](#note-4-4-7) Contracts are necessarily both ambiguous on many points and deliberately do not touch many questions (e.g. "the worker should work really hard" and "the employer should be fair") that are important but hard to precisely specify. Most contractual arrangements are therefore governed primarily by customary expectations, legal precedent, statutes that are consistent with these, mutually expected norms, etc.  In many contexts, contractual provisions that conflict with these evolved principles will not be enforced.  These norms and legal structures have co-evolved over decades and even centuries to govern canonical relationships like rental and employment, minimizing the role that formal court-based contractual provisions and enforcement have to play.  While self-enforcing digital "smart contracts" might thus provide a way to implement such norms smoothly, they cannot substitute for the process of creating a stable social understanding of how data collaboration works, what different parties can expect, and when various legal and technical enforcement mechanisms should and will kick in.
 
-
+{#note-ref-4-4-9}
 
 Challenges of this sort surround efforts to build infrastructure for sharing digital assets like data. The basic problem is that information has a near-infinity of possible uses, meaning that heavily "contractualist" approaches that seek to define exactly how parties may use information run into unmanageable complexity. Such contracts' zones of "incompleteness" are overwhelmingly vast because it is not possible even to imagine, let alone catalog and negotiate over all the possible future uses of information like genetics or geolocation. That means that the most promising possible benefits of data sharing -- which involve taking advantage of new technical affordance to convey information to distant parties all around the world -- are also the most dangerous and ungovernable. The potential market is therefore paralyzed. If we cannot address these problems with conventional contracts, our ideal spheres of information sharing will end up matching the shape of our associations -- meaning we need better maps of our associative connections, and, as discussed elsewhere, better assurances against information leakage even from trusted communities.
 
@@ -123,15 +119,18 @@ Of course, these are far from the only problems besetting digital asset sharing:
 
 The first and simplest issue to address is standards for performance and security for computational asset sharing.  When users store their data or entrust a computation to others, they need assurances that their data will not be compromised by a third party and that the computation will be performed according to their expectations, that their data will be retrievable by themselves or their customers with an expected distribution of latency by people in various places etc.  Currently, these sorts of guarantees are central to the value propositions of the cloud providers. Because there are no standards that can easily be met by a broad set of individuals and organizations offering computational services, these powerful companies dominate the market.  An analogous example is the introduction of Hypertext Transfer Protocol Secure (HTTPS), which allowed a range of web hosting services to meet security criteria that give web content consumers confidence that they can access data from that website without being maliciously surveilled.  Such standards could naturally be paired with standardized formats for searching, requesting, and matching on additional performance and security features.
 
-
 However, as noted above, the thorniest questions pertain not to performance or third-party attacks, but to the problems at the heart of data collaboration: what should a collaborator Party B with whom Party A shares data or other digital assets learn about Party A's data?  While this obviously has no single right answer, setting parameters and expectations in ways that allow participants to benefit from collaboration without frequently undermining their critical interests or those of other people affected by this collaboration is central to making data collaboration feasible and sustainable.  Luckily, a number of tools are becoming available that will help provide technical scaffolding for such relationships.
 
-While we have discussed it in the [Association](https://www.plurality.net/v/chapters/4-2/eng/?mode=dark) chapter, it is worth recalling their relevance here. Secure multiparty computation (SMPC) and homomorphic encryption allow multiple parties to perform a computation together and create a collective output without each revealing to the others the inputs.  While the simplest illustrative examples include calculating an average salary or tallying votes in an election, far more sophisticated possibilities are increasingly within reach, such as training or fine-tuning a GFM.  These more ambitious applications have helped create the field of "federated learning" and "data federation", which allow the computations necessary for one of these ambitious applications to be performed locally on a distributed network of personal or organizational computers with the inputs to the model being passed back and forth securely without the underlying training data ever leaving the machine or servers of the respective parties to the communication.  In collaboration with open-source providers of these tools such as [OpenMined](https://openmined.org/), international organizations like the United Nations have increasingly built experimental showcase platforms for data collaboration harnessing these tools.[8](#note-4-4-8) An alternative to this distributed approach is to use specialized "confidential computers" that can be verified to perform particular calculations but give no one access to their intermediate outputs.  Because these machines are expensive and produced by only a limited range of companies, however, these lend themselves more to control by a trusted central entity than diffuse collaboration.
+While we have discussed it in the [Association](../4-2/) chapter, it is worth recalling their relevance here. Secure multiparty computation (SMPC) and homomorphic encryption allow multiple parties to perform a computation together and create a collective output without each revealing to the others the inputs.  While the simplest illustrative examples include calculating an average salary or tallying votes in an election, far more sophisticated possibilities are increasingly within reach, such as training or fine-tuning a GFM.  These more ambitious applications have helped create the field of "federated learning" and "data federation", which allow the computations necessary for one of these ambitious applications to be performed locally on a distributed network of personal or organizational computers with the inputs to the model being passed back and forth securely without the underlying training data ever leaving the machine or servers of the respective parties to the communication.  In collaboration with open-source providers of these tools such as [OpenMined](https://openmined.org/), international organizations like the United Nations have increasingly built experimental showcase platforms for data collaboration harnessing these tools.[8](#note-4-4-8) An alternative to this distributed approach is to use specialized "confidential computers" that can be verified to perform particular calculations but give no one access to their intermediate outputs.  Because these machines are expensive and produced by only a limited range of companies, however, these lend themselves more to control by a trusted central entity than diffuse collaboration.
+
+{#note-ref-4-4-10}
 
 
 While these approaches can help achieve a collaboration without unnecessary information being conveyed across collaborators, other tools are needed to address the information contained in the desired outputs (e.g. statistics or models) created by the collaboration.  Models may both leak input information (e.g. a model reproduces intimate details of the medical history of a particular person) or may, conversely, obscure the source of information (e.g. reproduce input creative text without attribution, in violation of a license).  Both are significant impediments to data collaboration, as collaborators will typically want agency over the use of their data.
 
 Tools to address these challenges are more statistical than cryptographic.  Differential privacy limits the degree to which input data can be guessed from a collection of output data, using a "privacy budget" to ensure that together disclosures do not reliably reveal inputs.  [Watermarking](https://www.techtarget.com/searchenterpriseai/definition/AI-watermarking) can create "signatures" in content showing its origin in ways that are hard to erase, ignore or even in some cases detect.  "[Influence functions](https://proceedings.mlr.press/v70/koh17a?ref=https://githubhelp.com)" trace the role a particular collection of data plays in producing the output of a model, allowing at least partial attribution of the output of an otherwise "black box" model.[9](#note-4-4-9)
+
+{#note-ref-4-4-11}
 
 
 All these techniques have fallen somewhat behind the speed, scale and power of the development of GFMs.  For example, differential privacy focuses mostly on the literal statistical recoverability of facts, whereas GFMs are often capable of performing "reasoning" as a detective would, inferring for example someone's first school from a constellation of only loosely related facts about later schools, friendships, etc.   Harnessing the capacity of these models to tackle these technical challenges and deriving technical standard definitions of data protection and attribution, especially as models further progress, will be central to making data collaboration sustainable.
@@ -144,37 +143,31 @@ Yet many of the challenges to data collaboration are more organizational and soc
 
 Organizations capable of taking on this role of collectively representing the rights and interests of "data subjects"[20](#note-4-4-20) have been given a variety of names: data trusts,[21](#note-4-4-21) [collaboratives](https://www.datacollaboration.org/),[22](#note-4-4-22) cooperatives,[23](#note-4-4-23) or, in a whimsical turn of phrase one of the authors suggested, "mediators of individual data" (MIDs).[24](#note-4-4-24) Some of these could quite naturally follow the lines of existing organizations: for example, unions for creative workers representing their content, or Wikipedia representing the collective interest of its volunteer editors and contributors.  Others may require new forms of organization, such as the contributors of open-source code that is being used to train code-generation models, authors of fan fiction and writers of Reddit pages may need to organize their own forms of collective representation.
 
+{#note-ref-4-4-12}
 
 Beyond these formal technologies, organizations and standards, broader and more diffuse concepts, expectations and norms will have to develop so as to ensure broad understanding of what is at stake in data collaborations, so that contributors feel empowered to strike fair agreements and hold their collaborators accountable.  Given the pace of technological change and adaptation in what data collaborations will thus become, these norms will both have to become pervasive and reasonably stable *and* dynamic and adaptive.  Achieving this will require practices of education and cultural engagement that keep pace with technical change, as we discuss in the following chapters.
 
-
 Once they develop and spread sufficiently, data collaboration tools, organizations and practices may become sufficiently familiar to be encoded in common sense and legal practice as deeply as "property rights" are, though as we noted they will almost certainly have to take a different form than the standard patterns governing private ownership of land or the organization of a joint-stock corporation.  They will, as we noted, need to include many more technical and cryptographic elements, different kinds of social organizations with a greater emphasis on collective governance and fiduciary duties and norms or laws protecting against unilateral disclosure by a member of a MIDs (analogous to prohibitions against unilateral strikebreaking against unions).  These may form into a future version of "property" for the digital world, but one much more attuned to the ⿻ character of data.
 
-
-
 ### ⿻ real property
-
 
 Achieving ⿻ property will be a challenge,  but it is instructive to remember that many property rights systems in other realms are contested and in flux. In some ways, the deeply social character of data sets it apart from real-world assets, and therefore our existing modes of designing property rights and contractual systems are not readily applied to data. But in other ways, the deeply social character of data accentuates, through its unfamiliarity, many of the ways traditional property systems are themselves ill-suited to managing real assets today.
 
 We take one step away from the purely digital asset world and look to two examples of digitally-related assets whose property rights regimes are changing rapidly. These two examples are the electromagnetic spectrum and namespaces on the internet.
 
-Traditionally, entitlements to broadcast on a particular electromagnetic frequency in a particular geographic range have (in many countries including the US) been assigned or auctioned to operators with licenses being renewed at low cost.  This has effectively created a private property-like entitlement based on the idea that users of frequencies will interfere if many are allowed to operate on the same band in the same place and that licensees will steward the band if they have property rights over it.  These assumptions have been tested to the breaking point recently, however, as many digital applications (such as WiFi) can share spectrum and the rapidly changing nature of uses for spectrum (e.g. moving from over-the-air broadcasting to 5G wireless) has dramatically changed interference patterns, requiring a reorganization of the spectrum against which legacy license holders can often serve as holdouts.[10](#note-4-4-10) This, in turn, has led to significant changes to the property system, allowing licensing agencies like America's Federal Communications Commission to relocate holdouts in auctions, and proposals by leaders in the space for even more radical designs that would mix elements of rental and ownership as we discuss in our [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter below or leave spectrum unlicensed for specified shared uses.[11](#note-4-4-11)
+Traditionally, entitlements to broadcast on a particular electromagnetic frequency in a particular geographic range have (in many countries including the US) been assigned or auctioned to operators with licenses being renewed at low cost.  This has effectively created a private property-like entitlement based on the idea that users of frequencies will interfere if many are allowed to operate on the same band in the same place and that licensees will steward the band if they have property rights over it.  These assumptions have been tested to the breaking point recently, however, as many digital applications (such as WiFi) can share spectrum and the rapidly changing nature of uses for spectrum (e.g. moving from over-the-air broadcasting to 5G wireless) has dramatically changed interference patterns, requiring a reorganization of the spectrum against which legacy license holders can often serve as holdouts.[10](#note-4-4-10) This, in turn, has led to significant changes to the property system, allowing licensing agencies like America's Federal Communications Commission to relocate holdouts in auctions, and proposals by leaders in the space for even more radical designs that would mix elements of rental and ownership as we discuss in our [Social Markets](../5-7/) chapter below or leave spectrum unlicensed for specified shared uses.[11](#note-4-4-11)
 
+{#note-ref-4-4-13}
 
-The evolution of property in namespaces has been even more radical.  Traditionally the [Internet Corporation for Assigned Names and Numbers](https://www.icann.org/) (ICANN) allowed registration of domain names at relatively low cost with nominal fees for renewal, similar to the property-like licensing regime for spectrum.  While this system has evolved, the more fundamental change has been that today, most people reach websites through search engines rather than direct navigation.  These engines usually list sites associated with a given name based on a variety of (mostly not publicly disclosed) signals of their relevance to users as well as including some paid advertisements that are auctioned in real-time.[12](#note-4-4-12)  While relevance algorithms are something of a black box, a reasonable first mental model for them is the original "[PageRank](https://en.wikipedia.org/wiki/PageRank)" algorithm of Google founders Sergey Brin and Larry Page, which ranked pages based on their "network centrality", a notion related to the network-based voting systems we will discuss in our chapter on [⿻ Voting](https://www.plurality.net/v/chapters/5-6/eng/?mode=dark) below. [13](#note-4-4-13) Thus, to a first blush, we can think of the *de facto* property regime of Internet namespaces today as being a combination of collective direction towards the interest of browsers (rather than domain owners) combined with a real-time auction for domain owners.  Both are a far cry from traditional property systems.
+The evolution of property in namespaces has been even more radical.  Traditionally the [Internet Corporation for Assigned Names and Numbers](https://www.icann.org/) (ICANN) allowed registration of domain names at relatively low cost with nominal fees for renewal, similar to the property-like licensing regime for spectrum.  While this system has evolved, the more fundamental change has been that today, most people reach websites through search engines rather than direct navigation.  These engines usually list sites associated with a given name based on a variety of (mostly not publicly disclosed) signals of their relevance to users as well as including some paid advertisements that are auctioned in real-time.[12](#note-4-4-12)  While relevance algorithms are something of a black box, a reasonable first mental model for them is the original "[PageRank](https://en.wikipedia.org/wiki/PageRank)" algorithm of Google founders Sergey Brin and Larry Page, which ranked pages based on their "network centrality", a notion related to the network-based voting systems we will discuss in our chapter on [⿻ Voting](../5-6/) below. [13](#note-4-4-13) Thus, to a first blush, we can think of the *de facto* property regime of Internet namespaces today as being a combination of collective direction towards the interest of browsers (rather than domain owners) combined with a real-time auction for domain owners.  Both are a far cry from traditional property systems.
 
-
+{#note-ref-4-4-14}
 
 This is not, of course, to suggest that any of this is ideal and certainly not socially legitimate.  These systems have been largely designed far from the public eye, without public understanding by teams of technocratic engineers and economists. Few even recognize that they operate much less believe they are appropriate.[14](#note-4-4-14)  On the other hand, they respond to real challenges in creative ways, and the issues they address stretch well beyond the narrow domains to which they have been applied thus far.  Addressing holdout problems and spectrum sharing is central to allowing digital development that is broadly demanded by the public and viewed as central to even issues of national security.  Similar holdout issues pervade the redevelopment of urban spaces and the building of common infrastructure, and much land currently held as private property could be made into shared spaces like parks (or vice-versa).
 
+{#note-ref-4-4-15}
 
-
-Treating name spaces as private property makes little sense, given that those who happen to own a name that is contested (e.g. "ABC.com") may be domain squatters, legacy owners serving a limited audience, fraudsters exploiting a brand, etc.  While some of the stability and signal of importance from owners' willingness to pay offered by property rights are clearly important, the systems used by search engines achieve this in arguably a better balance by explicitly accounting for the public interest in stability and the real-time demands from those who would pay for the namespace than does a simple private property system.  Again, these issues show up frequently in "real world" domains from trademarks and other intellectual property to the ownership of antiquities and historic locations in cities. It only takes a slight stretch of imagination to see how, if they combine with far better public engagement, education and advocacy, the innovative alternatives to property that evolved and are evolving in the digital realm might help us rethink property systems more broadly in a ⿻ direction, a theme we will explore in greater depth in our [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter below.
-
-
-
-
+Treating name spaces as private property makes little sense, given that those who happen to own a name that is contested (e.g. "ABC.com") may be domain squatters, legacy owners serving a limited audience, fraudsters exploiting a brand, etc.  While some of the stability and signal of importance from owners' willingness to pay offered by property rights are clearly important, the systems used by search engines achieve this in arguably a better balance by explicitly accounting for the public interest in stability and the real-time demands from those who would pay for the namespace than does a simple private property system.  Again, these issues show up frequently in "real world" domains from trademarks and other intellectual property to the ownership of antiquities and historic locations in cities. It only takes a slight stretch of imagination to see how, if they combine with far better public engagement, education and advocacy, the innovative alternatives to property that evolved and are evolving in the digital realm might help us rethink property systems more broadly in a ⿻ direction, a theme we will explore in greater depth in our [Social Markets](../5-7/) chapter below.
 
 ## Chapter notes {#notes-4-4}
 
@@ -182,94 +175,142 @@ Treating name spaces as private property makes little sense, given that those wh
 
 Polanyi, op. cit.
 
+[Back to text](#note-ref-4-4-2)
+
 ### Note 2 {#note-4-4-2}
 
 Licklider, "Memorandum for Members and Affiliates of the Intergalactic Computer Network", op. cit.
+
+[Back to text](#note-ref-4-4-3)
 
 ### Note 3 {#note-4-4-3}
 
 Waldrop, *The Dream Machine*, op. cit.
 
+[Back to text](#note-ref-4-4-3)
+
 ### Note 4 {#note-4-4-4}
 
 Brian Dear, *The Friendly Orange Glow: The Untold Story of the PLATO System and the Dawn of Cyberculture* (New York: Pantheon, 2017)
+
+[Back to text](#note-ref-4-4-4)
 
 ### Note 5 {#note-4-4-5}
 
 Gartner, "Gartner Forecasts Worldwide Semiconductor Revenue to Grow 17% in 2024" (2023) at https://www.gartner.com/en/newsroom/press-releases/2023-12-04-gartner-forecasts-worldwide-semiconductor-revenue-to-grow-17-percent-in-2024
 
+[Back to text](#note-ref-4-4-5)
+
 ### Note 6 {#note-4-4-6}
 
 Josh Howarth, "34 Amazing Cloud Computing Stats" *Exploding Topics*, February 19 2024 at https://explodingtopics.com/blog/cloud-computing-stats. Felix Richter, "Amazon Maintains Cloud Lead as Microsoft Edges Closer" *Statista* February 5, 2024 at https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/
+
+[Back to text](#note-ref-4-4-7)
 
 ### Note 7 {#note-4-4-7}
 
 Sanford J. Grossman and Oliver D. Hart, "The Costs and Benefits of Ownership: A Theory of Vertical and Lateral Integration", *Journal of Political Economy* 94, no. 4: 691-719.
 
+[Back to text](#note-ref-4-4-9)
+
 ### Note 8 {#note-4-4-8}
 
 "The UN is Testing Technology that Processes Data Confidentially" *The Economist* January 29, 2022.
+
+[Back to text](#note-ref-4-4-10)
 
 ### Note 9 {#note-4-4-9}
 
 Pan Wei Koh and Percy Liang, "Understanding Black-Box Predictions via Influence Functions", *Proceedings of the 34th International Conference on Machine Learning*, 70 (2017): 1885-1894
 
+[Back to text](#note-ref-4-4-11)
+
 ### Note 10 {#note-4-4-10}
 
 Paul R. Milgrom, Jonathan Levin and Assaf Eilat, "The Case for Unlicensed Spectrum" at https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1948257 and Paul Milgrom, "Auction Research Evolving: Theorems and Market Designs", *American Economic Review* 111, no. 5 (2021): 1383-1405.
+
+[Back to text](#note-ref-4-4-13)
 
 ### Note 11 {#note-4-4-11}
 
 E. Glen Weyl and Anthony Lee Zhang, "Depreciating Licenses", *American Economic Journal: Economic Policy* 14, no. 3 (2022): 422-448. Paul R. Milgrom, E. Glen Weyl and Anthony Lee Zhang, "Redesigning Spectrum Licenses to Encourage Innovation and Investment", *Regulation* 40, no. 3 (2017): 22-26.
 
+[Back to text](#note-ref-4-4-13)
+
 ### Note 12 {#note-4-4-12}
 
 Benjamin Edelman, Michael Ostrovsky and Michael Schwarz, "Internet Advertising and the Generalized Second-Price Auction: Selling Billions of Dollars Worth of Keywords", *American Economic Review* 97, no. 1: 242-259
+
+[Back to text](#note-ref-4-4-14)
 
 ### Note 13 {#note-4-4-13}
 
 Sergey Brin and Lawrence Page, "The Anatomy of a Large-Scale Hypertextual Web Search Engine", *Computer Systems and ISDN Systems* 30, no. 1-7: 107-117.
 
+[Back to text](#note-ref-4-4-14)
+
 ### Note 14 {#note-4-4-14}
 
 In fact, authors of this book have been prominent critics of these designs for these reasons. Zoë Hitzig, "The Normative Gap: Mechanism Design and Ideal Theories of Justice", *Economics and Philosophy* 36, no. 3: 407-434.  Glen Weyl, "How Market Design Economists Helped Engineer a Mass Privatization of Public Resources", *Pro-Market* May 28, 2020 at https://www.promarket.org/2020/05/28/how-market-design-economists-engineered-economists-helped-design-a-mass-privatization-of-public-resources/.
+
+[Back to text](#note-ref-4-4-15)
 
 ### Note 15 {#note-4-4-15}
 
 Kate Crawford, *Atlas of AI* (New Haven, CT: Yale University Press, 2022). Mary Gray, and Siddhath Suri. _Ghost Work: How to Stop Silicon Valley from Building a New Global Underclass_. (Boston: Houghton Miffilin Harcourt, 2019).
 
+[Back to text](#note-ref-4-4-1)
+
 ### Note 16 {#note-4-4-16}
 
 Rolf Harms, and Michael Yamartino, “The Economics of the Cloud,” 2010, https://news.microsoft.com/download/archived/presskits/cloud/docs/The-Economics-of-the-Cloud.pdf.
+
+[Back to text](#note-ref-4-4-8)
 
 ### Note 17 {#note-4-4-17}
 
 David Graeber and David Wengrow, _The Dawn of Everything: A New History of Humanity_, (New York: Farrar, Straus And Giroux, 2021). In this book, the authors explore a vast range of political creativity and flexibility surrounding how humans have organized themselves in the last 100,000 years.
 
+[Back to text](#note-ref-4-4-6)
+
 ### Note 18 {#note-4-4-18}
 
 Hernando de Soto, _The Mystery of Capital: Why Capitalism Triumphs in the West and Fails Everywhere Else_, (New York: Basic Books, 2000). In the book, he emphasizes that the abstract representation of property through formal titles and documentation allows assets to be leveraged in the financial system, enabling them to generate wealth and spur economic growth
+
+[Back to text](#note-ref-4-4-6)
 
 ### Note 19 {#note-4-4-19}
 
 see Henrich, "Part III: New Institutions, New Psychologies," in op. cit.
 
+[Back to text](#note-ref-4-4-6)
+
 ### Note 20 {#note-4-4-20}
 
 Jaron Lanier, _Who Owns the Future?_, (New York: Simon and Schuster, 2014).
+
+[Back to text](#note-ref-4-4-12)
 
 ### Note 21 {#note-4-4-21}
 
 Sylvie Delacroix, and Jess Montgomery, “Data Trusts and the EU Data Strategy,” Data Trusts Initiative, June 2020. https://datatrusts.uk/blogs/data-trusts-and-the-eu-data-strategy.
 
+[Back to text](#note-ref-4-4-12)
+
 ### Note 22 {#note-4-4-22}
 
 See the Data Collaboration Alliance at https://www.datacollaboration.org/
+
+[Back to text](#note-ref-4-4-12)
 
 ### Note 23 {#note-4-4-23}
 
 Thomas Hardjono and Alex Pentland, "Data cooperatives: Towards a Foundation for Decentralized Personal Data Management," _arXiv_ (New York: Cornell University, 2019), https://arxiv.org/pdf/1905.08819.pdf.
 
+[Back to text](#note-ref-4-4-12)
+
 ### Note 24 {#note-4-4-24}
 
 Lanier and Weyl, op. cit.
+
+[Back to text](#note-ref-4-4-12)

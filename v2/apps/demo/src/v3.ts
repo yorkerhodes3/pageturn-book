@@ -22,6 +22,15 @@ import {
   type V3MediaFigure,
   type V3MediaTreatment,
 } from "./v3-media.js";
+import {
+  annotationMarkdown,
+  readAnnotations,
+  readBookmarks,
+  writeAnnotations,
+  writeBookmarks,
+  type V3Annotation,
+  type V3Bookmark,
+} from "./v3-personal.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
@@ -35,6 +44,13 @@ type V3Chapter = Pick<
   SemanticChapter,
   "chapterId" | "title" | "href" | "firstAnchor"
 >;
+
+type V3TocEntry = Readonly<{
+  title: string;
+  chapterId: string;
+  anchor: string;
+  children: readonly V3TocEntry[];
+}>;
 
 type V3Manifest = Readonly<{
   bookId: string;
@@ -55,6 +71,20 @@ type V3Manifest = Readonly<{
     subtitle?: string;
   }>;
   chapters: readonly V3Chapter[];
+  tableOfContents: readonly V3TocEntry[];
+}>;
+
+type V3SearchRecord = Readonly<{
+  chapterId: string;
+  chapterTitle: string;
+  anchor: string;
+  text: string;
+}>;
+
+type V3Selection = Readonly<{
+  chapterId: string;
+  anchor: string;
+  quote: string;
 }>;
 
 type PrototypePage = Readonly<{
@@ -98,6 +128,8 @@ type ActiveTurn = {
   pointerId?: number;
   capture?: HTMLButtonElement;
   animationFrame?: number;
+  pointerFrame?: number;
+  pendingPointer?: PageTurnPoint;
   moving: HTMLElement;
   revealed: HTMLElement;
   shadow: HTMLElement;
@@ -170,6 +202,7 @@ function applyPublicationIdentity(publication: V3Manifest): void {
   mediaSelect.value = mediaTreatment;
   reader.classList.toggle("v3-has-media", mediaConfig !== undefined);
   reader.dataset.v3MediaMode = mediaTreatment;
+  exploreButton.disabled = false;
   chapterSelect.replaceChildren(
     new Option("Front matter", ""),
     ...publication.chapters.map(
@@ -283,12 +316,36 @@ function blocksWithMedia(chapterState: ChapterState): readonly SemanticBlock[] {
   for (const figure of mediaConfig.figures.filter(
     ({ chapterId }) => chapterId === String(chapterState.chapter.chapterId),
   )) {
-    let anchorIndex = -1;
-    for (let index = result.length - 1; index >= 0; index -= 1) {
-      if (result[index]?.anchor === figure.afterAnchor) {
-        anchorIndex = index;
-        break;
+    const replacementAnchors = figure.replaceAnchors ?? [];
+    if (replacementAnchors.length > 0) {
+      const replacementIndex = result.findIndex(({ anchor }) =>
+        replacementAnchors.includes(anchor),
+      );
+      if (replacementIndex < 0) {
+        throw new Error(
+          `V3 figure ${figure.id} cannot find replacement anchors`,
+        );
       }
+      const remaining = result.filter(
+        ({ anchor }) => !replacementAnchors.includes(anchor),
+      );
+      result.splice(0, result.length, ...remaining);
+      result.splice(
+        Math.min(replacementIndex, result.length),
+        0,
+        mediaFigureBlock(figure, chapterState),
+      );
+      continue;
+    }
+    if (!figure.afterAnchor) {
+      throw new Error(`V3 figure ${figure.id} has no insertion anchor`);
+    }
+    let anchorIndex = result.length - 1;
+    while (
+      anchorIndex >= 0 &&
+      result[anchorIndex]?.anchor !== figure.afterAnchor
+    ) {
+      anchorIndex -= 1;
     }
     if (anchorIndex < 0) {
       throw new Error(
@@ -428,6 +485,26 @@ function optionalStringValue(
   return value === undefined ? undefined : stringValue(value, path);
 }
 
+function parseTocEntry(value: unknown, path: string): V3TocEntry {
+  const entry = record(value, path);
+  const location = record(entry.location, `${path}.location`);
+  const childrenValue = entry.children ?? [];
+  if (!Array.isArray(childrenValue)) {
+    throw new Error(`V3 manifest ${path}.children must be an array`);
+  }
+  return {
+    title: stringValue(entry.title, `${path}.title`),
+    chapterId: stringValue(
+      location.chapterId,
+      `${path}.location.chapterId`,
+    ),
+    anchor: stringValue(location.anchor, `${path}.location.anchor`),
+    children: childrenValue.map((child, index) =>
+      parseTocEntry(child, `${path}.children[${index}]`),
+    ),
+  };
+}
+
 function parseV3Manifest(value: unknown): V3Manifest {
   const root = record(value, "root");
   const authorsValue = root.authors;
@@ -472,6 +549,13 @@ function parseV3Manifest(value: unknown): V3Manifest {
       ),
     };
   });
+  const tocValue = root.tableOfContents;
+  if (!Array.isArray(tocValue) || tocValue.length === 0) {
+    throw new Error("V3 manifest tableOfContents must be a non-empty array");
+  }
+  const tableOfContents = tocValue.map((entry, index) =>
+    parseTocEntry(entry, `tableOfContents[${index}]`),
+  );
   const frontMatterRecord =
     root.frontMatter === undefined
       ? undefined
@@ -527,6 +611,7 @@ function parseV3Manifest(value: unknown): V3Manifest {
     title: stringValue(root.title, "title"),
     authors,
     chapters,
+    tableOfContents,
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
     ...(frontMatterRecord === undefined
@@ -600,6 +685,31 @@ function markLeadingReferenceMarker(node: HTMLElement): void {
   }
 }
 
+function markLocalChapterLinks(node: HTMLElement): void {
+  if (!manifest) {
+    return;
+  }
+  for (const link of node.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const href = link.getAttribute("href");
+    const match = href
+      ? /^\.\.\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?(?:#([^?]+))?$/.exec(href)
+      : null;
+    const chapterId = match?.[1];
+    if (
+      !chapterId ||
+      !manifest.chapters.some(
+        ({ chapterId: candidate }) => String(candidate) === chapterId,
+      )
+    ) {
+      continue;
+    }
+    link.dataset.v3ChapterLink = chapterId;
+    if (match?.[2]) {
+      link.dataset.v3ChapterAnchor = decodeURIComponent(match[2]);
+    }
+  }
+}
+
 function semanticBlocks(
   article: HTMLElement,
   chapter: V3Chapter,
@@ -640,6 +750,7 @@ function semanticBlocks(
         );
         paragraph.dataset.sourceAnchor = anchor;
         markLeadingReferenceMarker(paragraph);
+        markLocalChapterLinks(paragraph);
         blocks.push({
           node: paragraph,
           anchor,
@@ -660,6 +771,7 @@ function semanticBlocks(
     }
     clone.dataset.sourceAnchor = anchor;
     markLeadingReferenceMarker(clone);
+    markLocalChapterLinks(clone);
     blocks.push({
       node: clone,
       anchor,
@@ -890,6 +1002,9 @@ function createSheet(
   }
   content.append(...cloneNodes(page.nodes, !decorative));
   activateMediaImages(content);
+  if (!decorative) {
+    applyAnnotationMarkers(content);
+  }
   const pageFolio = createElement("div", "v3-sheet-folio", String(folio));
   sheet.append(running, content, pageFolio);
   return sheet;
@@ -957,6 +1072,41 @@ const mediaDialogImage = requiredElement<HTMLImageElement>(
 const mediaDialogCaption = requiredElement<HTMLElement>(
   "[data-v3-media-dialog-caption]",
 );
+const exploreButton = requiredElement<HTMLButtonElement>("[data-v3-explore]");
+const exploreDialog = requiredElement<HTMLDialogElement>(
+  "[data-v3-explore-dialog]",
+);
+const contents = requiredElement<HTMLElement>("[data-v3-contents]");
+const searchForm = requiredElement<HTMLFormElement>("[data-v3-search-form]");
+const searchInput = requiredElement<HTMLInputElement>("[data-v3-search-input]");
+const searchStatus = requiredElement<HTMLElement>("[data-v3-search-status]");
+const searchResults = requiredElement<HTMLOListElement>(
+  "[data-v3-search-results]",
+);
+const bookmarkCurrent = requiredElement<HTMLButtonElement>(
+  "[data-v3-bookmark-current]",
+);
+const bookmarkList = requiredElement<HTMLOListElement>(
+  "[data-v3-bookmark-list]",
+);
+const selectionPreview = requiredElement<HTMLElement>(
+  "[data-v3-selection-preview]",
+);
+const annotationNote = requiredElement<HTMLTextAreaElement>(
+  "[data-v3-annotation-note]",
+);
+const saveAnnotation = requiredElement<HTMLButtonElement>(
+  "[data-v3-save-annotation]",
+);
+const annotationList = requiredElement<HTMLOListElement>(
+  "[data-v3-annotation-list]",
+);
+const exportAnnotations = requiredElement<HTMLButtonElement>(
+  "[data-v3-export-annotations]",
+);
+const resumeNotice = requiredElement<HTMLElement>("[data-v3-resume-notice]");
+const resumeLabel = requiredElement<HTMLElement>("[data-v3-resume-label]");
+const startOver = requiredElement<HTMLButtonElement>("[data-v3-start-over]");
 const backLink = requiredElement<HTMLAnchorElement>("[data-v3-back]");
 const previous = requiredElement<HTMLButtonElement>("[data-v3-previous]");
 const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
@@ -991,6 +1141,12 @@ let locationNavigationVersion = 0;
 let failureReported = false;
 let pendingTurn = false;
 let mediaReturnFocus: HTMLElement | undefined;
+let bookmarks: V3Bookmark[] = [];
+let annotations: V3Annotation[] = [];
+let pendingSelection: V3Selection | undefined;
+let searchRecordsPromise: Promise<readonly V3SearchRecord[]> | undefined;
+let searchController: AbortController | undefined;
+let resumedFromStorage = false;
 
 if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
@@ -1018,6 +1174,468 @@ function configureBackNavigation(): void {
   backLink.href = destination.href;
   backLink.textContent = label;
   backLink.dataset.v3BackMode = label === "Back" ? "referrer" : "library";
+}
+
+function tocList(entries: readonly V3TocEntry[]): HTMLOListElement {
+  const list = createElement("ol", "v3-contents-list");
+  for (const entry of entries) {
+    const item = createElement("li");
+    const link = createElement("button", undefined, entry.title);
+    link.type = "button";
+    link.dataset.v3GoChapter = entry.chapterId;
+    link.dataset.v3GoAnchor = entry.anchor;
+    item.append(link);
+    if (entry.children.length > 0) {
+      item.append(tocList(entry.children));
+    }
+    list.append(item);
+  }
+  return list;
+}
+
+function renderContents(): void {
+  contents.replaceChildren(
+    ...(manifest ? [tocList(manifest.tableOfContents)] : []),
+  );
+}
+
+function searchRecordElements(
+  article: HTMLElement,
+  chapter: V3Chapter,
+): V3SearchRecord[] {
+  return Array.from(article.children).flatMap((child) => {
+    if (
+      !(child instanceof HTMLElement) ||
+      !child.id ||
+      !child.matches(
+        "h1, h2, h3, h4, h5, h6, p, blockquote, ul, ol, table, pre, figure",
+      )
+    ) {
+      return [];
+    }
+    const text = child.textContent?.replace(/\s+/g, " ").trim() ?? "";
+    return text.length < 2
+      ? []
+      : [
+          {
+            chapterId: String(chapter.chapterId),
+            chapterTitle: chapter.title,
+            anchor: child.id,
+            text,
+          },
+        ];
+  });
+}
+
+async function loadSearchRecords(): Promise<readonly V3SearchRecord[]> {
+  if (searchRecordsPromise) {
+    return searchRecordsPromise;
+  }
+  if (!manifest || !manifestUrl) {
+    throw new Error("V3 cannot search before loading the publication");
+  }
+  const publication = manifest;
+  const publicationUrl = manifestUrl;
+  const controller = new AbortController();
+  searchController = controller;
+  searchRecordsPromise = (async () => {
+    const records: V3SearchRecord[][] = Array.from(
+      { length: publication.chapters.length },
+      () => [],
+    );
+    let nextIndex = 0;
+    const worker = async () => {
+      while (nextIndex < publication.chapters.length) {
+        const index = nextIndex;
+        nextIndex += 1;
+        const chapter = publication.chapters[index];
+        if (!chapter) {
+          continue;
+        }
+        const response = await fetch(new URL(chapter.href, publicationUrl), {
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(
+            `V3 search could not load ${chapter.title} (${response.status})`,
+          );
+        }
+        const parsed = new DOMParser().parseFromString(
+          await response.text(),
+          "text/html",
+        );
+        const article =
+          parsed.querySelector<HTMLElement>("[data-reader-content]");
+        if (!article) {
+          throw new Error(
+            `V3 search could not find content for ${chapter.title}`,
+          );
+        }
+        records[index] = searchRecordElements(article, chapter);
+      }
+    };
+    await Promise.all(
+      Array.from(
+        { length: Math.min(4, publication.chapters.length) },
+        () => worker(),
+      ),
+    );
+    return records.flat();
+  })()
+    .then((records) => {
+      if (searchController === controller) {
+        searchController = undefined;
+      }
+      return records;
+    })
+    .catch((error: unknown) => {
+      if (searchController === controller) {
+        searchController = undefined;
+      }
+      searchRecordsPromise = undefined;
+      throw error;
+    });
+  return searchRecordsPromise;
+}
+
+function searchSnippet(text: string, matchIndex: number, length: number): string {
+  const start = Math.max(0, matchIndex - 55);
+  const end = Math.min(text.length, matchIndex + length + 95);
+  return `${start > 0 ? "..." : ""}${text.slice(start, end)}${
+    end < text.length ? "..." : ""
+  }`;
+}
+
+async function runSearch(queryText: string): Promise<void> {
+  const queryValue = queryText.replace(/\s+/g, " ").trim();
+  if (queryValue.length < 2) {
+    searchStatus.textContent = "Enter at least two characters.";
+    searchResults.replaceChildren();
+    return;
+  }
+  searchStatus.textContent = "Building the on-demand text index...";
+  searchInput.disabled = true;
+  try {
+    const queryLower = queryValue.toLocaleLowerCase();
+    const matches = (await loadSearchRecords())
+      .flatMap((entry) => {
+        const index = entry.text.toLocaleLowerCase().indexOf(queryLower);
+        return index < 0 ? [] : [{ entry, index }];
+      })
+      .slice(0, 50);
+    searchResults.replaceChildren(
+      ...matches.map(({ entry, index }) => {
+        const item = createElement("li");
+        const open = createElement(
+          "button",
+          undefined,
+          `${entry.chapterTitle}: ${searchSnippet(
+            entry.text,
+            index,
+            queryValue.length,
+          )}`,
+        );
+        open.type = "button";
+        open.dataset.v3GoChapter = entry.chapterId;
+        open.dataset.v3GoAnchor = entry.anchor;
+        item.append(open);
+        return item;
+      }),
+    );
+    searchStatus.textContent =
+      matches.length === 0
+        ? `No results for "${queryValue}".`
+        : `${matches.length} result${matches.length === 1 ? "" : "s"} for "${queryValue}".`;
+  } finally {
+    searchInput.disabled = false;
+  }
+}
+
+function personalLocationUrl(
+  chapterId: string,
+  anchor: string,
+): string {
+  if (!manifest) {
+    throw new Error("V3 publication is unavailable");
+  }
+  return readingLocationUrl(
+    {
+      bookId: manifest.bookId,
+      editionId: manifest.editionId,
+      chapterId,
+      anchor,
+    },
+    false,
+  ).href;
+}
+
+function toolLocationButton(
+  label: string,
+  chapterId: string,
+  anchor: string,
+): HTMLButtonElement {
+  const open = createElement("button", undefined, label);
+  open.type = "button";
+  open.dataset.v3GoChapter = chapterId;
+  open.dataset.v3GoAnchor = anchor;
+  return open;
+}
+
+function renderBookmarks(): void {
+  const location = currentReadingLocation();
+  const currentBookmark = location
+    ? bookmarks.find(
+        ({ chapterId, anchor }) =>
+          chapterId === location.chapterId && anchor === location.anchor,
+      )
+    : undefined;
+  bookmarkCurrent.disabled = location === undefined;
+  bookmarkCurrent.setAttribute(
+    "aria-pressed",
+    String(currentBookmark !== undefined),
+  );
+  bookmarkCurrent.textContent = currentBookmark
+    ? "Remove current bookmark"
+    : "Bookmark current passage";
+  bookmarkList.replaceChildren(
+    ...bookmarks.map((bookmark, index) => {
+      const item = createElement("li");
+      item.append(
+        toolLocationButton(
+          bookmark.label,
+          bookmark.chapterId,
+          bookmark.anchor,
+        ),
+      );
+      const remove = createElement("button", undefined, "Remove");
+      remove.type = "button";
+      remove.dataset.v3RemoveBookmark = String(index);
+      remove.setAttribute("aria-label", `Remove bookmark: ${bookmark.label}`);
+      item.append(remove);
+      return item;
+    }),
+  );
+}
+
+function renderAnnotations(): void {
+  selectionPreview.hidden = pendingSelection === undefined;
+  selectionPreview.textContent = pendingSelection?.quote ?? "";
+  annotationNote.disabled = pendingSelection === undefined;
+  saveAnnotation.disabled = pendingSelection === undefined;
+  exportAnnotations.disabled = annotations.length === 0;
+  annotationList.replaceChildren(
+    ...annotations.map((annotation) => {
+      const item = createElement("li");
+      const quote = createElement(
+        "blockquote",
+        undefined,
+        annotation.quote,
+      );
+      item.append(
+        toolLocationButton(
+          annotation.note.trim() || annotation.quote.slice(0, 80),
+          annotation.chapterId,
+          annotation.anchor,
+        ),
+        quote,
+      );
+      if (annotation.note.trim()) {
+        item.append(createElement("p", undefined, annotation.note));
+      }
+      const remove = createElement("button", undefined, "Delete");
+      remove.type = "button";
+      remove.dataset.v3RemoveAnnotation = annotation.id;
+      remove.setAttribute("aria-label", "Delete private annotation");
+      item.append(remove);
+      return item;
+    }),
+  );
+}
+
+function renderPersonalTools(): void {
+  renderBookmarks();
+  renderAnnotations();
+}
+
+function selectionElement(node: Node | null): Element | undefined {
+  return node instanceof Element
+    ? node
+    : node?.parentElement ?? undefined;
+}
+
+function currentTextSelection(): V3Selection | undefined {
+  const selection = document.getSelection();
+  if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+    return undefined;
+  }
+  const range = selection.getRangeAt(0);
+  const start = selectionElement(range.startContainer);
+  const end = selectionElement(range.endContainer);
+  const startSheet = start?.closest<HTMLElement>(
+    "[data-v3-stationary] .v3-sheet",
+  );
+  const endSheet = end?.closest<HTMLElement>(
+    "[data-v3-stationary] .v3-sheet",
+  );
+  if (!startSheet || startSheet !== endSheet) {
+    return undefined;
+  }
+  const quote = selection.toString().replace(/\s+/g, " ").trim();
+  if (quote.length < 2 || quote.length > 2_000) {
+    return undefined;
+  }
+  const source = start?.closest<HTMLElement>("[data-source-anchor]");
+  const anchor = source?.dataset.sourceAnchor ?? startSheet.dataset.v3Anchor;
+  const chapterId = startSheet.dataset.v3Chapter;
+  return anchor && chapterId ? { chapterId, anchor, quote } : undefined;
+}
+
+function onSelectionChange(): void {
+  const selection = currentTextSelection();
+  if (selection) {
+    pendingSelection = selection;
+  }
+  renderSelectionControls();
+  if (exploreDialog.open) {
+    renderAnnotations();
+  }
+}
+
+function toggleCurrentBookmark(): void {
+  if (!manifest) {
+    return;
+  }
+  const location = currentReadingLocation();
+  if (!location) {
+    return;
+  }
+  const index = bookmarks.findIndex(
+    ({ chapterId, anchor }) =>
+      chapterId === location.chapterId && anchor === location.anchor,
+  );
+  if (index >= 0) {
+    bookmarks.splice(index, 1);
+  } else {
+    const chapter = manifest.chapters.find(
+      ({ chapterId }) => String(chapterId) === location.chapterId,
+    );
+    bookmarks.push({
+      chapterId: location.chapterId,
+      anchor: location.anchor,
+      label: chapter?.title ?? activePage()?.runningTitle ?? "Saved passage",
+      createdAt: new Date().toISOString(),
+    });
+  }
+  writeBookmarks(manifest.bookId, manifest.editionId, bookmarks);
+  renderBookmarks();
+}
+
+function saveCurrentAnnotation(): void {
+  if (!manifest || !pendingSelection) {
+    return;
+  }
+  annotations.push({
+    id: crypto.randomUUID(),
+    chapterId: pendingSelection.chapterId,
+    anchor: pendingSelection.anchor,
+    quote: pendingSelection.quote,
+    note: annotationNote.value.trim(),
+    createdAt: new Date().toISOString(),
+  });
+  writeAnnotations(manifest.bookId, manifest.editionId, annotations);
+  annotationNote.value = "";
+  pendingSelection = undefined;
+  document.getSelection()?.removeAllRanges();
+  renderAnnotations();
+  renderStationary("none");
+}
+
+function exportPrivateAnnotations(): void {
+  if (!manifest || annotations.length === 0) {
+    return;
+  }
+  const markdown = annotationMarkdown(
+    manifest.title,
+    annotations,
+    ({ chapterId, anchor }) => personalLocationUrl(chapterId, anchor),
+  );
+  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const download = createElement("a");
+  download.href = url;
+  download.download = `${manifest.bookId}-annotations.md`;
+  download.click();
+  globalThis.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function applyAnnotationMarkers(root: ParentNode): void {
+  const anchors = new Set(annotations.map(({ anchor }) => anchor));
+  for (const node of root.querySelectorAll<HTMLElement>(
+    "[data-source-anchor]",
+  )) {
+    if (node.dataset.sourceAnchor && anchors.has(node.dataset.sourceAnchor)) {
+      node.classList.add("v3-annotated");
+    }
+  }
+}
+
+function openExploreDialog(): void {
+  renderPersonalTools();
+  exploreDialog.showModal();
+}
+
+function onExploreDialogClose(): void {
+  searchController?.abort();
+  searchController = undefined;
+}
+
+function onExploreDialogClick(event: MouseEvent): void {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+  const location = event.target.closest<HTMLElement>(
+    "[data-v3-go-chapter]",
+  );
+  const chapterId = location?.dataset.v3GoChapter;
+  const anchor = location?.dataset.v3GoAnchor;
+  if (location && chapterId && anchor) {
+    exploreDialog.close();
+    void goToLocation(chapterId, anchor, "push").catch((error: unknown) => {
+      reportFailure("V3 could not open the selected book location", error);
+    });
+    return;
+  }
+  const bookmarkRemoval = event.target.closest<HTMLElement>(
+    "[data-v3-remove-bookmark]",
+  )?.dataset.v3RemoveBookmark;
+  if (bookmarkRemoval !== undefined && manifest) {
+    const index = Number(bookmarkRemoval);
+    if (!Number.isInteger(index) || index < 0 || index >= bookmarks.length) {
+      throw new Error(`V3 bookmark index is unavailable: ${bookmarkRemoval}`);
+    }
+    bookmarks.splice(index, 1);
+    writeBookmarks(manifest.bookId, manifest.editionId, bookmarks);
+    renderBookmarks();
+    return;
+  }
+  const annotationRemoval = event.target.closest<HTMLElement>(
+    "[data-v3-remove-annotation]",
+  )?.dataset.v3RemoveAnnotation;
+  if (annotationRemoval && manifest) {
+    annotations = annotations.filter(({ id }) => id !== annotationRemoval);
+    writeAnnotations(manifest.bookId, manifest.editionId, annotations);
+    renderAnnotations();
+    renderStationary("none");
+  }
+}
+
+function startFromBeginning(): void {
+  clearResumeLocation();
+  resumedFromStorage = false;
+  resumeNotice.hidden = true;
+  void goToLocation("", undefined, "push").catch((error: unknown) => {
+    reportFailure("V3 could not restart the publication", error);
+  });
 }
 
 function pageSize(): { width: number; height: number } {
@@ -1178,6 +1796,17 @@ function writeResumeLocation(location: V3ReadingLocation): void {
   }
 }
 
+function clearResumeLocation(): void {
+  if (!manifest) {
+    return;
+  }
+  try {
+    globalThis.localStorage.removeItem(resumeStorageKey(manifest.bookId));
+  } catch (error) {
+    console.warn("V3 reading location could not be cleared", error);
+  }
+}
+
 function currentReadingLocation(): V3ReadingLocation | undefined {
   const page = activePage();
   if (
@@ -1255,6 +1884,14 @@ function renderFontControls(): void {
     opening || pendingTurn || activeTurn !== undefined || fontScale <= 0.8;
 }
 
+function renderSelectionControls(): void {
+  shareButton.textContent = pendingSelection ? "Share selection" : "Share";
+  shareButton.setAttribute(
+    "aria-label",
+    pendingSelection ? "Share selected text and location" : "Share location",
+  );
+}
+
 function applyFontScale(value: number): void {
   fontScale = normalizeBookFontScale(value);
   reader.style.setProperty("--v3-font-scale", String(fontScale));
@@ -1289,6 +1926,7 @@ function renderControls(): void {
     sharing ||
     manifest === undefined;
   renderFontControls();
+  renderSelectionControls();
 }
 
 function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
@@ -1354,6 +1992,17 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
   }
   renderControls();
   syncCurrentLocation(locationUpdate);
+  if (
+    pendingSelection &&
+    stationary.querySelector(
+      `[data-source-anchor="${CSS.escape(pendingSelection.anchor)}"]`,
+    ) === null
+  ) {
+    pendingSelection = undefined;
+  }
+  if (exploreDialog.open) {
+    renderPersonalTools();
+  }
   if (preferredAnchor) {
     const target = stationary.querySelector<HTMLElement>(
       `#${CSS.escape(preferredAnchor.anchor)}`,
@@ -1466,7 +2115,16 @@ async function shareCurrentLocation(): Promise<void> {
   sharing = true;
   shareStatus.value = "Preparing reading link";
   renderControls();
-  const location = currentReadingLocation();
+  const selectedText = pendingSelection;
+  const currentLocation = currentReadingLocation();
+  const location =
+    selectedText && currentLocation
+      ? {
+          ...currentLocation,
+          chapterId: selectedText.chapterId,
+          anchor: selectedText.anchor,
+        }
+      : currentLocation;
   const chapter = location
     ? manifest.chapters.find(
         ({ chapterId }) => String(chapterId) === location.chapterId,
@@ -1476,7 +2134,15 @@ async function shareCurrentLocation(): Promise<void> {
     ? `${manifest.title}: ${chapter.title}`
     : manifest.title;
   const url = readingLocationUrl(location, false);
-  shareStatus.value = await shareReadingLocation(title, url.href);
+  shareStatus.value = await shareReadingLocation(
+    title,
+    url.href,
+    selectedText?.quote,
+  );
+  if (selectedText) {
+    pendingSelection = undefined;
+    document.getSelection()?.removeAllRanges();
+  }
   sharing = false;
   renderControls();
 }
@@ -1498,6 +2164,24 @@ function onStationaryClick(event: MouseEvent): void {
     event.shiftKey ||
     !(event.target instanceof Element)
   ) {
+    return;
+  }
+  const chapterLink = event.target.closest<HTMLAnchorElement>(
+    "[data-v3-chapter-link]",
+  );
+  const chapterLinkId = chapterLink?.dataset.v3ChapterLink;
+  if (chapterLink && chapterLinkId) {
+    event.preventDefault();
+    const chapter = manifest?.chapters.find(
+      ({ chapterId }) => String(chapterId) === chapterLinkId,
+    );
+    void goToLocation(
+      chapterLinkId,
+      chapterLink.dataset.v3ChapterAnchor ?? chapter?.firstAnchor,
+      "push",
+    ).catch((error: unknown) => {
+      reportFailure("V3 could not open the linked chapter", error);
+    });
     return;
   }
   const mediaOpen = event.target.closest<HTMLButtonElement>(
@@ -1710,6 +2394,7 @@ function beginTurn(
   moving.setAttribute("aria-hidden", "true");
   moving.inert = true;
   moving.append(
+    createElement("div", "v3-paper-occluder"),
     createSheet(
       selected.moving,
       singlePageMedia.matches
@@ -1725,6 +2410,7 @@ function beginTurn(
   revealed.setAttribute("aria-hidden", "true");
   revealed.inert = true;
   revealed.append(
+    createElement("div", "v3-paper-occluder"),
     createSheet(
       selected.revealed,
       selected.revealedSide,
@@ -1829,6 +2515,9 @@ function finishTurn(commit: boolean): void {
   if (turn.animationFrame !== undefined) {
     cancelAnimationFrame(turn.animationFrame);
   }
+  if (turn.pointerFrame !== undefined) {
+    cancelAnimationFrame(turn.pointerFrame);
+  }
   if (turn.capture && turn.pointerId !== undefined) {
     if (turn.capture.hasPointerCapture(turn.pointerId)) {
       turn.capture.releasePointerCapture(turn.pointerId);
@@ -1851,6 +2540,11 @@ function settleTurn(commit: boolean): void {
   if (!turn) {
     return;
   }
+  if (turn.pointerFrame !== undefined) {
+    cancelAnimationFrame(turn.pointerFrame);
+    delete turn.pointerFrame;
+  }
+  delete turn.pendingPointer;
   if (reducedMotion.matches) {
     finishTurn(commit);
     return;
@@ -1959,7 +2653,17 @@ function onPointerMove(event: PointerEvent): void {
     return;
   }
   event.preventDefault();
-  applyTurn(pointerForEvent(event, turn.direction));
+  turn.pendingPointer = pointerForEvent(event, turn.direction);
+  if (turn.pointerFrame === undefined) {
+    turn.pointerFrame = requestAnimationFrame(() => {
+      delete turn.pointerFrame;
+      if (activeTurn === turn && turn.pendingPointer) {
+        const pointer = turn.pendingPointer;
+        delete turn.pendingPointer;
+        applyTurn(pointer);
+      }
+    });
+  }
 }
 
 function onPointerEnd(event: PointerEvent): void {
@@ -1968,6 +2672,15 @@ function onPointerEnd(event: PointerEvent): void {
     return;
   }
   event.preventDefault();
+  if (turn.pointerFrame !== undefined) {
+    cancelAnimationFrame(turn.pointerFrame);
+    delete turn.pointerFrame;
+  }
+  if (turn.pendingPointer) {
+    const pointer = turn.pendingPointer;
+    delete turn.pendingPointer;
+    applyTurn(pointer);
+  }
   settleTurn(turn.progress >= 0.34);
 }
 
@@ -2757,6 +3470,9 @@ async function initialize(): Promise<void> {
   mediaTreatment = mediaTreatmentFrom(query);
   applyPublicationIdentity(manifest);
   applyFontScale(readBookFontScale(manifest.bookId, 1));
+  bookmarks = readBookmarks(manifest.bookId, manifest.editionId);
+  annotations = readAnnotations(manifest.bookId, manifest.editionId);
+  renderContents();
   chapterStates = manifest.chapters.map((chapter, index) => ({
     chapter,
     index,
@@ -2768,6 +3484,7 @@ async function initialize(): Promise<void> {
     pageParity: undefined,
   }));
   const initialLocation = initialReadingLocation(manifest);
+  resumedFromStorage = initialLocation?.source === "resume";
   const initialChapterIndex = initialLocation
     ? chapterStates.findIndex(
         ({ chapter }) =>
@@ -2823,6 +3540,15 @@ async function initialize(): Promise<void> {
       );
     }
   }
+  if (resumedFromStorage) {
+    const chapter = manifest.chapters.find(
+      ({ chapterId }) =>
+        String(chapterId) === initialLocation?.location.chapterId,
+    );
+    resumeLabel.textContent =
+      `Resumed at ${chapter?.title ?? "your last reading location"}.`;
+    resumeNotice.hidden = false;
+  }
   locationTrackingReady = true;
   syncCurrentLocation("replace");
   reportReady();
@@ -2842,6 +3568,22 @@ next.addEventListener("click", () => void automaticTurn("forward"));
 decreaseFont.addEventListener("click", () => setFontScale(fontScale - 0.1));
 increaseFont.addEventListener("click", () => setFontScale(fontScale + 0.1));
 shareButton.addEventListener("click", () => void shareCurrentLocation());
+exploreButton.addEventListener("click", openExploreDialog);
+exploreDialog.addEventListener("click", onExploreDialogClick);
+exploreDialog.addEventListener("close", onExploreDialogClose);
+searchForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void runSearch(searchInput.value).catch((error: unknown) => {
+    searchStatus.textContent =
+      error instanceof DOMException && error.name === "AbortError"
+        ? "Search cancelled."
+        : `Search failed: ${prototypeErrorMessage(error)}`;
+  });
+});
+bookmarkCurrent.addEventListener("click", toggleCurrentBookmark);
+saveAnnotation.addEventListener("click", saveCurrentAnnotation);
+exportAnnotations.addEventListener("click", exportPrivateAnnotations);
+startOver.addEventListener("click", startFromBeginning);
 mediaSelect.addEventListener("change", () => {
   try {
     setMediaTreatment(mediaSelect.value);
@@ -2859,6 +3601,7 @@ chapterSelect.addEventListener("change", () =>
 const onKeyDown = (event: KeyboardEvent) => {
   if (
     mediaDialog.open ||
+    exploreDialog.open ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
@@ -2877,6 +3620,7 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
 };
 document.addEventListener("keydown", onKeyDown);
+document.addEventListener("selectionchange", onSelectionChange);
 globalThis.addEventListener("popstate", onPopState);
 
 const observer = new ResizeObserver(() => {
@@ -2912,8 +3656,12 @@ globalThis.addEventListener(
   () => {
     observer.disconnect();
     document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("selectionchange", onSelectionChange);
     globalThis.removeEventListener("popstate", onPopState);
     stationary.removeEventListener("click", onStationaryClick);
+    exploreDialog.removeEventListener("click", onExploreDialogClick);
+    exploreDialog.removeEventListener("close", onExploreDialogClose);
+    searchController?.abort();
     mediaDialog.removeEventListener("close", onMediaDialogClose);
     mediaDialogImage.removeAttribute("src");
     chapterSelect.replaceChildren();
@@ -2922,6 +3670,9 @@ globalThis.addEventListener(
     }
     if (activeTurn?.animationFrame !== undefined) {
       cancelAnimationFrame(activeTurn.animationFrame);
+    }
+    if (activeTurn?.pointerFrame !== undefined) {
+      cancelAnimationFrame(activeTurn.pointerFrame);
     }
   },
   { once: true },

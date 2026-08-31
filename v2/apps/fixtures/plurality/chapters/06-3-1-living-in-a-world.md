@@ -6,25 +6,29 @@
 
 > (A)re…atoms independent elements of reality? No…as quantum theory shows: they are defined by their…interactions with the rest of the world…(Q)uantum physics may just be the realization that this ubiquitous relational structure of reality continues all the way down…Reality is not a collection of things, it’s a network of processes. — Carlo Rovelli, 2022[13](#note-3-1-13)
 
+{#note-ref-3-1-1}
+
 ---
 
 Technology follows science. If we want to understand ⿻ as a vision of *what our world could become*, we need to start off by understanding ⿻ as a perspective on *how the world already is*. The Technocratic and Libertarian perspectives are rooted in a science, namely the monist atomism we described in the previous chapter: the belief that a universal set of laws operating on an fundamental set of atoms is the best way to understand the world.
 
 Technocracy has a long history of being justified by science and rationality. The idea of “[scientific management](https://en.wikipedia.org/wiki/Scientific_management)” (a.k.a. Taylorism) that became popular in the early 1900s was justified by making analogies between social systems and simple mathematical models, and logic and reason as ways of thinking about them. [High modernism](https://en.wikipedia.org/wiki/High_modernism) in architecture is similarly inspired by the beauty of geometry.[1](#note-3-1-1) Libertarianism also borrows heavily from physics and other sciences: just like particles “[take the path of least action](https://en.wikipedia.org/wiki/Stationary-action_principle)”, and evolution maximizes fitness, economic agents “maximize utility”. Every phenomenon in the world, from human societies to the motion of the stars, can, in the monist atomist view, ultimately be reduced to these laws.
 
+{#note-ref-3-1-2}
 
 These approaches have achieved great successes.  Newtonian mechanics explained a range of phenomena and helped inspire the technologies of the industrial revolution.  Darwinism is the foundation of modern biology.  Economics has been the most influential of the social sciences on public policy.  And the [Church-Turing](https://en.wikipedia.org/wiki/Church%E2%80%93Turing_thesis) vision of “general computation” helped inspire the idea of general-purpose computers that are so broadly used today.
 
-
 Yet the last century taught us how much progress is possible if we transcend the limitations of monist atomism. [Gödel’s Theorem](https://en.wikipedia.org/wiki/G%C3%B6del%27s_incompleteness_theorems) undermined the unity and completeness of mathematics and a range of non-Euclidean geometries are now critical to science.[2](#note-3-1-2) Symbiosis, ecology, and extended evolutionary synthesis undermined “survival of the fittest” as the central biological paradigm and ushered in the age of environmental science.  Neuroscience has been reimagined around networks and emergent capabilities and given birth to modern neural networks.  What all these share is a focus on complexity, emergence, multi-level organization and multidirectional causality rather than the application of a universal set of laws to a single type of atomic entity.
 
+{#note-ref-3-1-3}
 
 ⿻ approaches social systems similarly. A corporation plays in the game of global competition, yet is simultaneously itself a game played by employees, shareholders, management, and customers.  There is no reason to expect the resulting outcomes often to cohere as preferences. What's more, many games intersect:  employees of a corporation are often each influenced through their *other* relationships with the outside world (e.g. political, social, religious, ethnic), and not only through the corporation itself. Countries too are both games and players, intersected by corporations, religions and much more, and there too we cannot cleanly separate apart actions between countries and actions within a country: the writing of this very book is a complex mix of both international and domestic collaboration.
 
 ⿻ is thus heavy with analogies to the last century of natural sciences.  Drawing out a ⿻ of these influences and analogies, without taking any too literally or universally, allows us to glimpse an inviting path ahead of inspiration and recombination.  While Libertarianism and Technocracy can be seen as ideological caricatures, they can also be understood in scientific terms as ever-present threats to complexity.
 
-Essentially every complex system, from the flow of fluids to the development of ecosystems  to the functioning of the brain, can exhibit both "chaotic" states (where activity is essentially random) and "orderly" states (where patterns are static and rigid).  There is almost always some parameter (such as heat or the mutation rate) that conditions which state arises, with chaos happening for high values and order for low values.  When the parameter is very close to the "critical value" of transition between these states, when it sits on what complexity theorists call the "[edge of chaos](https://en.wikipedia.org/wiki/Edge_of_chaos)", complex behavior can emerge, forming unpredictable, developing, life-like structures that are neither chaotic nor orderly but instead complex.[3](#note-3-1-3)  This corresponds closely to the idea we highlighted above of a "narrow corridor" between centralizing and anti-social, Technocratic and Libertarian threats that we have [highlighted above](https://www.plurality.net/v/chapters/2-0/eng/?mode=dark).
+Essentially every complex system, from the flow of fluids to the development of ecosystems  to the functioning of the brain, can exhibit both "chaotic" states (where activity is essentially random) and "orderly" states (where patterns are static and rigid).  There is almost always some parameter (such as heat or the mutation rate) that conditions which state arises, with chaos happening for high values and order for low values.  When the parameter is very close to the "critical value" of transition between these states, when it sits on what complexity theorists call the "[edge of chaos](https://en.wikipedia.org/wiki/Edge_of_chaos)", complex behavior can emerge, forming unpredictable, developing, life-like structures that are neither chaotic nor orderly but instead complex.[3](#note-3-1-3)  This corresponds closely to the idea we highlighted above of a "narrow corridor" between centralizing and anti-social, Technocratic and Libertarian threats that we have [highlighted above](../2-0/).
 
+{#note-ref-3-1-4}
 
 As such, ⿻ can take from science the crucial importance of steering towards and widening this narrow corridor, a process complexity scientists call "[self-organizing criticality](https://en.wikipedia.org/wiki/Self-organized_criticality)".  In doing so, we can draw on the wisdom of many sciences, ensuring we are not unduly captured by any one set of analogies.
 
@@ -32,12 +36,14 @@ As such, ⿻ can take from science the crucial importance of steering towards an
 
 Nineteenth century mathematics saw the rise of formalism: being precise and rigorous about the definitions and properties of mathematical structures that we are using, to avoid inconsistencies and mistakes. At the beginning of the 20th century, there was a hope that mathematics could be “[solved](https://en.wikipedia.org/wiki/Principia_Mathematica)”, perhaps even giving a precise algorithm for determining the truth or falsity of any mathematical claim.[4](#note-3-1-4) 20th century mathematics, on the other hand, was characterized by an explosion of complexity and uncertainty.
 
+{#note-ref-3-1-5}
 
 - **Gödel's Theorem**: A number of mathematical results from the early 20th century, most notably Gödel's theorem, showed that there are fundamental and irreducible ways in which key parts of mathematics cannot be fully solved. Similarly, Alonzo Church proved that some mathematical problems were “undecidable” by computational processes.[5](#note-3-1-5) This dashed the dream of reducing all of mathematics to computations on basic axioms.
 - **Computational complexity**: Even when reductionism is feasible in principle/theory, the computation required to predict higher-level phenomena based on their components (its computational complexity) is so large that performing it is unlikely to be practically relevant. In some cases, it is believed that the required computation would consume far more resources than could possibly be recovered through the understanding gained by such a reduction. In many real-world use cases, the situation can often be described as a [well-studied computational problem](https://en.wikipedia.org/wiki/P_versus_NP_problem) where the “optimal” algorithm takes an amount of time growing exponentially in the problem size and thus rules of thumb are almost always used in practice.
 - **Sensitivity, chaos, and irreducible uncertainty**: Many even relatively simple systems have been shown to exhibit “chaotic” behavior.  A system is chaotic if a tiny change in the initial conditions translates into radical shifts in its eventual behavior after an extended time has elapsed.  The most famous example is weather systems, where it is often said that a butterfly flapping its wings can make the difference in causing a typhoon half-way across the world weeks later.[6](#note-3-1-6)  In the presence of such chaotic effects, attempts at prediction via reduction require unachievable degrees of precision.  To make matters worse, there are often hard limits to how much precision is feasible known as "the Uncertainty Principle", as precise instruments often [interfere with the systems](https://en.wikipedia.org/wiki/Uncertainty_principle) they measure in ways that can lead to important changes due to the sensitivity mentioned previously.
 * **Fractals**: Many mathematical structures have been shown to have similar patterns at very different scales. A good example of this is the Mandelbrot set, generated by repeatedly squaring then adding the same offset to a complex number.  These illustrate why breaking structures down to atomic components may obscure rather than illuminate their inherently multi-scale structure.
 
+{#note-ref-3-1-6}
 
 [Figure: Pictures the Mandelbrot set, a canonical circular snowflake shaped fractal, at two scales.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/science.jpg>)
 
@@ -58,6 +64,7 @@ In 1897, Lord Kelvin infamously proclaimed that “There is nothing new to disco
 
 Perhaps the most striking and consistent feature of the revolutions in twentieth century physics was the way they upset assumptions about a fixed and objective external world.  Relativity showed how time, space, acceleration, and even gravity were functions of the relationship among objects, rather than absolute features of an underlying reality.  Quantum physics went even further, showing that even these relative relationships are not fixed until observed and thus are fundamentally interactions rather than objects.[7](#note-3-1-7)  Thus, modern science often consists of mixing and matching different disciplines to understand different aspects of the physical world at different scales.
 
+{#note-ref-3-1-7}
 
 The applications of this rich and ⿻ understanding of physical reality are at the very core of the glories and tragedies of the twentieth century.  Great powers harnessed the power of the atom to shape world affairs.  Global corporations powered unprecedented communications and intelligence by harnessing their understanding of quantum physics to pack ever-tinier electronics into the palms of their customers’ hands.  The burning of wood and coal by millions of families has become the cause of ecological devastation, political conflict, and world-spanning social movements based on information derived from microscopic sensors scattered around the world.
 
@@ -70,6 +77,7 @@ If the defining idea of 19th century macrobiology (concerning advanced organisms
 - **The diversity of cross-species interactions**, including traditional competition or predator and prey relationships, but also a range of “mutualism”, where organisms depend on services provided by other organisms and help sustain them in turn, exemplifying entanglement, and relationality.[9](#note-3-1-9)
 - **Epigenetics**: We have discovered that genetics codes only a portion of these behaviors, and “epigenetics” or other environmental features play important roles in evolution and adaptation, showing the multi-level and multidimensional causation inherent even to molecular biology.
 
+{#note-ref-3-1-8}
 
 This shift was not simply a matter of scientific theory.  It led to some of the most important changes in human behavior and interaction with nature of the twentieth century.  In particular, the environmental movement and the efforts it created to protect ecosystems, biodiversity, the ozone layer, and the climate all emerged from and have relied heavily on this science of “ecology”, to the point where this movement is often given that label.
 
@@ -85,22 +93,27 @@ Modern neuroscience started in the late 19th century, when Camillo Golgi, Santia
 
 ⿻ is, scientifically, the application of an analogous perspective to the understanding of human societies and, technologically, the attempt to build formal information and governance systems that account for and resemble these structures as physical technologies built on ⿻ science do. Perhaps the crispest articulation of this vision appears in the work of the leading figure of network sociology, [Mark Granovetter](https://en.wikipedia.org/wiki/Mark_Granovetter).[10](#note-3-1-10) There is no basic individual atom; personal identity fundamentally arises from social relationships and connections.  Nor is there any fixed collective or even set of collectives: social groups do and must constantly shift and reconfigure.  This bidirectional equilibrium between the diversity of people and the social groups they create is the essence of ⿻ social science.
 
+{#note-ref-3-1-9}
 
 Moreover, these social groups exist at a variety of intersecting and non-hierarchical scales.  Families, clubs, towns, provinces, religious groups of all sizes, businesses at every scale, demographic identities (gender, sexual identity, race, ethnicity, etc.), education and academic training, and many more co-existing and intersecting.  For example, from the perspective of global Catholicism, the US is an important but “minority” country, with only about 6% of all Catholics living in the US; but the same could be said about Catholicism from the perspective of the US, with about 23% of Americans being Catholic.[11](#note-3-1-11)
 
-
+{#note-ref-3-1-10}
 
 While we do not have the space to review it in detail, rich literature provides quantitative and social scientific evidence for the explanatory power of the ⿻ perspective [16](#note-3-1-16). Studies of industrial dynamics, of social and behavioral psychology, of economic development, of organizational cohesion, and much else, have shown the central role of social relationships that create and harness diversity[17](#note-3-1-17).   Instead, we will pull out just one example that perhaps will be both the most surprising and most related to the scientific themes above: the evolution of scientific knowledge itself.
 
+{#note-ref-3-1-11}
+
 A growing interdisciplinary academic field of “[Metascience](https://en.wikipedia.org/wiki/Metascience)”  studies the emergence of scientific knowledge as a complex system from networks among scientists and ideas.[27](#note-3-1-27) It charts the emergence and proliferation of scientific fields, sources of scientific novelty and progress, the strategies of exploration scientists choose, and the impact of social structure on intellectual advancement. Among other things, they find that scientific exploration is biased towards topics that have been frequently discussed within a field and constrained by social and institutional connections among scientists, which diminishes the efficiency of the scientific knowledge discovery process.[18](#note-3-1-18) Furthermore, they discover that a decentralized scientific community, made up of mostly independent, non-overlapping teams that use a variety of methods and draw upon a broad spectrum of earlier publications, tends to yield more reliable scientific knowledge. In contrast, centralized communities marked by repeated collaborations and restricted to a limited range of approaches from previous studies are likely to generate less reliable outcomes [19](#note-3-1-19) [20](#note-3-1-20) It also finds strong connections between research team size and hierarchy with the types of findings (risky and revolutionary v. normal science) developed and documents the increasingly dominant role of teams (as opposed to individual research) in modern science.[21](#note-3-1-21) Although the largest innovations tend to arise from a strong grounding in existing disciplines deployed in unusual and surprising combinations [22](#note-3-1-22) [23](#note-3-1-23) [24](#note-3-1-24), it illustrates that most incentive structures used in science (based e.g. on publication quality and citation count) create perverse incentives that limit scientific creativity. These findings have led to the development of new metrics in scientific communities that can reward innovations and offset these biases, creating a more ⿻ incentive set.[25](#note-3-1-25)
+
+{#note-ref-3-1-12}
 
 Science policy research that directly accounts for and enhances ⿻ in science demonstrates advantages for both the rigor of existing knowledge and the discovery of novel insights. When more distinct communities and their approaches work to validate existing claims, those _independent_ perspectives ensure their findings are more robust to rebuttal and revision. Moreover, when building analytic models based on ⿻ principles by simulating the diversity we see in the most ⿻ scientific ventures, discoveries exceed those produced by normal human science.[26](#note-3-1-26)
 
+{#note-ref-3-1-13}
+
 Thus, even in understanding the very practice of science, a ⿻ perspective, grounded in many intersecting levels of social organization, is critical. Science of science findings regarding the driving forces behind the emergence of disruptive, innovative knowledge have been replicated in other communities of creative collaboration, such as patents and software projects in GitHub, revealing that a ⿻ outlook could transcend the advance of science and technology of any flavor.
 
-
 **A future ⿻?**
-
 
 Yet the assumptions on which the Technocratic and Libertarian visions of the future discussed above are founded diverge sharply from such ⿻ foundations.
 
@@ -110,115 +123,164 @@ In the Libertarian vision, the sovereignty of the atomistic individual (or in so
 
 But these cannot be the only paths forward.  ⿻ science has shown us the power of harnessing a ⿻ understanding of the world to build physical technology.  We have to ask what a society and information technology built on an analogous understanding of human societies would look like.  Luckily, the twentieth century saw the systematic development of such a vision, from philosophical and social scientific foundations to the beginnings of technological expression.
 
-
-
-
 ## Chapter notes {#notes-3-1}
 
 ### Note 1 {#note-3-1-1}
 
 James C. Scott, *Seeing Like a State: How Certain Schemes to Improve the Human Condition Have Failed* (New Haven, CT: Yale University Press, 1999).
 
+[Back to text](#note-ref-3-1-2)
+
 ### Note 2 {#note-3-1-2}
 
 Cris Moore and John Kaag, "The Uncertainty Principle", *The American Scholar* March 2, 2020 https://theamericanscholar.org/the-uncertainty-principle/.
+
+[Back to text](#note-ref-3-1-3)
 
 ### Note 3 {#note-3-1-3}
 
 M. Mitchell Waldrop, *Complexity: The Emerging Science at the Edge of Order and Chaos* (New York: Open Road Media, 2019).
 
+[Back to text](#note-ref-3-1-4)
+
 ### Note 4 {#note-3-1-4}
 
 Alfred North Whitehead and Bertrand Russell, *Principia Mathematica* (Cambridge, UK: Cambridge University Press, 1910).
+
+[Back to text](#note-ref-3-1-5)
 
 ### Note 5 {#note-3-1-5}
 
 Alonzo Church, "A note on the Entscheidungsproblem", *The Journal of Symbolic Logic* 1, no. 1: 40-41.
 
+[Back to text](#note-ref-3-1-6)
+
 ### Note 6 {#note-3-1-6}
 
 James Gleick, *Chaos: Making a New Science* (New York: Penguin, 2018).
+
+[Back to text](#note-ref-3-1-6)
 
 ### Note 7 {#note-3-1-7}
 
 Carlo Rovelli, "Relational Quantum Mechanics", *International Journal of Theoretical Physics* 35, 1996: 1637-1678.
 
+[Back to text](#note-ref-3-1-7)
+
 ### Note 8 {#note-3-1-8}
 
 David Sloan Wilson and Edward O. Wilson, "Rethinking the Theoretical Foundation of Sociobiology" *Quarterly Review of Biology* 82, no. 4, 2007: 327-348.
 
+[Back to text](#note-ref-3-1-8)
+
 ### Note 9 {#note-3-1-9}
 
-These discoveries have continually and deeply intertwined with ⿻ social thought, from "mutualism" being used almost interchangeably by early anarchist thinkers like Pierre-Joseph Proudhon to one of the authors of this book publishing his second paper on biological mutualism, then developing these ideas further into the theories we will return to in our chapter on [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark). Pierre-Joseph Proudhon, *System of Economic Contradictions* (1846). E. Glen Weyl,Megan E. Frederickson, Douglas W. Yu and Naomi E. Pierce, "Economic Contract Theory Tests Models of Mutualism" *Proceedings of the National Academy of Sciences* 107, no. 36, 2010: 15712-15716.
+These discoveries have continually and deeply intertwined with ⿻ social thought, from "mutualism" being used almost interchangeably by early anarchist thinkers like Pierre-Joseph Proudhon to one of the authors of this book publishing his second paper on biological mutualism, then developing these ideas further into the theories we will return to in our chapter on [Social Markets](../5-7/). Pierre-Joseph Proudhon, *System of Economic Contradictions* (1846). E. Glen Weyl,Megan E. Frederickson, Douglas W. Yu and Naomi E. Pierce, "Economic Contract Theory Tests Models of Mutualism" *Proceedings of the National Academy of Sciences* 107, no. 36, 2010: 15712-15716.
+
+[Back to text](#note-ref-3-1-8)
 
 ### Note 10 {#note-3-1-10}
 
 Mark Granovetter, "Economic Action and Social Structure: The Problem of Embeddedness", *American Journal of Sociology* 91, no. 3 (1985): 481-510.
 
+[Back to text](#note-ref-3-1-9)
+
 ### Note 11 {#note-3-1-11}
 
 Pew Research Center, "The Global Catholic Population",  February 13, 2013 https://www.pewresearch.org/religion/2013/02/13/the-global-catholic-population/.
+
+[Back to text](#note-ref-3-1-10)
 
 ### Note 12 {#note-3-1-12}
 
 Harper’s Magazine. “Holmes – Life as Art,” May 2, 2009. https://harpers.org/2009/05/holmes-life-as-art/.
 
+[Back to text](#note-ref-3-1-1)
+
 ### Note 13 {#note-3-1-13}
 
 Carlo Rovelli, “The Big Idea: Why Relationships Are the Key to Existence.” The Guardian, September 5, 2022, sec. Books. https://www.theguardian.com/books/2022/sep/05/the-big-idea-why-relationships-are-the-key-to-existence.
+
+[Back to text](#note-ref-3-1-1)
 
 ### Note 14 {#note-3-1-14}
 
 David Wilson, Mark Vugt, and Rick O’Gorman, “Multilevel Selection Theory and Major Evolutionary Transitions.” _Current Directions in Psychological Science_ 17, no. 1 (February 2008): 6–9. https://doi.org/10.1111/j.1467-8721.2008.00538.x.
 
+
 ### Note 15 {#note-3-1-15}
 
 Here are some examples of these properties in neuroscience: **Sensitivity**: In neuroscience, sensitivity refers to the ability of the brain to detect and respond to small changes in its environment. One example of sensitivity in the brain is the phenomenon of synaptic plasticity, which is the ability of synapses (connections between neurons) to change in strength in response to activity. This sensitivity allows the brain to adapt and learn from experience. **Chaos**: Chaos is a property of complex systems that exhibit unpredictable behavior even though they are deterministic. In neuroscience, chaos has been observed in the activity of neurons in the brain. For example, studies have shown that the firing patterns of individual neurons can be highly irregular and chaotic, with no discernible pattern or rhythm. This chaotic activity may play a role in information processing and communication within the brain. **Sensitivity and chaos together:** Sensitivity and chaos can also interact in the brain to produce complex and adaptive behavior. For example, studies have shown that the brain can exhibit sensitivity to small changes in sensory input, but this sensitivity can also lead to chaotic activity in neural networks. However, this chaotic activity can be controlled and harnessed to produce adaptive behavior, such as in the case of motor control and coordination. The brain's ability to integrate sensitivity and chaos in this way is a hallmark of its remarkable complexity and adaptability.
+
 
 ### Note 16 {#note-3-1-16}
 
 In assemblage theory, as articulated by Manuel DeLanda, entities are understood as complex structures formed from the symbiotic relationship between heterogeneous components, rather than being reducible to their individual parts. Its central thesis is that people do not act exclusively by themselves, and instead human action requires complex socio-material interdependencies. DeLanda's perspective shifts the focus from inherent qualities of entities to the dynamic processes and interactions that give rise to emergent properties within networks of relations.  His book "A New Philosophy of Society: Assemblage Theory and Social Complexity" (2006) is a good starting point.
 
+[Back to text](#note-ref-3-1-11)
+
 ### Note 17 {#note-3-1-17}
 
 Scott Page, _The Difference: How the Power of Diversity Creates Better Groups, Firms, Schools, and Societies_, (Princeton: Princeton University Press, 2007); César Hidalgo, _Why Information Grows: The Evolution of Order, from Atoms to Economies_, (New York: Basic Books, 2015); Daron Acemoglu, and Joshua Linn, “Market Size in Innovation: Theory and Evidence from the Pharmaceutical Industry,” _Library Union Catalog of Bavaria_, (Berlin and Brandenburg: B3Kat Repository, October 1, 2003), https://doi.org/10.3386/w10038;  Mark Granovetter, “The Strength of Weak Ties,” _American Journal of Sociology_ 78, no. 6 (May 1973): 1360–80; Brian Uzzi, “Social Structure and Competition in Interfirm Networks: The Paradox of Embeddedness,” Administrative Science Quarterly 42, no. 1 (March 1997): 35–67. https://doi.org/10.2307/2393808; Jonathan Michie, and Ronald S. Burt, “Structural Holes: The Social Structure of Competition,” _The Economic Journal_ 104, no. 424 (May 1994): 685. https://doi.org/10.2307/2234645; McPherson, Miller, Lynn Smith-Lovin, and James M Cook. “Birds of a Feather: Homophily in Social Networks.” Annual Review of Sociology 27, no. 1 (August 2001): 415–44.
+
+[Back to text](#note-ref-3-1-11)
 
 ### Note 18 {#note-3-1-18}
 
 Andrey Rzhetsky, Jacob Foster, Ian Foster, and James Evans, “Choosing Experiments to Accelerate Collective Discovery,” _Proceedings of the National Academy of Sciences_ 112, no. 47 (November 9, 2015): 14569–74. https://doi.org/10.1073/pnas.1509757112.
 
+[Back to text](#note-ref-3-1-12)
+
 ### Note 19 {#note-3-1-19}
 
 Valentin Danchev, Andrey Rzhetsky, and James A Evans, “Centralized Scientific Communities Are Less Likely to Generate Replicable Results.” _ELife_ 8 (July 2, 2019), https://doi.org/10.7554/elife.43094.
+
+[Back to text](#note-ref-3-1-12)
 
 ### Note 20 {#note-3-1-20}
 
 Alexander Belikov, Andrey Rzhetsky, and James Evans, "Prediction of robust scientific facts from literature," _Nature Machine Intelligence_ 4.5 (2022): 445-454.
 
+[Back to text](#note-ref-3-1-12)
+
 ### Note 21 {#note-3-1-21}
 
 Lingfei Wu, Dashun Wang, and James Evans, "Large teams develop and small teams disrupt science and technology," _Nature_ 566.7744 (2019): 378-382.
+
+[Back to text](#note-ref-3-1-12)
 
 ### Note 22 {#note-3-1-22}
 
 Yiling Lin, James Evans, and Lingfei Wu, "New directions in science emerge from disconnection and discord," _Journal of Informetrics_ 16.1 (2022): 101234.
 
+[Back to text](#note-ref-3-1-12)
+
 ### Note 23 {#note-3-1-23}
 
 Feng Shi, and James Evans, "Surprising combinations of research contents and contexts are related to impact and emerge with scientific outsiders from distant disciplines," Nature Communications 14.1 (2023): 1641.
+
+[Back to text](#note-ref-3-1-12)
 
 ### Note 24 {#note-3-1-24}
 
 Jacob Foster, Andrey Rzhetsky, and James A. Evans, "Tradition and Innovation in Scientists’ Research Strategies," _American Sociological Review_ 80.5 (2015): 875-908.
 
+[Back to text](#note-ref-3-1-12)
+
 ### Note 25 {#note-3-1-25}
 
 Aaron Clauset, Daniel Larremore, and Roberta Sinatra, "Data-driven predictions in the science of science," _Science_ 355.6324 (2017): 477-480.
+
+[Back to text](#note-ref-3-1-12)
 
 ### Note 26 {#note-3-1-26}
 
 Jamshid Sourati, and James Evans, "Accelerating science with human-aware artificial intelligence," _Nature Human Behaviour_ 7.10 (2023): 1682-1696.
 
+[Back to text](#note-ref-3-1-13)
+
 ### Note 27 {#note-3-1-27}
 
 Santo Fortunato, Carl T. Bergstrom, Katy Borner, James A. Evans, Dirk Helbing, Stasa Milojevič, Filippo Radicchi, Robeta Sinatra, Brian Uzzi, Alessandro Vespignani, Ludo Waltman, Dashun Wang and Alberto-László Barbási, "Science of Science" *Nature* 359, no. 6379 (2018): eaao0185.
+
+[Back to text](#note-ref-3-1-12)

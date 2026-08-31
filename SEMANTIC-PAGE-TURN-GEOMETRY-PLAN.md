@@ -401,15 +401,35 @@ The eager-loading limitation recorded in section 10.3 is now addressed:
 - V3 shares a canonical book/chapter/anchor URL through Web Share or clipboard
   fallback. Embed and shelf-handoff query state is omitted from shared links.
 
-The built V3 assets measure 22,368 bytes gzip, 2,368 bytes above the strict decimal
+The built V3 assets measure 28,349 bytes gzip, 8,349 bytes above the strict decimal
 20 kB promotion gate; payload trimming therefore remains required before
-promotion. Including route HTML, the shared route is 24.1 kB gzip. After
-adjacent prefetch, the initial Plurality path is about 77.9 kB gzip versus 519.9
+promotion. Including route HTML, the shared route is 30.8 kB gzip. After
+adjacent prefetch, the initial Plurality path is about 83.3 kB gzip versus 521.2
 kB for its complete static path. A fresh local Chromium profile retained 3,885 DOM
 nodes and 1.39 MB heap versus the earlier eager baseline of 31,850 nodes and
-2.00 MB. The expanded validation contains 40 unit tests and 67 browser
+2.00 MB. The expanded validation contains 42 unit tests and 73 browser
 scenarios against both root and Pages base paths. Full measurements and
 methodology are in [V3-LIBRARY-REVIEW.md](./V3-LIBRARY-REVIEW.md).
+
+### 10.5 Navigation, media, and personal-tools checkpoint - 2026-08-31
+
+- Moving and revealed faces now include a real opaque paper occluder beneath
+  semantic content; computed opacity and cross-binding turn tests remain
+  explicit.
+- Programmatic chapter focus uses a restrained underline treatment instead of
+  a browser-default rectangle. Mobile chapter openings suppress the duplicate
+  running head and continuation heads truncate to one line.
+- Plurality has 99 local cross-chapter links, note return links, and 11
+  explicitly licensed figures mapped into Off/On-page/Pop-out treatment.
+- Explore provides hierarchical contents and an abortable, demand-loaded search
+  with four-worker bounded fetch concurrency.
+- Edition-scoped bookmarks, visible resume restart, selected-text sharing,
+  local-only annotations, navigation, deletion, and Markdown export are
+  available under the recorded privacy boundary.
+- Pointer events are coalesced to one update per animation frame. The
+  reproducible 390 x 844 profile reaches 54.9 p95 FPS at 1x CPU and 54.1 at 2x;
+  the 4x profile has no long tasks but reaches 38.5 and remains below promotion
+  gate.
 
 ## 11. Promotion gates
 

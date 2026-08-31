@@ -42,7 +42,7 @@
           <span>book-page scrollbars</span>
         </article>
         <article>
-          <strong>~290×</strong>
+          <strong>~230×</strong>
           <span>lighter initial V3 transfer</span>
         </article>
       </section>
@@ -149,7 +149,7 @@
               <tr>
                 <th scope="row">Publication figure treatments</th>
                 <td><span class="status status-experimental">V3 prototype</span></td>
-                <td>Ethical AI maps three lossless figures from its pinned PDF with Off, On-page, and Pop-out modes. Default Pop-out loads no image until activation; production manifest integration and wider editorial mapping remain open.</td>
+                <td>Ethical AI maps three lossless figures and Plurality maps 11 explicitly licensed figures with Off, On-page, and Pop-out modes. Default Pop-out loads no image until activation; production manifest integration remains open.</td>
               </tr>
               <tr>
                 <th scope="row">Responsive physical pagination</th>
@@ -169,7 +169,7 @@
               <tr>
                 <th scope="row">Share current reading location</th>
                 <td><span class="status status-complete">Implemented</span></td>
-                <td>V2 and V3 use native Web Share when available, with clipboard fallback. V3 links contain only the canonical book, chapter, and source anchor.</td>
+                <td>V2 and V3 use native Web Share when available, with clipboard fallback. V3 can explicitly include selected text and always uses the canonical book, chapter, and source anchor.</td>
               </tr>
               <tr>
                 <th scope="row">Legacy facsimile fallback</th>
@@ -188,8 +188,8 @@
               </tr>
               <tr>
                 <th scope="row">Local comments and annotations</th>
-                <td><span class="status status-planned">Planned</span></td>
-                <td>Specified and backlogged; creation, persistence, re-anchoring, and export are not built yet.</td>
+                <td><span class="status status-experimental">V3 beta</span></td>
+                <td>Selected quotes and optional notes remain edition-scoped in this browser, can be revisited or deleted, and export locally as Markdown. Synchronization remains prohibited.</td>
               </tr>
               <tr>
                 <th scope="row">Collaborative comments</th>
@@ -197,9 +197,14 @@
                 <td>Requires identity, moderation, privacy, and a service boundary after local annotations.</td>
               </tr>
               <tr>
-                <th scope="row">Bookmarks, search, and offline cache</th>
-                <td><span class="status status-planned">Planned</span></td>
-                <td>Present in the specification and implementation backlog, not the current vertical slice.</td>
+                <th scope="row">Bookmarks, contents, search, and offline cache</th>
+                <td><span class="status status-partial">V3 beta; offline planned</span></td>
+                <td>V3 has hierarchical contents, demand-loaded search, edition-scoped bookmarks, and visible resume restart. Bounded offline caching remains planned.</td>
+              </tr>
+              <tr>
+                <th scope="row">Low-end mobile turn profile</th>
+                <td><span class="status status-partial">Measured</span></td>
+                <td>p95 reaches 54.9 FPS at 1x and 54.1 FPS at 2x CPU throttle with no long tasks. The 4x profile reaches 38.5 FPS and remains below promotion gate.</td>
               </tr>
             </tbody>
           </table>
@@ -214,11 +219,11 @@
         <div class="dashboard-weight-grid">
           <article>
             <h3>V3 semantic geometry</h3>
-            <strong>~32 KB initial</strong>
+            <strong>~38 KB initial</strong>
             <p>
-              Approximately 22.3 KB gzip for V3 assets plus 9.2 KB for the
+              Approximately 28.3 KB gzip for V3 assets plus 9.2 KB for the
               Ethical AI manifest, current chapter, and adjacent prefetch. The
-              complete static semantic path remains about 73.3 KB; optional
+              complete static semantic path remains about 79.4 KB; optional
               figures load separately only when requested.
             </p>
           </article>
@@ -240,7 +245,7 @@
           </article>
           <article class="dashboard-weight-result">
             <h3>Initial-transfer reduction</h3>
-            <strong>~99.7%</strong>
+            <strong>~99.6%</strong>
             <p>
               V3 initially serves only a bounded semantic chapter window.
               Static hosting still retains every chapter, while the browser

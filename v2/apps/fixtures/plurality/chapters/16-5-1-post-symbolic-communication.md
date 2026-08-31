@@ -4,19 +4,21 @@
 
 Overlooking Tokyo, nestled within the National Museum of Emerging Science and Innovation ([Miraikan](https://www.miraikan.jst.go.jp/en/)) lies [The Park of Aging](https://www.miraikan.jst.go.jp/en/exhibitions/future/oipark/), a realm where time bends into the distant future, offering a rare portal to your mind and body after years worn by aging.[1](#note-5-1-1) Visors blur vision, mimicking cataracts. Sounds are stripped of high pitches. In a photo booth that mirrors the trials of aged perception, facial expressions are faded and blurred. The simple act of recalling a shopping list committed to memory becomes an odyssey as one is ceaselessly interrupted in a bustling market. Walking in place on pedals with ankle weights on and while leaning on a cart simulates the wear of time on the body or the weight of age on posture. The Park of Aging is not just an exhibit, but an immersive conversation across time; a dialogue with your older self through the senses of sight, sound, and the aches and pains of age. This journey of empathy extends beyond the future self, to also foster a deeper connection with a present overlooked cohort: the elderly.
 
+{#note-ref-5-1-1}
+
 The Park of Aging is a poignant example of proprioceptive, post-symbolic communication, where participants receive information through an intimate, sensorial experience beyond merely interpreting words and symbols, utilizing all sensemaking of the body; the Park immerses participants in the sensations of being old, unlocking the first-hand experience of the deteriorating senses, including seeing and hearing words and symbols.
 
 ---
-
 
 Temporal conversation with aging, experiences of proprioceptive, non-symbolic communication today are ubiquitous and include meditation, psychedelics, religious experience, romantic intimacy, dance, yoga, combat, and sports. Not coincidentally, these experiences which harness information gathered from many senses including proprioception (“higher-bandwidth communication”) are also correlated with long-lasting human bonding and connection when shared. Perhaps it is the diversity of information simultaneously presented to the senses (depth) that contribute to the significance of the experience and therefore strength of connection and “union.”
 
 Technological innovations such as neural interfaces, mediated reality, and generative foundation models (GFMs) expands the possibility space of post-symbolic communication, where unions within oneself and among people can occur not only in person, but across temporal, physical, and social distance facilitated by technology. In this chapter, we describe these technologies and explore their frontiers. We examine how these technologies could revolutionize interpersonal connections, education, and collaboration by enabling the transmission of thoughts, feelings, and sensory experiences beyond the compression of words and symbols. We consider the opportunities to rectify cultural misunderstandings and conflicts by fostering profound empathy and shared experience. Yet, in a space where ideas flow as seamlessly as emotions, we must also explore the risks of this level of connectivity, including surveillance, homogenization, disconnection and oblivion.
 
-
 ### Intimacy today
 
 Post-symbolic communication, a term coined by Jaron Lanier , ventures beyond the realm of language and symbols to explore the potential for direct and immersive shared experience by harnessing all senses, including proprioception.[7](#note-5-1-7) Our first experience of non-verbal communication is in the natal womb; the synchronization of heartbeats between a mother and her unborn child, especially when the mother breathes rhythmically, suggests an intrinsic communication pathway.[8](#note-5-1-8) As we develop, humans convey information nonverbally through body language, facial expression, tone, touch, laughter, crying, facial blood flow and  smell. Biochemical messengers can convey emotional states and trigger responses in others, often unconsciously. For instance, research has shown that human sweat contains compounds that, when detected by others, can convey stress or fear, influencing the receiver's perception and behavior.[9](#note-5-1-9). We also see glimpses of the post-symbolic potential in long-established practices of intimacy among humans:
+
+{#note-ref-5-1-2}
 
 - Dance: stepping deeper into music, participants synchronizing their movements, both feel their body and anticipate their partner’s movements to create shared experience. Traditional dances like the [Adumu](https://en.wikipedia.org/wiki/Adumu) ritual of the Maasai people also serve as a way for communal shared experiences through synchronicity.
 - Combat: on the battlefield, soldiers experience heightened senses, adrenaline, and a battery of sounds, leading to intense awareness of their surroundings and their comrades. Non-verbal cues become critical for survival and strategy. This shared high-stress environment creates a bond and deep understanding and trust develop among those who rely on each other for their lives.
@@ -25,6 +27,8 @@ Post-symbolic communication, a term coined by Jaron Lanier , ventures beyond the
 - Religious experience: in mystical practices like [Sufism](https://www.youtube.com/watch?v=hkuimX1bh6g), participants collectively engage in rituals like whirling and chanting. These shared spiritual practices engage the senses in the same way, and create a sense of unity and connection with something greater than oneself, fostering community not just among people, but with a greater spiritual presence.
 - Yoga: in a yoga class, practitioners move together through sequences of poses, guided by the rhythm of their breath. Despite the individual nature of the practice, there is a collective harmony in the movements and the shared goal of health and peace, as well as a heightening nervous system through stretches and poses. This shared physical and meditative experience fosters a sense of communal energy and focus.
 
+{#note-ref-5-1-3}
+
 Each of these contexts illustrates how shared experiences, beyond the scope of verbal communication, can create deep bonds and understanding between participants through intensive, shared sensorial inputs. Yet, communication can also happen within oneself (or between oneself and the spiritual world), as a form of introspection, yielding some of the most profound and transformative experiences.
 
 - Meditation: a practice of inward focus and mindfulness, meditation has a diverse set of practices across a range of traditions. One common practice is to observe one's own thoughts and feelings without judgment, fostering greater recognition and understanding of one’s own mental and emotional states, offering an opportunity to bridge and reconcile internal differences and contradictions.
@@ -32,7 +36,6 @@ Each of these contexts illustrates how shared experiences, beyond the scope of v
 - Prayer: Similarly, through prayer, contemplation, or participation in religious rituals, individuals open communication to something beyond their sensory experience. Whether through a feeling of divine presence or an internal sense of clarity and peace, these experiences can be deeply impactful and transformative, and foster a greater connection to themselves and their place in the universe.
 
 Intimate experience today is rich with examples that touch upon the edges of post-symbolic communication. From physiological signals to chemosignals we are just beginning to learn the non-verbal, information-dense modes that can synchronize human experience and form the deepest human bonds between oneself and other humans, groups, and the universe broadly.
-
 
 ### Post-symbolic communication tomorrow
 
@@ -46,8 +49,11 @@ Today, we stand on the cusp of a Cambrian explosion in technologies that can adv
 - Neurofeedback and mindfulness: These [applications](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4892319/#:~:text=Neurofeedback%20is%20a%20method%20that,audio%2C%20video%20or%20their%20combination.) use real-time displays of brain activity to teach self-regulation of brain function. They can be used for meditation, mental health therapy, and enhancing self-awareness and empathy.[5](#note-5-1-5)
 - Neuromodulation: Neuromodulation techniques, such as deep brain stimulation have implications for enhancing cognitive function, treating neurological disorders, and even augmenting human capabilities. However, they also introduce neuroethical challenges such as moral bio-enhancement (MBE) - the use of biomedical technology to morally improve humans.
 
+{#note-ref-5-1-4}
 
 When combined with GFMs, these technologies will further enable us to generate visual representations of our thoughts at a pace that closely mirrors the speed of our imagination. These technologies together are unlocking responsive, adaptive environments or characters in virtual spaces that can react in real-time to users' emotions, actions, or choices beyond simple interpretation of natural language inputs.[11](#note-5-1-11) Researchers have already shown how brain implants can connect the intentions of a paralyzed patient into physical movements, demonstrating the remarkable potential of neural interfaces to bridge the gap between thought and action.[12](#note-5-1-12)
+
+{#note-ref-5-1-5}
 
 Combined, these capabilities enable the transmission of ideas and emotions that can occur directly and seamlessly and have profound implications for how we share and understand one another's internal experiences, creative visions, aspirations and even past traumas to facilitate reconciliation, healing and forgiveness. For example, imagine a child immersing themselves in the sensory experiences of their parents at the same age. Or two warring groups experiencing the pain and loss of their adversary’s family members.
 
@@ -63,15 +69,9 @@ Long-distance relationships, too, can expect to undergo a radical transformation
 
 The journey into post-symbolic communication is not without its perils. The very tools that promise deeper connection could also lead to a loss of individuality. Worse, participants could be surveilled, leaving our thoughts, emotions, and motivations open to manipulation; any window into our mind is also a window of influence. At the extreme, there is a risk that participants no longer have a private inner world while also disconnecting from the outer world, a dystopia of which we have be warned at least since the time of [E. M. Forster](https://www.cs.ucdavis.edu/~koehl/Teaching/ECS188/PDF_files/Machine_stops.pdf) and most vividly in recent years by the 1999 film [*The Matrix*](https://en.wikipedia.org/wiki/The_Matrix).[6](#note-5-1-6) Unchecked visibility into our minds allows for unprecedented levels of manipulation and control, potentially by technology companies or governments that distract humanity with an alternate reality, or simulation. As humans lose touch with the reality of the physical world, over-reliance on telepathic communication could lead to the atrophy of traditional communication skills and cultural practices, with people becoming dependent on direct mental connections. Furthermore, in a world where the boundaries between self and other blur, the sanctity of individual thought and experience could be threatened. High-bandwidth communication could lead to a homogenization of thoughts and experiences as individual perspectives merge into collective consciousness, erasing our differences.
 
+{#note-ref-5-1-6}
 
 Balancing telepathic communication with lower-bandwidth, structured forms of communication is essential to preserve privacy, autonomy, diversity, and human governance in the future. Communication, like speech and text, is less direct and immediate than telepathy but is structured and deliberate. It requires the sender to formulate thoughts into words or sentences, providing a level of control and reflection that instantaneous telepathic communication lacks. Markets and voting systems also serve as quintessential examples of lower-bandwidth, structured forms of communication, offering a counterbalance. In markets, the myriad decisions made by consumers and producers are communicated through the price mechanism. This system, while less immediate and detailed than telepathic communication, provides a structured and aggregated way of expressing preferences and values. It allows for privacy in decision-making, as individuals do not have to reveal the full spectrum of their thoughts and motivations. Similarly, voting is a deliberate, structured form of communication where individuals express their political and social preferences at a fixed point in time. Unlike continuous and invasive telepathic streams, voting encapsulates the will of the populace in a manner that is both manageable and interpretable, preserving the autonomy of the individual voter. This structured approach is crucial in maintaining a balance between efficient communication and the safeguarding of personal autonomy, privacy, and democratic processes, thereby acting as a vital check against the overreach of an all-encompassing telepathic matrix.
-
-
-
-
-
-
-
 
 ## Chapter notes {#notes-5-1}
 
@@ -79,46 +79,70 @@ Balancing telepathic communication with lower-bandwidth, structured forms of com
 
 The entire artificial island of Odaiba on which Miraikan sits is something of a monument to ⿻.  It contains a monument to [Doraemon](https://en.wikipedia.org/wiki/Doraemon), a Manga robotic cat from the future who in Japanese cartoons of the 1970s returned to guide the imagination of children in the present, who has been a [major inspiration](https://www.klook.com/en-US/activity/96105-the-doraemon-taipei-2023/) in Taiwan.  The largest mall on the island is named [DiverCity](https://www.tokyo-odaiba.net/en/genre/%E3%83%80%E3%82%A4%E3%83%90%E3%83%BC%E3%82%B7%E3%83%86%E3%82%A3%E6%9D%B1%E4%BA%AC-%E3%83%97%E3%83%A9%E3%82%B6/) and is devoted to the role of diversity in innovation.
 
+[Back to text](#note-ref-5-1-1)
+
 ### Note 2 {#note-5-1-2}
 
 In her 2024 _Playing With Reality_, physicist and neuroscientist Kelly Clancy speculates that _Homo sapiens_' large pre-frontal cortex evolved not to manage large numbers of social relationships, as is commonly believed, but rather to manage a single highly complex relationship with a romantic partner. That the larger brain was ultimately useful for managing large numbers of secondary relationships was, to Clancy, a happy accident.
+
+[Back to text](#note-ref-5-1-3)
 
 ### Note 3 {#note-5-1-3}
 
 Rao et al., op. cit.
 
+[Back to text](#note-ref-5-1-4)
+
 ### Note 4 {#note-5-1-4}
 
 William Steptoe, Anthony Steed and Mel Slater, "Human Tails: Ownership and Control of Extended Humanoid Avatars" *IEEE Transactions on Visualization and Computer Graphics* 19, no. 4 (2013): 583-590.
+
+[Back to text](#note-ref-5-1-4)
 
 ### Note 5 {#note-5-1-5}
 
 Hengameh Marzbani, Hamid Reza Marateb and Marjan Mansourian, "Neurofeedback: A Comprehensive Review on System Design, Methodology and Clinical Applications", *Basic Clinical Neuroscience* 7, no, 2: 143-158.
 
+[Back to text](#note-ref-5-1-4)
+
 ### Note 6 {#note-5-1-6}
 
 E. M. Forster, "The Machine Stops", *Oxford and Cambridge Review*  November 1909.
+
+[Back to text](#note-ref-5-1-6)
 
 ### Note 7 {#note-5-1-7}
 
 Jaron Lanier, _You Are Not a Gadget a Manifesto_, (London [Etc.]: Penguin Books, 2011).
 
+[Back to text](#note-ref-5-1-2)
+
 ### Note 8 {#note-5-1-8}
 
 P. van Leeuwen, D. Geue, Michael Thiel, Dirk Cysarz, S Lange, Marino Romano, Niels Wessel, Jürgen Kurths, and Dietrich Grönemeyer, “Influence of Paced Maternal Breathing on Fetal–Maternal Heart Rate Coordination,” _Proceedings of the National Academy of Sciences of the United States of America_ 106, no. 33 (August 18, 2009): 13661–66. https://doi.org/10.1073/pnas.0901049106.
+
+[Back to text](#note-ref-5-1-2)
 
 ### Note 9 {#note-5-1-9}
 
 Judith Fernandez, "Olfactory interfaces: toward implicit human-computer interaction across the consciousness continuum," Diss. Massachusetts Institute of Technology, School of Architecture and Planning, Program in Media Arts and Sciences, 2020.
 
+[Back to text](#note-ref-5-1-2)
+
 ### Note 10 {#note-5-1-10}
 
 Andrea Won, Jeremy Bailenson, Jimmy Lee, and Jaron Lanier, "Homuncular Flexibility in Virtual Reality," _Journal of Computer-Mediated Communication_, Volume 20, Issue 3, 1 May 2015, Pages 241–259, https://doi.org/10.1111/jcc4.12107
+
+[Back to text](#note-ref-5-1-4)
 
 ### Note 11 {#note-5-1-11}
 
 Han Huang, Fernanda De La Torre, Cathy Fang, Andrzej Banburski-Fahey, Judith Amores, and Jaron Lanier. “Real-Time Animation Generation and Control on Rigged Models via Large Language Models,” arXiv (Cornell University, February 15, 2024), https://arxiv.org/pdf/2310.17838.pdf (Originally at the 37th Conference on Neural Information Processing Systems (NeurIPS) Workshop on ML for Creativity and Design in 2023).
 
+[Back to text](#note-ref-5-1-5)
+
 ### Note 12 {#note-5-1-12}
 
 Henri Lorach, Andrea Galvez, Valeria Spagnolo, et al., Walking naturally after spinal cord injury using a brain–spine interface, _Nature_ 618, 126–133 (2023), https://doi.org/10.1038/s41586-023-06094-5
+
+[Back to text](#note-ref-5-1-5)

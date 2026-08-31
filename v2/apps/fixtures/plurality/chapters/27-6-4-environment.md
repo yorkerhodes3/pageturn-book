@@ -12,10 +12,11 @@ This chapter explores how ⿻ can transform our technological relationship with 
 
 Human activities — particularly our reliance on non-renewable energy sources — have profoundly altered the Earth since the 1950s. Deforestation, global warming, ocean acidification, and mass extinctions have all escalated as the climate changes. At the beginning of the 21st century, Nobel laureate Paul Jozef Crutzen proposed the term "[Anthropocene](https://en.wikipedia.org/wiki/Anthropocene)" to recognize this new epoch driven primarily by human influence.[1](#note-6-4-1) Biodiversity has plummeted; between [2001 and 2014](https://www.cnn.com/2020/06/01/world/sixth-mass-extinction-accelerating-intl/index.html) alone, approximately 173 species vanished—25 times the historical extinction rate. During the 20th century, some 543 vertebrate species disappeared, an event that would typically unfold over 10,000 years.[2](#note-6-4-2)
 
-
+{#note-ref-6-4-1}
 
 Of course, we humans are not immune to the effects. Air pollution alone kills nearly [6.7 million people every year](https://www.unep.org/news-and-stories/story/world-must-band-together-combat-air-pollution-which-kills-7-million-year#:~:text=Exposure%20to%20air%20pollution%20significantly,million%20premature%20deaths%20a%20year.), including half a million infants. In severely polluted countries, average life expectancy falls by up to six years.[3](#note-6-4-3)
 
+{#note-ref-6-4-2}
 
 ### Data coalitions for environmental action
 
@@ -29,11 +30,13 @@ Data coalitions are interconnected with social movement-based civic technologies
 
 Before conservationism was a widespread concept, conservative thinkers like Edmund Burke saw community groups as 'little platoons' – social hubs situated between individuals and the state.[4](#note-6-4-4) Effective communication and cultivation are particularly important given that environmental problems often hit the most vulnerable first and hardest, such as low-income families or indigenous communities. The key is to ensure, through law and policy, that community members have an equal participation and voice in the development, resource allocation and implementation process, and that they are transformed from research subjects to data-driven actors.
 
+{#note-ref-6-4-3}
 
 ### Conversations with nature
 
 Recent years have seen a growing movement to grant waterways 'natural legal personhood'. These waterways, with inherent rights and appointed guardians, include the Magpie River ([Muteshekau Shipu](https://nonprofitquarterly.org/environmental-personhood-a-radical-approach-to-climate-justice/#:~:text=In%202021%2C%20the%20Canadian%20government,and%20the%20rights%20of%20nature.)) in Canada, the [Whanganui](https://apnews.com/article/religion-sacred-rivers-new-zealand-86d34a78f5fc662ccd554dd7f578d217) in New Zealand, and the Ganga and [Yamuna](https://www.sierraclub.org/sierra/india-s-yamuna-river-now-enjoys-legal-personhood-will-be-enough-clean-it) rivers in India.[5](#note-6-4-5) This signifies a shared commitment to preserving these ecosystems for future generations.
 
+{#note-ref-6-4-4}
 
 Shared data can be transformed by data coalitions using generative foundation models (GFMs) into means of conversation with nature. These can serve as valuable tools for knowledge sharing and collective problem-solving regarding complex, cross-border problems. In promoting environmental sustainability, GFMs demonstrate a new model of co-existence between technology and humanity. As environmental data flows through verifiable relationships, it generates value (e.g., air and water quality monitoring), sending pulses of images, sounds, and messages to engage people, offering real-time feedback to ideas, and encouraging more nature-conscious partners to join the effort.
 
@@ -45,12 +48,11 @@ Fluidity defines our natural world; oceans, rivers, and the atmosphere flow with
 
 Building GFMs models for natural environments involves challenges: open-source governance, capital and compute investments, and collaboration are key. Through GFMs, we can unlock deeper insights into our complex natural world. Scientific research and environmental management benefit from these insights, improving both and potentially reshaping society, as we have seen in the US National Aeronautics and Space Administration's ongoing collaboration with IBM on a [Geospatial Foundation Model](https://www.earthdata.nasa.gov/news/impact-ibm-hls-foundation-model) based on NASA's earth observation data, tackling crucial notions of environmental justice for natural spaces and human communities alike.[6](#note-6-4-6)
 
+{#note-ref-6-4-5}
 
-Just as biometrics and sociometrics help establish identity, we need better ways to establish and protect the identity of natural ecosystems like rivers. A new conceptualization of identity is in order – one that factors in the connections between individual people and the ecosystems they rely on. [⿻ publics](https://www.plurality.net/v/chapters/4-2/eng/?mode=dark), as explored earlier in this book, also establish and protect the identity of collective entities, often devoted to cultural and care relationships. Some of these relate to natural ecosystems and can offer a foundation for conceptualizing the identity of such an ecosystem.
+Just as biometrics and sociometrics help establish identity, we need better ways to establish and protect the identity of natural ecosystems like rivers. A new conceptualization of identity is in order – one that factors in the connections between individual people and the ecosystems they rely on. [⿻ publics](../4-2/), as explored earlier in this book, also establish and protect the identity of collective entities, often devoted to cultural and care relationships. Some of these relate to natural ecosystems and can offer a foundation for conceptualizing the identity of such an ecosystem.
 
 Notably, this perspective transcends the often contentious debate around whether GFM systems can become legal agents; data coalitions can be viewed both as “little platoons” created by the people who benefit from the ecosystem, but also at the same time, through the legal positioning of natural personhood, the river’s digital twin can be seen as a subject with rights and responsibilities.  Similarly, a GFM created for whatever purpose of, by and for a community can exist both as a "person" and as a shared ⿻ good, depending on the perspective one adopts.
-
-
 
 ## Chapter notes {#notes-6-4}
 
@@ -58,22 +60,34 @@ Notably, this perspective transcends the often contentious debate around whether
 
 Will Steffan, Paul J. Crutzen and John R. McNeill, "The Anthropocene: Are Humans Now Overwhelming the Great Forces of Nature?" in Ross E. Dunn, Laura J. Mitchell and Kerry Ward, eds., *The New World History* (Berkeley, CA: University of California Press, 2016).  Note that this proposal was recently rejected by the [International Union of Geological Sciences](https://www.theguardian.com/science/2024/mar/22/geologists-reject-declaration-of-anthropocene-epoch#:~:text=The%20guardians%20of%20the%20world's,planet%2Dchanging%20impact%20of%20humanity.).
 
+[Back to text](#note-ref-6-4-1)
+
 ### Note 2 {#note-6-4-2}
 
 Gerardo Ceballos, Paul R. Ehrlich, and Peter H. Raven, "Vertebrates on the Brink as Indicators of Biological Annihilation and the Sixth Mass Extinction", *Proceedings of the National Academy of Sciences* 117, no. 24: 13596-13602.
+
+[Back to text](#note-ref-6-4-1)
 
 ### Note 3 {#note-6-4-3}
 
 World Health Organization, "Air Pollution Resource Guide" at https://www.who.int/health-topics/air-pollution#tab=tab_1.
 
+[Back to text](#note-ref-6-4-2)
+
 ### Note 4 {#note-6-4-4}
 
 Edmund Burke, *Reflections on the Revolution in France and on the Proceedings in Certain Societies in London Relative to that Event* (London: James Dodley, 1790).
+
+[Back to text](#note-ref-6-4-3)
 
 ### Note 5 {#note-6-4-5}
 
 Mihnea Tanasescu, "When a River is a Person: From Ecuador to New Zealand, Nature Gets its Day in Court", *Open Rivers* 8, Fall 2017 at https://openrivers.lib.umn.edu/article/when-a-river-is-a-person-from-ecuador-to-new-zealand-nature-gets-its-day-in-court.
 
+[Back to text](#note-ref-6-4-4)
+
 ### Note 6 {#note-6-4-6}
 
 Josh Blumenfeld, "NASA and IBM Openly Release Geospatial AI Foundation Model for NASA Earth Observation Data", *NASA Earth Data* August 3, 2023 at https://www.earthdata.nasa.gov/news/impact-ibm-hls-foundation-model.
+
+[Back to text](#note-ref-6-4-5)

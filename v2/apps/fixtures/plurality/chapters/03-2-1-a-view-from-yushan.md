@@ -5,21 +5,25 @@
 > Swirling ocean, beautiful islands;
 > A transcultural republic of citizens.[1](#note-2-1-1)
 
----
+{#note-ref-2-1-1}
 
+---
 
 Standing at the summit of East Asia's highest peak, [Yushan](https://en.wikipedia.org/wiki/Yu_Shan) (Jade Mountain), one can not only look down on Taiwan, but also feel how this small, mountainous island nation is a global crossroad. Located at the junction of the Eurasian and Pacific tectonic plates, Taiwan's geological fault line yearly pushes it up, even as it also regularly causes earthquakes against which rigorous building codes protect inhabitants. In the same way, the clash of Taiwan's diverse culture, history and values has built a prosperous and innovative society, while pro-social digital innovation has managed to protect it from polarization.
 
 Today, with a voter turnout rate over 70%[2](#note-2-1-2), second-highest religious diversity in the world[3](#note-2-1-3), and 90% of global supply capacity for advanced chips, Taiwan has broken through geographic constraints and demonstrated the resilience of a democratic society to collaborate with its region and the world.
 
+{#note-ref-2-1-2}
 
 Taiwan's ability to achieve among the world's lowest fatality rates without any lockdowns during the Covid crisis — while maintaining among the fastest economic growth rates in the world — show the results of the plural spirit of Taiwan's information society. Whether it's a map of masks or a social safety distance, these are all manifestations of technologies for collaborative diversity, deeply rooted in daily life.[4](#note-2-1-4)
 
+{#note-ref-2-1-3}
 
 ### Place of convergence
 
 One etymology of Taiwan's name is from the indigenous word "Taivoan", meaning "place of convergence". Taiwan has arguably been a launching point for long-distance cooperation longer than anywhere on earth, [being believed](https://historylearning.com/history-of-the-philippines/pre-history/population-theories/out-of-taiwan-model/) to be the starting point for the journeys of thousands of miles by Polynesian voyagers in the second millennium BCE.[5](#note-2-1-5) The story of this island and its people, influenced by indigenous cultures, colonial powers, and political ideologies from the region and world, centers on the ongoing conflict and co-creation between different notions of what this place is and what it can be. This raucous and rich clash has poured out a unique form of democracy forged by a history of constant upheaval.
 
+{#note-ref-2-1-4}
 
 Two dramatic personal experiences of the lead authors of this book illustrate this unique cultural and political setting. On March 18, 2014, a group of students frustrated by the substance and process of a new trade deal with Beijing and inspired by the global "Occupy" movement climbed over the fence surrounding the legislature building. A similar occupation of the American legislative Capitol almost seven years later lasted only a few hours and yet is one of the most divisive events in American history. In contrast, the "Sunflower" (318) occupation lasted more than a hundred times as long (more than 3 weeks) and yet the demands of the protesters were eventually largely accepted as a consensus; the movement led to a change of government and the rise of new political parties.
 
@@ -27,6 +31,7 @@ Perhaps most importantly, the movement led to a deeper and more lasting shift in
 
 Almost a decade after these events, the other primary author of this book visited to witness the general election held January 13, 2024, which launched a "year of elections" in which more people than in any previous year will vote and followed hot on the heels of the "year of AI", when generative models like GPT burst into the public consciousness. Many expect these models to turbocharge information manipulation and interference by authoritarian actors. This election seemed a test case, with a more concerted, better-funded adversary focused on a considerably smaller population.[6](#note-2-1-6) Walking the streets of Taipei on the eve of that election, he saw no shortage of divisions for such attacks to exploit. At the rally of the ruling Democratic Progressive Party (DPP) he found not a single official flag, only placards of the island, the party's signature green color and occasional rainbow flags 🏳️‍🌈. At the rally of the opposition Kuomintang (KMT or Nationalist) party, he saw only the flag of the Republic of China (ROC) 🇹🇼. It made him imagine how much more extreme the divisions of his American home would be if Democrats waved a historical British flag and Republicans the stars and stripes.
 
+{#note-ref-2-1-5}
 
 Yet, despite these extreme divides and harnessing the technologies developed partly as a result of the Sunflower movement, the January 13 election has become a positive model to the world, with the candidate of the party opposed by the authoritarian adversary outperforming opinion polls, calm prevailing after the election and a largely consensual outcome being reached across the society. This capacity to harness technology and social organization to channel widely divergent attitudes towards shared progress was most sharply manifested in the decade of work following the Sunflower movement. Yet it has far deeper historical roots, roots that come from different starting points and converge on this fateful decade of digital democracy.
 
@@ -36,17 +41,21 @@ The divergent identities emphasized by the DPP and KMT correspond to different f
 
 The island's history is replete with war, rebellion, colonizers, and national independence narratives at every turn. Like many islands in the South China Sea, indigenous peoples in Taiwan encountered larger imperial powers, such as the Spanish, the Japanese, and the Dutch, through colonial expansion. By the seventeenth century, the Dutch settled in the southern part of the island while the Spanish settled in the northern region; both of these settlements were ports intended for trade, while much of the island remained inaccessible due to terrain and indigenous peoples violently opposing colonial control.[7](#note-2-1-7)
 
+{#note-ref-2-1-6}
 
 South China Sea merchants (or pirates, depending on how you encountered them), all hailing from Japan, China, and Southeast Asia, also settled on the island or used the ports. In 1662, Zheng Chenggong, or Koxinga, in open rebellion against the newly established Qing dynasty (1644-1911), forcibly removed the Dutch from their seat of power in the southern region and continued his campaign against the Qing from Taiwan.[8](#note-2-1-8) By 1683, the Zheng family-led rebellion was defeated, and Taiwan came nominally under the control of the Qing.
 
+{#note-ref-2-1-7}
 
 Little more than two hundred years later, in 1895, Qing dynasty's defeat in the Sino-Japanese war set in motion two sequences of events that would define the modern history of Taiwan. First, Qing ceded Taiwan and its immediately surrounding islands to Japan, marking the beginning of a half-century of Japanese colonial rule in Taiwan. Second, this defeat fueled the rise of a nationalist movement that created the ROC.[9](#note-2-1-9) We must follow each of these strands as they diverge.
 
+{#note-ref-2-1-8}
 
 In Taiwan, Japanese occupation marked the beginning of the democracy movement. Governor Tang Jingsong took advantage of the change in leadership to establish a short-lived independent Formosa Republic, which was in turn suppressed at the cost of 12,000 lives in a 36,000-square-kilometer island. During Japanese colonial rule, the policy of "dōka" (assimilation) once again attempted to incorporate the Taiwanese into the Japanese cultural and linguistic system. The policy in the Japanese Empire acted to thoroughly integrate language, governmental structure, urban construction, and the education of Taiwan's elite and intelligentsia with Japan's, including bringing many to Japan for education.
 
 Despite the enormous efforts and funds invested by the Japanese empire, Taiwan's resistance and identity remained. Different ethnic groups were considered more or less "civilized"; the less civilized a group of people was, the harsher and more violent the Japanese government was, thus creating fundamentally different experiences for indigenous, Taigi and Hakka people under Japanese control.[10](#note-2-1-10) The rise of the global anti-colonial movement and the Taishō democratic reforms within Japan at the beginning of the 20th century provided intellectuals and activists in Taiwan with the ideological foundation for self-determination. Local elections held in 1935 that included a small fraction of property-owning men as electors provided a first taste of democratic participation at least to Taiwanese elites, encouraging the pursuit of greater autonomy and expression.[11](#note-2-1-11)
 
+{#note-ref-2-1-9}
 
 ### Tridemism
 
@@ -54,6 +63,7 @@ Across the Taiwan strait, a young, American-educated, Christian doctor and activ
 
 The first principle is 民族/Mínzú (literally "civil clan"), which is typically translated as "nationalism". However, perhaps more notable was its emphasis on ethnic pluralism (五族共和) reflected in the original flag of the ROC[12](#note-2-1-12), which included colors for each of the major ethnicities at the time. The second is 民權/Mínquán (literally "civil rights"), usually translated as "democracy" and articulated as a combination of rights of election, recall, initiative and referendum and division of powers among five "Yuans" (the Legislative, Executive and Judicial of the European tradition plus the Control and Examination divisions of the Confucian tradition). The third is 民生/Mínshēng (literally "civil livelihood"), usually translated as "socialism", draws from a variety of economic philosophies, including the ideas of Henry George, an American political economist known for his advocacy of land rights equality, anti-monopoly stances, and support for cooperative enterprises. We will discuss these ideas much more extensively in the next part of the book.
 
+{#note-ref-2-1-10}
 
 Harnessing these ideas, Sun built international support from foreign allies and expatriates around the world that eventually allowed him and his allies to overthrow the Qing in 1911 and found the ROC in 1912. Despite this initial success, internal conflict quickly forced him again into exile and then back to take part in a civil war. In 1919, he managed to marshal his forces and found the modern KMT.
 
@@ -61,33 +71,39 @@ That year he also met another crucial influence on the ideas of the ROC, a disci
 
 On the one hand, this fluid, experimental and emergent approach shared much with Taoist traditions popular among democratic opponents of Qing and warlord monarchy.[13](#note-2-1-13) On the other hand, unlike many more imperialistic foreign observers, Dewey advocated the ROC following its own path of "collaborative problem solving" as the axis of modern experimental model schools. This led Dewey to become something of a bridge between the ROC and the West, especially the US, giving over 200 lectures in China while writing monthly columns on his experiences for emerging outlets such as _The New Republic_. In the process, he helped forge a deep and enduring connection between the ROC and the US.
 
+{#note-ref-2-1-11}
 
 The roughly concurrent success of the Russian revolution brought financial support and military training to the previously marginal Chinese Communist Party (CCP). While inspired by a different, Marxist vision of socialism, Sun allied with the communists to unify the country. This effort, nearly successful at the time of his death in 1925, has made Sun the "Father of the Nation" for the Nationalists and the "Forerunner of the Revolution" for the Communists.
 
 That moment of unity was, however, short-lived, with the communists (under Mao Zedong) and nationalists (under Chiang Kai-shek) alternatingly engaging in civil war and alliances against warlords and Japanese occupiers during the next twenty years, until the final defeat of the Japanese in 1945. Focused overwhelmingly on both the struggle for national liberation and against each other, neither the Communists nor the Nationalists thought much of Taiwan.[14](#note-2-1-14)
 
+{#note-ref-2-1-12}
 
 ### Postbellum Taiwan
 
-
-
 In 1949, having been defeated by Communists, Chiang and two million ROC soldiers and civilians relocated to Taiwan, declaring it the home of "free China", while simultaneously imposing martial law on the eight million native, primarily Taigi- and Hakka-speaking population that came to be known as the "White Terror". Acting as dictator, Chiang positioned the ROC to the world as the true representatives of China. Internally, people in Taiwan experienced a violent outsider government, one that had swiftly taken control of the island and began to suppress any sign of Taiwanese identity systematically and ruthlessly.[17](#note-2-1-17)
 
+{#note-ref-2-1-13}
 
 At the same time, the government whose official ideology was Tridemism began sowing many seeds of social reform that would eventually sprout into democratic movements in Taiwan. Given his lack of ties to the island and its local elites, Chiang was able to impose the Rural Land Reform, including a rent reduction to 37.5% in 1949, the release of public land in 1951 and the breaking up of large estates in the 1953 policy of "land to the tiller". This was extended to impose a Georgist land value tax in 1977, the details of which we will describe later. Together, as many scholars have argued, these reforms laid an egalitarian economic foundation that proved critical to Taiwan's later social and economic development.[18](#note-2-1-18)
 
+{#note-ref-2-1-14}
 
 Another outgrowth of Tridemism was a focus on cooperative enterprise, enshrined in Articles 145 of the ROC Constitution, which states that "private wealth and privately-operated enterprises, the State shall restrict them by law if they are deemed detrimental to a balanced development... Cooperative enterprises... and foreign trade shall receive encouragement." While influenced by Georgist ideas, this support for industrial cooperatives and participative production also drew heavily on traditions of agricultural and industrial cooperation developed during the Japanese colonial rule, further influenced by American thinkers like Edward Deming who emphasized the empowerment of line workers in improving production under the US occupation of Japan that he worked for.[24](#note-2-1-24)
+
+{#note-ref-2-1-15}
 
 Together these influences fostered the development of a robust civil and cooperative sector in Taiwan (which we collectively call the Third Sector), critical to its industrial and political future. Furthermore, the constitutional and historical focus on trade, as well as public investment in export-supporting infrastructure, propelled Taiwan's rise. By the 1970s, Taiwan became a major supplier of components for advanced Western technologies.
 
 Taiwan's education system was similarly influenced by the intellectual ferment of the early ROC period, with Dewey's student Hu fleeing to Taiwan alongside the KMT that he sometimes feuded with. As President of the national research institute Academia Sinica and a leading intellectual, Hu became a central influence on the development of Taiwan's educational system. His fusion of Confucian traditions with Deweyian pragmatism, egalitarianism and democracy helped shape Taiwanese education into the envy of the world, topping world league tables on a range of benchmarks.[19](#note-2-1-19)
 
+{#note-ref-2-1-16}
 
 ### Coming of democracy
 
 The 1960s, parallel to the American Civil Rights movement, saw an outburst of demands against the KMT and Chiang Kai-Shek for Taiwan’s independence and a truly democratic government. Taiwan-born National Taiwan University Professor Peng Ming-min (1921-2022) and two of his students, Hsieh Tsung-min and Wei Ting-chao, circulated the Taiwan Self-Salvation Manifesto, which called for a freed and independent Taiwan, decrying the ROC as an illegitimate government.[20](#note-2-1-20) Though this moment ended with Peng's exile, the manifesto sparked a national conversation that further spurred democratic advocates to demand access to national elections.
 
+{#note-ref-2-1-17}
 
 The United Nations was central to the ROC's early identity under the White Terror as it was not only one of the founding members of the UN, but also the only Asian permanent member of the Security Council. This prominent international role was the leading irritant to the People's Republic of China (PRC) regime, preventing it from participating in international affairs and leading the CCP to change its position from initially supporting Taiwanese independence to an ideological focus on conquering Taiwan. However, as the US sought to contain its failures in Vietnam, President Richard Nixon secretly pursued accommodation with the PRC, a move that signaled shifting global alignments, amid which an Albanian-sponsored Resolution 2758 passed the General Assembly on October 25, 1971 that transferred recognition of "China" from the ROC to the PRC, finally culminating in Nixon's visit to PRC in 1972. As a result, the ROC "withdrew" from the UN, transforming its identity and international standing.
 
@@ -97,11 +113,13 @@ Internally, this change in identity undermined much of the rationale for the Whi
 
 Taiwan's weakened international position also allowed dissidents exiled during the White Terror to put increasing pressure on Chiang's son and successor Chiang Ching-Kuo. The liberalization of Taiwan under the younger Chiang in the 1980s created an environment where democratic action, protests, essays, songs, and art reflected the growing belief for general elections. Those who called for democracy were still in exile or jailed, but their relatives and friends began to run for local and national political offices.[21](#note-2-1-21)
 
+{#note-ref-2-1-18}
 
 ### Vibrant democratic generation
 
 In 1984, Chiang Ching-Kuo selected Lee Teng-hui (1923-2020) as the first Taiwan-born vice president. This choice signaled a change in the political landscape of Taiwan.[22](#note-2-1-22) When Lee became President in 1988, he quickly instituted a range of democratic reforms, calling for the direct election of the President and vesting the sovereignty of the country in the "citizens of the Free Area" of the ROC (those living on the Taiwan islands). This led him to become the first directly elected President in 1996, just a few months after the Bill Gates's "Internet Tidal Wave" memo heralded the mainstream arrival of the internet age.
 
+{#note-ref-2-1-19}
 
 Already among the most technology-intensive export economies in the world, this tidal wave swept the Taiwanese economy and society with the same force as democratization. Thus the internet and democracy were something of Siamese twins in Taiwan. Four years later, the first DPP President, Chen Shui-bian, narrowly won election as the Blue camp splintered. With the return of the KMT to the Presidency eight years later in 2008, a system of alternation between the Blue vision of "free China" and the Green vision of "island nation" was established as the pattern of politics.
 
@@ -115,10 +133,9 @@ Yet despite this deep and persistent division that fueled the Sunflower movement
 
 In addition to this ideological overlap, the two sides have both benefited from and been immersed in the central role the island has come to play in the global electronics industry. As the center of the semiconductor and smartphone supply chain, while also having the fastest internet in the world[23](#note-2-1-23), no country is more thoroughly immersed in the digital world than Taiwan.
 
+{#note-ref-2-1-20}
 
 This combination of an overlapping consensus on plural, complex, free, world-facing democracy, where digital tools are easily available to help navigate the resulting ambiguity, has allowed Taiwan to become, in the last decade, the world's leading example of digital democracy.
-
-
 
 ## Chapter notes {#notes-2-1}
 
@@ -126,94 +143,140 @@ This combination of an overlapping consensus on plural, complex, free, world-fac
 
 This is an alternate interpretation of 中華民國 (lit. "amidst" "cultures" "citizens" "nation"), usually translated as "Republic of China".
 
+[Back to text](#note-ref-2-1-1)
+
 ### Note 2 {#note-2-1-2}
 
 “Billing Profile Information,” Central Election Commission, n.d, https://db.cec.gov.tw/ElecTable/Election?type=President.
+
+[Back to text](#note-ref-2-1-2)
 
 ### Note 3 {#note-2-1-3}
 
 Joseph Liu, “Global Religious Diversity,” _Pew Research Center_, April 4, 2014. https://www.pewresearch.org/religion/2014/04/04/global-religious-diversity/.
 
+[Back to text](#note-ref-2-1-2)
+
 ### Note 4 {#note-2-1-4}
 
 “Tracking Covid-19 Excess Deaths across Countries,” The Economist, October 20, 2021. https://www.economist.com/graphic-detail/coronavirus-excess-deaths-tracker.
+
+[Back to text](#note-ref-2-1-3)
 
 ### Note 5 {#note-2-1-5}
 
 Peter Bellwood, _Man's Conquest of the Pacific: the Prehistory of Southeast Asia and Oceania_ (Oxford, UK: Oxford University Press, 1979).
 
+[Back to text](#note-ref-2-1-4)
+
 ### Note 6 {#note-2-1-6}
 
 “Disinformation in Taiwan: International versus Domestic Perpetrators,” V-Dem, 2020. https://v-dem.net/weekly_graph/disinformation-in-taiwan-international-versus
+
+[Back to text](#note-ref-2-1-5)
 
 ### Note 7 {#note-2-1-7}
 
 Emma Teng, _Taiwan's Imagined Geography: Chinese Colonial Travel Writing and Pictures, 1683-1895_, (Cambridge, Mass.: Harvard University Asia Center, 2004), 33.
 
+[Back to text](#note-ref-2-1-6)
+
 ### Note 8 {#note-2-1-8}
 
 Emma Teng, _Taiwan's Imagined Geography: Chinese Colonial Travel Writing and Pictures, 1683-1895_, (Cambridge, Mass.: Harvard University Asia Center, 2004), 33, 1-2.
+
+[Back to text](#note-ref-2-1-7)
 
 ### Note 9 {#note-2-1-9}
 
 Suisheng Zhao, _The Dragon Roars Back: Transformational Leaders and Dynamics of Chinese Foreign Policy_, (Stanford, California: Stanford University Press, 2022), 132.
 
+[Back to text](#note-ref-2-1-8)
+
 ### Note 10 {#note-2-1-10}
 
 Jeffrey Jacobs, _Democratizing Taiwan_, (Boston: Brill, 2012), 22.
+
+[Back to text](#note-ref-2-1-9)
 
 ### Note 11 {#note-2-1-11}
 
 Ashley Esarey, “Overview: Democratization and Nation Building in Taiwan” in _Taiwan in Dynamic Transition: Nation Building and Democratization_, edited by Thomas Gold, (Seattle: University of Washington Press, 2020), 24
 
+[Back to text](#note-ref-2-1-9)
+
 ### Note 12 {#note-2-1-12}
 
 "Flag of China (1912–1928)," n.d. Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Flag_of_China_(1912%E2%80%931928).svg.
+
+[Back to text](#note-ref-2-1-10)
 
 ### Note 13 {#note-2-1-13}
 
 Richard Shusterman, “Pragmatism and East‐Asian Thought,” _Metaphilosophy_ 35, no. 1-2 (2004): 13, https://www.academia.edu/3125320/_Pragmatism_and_East_Asian_Thought_.
 
+[Back to text](#note-ref-2-1-11)
+
 ### Note 14 {#note-2-1-14}
 
 Yet, to the extent they did address it, Mao supported Taiwan as an independent communist state much as he hoped for Korea and Vietnam, while Chiang (almost as an afterthought) requested the return of Taiwan after the war along with other territories formerly occupied by Japan, including Manchuria.
+
+[Back to text](#note-ref-2-1-12)
 
 ### Note 15 {#note-2-1-15}
 
 Louzon Victor. “From Japanese Soldiers to Chinese Rebels: Colonial Hegemony, War Experience, and Spontaneous Remobilization during the 1947 Taiwanese Rebellion,” _The Journal of Asian Studies_ 77, no. 1 (2018): 168.
 
+
 ### Note 16 {#note-2-1-16}
 
 Chien-Jung Hsu, _The Construction of National Identity in Taiwan’s Media, 1896-2012_, (Leiden: Brill, 2014), 48.
+
 
 ### Note 17 {#note-2-1-17}
 
 Chien-Jung Hsu, _The Construction of National Identity in Taiwan’s Media, 1896-2012_, (Leiden: Brill, 2014), 71.
 
+[Back to text](#note-ref-2-1-13)
+
 ### Note 18 {#note-2-1-18}
 
 Joe Studwell, "How Asia Works: Success and Failure in the World’s Most Dynamic Region," (London: Profile, 2013).
+
+[Back to text](#note-ref-2-1-14)
 
 ### Note 19 {#note-2-1-19}
 
 “John Dewey and Free China,” Taiwan Today, January 1, 2003, https://taiwantoday.tw/news.php?unit=12.
 
+[Back to text](#note-ref-2-1-16)
+
 ### Note 20 {#note-2-1-20}
 
 Ryan Dunch, and Ashley Esarey, _Taiwan in Dynamic Transition: Nation-Building and Democratization_, (Seattle: University Of Washington Press, 2020), 28.
+
+[Back to text](#note-ref-2-1-17)
 
 ### Note 21 {#note-2-1-21}
 
 Ryan Dunch, and Ashley Esarey, _Taiwan in Dynamic Transition: Nation-Building and Democratization_, (Seattle: University Of Washington Press, 2020), 31.
 
+[Back to text](#note-ref-2-1-18)
+
 ### Note 22 {#note-2-1-22}
 
 Jeffrey Jacobs, _Democratizing Taiwan_, (Boston: Brill, 2012), 62.
+
+[Back to text](#note-ref-2-1-19)
 
 ### Note 23 {#note-2-1-23}
 
 Taiwan News, “Taiwan Has No. 1 Fastest Internet in World,” October 23, 2023. https://www.taiwannews.com.tw/en/news/5025449.
 
+[Back to text](#note-ref-2-1-20)
+
 ### Note 24 {#note-2-1-24}
 
 After World War II, Japan's industrial infrastructure was devastated, and product quality was poor. In this context, Deming was invited by the Union of Japanese Scientists and Engineers(JUSE) in 1950. He introduced Statistical Process Control (SPC) and the PDCA (Plan-Do-Check-Act) cycle, emphasizing continuous improvement (Kaizen) and the importance of employee involvement. His principles were particularly embraced by the Japanese automotive industry, notably Toyota and became integral to the Toyota Production System (TPS). In 1990, James P. Womack and others published _The Machine That Changed the World_, analyzing the Toyota Production System and introducing it as the Lean manufacturing to a global audience. James P. Womack, Daniel T. Jones and Daniel Roos, _The Machine that Changed the World_ (New York: Free Press, 2007). In 2011, Eric Ries, who coined the term "Lean Startup," drew inspiration from the Lean manufacturing principles in entrepreneurship. Eric Ries, _The Lean Startup_ (New York: Crown Currency, 2011).
+
+[Back to text](#note-ref-2-1-15)

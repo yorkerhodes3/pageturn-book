@@ -142,9 +142,9 @@ The Plurality path is:
 ```text
 30 contents/english Markdown chapters at a pinned CC0 revision
   -> sync-plurality-fixture.mjs
-  -> pinned figure links + linked chapter notes + book.yml
+  -> localized chapter links + linked notes/backlinks + pinned figure links
   -> publication CLI validation and stable anchors
-  -> Plurality V3 binding and semantic book spread
+  -> licensed-figure treatment + Plurality V3 semantic spread
 ```
 
 The linked field-guide path is:
@@ -177,6 +177,13 @@ requests only the activated figure, and `on` defers the image until its semantic
 page is reached. This demo catalog is not yet the production ingest boundary;
 V3-404 moves figure metadata, provenance, dimensions, and responsive variants
 into the validated publication manifest/build pipeline.
+
+Plurality retains all 37 pinned figure links. Eleven whose captions explicitly
+state CC, public-domain, or commercial-use rights are mapped into the same media
+treatments without copying the remote image assets. The other 26 remain links
+until V3-406 supplies adequate rights metadata. The importer also rewrites 99
+available chapter links to local semantic routes and emits 585 return targets
+for 586 note callouts.
 
 The beta intentionally compiles the pinned public TypeScript sources in a
 temporary directory during explicit synchronization. Production should replace

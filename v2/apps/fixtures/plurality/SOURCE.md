@@ -6,4 +6,8 @@ License: CC0 1.0 Universal - https://github.com/pluralitybook/plurality/blob/861
 
 Voluntary citation: E. Glen Weyl, Audrey Tang, and the Plurality Community. *Plurality: The Future of Collaborative Technology and Democracy*. 2023.
 
-Figure images are represented as pinned source links in the lightweight V3 prototype.
+Localized chapter links: 99.
+
+Note backlinks: 585.
+
+Figures remain pinned source links in semantic HTML. V3 maps only figures whose captions carry explicit reusable-license metadata.

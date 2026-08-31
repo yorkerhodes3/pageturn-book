@@ -1073,6 +1073,10 @@ type Bookmark = {
 | BM-007 | Duplicate bookmark behavior is deterministic and documented. |
 | BM-008 | Deleting a bookmark requires an explicit action but not a disruptive confirmation when undo is available. |
 
+The V3 beta stores its small edition-scoped bookmark array in `localStorage`.
+V3-413 remains responsible for migration to the versioned IndexedDB model above
+before production promotion.
+
 ## 17. Highlights and notes
 
 ### 17.1 Annotation model
@@ -1105,6 +1109,11 @@ type Annotation = {
 The model aligns with the selector concepts in the
 [Web Annotation Data Model](https://www.w3.org/TR/annotation-model/) without
 requiring a remote annotation server.
+
+The V3 beta stores chapter, source anchor, exact quote, optional plain-text
+note, and timestamp. Context/position selectors, Markdown rendering, update
+timestamps, style choices, and IndexedDB migration remain V3-413 production
+work.
 
 ### 17.2 Creation
 
@@ -1512,6 +1521,12 @@ R1 may ship without a service worker. If offline support is enabled:
 | PRIV-006 | Diagnostic events exclude selected text and note bodies. |
 | PRIV-007 | Share actions show what content will leave the device. |
 | PRIV-008 | Future synchronization, collaboration, and AI require separate privacy review. |
+
+The V3 beta decision is recorded in
+[V3-LOCAL-DATA-PRIVACY-REVIEW.md](./V3-LOCAL-DATA-PRIVACY-REVIEW.md).
+It permits edition-scoped local bookmarks/annotations, explicit selected-text
+sharing, and local Markdown export. It does not permit synchronization,
+collaboration, identity, remote backup, analytics, or AI processing.
 
 ## 28. Security
 

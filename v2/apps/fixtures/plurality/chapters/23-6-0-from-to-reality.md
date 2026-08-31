@@ -22,18 +22,25 @@ In this section, we therefore try to bring the potential impact of ⿻ down to t
 
 Radical social and technological change holds an irresistible allure to human imagination, yet so often ends in tragedy, as the Beatles lamented in their social ballad "[Revolution](https://www.youtube.com/watch?v=BGLGzRXY5Bw)".  Political scientists Steven Levitsky and Lucan Way found in a recent analysis that not a single violent revolution in the twentieth century led to lasting democratic government.[9](#note-6-0-9)  Yet we can all think of many dramatic changes for the better in human history, from the dramatic advances in information and communications technologies of the twentieth century to the establishment of a diversity of free and democratic governments around the world over the last three hundred years.
 
-What allows for peaceful and beneficial, yet dramatic, progress?  In her classic treatise on the topic, social philosopher Hannah Arendt contrasts the American and French Revolutions.[11](#note-6-0-11)  The American Revolution, she argues, grew out of local democratic experiments inspired by migrants exploring ancient ideals (both from their own past and, as we have recently learned, that of their new neighbors) to build a life together in a new and often hazardous setting.[10](#note-6-0-10)  As they traded ideas and built on related concepts circulating at the time, they came to a broad conclusion that they had discovered something more general about governance that contrasted to how it was practiced in Britain.  This gave what Arendt calls "authority" (similar to what in our ["Association and ⿻ Publics"](https://www.plurality.net/v/chapters/4-2/eng/) chapter we call "legitimacy") to their expectations of democratic republican government.  Their War of Independence against Britain allowed this authoritative structure to be empowered in a manner that, for all its inconsistencies, hypocrisies and failures, has been one of the more enduring and progressive examples of social reform.
+{#note-ref-6-0-1}
+
+What allows for peaceful and beneficial, yet dramatic, progress?  In her classic treatise on the topic, social philosopher Hannah Arendt contrasts the American and French Revolutions.[11](#note-6-0-11)  The American Revolution, she argues, grew out of local democratic experiments inspired by migrants exploring ancient ideals (both from their own past and, as we have recently learned, that of their new neighbors) to build a life together in a new and often hazardous setting.[10](#note-6-0-10)  As they traded ideas and built on related concepts circulating at the time, they came to a broad conclusion that they had discovered something more general about governance that contrasted to how it was practiced in Britain.  This gave what Arendt calls "authority" (similar to what in our ["Association and ⿻ Publics"](../4-2/) chapter we call "legitimacy") to their expectations of democratic republican government.  Their War of Independence against Britain allowed this authoritative structure to be empowered in a manner that, for all its inconsistencies, hypocrisies and failures, has been one of the more enduring and progressive examples of social reform.
+
+{#note-ref-6-0-2}
 
 The French Revolution, on the other hand, was born of widespread popular dissatisfaction with material conditions, which they sought to redress immediately by seizing power, long before they had gained authority for, or even detailed, potential alternative forms of governance.  While this led to dramatic social upheavals, many of these were quickly reversed and/or were accompanied by significant violence.  In this sense, the French Revolution, while polarizing and widely discussed, failed in many of its core aspirations.  By placing immediate material demands and the power to achieve them ahead of the process of building authority, the French Revolution burdened the delicate process of building social legitimacy for a new system with more weight than it could bear.  The French Revolution demanded, and got, bread; the American demanded, and got, freedom.
 
 While Arendt's example is drawn from the political sphere, it resonates with literature on innovation in a wide range of fields from evolutionary biology to linguistics. While the precise results differ, this work all indicates that dramatic innovation thrives in environments where a diversity of "groups" (e.g. linguistic, economic, or biological) that are internally tightly connected and externally loosely connected interact.[1](#note-6-0-1)  This allows innovation to gain the necessary scale and show its resilience, and then to spread.  More connected structures or more centralized ones either stifle innovation or make it dangerous, as changes are only occasionally net benefits.  More disconnected structures do not allow innovation to spread.
 
+{#note-ref-6-0-3}
 
 While intuitive, these observations are a significant contrast to the model of experimentation and innovation increasingly discussed in both the science and social science literature on "[randomized controlled trials](https://en.wikipedia.org/wiki/Randomized_controlled_trial)" and the technology business literature on "[blitzscaling](https://www.blitzscaling.com/)", each of which we will consider in turn.  Randomized controlled trials, derived primarily from individual, non-transmissible medical and cognitive psychology applications, focus on the randomized testing of treatments across individuals or other social subgroups leading to an approval and then rapid disbursement of the treatment to all indicated patients as with, for example, Covid-19 vaccines.[2](#note-6-0-2)  This literature has become increasingly influential throughout the social sciences, especially development economics and associated applied work on poverty alleviation.[3](#note-6-0-3)  This has encouraged the spread of a model of "experimentation on" communities, where economic and design experts construct interventions and test them on communities that may benefit from them, evaluate them according to often preregistered metrics, and then propagate thus-measured effective treatments more broadly.
 
+{#note-ref-6-0-4}
 
-This approach contrasts with  "community-based innovation" allied to academic "Participatory Action Research" (PAR), pioneered in public rather than individual health research, which also has provided a rough approximation to the way that many early digital technologies that laid the foundation for ⿻ later on (such as the time-sharing, personal computing, and many applications).[4](#note-6-0-4)  As we discussed briefly in ["The Lost Dao"](https://www.plurality.net/v/chapters/3-3/eng/) chapter, these began in communities of early adopters which usually included many of the system designers "experimenting with" digital tools. While these communities often had some nascent ideas of what their systems were good for, they rarely could reduce desired outcomes to pre-specified metrics and, in fact, many of the components of their systems were created by other early adopters.  These systems spread to adjacent communities and eventually out to the public through many rounds of learning from the community in unexpected ways and feeding such learning back into product designs, as well as the making available of applications created by communities.
+This approach contrasts with  "community-based innovation" allied to academic "Participatory Action Research" (PAR), pioneered in public rather than individual health research, which also has provided a rough approximation to the way that many early digital technologies that laid the foundation for ⿻ later on (such as the time-sharing, personal computing, and many applications).[4](#note-6-0-4)  As we discussed briefly in ["The Lost Dao"](../3-3/) chapter, these began in communities of early adopters which usually included many of the system designers "experimenting with" digital tools. While these communities often had some nascent ideas of what their systems were good for, they rarely could reduce desired outcomes to pre-specified metrics and, in fact, many of the components of their systems were created by other early adopters.  These systems spread to adjacent communities and eventually out to the public through many rounds of learning from the community in unexpected ways and feeding such learning back into product designs, as well as the making available of applications created by communities.
 
+{#note-ref-6-0-5}
 
 [Figure: Figure shows the number of years to 100 million users for various consumer technology products over time on a gradual decline, from Netflix having taken a decade in the 1990s to ChatGPT only a few months in 2022.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/data/chatgpt_adoption/chatgpt_adoption.png>)
 
@@ -43,13 +50,15 @@ This approach contrasts with  "community-based innovation" allied to academic "P
 
 "Experimentation on" and "experimentation with" each clearly have their strengths and drawbacks.  However, the latter mode has become increasingly inconsistent and even dangerous given the style of adoption spread that is sought in today's venture capital-fueled digital technology industry. Venture capitalists like LinkedIn Founder [Reid Hoffman](https://en.wikipedia.org/wiki/Reid_Hoffman) have celebrated the "masters of scale" who champion "blitzscaling", in which start-ups receive large, early injections of venture financing to allow them to invest in growing their user base rapidly and then leveraging the benefits of this supermodularity (e.g. network effects, learning from user data, etc.) to achieve a dominant market position.[5](#note-6-0-5)  Perhaps the most dramatic example of this was Hoffman-backed OpenAI, which achieved 100 million users within a few months of launching its ChatGPT.  We display this trend in Figure A, which shows how long various consumer products took to reach the 100 million user mark, with a clear downward trend over time, capped by ChatGPT. Such rapid adoption led to [widespread public concern](https://futureoflife.org/open-letter/pause-giant-ai-experiments/) about the potential social harms from such systems and regulation aimed at avoiding the cycle of "move fast and break things" and the social backlash that accompanied comparatively earlier, slower-growing technologies (like ride-hailing and social media).[6](#note-6-0-6)
 
+{#note-ref-6-0-6}
 
-The basic challenge is that "experimentation with" is dangerous when paired with a fully capitalist market-driven model of managing new technologies.  Because it seeks to manage system harms, challenges and interdependencies as they arise, rather than by *a priori* testing, it requires that the development process itself be driven by a more holistic notion of the technology's impact on the adopting community than sales or adoption figures allow.[7](#note-6-0-7)  This is precisely what many of the early ⿻ experiments discussed in ["The Lost Dao"](https://www.plurality.net/v/chapters/3-3/eng/) aimed to provide, through the involvement of many social sectors and standardization processes, with commercial scaling circumscribed.  Yet even this more balanced version of "experimentation with" falls short of the highest aspirations we might have for the safe and inclusive development of technologies that eventually aspire to be globally transformative, but which may carry significant risks.
+The basic challenge is that "experimentation with" is dangerous when paired with a fully capitalist market-driven model of managing new technologies.  Because it seeks to manage system harms, challenges and interdependencies as they arise, rather than by *a priori* testing, it requires that the development process itself be driven by a more holistic notion of the technology's impact on the adopting community than sales or adoption figures allow.[7](#note-6-0-7)  This is precisely what many of the early ⿻ experiments discussed in ["The Lost Dao"](../3-3/) aimed to provide, through the involvement of many social sectors and standardization processes, with commercial scaling circumscribed.  Yet even this more balanced version of "experimentation with" falls short of the highest aspirations we might have for the safe and inclusive development of technologies that eventually aspire to be globally transformative, but which may carry significant risks.
 
-
+{#note-ref-6-0-7}
 
 In particular, even when technologies are successfully developed in the interests of the communities harnessing them, accounting for all the systemic harms they may create in these communities, they still may have significant spillovers on those not among this early adopter community.  The key danger is that technologies may be usable as weapons or otherwise harnessed by the community to benefit at the expense of others, a far more common effect than may appear at first glance because even "helpful" and "harmless" tools may endow the (often-privileged) early adopted community with social and economic advantages that they can use to subjugate, marginalize, or colonize others.  As Microsoft's President Brad Smith frequently repeats, most tools can also be used as weapons.[8](#note-6-0-8)  This "competitive" effect has some benefits, in spurring adoption by and spread across communities seeking to harness the benefit of the tools partly in their rivalry and potentially by doing so creating pressure to harness and resolve resulting rivalries.  But it can also, at best, create exclusion and inequality that undermines the basis of ⿻ freedom and, at worst, can lead to "arms race" dynamics that undermine the benefits of new tools and instead turn them into universal dangers.
 
+{#note-ref-6-0-8}
 
 A natural way to overcome this tendency is for the technology to develop in rough balance across primary existing social divides, allowing a network of participants to both govern its internal harms but also to resolve the potentially competing interests of the groups represented in accessing and directing the technology.  At the same time, for such spread to be effective, early adopters must hold sufficient prestige or be able to gain it through the benefits of the tools that, in a roughly balanced way across their respective networks, the technology can spread.
 
@@ -61,7 +70,6 @@ This sketches an ambitious but reasonably clear picture of what a ⿻ strategy f
 4. Seeds should be strong communities with institutions to manage and address the systemic harms and support the systemic benefits of the technologies.
 5. Seeds should be diverse among themselves and have loose networks of communication between them to ensure a balanced diffusion, avoid conflict and address spillovers.
 
-
 [Figure: Chart shows an organization tree diagram beginning from general audience and flowing through culture, politics, business and research to subcategories. For culture subcategories are religious and secular, for politics west and rest, for business tech and non-tech and for research science, social science and humanities.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/Treechart.png>)
 
 *Figure 6-0-B. Illustration of the ⿻ marketing approach of bridging and covering social divisions.*
@@ -72,7 +80,7 @@ While it is obviously impossible to perfectly achieve these five goals simultane
 
 ### Fertile ground
 
-Let us first consider the question of scale.  To realize the benefits of ⿻ technology within a community requires the community to contain at least a rough approximation of the diversity that technology aims to span.  This differs dramatically across various directions of technology.  The most intimate technologies of [post-symbolic communication](https://www.plurality.net/v/chapters/5-1/eng/?mode=dark) and [immersive shared reality](https://www.plurality.net/v/chapters/5-2/eng/?mode=dark) can be powerful even in the smallest communities and relationships, creating few constraints on scale and diversification of seeding and thus making it natural to prioritize other criteria above.  At the opposite extreme, voting systems and markets are rarely used in intimate communities and require significant scale to be relevant, especially in their socially enriched forms, making entry points far scarcer, more ambitious, and potentially hazardous.
+Let us first consider the question of scale.  To realize the benefits of ⿻ technology within a community requires the community to contain at least a rough approximation of the diversity that technology aims to span.  This differs dramatically across various directions of technology.  The most intimate technologies of [post-symbolic communication](../5-1/) and [immersive shared reality](../5-2/) can be powerful even in the smallest communities and relationships, creating few constraints on scale and diversification of seeding and thus making it natural to prioritize other criteria above.  At the opposite extreme, voting systems and markets are rarely used in intimate communities and require significant scale to be relevant, especially in their socially enriched forms, making entry points far scarcer, more ambitious, and potentially hazardous.
 
 [Figure: Bubbles filled with smaller bubbles, some of which contain symbols of the social areas of workplace, media, health and environment.](<https://raw.githubusercontent.com/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/squarerootscale.png>)
 
@@ -84,17 +92,19 @@ Let us first consider the question of scale.  To realize the benefits of ⿻ tec
 
 There are many kinds of communities at this scale.  Geographically, this is roughly the scale of most middle-sized municipalities (large towns or small cities).  Economically, it is the size of employees in a large corporation or, politically, in a median nation.  Religiously, it is, for example, roughly the number of Catholics in a Diocese.  Educationally, it is a bit larger than  the number of students at a large university.  Socially, it resembles the membership of many mid-sized civic organizations or social movements. Culturally, it is roughly the active fan base of a typical television program, performing artist or professional sports club.  In short, it is a prevalent level of organization in a wide range of social spheres, offering rich terrain for surveying.
 
-
 ### Surveyor's map
 
 Perhaps the two most prominent sites of experimentation with ⿻ we have highlighted above are Taiwan and web3 communities.  These two sites share some important characteristics, and yet also sharply diverge in many ways both in terms of their character and the ⿻ applications they have focused on.  Both are roughly the same size. In 2021, web3 applications (dApps) had about 1.5 million monthly active users, though only a fraction of these actively participated in the most ⿻-adjacent services, such as GitCoin.  The ⿻ services of all kinds built by the g0v community in Taiwan have reached similar numbers [14](#note-6-0-14).  The types of diversity in each community, however, are radically different.
 
+{#note-ref-6-0-9}
+
 While statistics are not entirely reliable, web3 users are spread quite broadly around the globe according to patterns similar to the internet.  However, users tend to be extremely technically sophisticated, skew male, very young, and, anecdotally based on our experience in the space, tend to be atheistic, politically right of center, and ethnically of European, Semitic and Asian origin.[13](#note-6-0-13)  Participants in the Taiwanese digital ecosystem are obviously mostly from Taiwan and thus mostly of the ethnicities represented there.  But they are more diverse in age, technical background, political perspective, and religious background.[12](#note-6-0-12)
+
+{#note-ref-6-0-10}
 
 The two ecosystems have also focused on different sides of the spectrum of ⿻ we discussed in the previous part of the book.  Taiwan has focused primarily on the deeper and narrower applications of ⿻ and the fundamental protocols (identity and access) that support these most strongly.  Global web3 communities have focused on the shallower and more inclusive applications and the fundamental protocols (association, commerce, and contract) that most support these.
 
 Both have been critical early testbeds for ⿻ yet measuring them against our criteria also illustrates their limitations.  The Taiwan ecosystem is larger than required for many of the applications developed there, which is likely why it has hosted a range of subcommunities (that they often call "data coalitions") engaging in more advanced experiments supported by the broader ecosystem.  The Taiwan ecosystem has strong potential for prestige in Asia and many of the countries typically called democracies, while the geopolitical conflicts surrounding it create some challenges in making it a seed for fully equitable global spread.  Web3 communities, on the other hand, may actually be a bit small and homogeneous to allow for a fully robust test of whether new market institutions can rival the reach of capitalism.  Furthermore, many of the scandals that have plagued the web3 space endanger its ability to generally serve as a beacon of innovation that can equitably spread.
-
 
 It is therefore crucial to carefully consider which places might be the most promising for ⿻ to spread next.  One obvious example that pervades our discussions so far is the governance of cities.  Yet precisely because we have drawn on such public sector examples so heavily thus far, we focus in this part of the book on a diversity of social sectors where ⿻ can seed reality that touches a much broader range of life than the narrow definition of public sector "democracy".  In doing so, we aim to match the scales mentioned above and cover a broad range of life experiences, while attending to areas with respect and prestige in a broad range of societies.
 
@@ -107,64 +117,88 @@ In particular, we consider, as symbolized also in Figure C:
 
 We highlight each of these domains through a series of vignettes and attempt to roughly quantify how a range of ⿻ technologies could transform practice in ways that could potentially scale across or even beyond the sector.
 
-
-
-
-
 ## Chapter notes {#notes-6-0}
 
 ### Note 1 {#note-6-0-1}
 
 R. A. Fisher,  *The Genetical Theory of Natural Selection* (Oxford, UK: Clarendon Press, 1930).  James Milroy and Lesley Milroy, "Linguistic Change, Social Network and Speaker Innovation", *Journal of Linguistics* 21, no. 2: 339-384. Gretchen McCulloch, *Because Internet: Understanding the New Rules of Language* (New York: Riverhead, 2019). Daron Acemoglu, Asuman Ozdaglar and Sarath Pattathil, "Learning, Diversity and Adaptation in Changing Environments: The Role of Weak Links" (2023) at https://www.nber.org/papers/w31214.
 
+[Back to text](#note-ref-6-0-3)
+
 ### Note 2 {#note-6-0-2}
 
 Donald B. Rubin, "Estimating Causal Effects of Treatments in Randomized and Nonrandomized Studies," *Journal of Educational Psychology* 66, no. 5: 688-701.
+
+[Back to text](#note-ref-6-0-4)
 
 ### Note 3 {#note-6-0-3}
 
 Abhijit V. Banerjee and Esther Duflo, *Poor Economics: A Radical Rethinking of the Way to Fight Poverty* (New York: PublicAffairs, 2011).
 
+[Back to text](#note-ref-6-0-4)
+
 ### Note 4 {#note-6-0-4}
 
 Fran Baum, Colin MacDougall and Danielle Smith, "Participatory Action Research", *Journal of Epidemiology and Community Health* 60, no. 10: 854-857.
+
+[Back to text](#note-ref-6-0-5)
 
 ### Note 5 {#note-6-0-5}
 
 Reid Hoffman and Chris Yeh, *Blitzscaling: The Lightening-Fast Path to Building Massively Valuable Companies* (New York: Currency, 2018).  For a thoughtful and balanced evaluation see Donald F. Kuratko, Harrison L. Holt and Emily Neubert, "Blitzscaling: The Good, the Bad and the Ugly", *Business Horizons* 63, no. 1 (2020): 109-119.
 
+[Back to text](#note-ref-6-0-6)
+
 ### Note 6 {#note-6-0-6}
 
 Future of Life Institute, "Pause Giant AI Experiments: An Open Letter" March 22, 2023 at https://futureoflife.org/open-letter/pause-giant-ai-experiments/.
+
+[Back to text](#note-ref-6-0-6)
 
 ### Note 7 {#note-6-0-7}
 
 Daron Acemoglu and Todd Lensman, *Regulating Transformative Technologies* (2023) at https://www.nber.org/papers/w31461.
 
+[Back to text](#note-ref-6-0-7)
+
 ### Note 8 {#note-6-0-8}
 
 Brad Smith and Carol Ann Browne, *Tools and Weapons: The Promise and the Peril of the Digital Age* (New York: Penguin, 2019).
+
+[Back to text](#note-ref-6-0-8)
 
 ### Note 9 {#note-6-0-9}
 
 Steven Levitsky, and Lucan Way, _Revolution and Dictatorship_, (Princeton: Princeton University Press, 2022).
 
+[Back to text](#note-ref-6-0-1)
+
 ### Note 10 {#note-6-0-10}
 
 David Graeber, and David  Wengrow, op. cit.
+
+[Back to text](#note-ref-6-0-2)
 
 ### Note 11 {#note-6-0-11}
 
 Hannah Arendt, _On Revolution_, (New York: Penguin, 1963).
 
+[Back to text](#note-ref-6-0-2)
+
 ### Note 12 {#note-6-0-12}
 
 Austin, Sarah. “Web3 Is About More Than Tech, Thanks to Its Inclusivity.” Entrepreneur, June 3, 2022. https://www.entrepreneur.com/science-technology/web3-is-about-more-than-tech-thanks-to-its-inclusivity/425679.
+
+[Back to text](#note-ref-6-0-10)
 
 ### Note 13 {#note-6-0-13}
 
 a16zcrypto. “State of Crypto 2023.” Https://A16z.Com. Andressen Horowitz, 2023. https://api.a16zcrypto.com/wp-content/uploads/2023/04/State-of-Crypto.pdf.
 
+[Back to text](#note-ref-6-0-10)
+
 ### Note 14 {#note-6-0-14}
 
 Friedrich Naumann Foundation. “Examples of Civic Tech Communities-Governments Collaboration Around The World,” n.d. https://www.freiheit.org/publikation/examples-civic-tech-communities-governments-collaboration-around-world.
+
+[Back to text](#note-ref-6-0-9)

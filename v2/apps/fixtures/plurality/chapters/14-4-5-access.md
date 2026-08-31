@@ -46,12 +46,13 @@ In the course of global digitalization, nations like Taiwan, Estonia, and the Sc
 
 Yet, these positive outcomes are not widespread. Digital disparity exemplifies social polarization, particularly between rural and urban areas. Prior to the pandemic, 76% of urban households around the world had access to home internet, which was nearly double the 39% in rural regions. The pandemic has intensified public attention on such disparities as more areas of life — from work and education to socializing — have moved online. The [International Telecommunication Union](https://www.itu.int/itu-d/reports/statistics/2022/11/24/ff22-internet-use-in-urban-and-rural-areas/) (ITU) reports that in 2020 alone, 466 million people used the internet for the first time.[1](#note-4-5-1) While the number and global penetration of internet users have continued to grow, multifaceted inequalities in access remain. These contribute to a wide range of economic, political, and social inequities.
 
+{#note-ref-4-5-1}
 
 Building on previous chapters of this book, we need to understand the fundamental right of access from ⿻ perspectives, and the role of policymakers is crucial. They need to focus on global digital divides and take corresponding measures to resolve the inequality in access. Such steps must also include investment in digital public infrastructure to protect contextual integrity for online exchange.
 
 While openness is promoted, digital participants also need to contribute their efforts to illuminate the dark and tricky corners existing on the internet, watching out for each other. Of course, this issue touches upon global social structures and cultural diversity. Fortunately, we no longer need to cross oceans as De Tocqueville did to learn from the valuable experiences of different countries in building digital democracy and sustainable development. To safeguard and establish a safer and more open digital access environment, there are two important courses of action:
 
-1. Digital Infrastructure: Develop an interoperable model for international infrastructures that overcomes the challenges of collective action we discuss in the [Social Markets](https://www.plurality.net/v/chapters/5-7/eng/?mode=dark) chapter below, thereby providing equitable services globally.
+1. Digital Infrastructure: Develop an interoperable model for international infrastructures that overcomes the challenges of collective action we discuss in the [Social Markets](../5-7/) chapter below, thereby providing equitable services globally.
 
 2. Information Integrity: Address the challenges posed by mimetic models (so-called “deepfakes”) to maintain semantic security and allow the continued enjoyment of the benefits of the digital age.
 
@@ -61,6 +62,7 @@ If we can advance these two fundamental rights, the other rights described in th
 
 Forestry expert [Suzanne Simard](https://suzannesimard.com/) focuses on exploring the collaborative nature of forests, viewing them as intelligent systems.[2](#note-4-5-2) These forests not only possess self-awareness and spontaneous development capabilities, but also feature close interactions between various ecological components. Simard has studied how tree roots and symbiotic mycorrhizal fungi communicate in the soil layers of ancient forests in British Columbia. She discovered with colleagues that in this environment driven by fungal networks, different types of trees can send warning signals to each other and share essential sugars, water, carbon, nitrogen, and phosphorus.[3](#note-4-5-3)
 
+{#note-ref-4-5-2}
 
 In such a vibrant forest, a single 'mother tree' can establish connections with hundreds of other trees. Multiple such mother trees ensure the continuity of the entire forest as a collective organism through overlapping networks, ensuring a secure and robust environment through open connections.
 
@@ -68,16 +70,17 @@ Digital infrastructure follows a similar pattern with open standards (protocols)
 
 Taiwan is one of the world’s primary distributed denial of service (DDoS) hotspots, according to [Cloudflare's report](https://blog.cloudflare.com/ddos-threat-report-2023-q4).[4](#note-4-5-4) Its government has adopted the IPFS framework discussed in the previous chapter for its websites, allowing it to interconnect with both private digital services and emerging open networks. This structure is not only more resistant to sudden DDoS attacks but is also conducive to open collaboration and mutual support with global technology communities. This provides an illustration of how to make systems more robust against information manipulation.
 
+{#note-ref-4-5-3}
 
 Furthermore, it is essential to ensure that people have the right to access information with contextual confidence. The primary goals of open government data align with this: granting more power to citizens and increasing government transparency and accountability, can together effectively combat corruption and enable democratic systems to serve the people more efficiently. The Ukrainian "[Diia](https://en.wikipedia.org/wiki/Diia)" and the Estonian "[mRiik](https://mezha.media/en/2023/01/19/estonia-launches-the-mriik-government-application-built-on-the-basis-of-the-ukrainian-diia-application/)" serve as examples that highlight the bidirectional features of trusted networks and information openness.
 
 Both Estonia and Ukraine are proactive in digitalization toward public participation. They make digital technology a genuinely necessary social tool for the public, providing secure, open digital public services for citizens to access government services and real-time information. Diia has shown the world how digital technology can break down long-standing corruption. This year, Estonia launched its latest app "mRiik," largely inspired by the Ukrainian app Diia.[5](#note-4-5-5)
 
+{#note-ref-4-5-4}
+
 Digital infrastructure does not point to a one-size-fits-all solution; each nation still needs to adapt based on its unique development needs. However, the fundamental functions and democratic essence are of similar values and offer a common ground for expansion. Taiwan, Estonia, and Ukraine show us how information integrity and digital infrastructure intertwine to enhance societal resilience.
 
 In conclusion, the right to access is a cornerstone for achieving digital democracy and social inclusivity. To move towards such a future requires multi-dimensional efforts, including technological innovation and policy cooperation. The next chapter will delve deeper into these intertwined issues.
-
-
 
 ## Chapter notes {#notes-4-5}
 
@@ -85,18 +88,28 @@ In conclusion, the right to access is a cornerstone for achieving digital democr
 
 International Telecommunications Union, *Facts and Figures* (2022) at https://www.itu.int/itu-d/reports/statistics/2022/11/24/ff22-internet-use-in-urban-and-rural-areas/.
 
+[Back to text](#note-ref-4-5-1)
+
 ### Note 2 {#note-4-5-2}
 
 Suzanne Simard, *Finding the Mother Tree: Discovering the Wisdom of the Forest* (New York: Knopf, 2021).
+
+[Back to text](#note-ref-4-5-2)
 
 ### Note 3 {#note-4-5-3}
 
 Suzanne W. Simard, David A. Perry, Melanie D. Jones, David D. Myrold, Daniel M. Durall and Randy Molina, "Net Transfer of Carbon Between Ectomycorrhizal Tree Species in the Field", *Nature* 388 (1997): 579--582.
 
+[Back to text](#note-ref-4-5-2)
+
 ### Note 4 {#note-4-5-4}
 
 Omer Yoachimik and Jorge Pacheco, "DDoS threat report for 2023 Q4" *Cloudflare Blog* January 9, 2024 at https://blog.cloudflare.com/ddos-threat-report-2023-q4.
 
+[Back to text](#note-ref-4-5-3)
+
 ### Note 5 {#note-4-5-5}
 
 Note Ukraine's readiness to share its code and UX/UI design methods with Estonia (see Igor Sushon, “Estonia Launches the State Application MRiik, Built on the Basis of the Ukrainian Application Diia,” Mezha, January 19, 2023, https://mezha.media/2023/01/19/diia-mriik/.https://mezha.media/2023/01/19/diia-mriik/)"
+
+[Back to text](#note-ref-4-5-4)
