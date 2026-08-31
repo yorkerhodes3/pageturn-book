@@ -286,6 +286,39 @@ LIBRARY_BOOKS.push({
   },
 });
 
+export const LINKED_SOURCE_BOOKS: CatalogBook[] = [
+  {
+    id: "human-choice-source-guide",
+    title: "The Human Choice: Source Guide",
+    shelfLabel: "THE HUMAN CHOICE",
+    collection: "Linked Source Guides",
+    pageCount: 72,
+    subtitle:
+      "Nine source briefs for studying AI, power, dignity, plurality, and governance",
+    semanticEdition: "2026-08-30",
+    facsimile: false,
+    geometryHref: "../v3/?book=human-choice-source-guide",
+    appearance: {
+      cover: {
+        background: "#17233d",
+        foreground: "#f1ead8",
+        accent: "#66c5b8",
+        subtitle:
+          "Nine-source analysis for teaching, salons, and public speaking",
+      },
+      binding: {
+        material: "cloth",
+        color: "#17233d",
+        accent: "#66c5b8",
+        depth: "standard",
+        hubs: 4,
+        pageCount: 72,
+        shelfLabel: "THE HUMAN CHOICE",
+      },
+    },
+  },
+];
+
 export function productionManifestUrl(bookId: string): string {
   return (
     "https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/" +
@@ -305,7 +338,10 @@ export function productionPdfUrl(bookId: string): string {
 }
 
 export function catalogBook(bookId: string): CatalogBook | undefined {
-  return LIBRARY_BOOKS.find(({ id }) => id === bookId);
+  return (
+    LIBRARY_BOOKS.find(({ id }) => id === bookId) ??
+    LINKED_SOURCE_BOOKS.find(({ id }) => id === bookId)
+  );
 }
 
 function bookshelfVolume(book: CatalogBook): BookshelfVolume {

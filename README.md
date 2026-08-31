@@ -14,7 +14,9 @@ integration with the Ethical Tech CoLab website:
 - The book-first V3 semantic geometry reader, now exercised across the full
   22-volume shelf with bounded chapter loading, durable source locations,
   configurable right-hand chapter openings, persistent typography, and
-  canonical sharing in a compact reading-only shell. Ethical AI also demonstrates
+  canonical sharing in a compact reading-only shell. A link-addressable
+  *Human Choice* source guide extends V3 to the field guide's nine-source
+  analysis without adding it to the CoLab shelf. Ethical AI also demonstrates
   configurable Off, On-page, and Pop-out figure treatments.
 
 ## Project documents
@@ -29,8 +31,9 @@ integration with the Ethical Tech CoLab website:
 - [Semantic page-turn geometry port plan](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md)
 - [Publication ingest pipeline and all-book enablement](./PUBLICATION-INGEST-PIPELINE.md)
 - [V3 full-book measurements and visual review](./V3-FULL-BOOK-REVIEW.md)
-- [V3 22-book library and Plurality review](./V3-LIBRARY-REVIEW.md)
+- [V3 library, Plurality, and linked source-guide review](./V3-LIBRARY-REVIEW.md)
 - [Plurality pinned source and CC0 record](./v2/apps/fixtures/plurality/SOURCE.md)
+- [Human Choice pinned source and rights record](./v2/apps/fixtures/human-choice-source-guide/SOURCE.md)
 
 ## Implementations
 

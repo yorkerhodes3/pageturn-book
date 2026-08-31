@@ -5,10 +5,13 @@
 | V3 shelf publications | 22 |
 | Ethical Tech CoLab publications | 21 |
 | External open-source publications | 1 - Plurality |
-| Semantic manifests | 22 shelf + 1 internal demo |
+| Linked first-party source guides | 1 - The Human Choice |
+| Semantic manifests | 22 shelf + 1 linked source guide + 1 internal demo |
 | Shelf publication chapters | 322 |
+| Linked source-guide chapters | 9 |
 | Plurality source revision | `86158859464aee75633acd854c656928121a7fd8` |
 | Lab source revision | `b456e8e137a0b6ce9a51799b71c6091f5241b5d7` |
+| Field-guide source revision | `0c1f117c369233664b33ec902e54107d06cd8e51` |
 | Status | Broad V3 beta with bounded chapter loading, durable locations, typography, and sharing |
 
 ## 1. What is available
@@ -26,6 +29,13 @@ The shelf contains:
 Plurality is sourced from 30 canonical English Markdown chapters at a pinned
 commit. The repository dedicates the work to the public domain under CC0 1.0.
 The V3 edition retains a voluntary author/community citation.
+
+The nine-chapter *Human Choice: Source Guide* is intentionally not a CoLab
+shelf binding. It is a V3-only, link-addressable companion for the public field
+guide. Ethical AI links to its complete semantic edition; the other dashboard
+source links can open a matching analysis chapter while retaining a separate
+link to the original publisher. The source guide contains no raw third-party
+page extractions.
 
 ## 2. Shelf and book behavior
 
@@ -134,13 +144,15 @@ opening or reaching one figure transfers only that asset.
 
 ## 5. Build and validation evidence
 
-- 23 fixtures build through the same publication CLI.
-- 324 static semantic chapter routes are emitted.
-- The Pages artifact contains 415 files totaling 6.24 MB raw / 1.79 MB gzip.
-- The Vite multi-page build processes 330 HTML entries in roughly 5-30 seconds
+- 24 fixtures build through the same publication CLI.
+- 333 static semantic chapter routes are emitted.
+- The build artifact contains 427 files totaling 6.62 MB raw / 1.85 MB gzip.
+- The Vite multi-page build processes 339 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
   publications in V3.
+- A separate browser scenario opens all nine field-guide chapters at their
+  canonical V3 locations.
 - Representative checks confirm table-rich, formula, glossary, and Plurality
   note structures survive ingest. All 28 Plurality H4-H6 case-study headings
   are retained.

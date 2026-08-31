@@ -2333,8 +2333,9 @@ record the failed gate.
 ### V3 beta open-work register
 
 The V3 route is a broad, book-first semantic beta across the full 22-volume
-shelf. The following work remains after the August 30, 2026 reader-shell,
-opaque-turn, reference-styling, and back-navigation pass.
+shelf plus a link-addressable nine-chapter field-guide sourcebook. The
+following work remains after the August 30, 2026 reader-shell, opaque-turn,
+reference-styling, and back-navigation pass.
 
 | ID | Priority | Status | Remaining work |
 |---|---|---|---|

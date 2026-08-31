@@ -112,6 +112,8 @@ The landing page links to:
 - The pinned legacy fixed-page viewer.
 - The V2 semantic reader.
 - The V3 geometry reader for every shelf publication.
+- A V3-only, link-addressable *Human Choice* source guide for the field guide's
+  nine-source analysis.
 - A side-by-side iframe comparison.
 - A responsive 22-volume library shelf with selectable bindings: 21 Ethical
   Tech CoLab publications plus the CC0 Plurality community book.
@@ -124,6 +126,7 @@ Published routes:
 - <https://yorkerhodes3.github.io/pageturn-book/dashboard/>
 - <https://yorkerhodes3.github.io/pageturn-book/v3/>
 - <https://yorkerhodes3.github.io/pageturn-book/v3/?book=plurality>
+- <https://yorkerhodes3.github.io/pageturn-book/v3/?book=human-choice-source-guide>
 
 The direct semantic chapter is:
 

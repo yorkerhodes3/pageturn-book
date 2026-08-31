@@ -9,7 +9,9 @@
 | Shared report-model sources | 20 |
 | Bespoke structured sources | 1 - Cyber Dictionary |
 | External open-source Markdown books | 1 - Plurality |
-| Current semantic V3 builds in this repository | 22 |
+| Linked first-party source guides | 1 - The Human Choice |
+| Current public semantic V3 builds in this repository | 23 |
+| Field-guide revision | `0c1f117c369233664b33ec902e54107d06cd8e51` |
 
 ## 1. Executive answer
 
@@ -38,8 +40,10 @@ The V3 beta now adds:
 - a pinned-source importer for the other 19 reports;
 - a dedicated 542-term Cyber Dictionary adapter;
 - a pinned CC0 Markdown importer for Plurality's 30 English chapters;
-- automatic discovery and build of 23 fixtures, including the internal demo;
+- a pinned first-party importer for the nine *Human Choice* source briefs;
+- automatic discovery and build of 24 fixtures, including the internal demo;
 - 22 shelf bindings with V3 actions;
+- one V3-only source guide addressable from field-guide source links;
 - table, chart-data, formula/code, glossary, chapter-note, and figure-link
   preservation.
 
@@ -142,6 +146,21 @@ The Plurality path is:
   -> publication CLI validation and stable anchors
   -> Plurality V3 binding and semantic book spread
 ```
+
+The linked field-guide path is:
+
+```text
+nine source briefs at a pinned ethical-ai-field-guide revision
+  -> sync-field-guide-sourcebook.mjs
+  -> book.yml + chapter Markdown
+  -> publication CLI validation and stable anchors
+  -> V3-only source-guide routes linked from the field-guide dashboard
+```
+
+The source guide republishes only the field guide's first-party analysis,
+compact metadata, and attributed short quotations. It does not include the raw
+third-party page extractions used during research, and every chapter retains a
+link to the original publisher.
 
 These outputs are substantially smaller and more capable than facsimiles:
 
