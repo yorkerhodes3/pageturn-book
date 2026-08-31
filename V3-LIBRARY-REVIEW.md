@@ -139,7 +139,7 @@ chapter remains an independently addressable file in the Pages artifact.
 | Cyber Dictionary | 53.6 kB | 139.8 kB | 62% |
 | AI Models Research | 37.2 kB | 58.8 kB | 37% |
 
-These gzip paths include the 30.8 kB shared V3 route (28,402-byte assets plus
+These gzip paths include the 30.8 kB shared V3 route (28,439-byte assets plus
 2.4 kB route HTML), the publication manifest, and either the first two chapters
 or the complete semantic corpus.
 

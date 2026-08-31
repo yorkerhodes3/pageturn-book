@@ -1268,7 +1268,7 @@ a {
   }
 
   .v3-reader-toolbar {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr);
   }
 
   .v3-back {
@@ -1295,7 +1295,9 @@ a {
   .v3-reader-toolbar > output[data-v3-counter] {
     grid-row: 1;
     grid-column: 3;
+    width: 100%;
     justify-self: end;
+    text-align: end;
   }
 
   .v3-media-picker {

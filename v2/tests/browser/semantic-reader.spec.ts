@@ -372,6 +372,12 @@ test("uses the library as the direct-entry back destination", async ({
       firstRowCenters: [back, explore, counter].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
+      firstRowSeparated:
+        back !== undefined &&
+        explore !== undefined &&
+        counter !== undefined &&
+        back.right <= explore.left &&
+        explore.right <= counter.left,
       thirdRowCenters: [font, share].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
@@ -394,6 +400,7 @@ test("uses the library as the direct-entry back destination", async ({
   expect(
     Math.max(...rowCenters) - Math.min(...rowCenters),
   ).toBeLessThanOrEqual(1);
+  expect(toolbarLayout.firstRowSeparated).toBe(true);
   expect(toolbarLayout.chapterTop).toBeGreaterThan(
     toolbarLayout.firstRowCenters[0] ?? 0,
   );
@@ -410,6 +417,11 @@ test("uses the library as the direct-entry back destination", async ({
   await expect(
     page.getByRole("button", { name: "Share location" }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Explore" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Explore this book" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close book tools" }).click();
   await expect(
     page.getByRole("navigation", { name: "Page navigation" }),
   ).toBeVisible();
