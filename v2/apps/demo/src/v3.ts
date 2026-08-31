@@ -72,6 +72,7 @@ type ChapterState = {
   pages: PrototypePage[] | undefined;
   promise: Promise<void> | undefined;
   error: Error | undefined;
+  pageParity: 1 | 2 | undefined;
 };
 
 type V3ReadingLocation = Readonly<{
@@ -102,6 +103,7 @@ const requestedBookId = query.get("book") ?? "what-is-ethical-ai";
 const requestedChapterId = query.get("chapter");
 const selectedBook = catalogBook(requestedBookId);
 const maximumSegmentCharacters = 540;
+const chaptersStartOnRight = selectedBook?.chaptersStartOnRight ?? true;
 
 function requiredElement<T extends Element>(
   selector: string,
@@ -704,7 +706,7 @@ function placeholderPage(chapterState: ChapterState): PrototypePage {
 
 function blankChapterPage(chapterState: ChapterState): PrototypePage {
   return {
-    label: `Blank verso before ${chapterState.chapter.title}`,
+    label: `Blank verso after ${chapterState.chapter.title}`,
     runningTitle: chapterState.chapter.title,
     anchor: `v3-blank-${String(chapterState.chapter.chapterId)}`,
     kind: "blank",
@@ -823,7 +825,7 @@ let activeTurn: ActiveTurn | undefined;
 let resizeTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let openingTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let chapterWindowVersion = 0;
-let chapterWindowCenter = 0;
+let retainedChapterIndices: number[] = [];
 let opening = true;
 let fontScale = 1;
 let locationTrackingReady = false;
@@ -834,6 +836,7 @@ let preferredAnchor:
   | undefined;
 let locationNavigationVersion = 0;
 let failureReported = false;
+let pendingTurn = false;
 
 if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
@@ -898,20 +901,11 @@ function targetSpread(direction: PageTurnDirection): number {
     : spreadStart - step;
 }
 
-function turnTargetReady(
-  direction: PageTurnDirection,
-  allowRetry = false,
-): boolean {
+function turnTargetReady(direction: PageTurnDirection): boolean {
   const target = targetSpread(direction);
   return pages
     .slice(target, target + pageStep())
-    .every(
-      (page) =>
-        page?.kind !== "placeholder" ||
-        (allowRetry &&
-          page.chapterIndex !== undefined &&
-          chapterStates[page.chapterIndex]?.status === "error"),
-    );
+    .every((page) => page?.kind !== "placeholder");
 }
 
 function activePage(): PrototypePage | undefined {
@@ -1077,8 +1071,10 @@ function renderFontControls(): void {
   const percent = Math.round(fontScale * 100);
   fontStatus.value = `${percent}%`;
   reader.dataset.v3FontSize = String(percent);
-  decreaseFont.disabled = opening || activeTurn !== undefined || fontScale <= 0.8;
-  increaseFont.disabled = opening || activeTurn !== undefined || fontScale >= 1.3;
+  increaseFont.disabled =
+    opening || pendingTurn || activeTurn !== undefined || fontScale >= 1.3;
+  decreaseFont.disabled =
+    opening || pendingTurn || activeTurn !== undefined || fontScale <= 0.8;
 }
 
 function applyFontScale(value: number): void {
@@ -1090,25 +1086,30 @@ function applyFontScale(value: number): void {
 function renderControls(): void {
   previous.disabled =
     opening ||
+    pendingTurn ||
     !canTurn("backward") ||
-    !turnTargetReady("backward", true) ||
     activeTurn !== undefined;
   next.disabled =
     opening ||
+    pendingTurn ||
     !canTurn("forward") ||
-    !turnTargetReady("forward", true) ||
     activeTurn !== undefined;
   for (const corner of corners) {
     const direction = corner.dataset.v3Direction;
     corner.disabled =
       opening ||
+      pendingTurn ||
       activeTurn !== undefined ||
       (direction !== "forward" && direction !== "backward") ||
       !canTurn(direction) ||
       !turnTargetReady(direction);
   }
   shareButton.disabled =
-    opening || activeTurn !== undefined || sharing || manifest === undefined;
+    opening ||
+    pendingTurn ||
+    activeTurn !== undefined ||
+    sharing ||
+    manifest === undefined;
   renderFontControls();
 }
 
@@ -1373,7 +1374,7 @@ async function goToLocation(
     if (navigationVersion !== locationNavigationVersion) {
       return;
     }
-    if (result === "ready") {
+    if (result) {
       positionAtLocation(chapterId, anchor, locationUpdate);
       return;
     }
@@ -1723,14 +1724,18 @@ async function performAutomaticTurn(
     return;
   }
   const target = targetSpread(direction);
-  const unloadedTarget = pages
-    .slice(target, target + pageStep())
-    .find((page) => page?.kind === "placeholder");
-  if (
-    unloadedTarget?.kind === "placeholder" &&
-    unloadedTarget.chapterIndex !== undefined
-  ) {
-    await ensureChapterWindow(unloadedTarget.chapterIndex);
+  const destinationPages = pages.slice(target, target + pageStep());
+  if (destinationPages.some((page) => page?.kind === "placeholder")) {
+    const retainedForTurn = [
+      ...pages.slice(spreadStart, spreadStart + pageStep()),
+      ...destinationPages,
+    ].flatMap((page) =>
+      page?.chapterIndex === undefined ? [] : [page.chapterIndex],
+    );
+    await ensureChapterSet(
+      retainedForTurn,
+      currentPreservation(),
+    );
     if (!canTurn(direction) || !turnTargetReady(direction)) {
       return;
     }
@@ -1754,10 +1759,18 @@ async function performAutomaticTurn(
 }
 
 async function automaticTurn(direction: PageTurnDirection): Promise<void> {
+  if (pendingTurn) {
+    return;
+  }
+  pendingTurn = true;
+  renderControls();
   try {
     await performAutomaticTurn(direction);
   } catch (error: unknown) {
     reportFailure("V3 could not turn to the requested chapter", error);
+  } finally {
+    pendingTurn = false;
+    renderControls();
   }
 }
 
@@ -2041,10 +2054,12 @@ function repaginateLoadedChapters(): void {
         chapterState.blocks,
         chapterState,
       );
-      chapterState.pages =
-        chapterPages.length % 2 === 0
-          ? chapterPages
-          : [...chapterPages, blankChapterPage(chapterState)];
+      const physicalPages =
+        chaptersStartOnRight && chapterPages.length % 2 !== 0
+          ? [...chapterPages, blankChapterPage(chapterState)]
+          : chapterPages;
+      chapterState.pageParity = physicalPages.length % 2 === 0 ? 2 : 1;
+      chapterState.pages = physicalPages;
     }
   }
 }
@@ -2053,7 +2068,9 @@ function composedPublicationPages(): PrototypePage[] {
   return chapterStates.flatMap((chapterState) =>
     chapterState.status === "ready" && chapterState.pages
       ? chapterState.pages
-      : [placeholderPage(chapterState), blankChapterPage(chapterState)],
+      : chaptersStartOnRight || chapterState.pageParity === 2
+        ? [placeholderPage(chapterState), blankChapterPage(chapterState)]
+        : [placeholderPage(chapterState)],
   );
 }
 
@@ -2172,7 +2189,31 @@ function releaseChapter(chapterState: ChapterState): void {
 }
 
 function chapterInWindow(index: number): boolean {
-  return Math.abs(index - chapterWindowCenter) <= 1;
+  return retainedChapterIndices.includes(index);
+}
+
+function releaseChaptersOutside(indices: readonly number[]): void {
+  for (const chapterState of chapterStates) {
+    if (!indices.includes(chapterState.index)) {
+      releaseChapter(chapterState);
+    }
+  }
+}
+
+function rebuildChapterSet(
+  indices: readonly number[],
+  preservation: ReturnType<typeof currentPreservation>,
+): void {
+  releaseChaptersOutside(indices);
+  if (activeTurn) {
+    finishTurn(false);
+  }
+  rebuildPages(
+    preservation.anchor,
+    preservation.progress,
+    preservation.chapterIndex,
+    preservation.chapterPageOffset,
+  );
 }
 
 async function ensureChapterLoaded(index: number): Promise<void> {
@@ -2219,19 +2260,14 @@ async function ensureChapterLoaded(index: number): Promise<void> {
   return promise;
 }
 
-async function ensureChapterWindow(
-  centerIndex: number,
-  preservation = currentPreservation(),
-): Promise<"ready" | "superseded"> {
-  const boundedCenter = Math.min(
-    chapterStates.length - 1,
-    Math.max(0, centerIndex),
-  );
-  const desired = [boundedCenter - 1, boundedCenter, boundedCenter + 1].filter(
-    (index) => index >= 0 && index < chapterStates.length,
-  );
+async function ensureChapterSet(
+  requestedIndices: readonly number[],
+  preservation: ReturnType<typeof currentPreservation>,
+): Promise<boolean> {
+  const desired = [...new Set(requestedIndices)]
+    .filter((index) => index >= 0 && index < chapterStates.length)
+    .sort((left, right) => left - right);
   const windowIsReady =
-    chapterWindowCenter === boundedCenter &&
     desired.every(
       (index) => chapterStates[index]?.status === "ready",
     ) &&
@@ -2239,63 +2275,49 @@ async function ensureChapterWindow(
       ({ index, status }) => desired.includes(index) || status === "idle",
     );
   if (windowIsReady) {
-    return "ready";
+    retainedChapterIndices = desired;
+    return true;
   }
   const version = ++chapterWindowVersion;
-  chapterWindowCenter = boundedCenter;
+  retainedChapterIndices = desired;
   status.textContent = `Loading chapter window · ${desired.length} chapters`;
   try {
     await Promise.all(desired.map((index) => ensureChapterLoaded(index)));
   } catch (error: unknown) {
     if (version !== chapterWindowVersion) {
-      for (const chapterState of chapterStates) {
-        if (!chapterInWindow(chapterState.index)) {
-          releaseChapter(chapterState);
-        }
-      }
+      releaseChaptersOutside(retainedChapterIndices);
       console.warn("V3 ignored a failure from an obsolete chapter window", error);
-      return "superseded";
+      return false;
     }
-    for (const chapterState of chapterStates) {
-      if (!desired.includes(chapterState.index)) {
-        releaseChapter(chapterState);
-      }
-    }
-    if (activeTurn) {
-      finishTurn(false);
-    }
-    rebuildPages(
-      preservation.anchor,
-      preservation.progress,
-      preservation.chapterIndex,
-      preservation.chapterPageOffset,
-    );
+    rebuildChapterSet(desired, preservation);
     throw error;
   }
   if (version !== chapterWindowVersion) {
-    return "superseded";
+    releaseChaptersOutside(retainedChapterIndices);
+    return false;
   }
 
-  for (const chapterState of chapterStates) {
-    if (!desired.includes(chapterState.index)) {
-      releaseChapter(chapterState);
-    }
-  }
-  if (activeTurn) {
-    finishTurn(false);
-  }
-  rebuildPages(
-    preservation.anchor,
-    preservation.progress,
-    preservation.chapterIndex,
-    preservation.chapterPageOffset,
-  );
+  rebuildChapterSet(desired, preservation);
   if (!opening) {
     reportReady();
   } else {
     failureReported = false;
   }
-  return "ready";
+  return true;
+}
+
+async function ensureChapterWindow(
+  centerIndex: number,
+  preservation = currentPreservation(),
+): Promise<boolean> {
+  const boundedCenter = Math.min(
+    chapterStates.length - 1,
+    Math.max(0, centerIndex),
+  );
+  return ensureChapterSet(
+    [boundedCenter - 1, boundedCenter, boundedCenter + 1],
+    preservation,
+  );
 }
 
 function queueChapterWindow(centerIndex = activeChapterIndex()): void {
@@ -2455,6 +2477,7 @@ async function initialize(): Promise<void> {
     pages: undefined,
     promise: undefined,
     error: undefined,
+    pageParity: undefined,
   }));
   const initialLocation = initialReadingLocation(manifest);
   const initialChapterIndex = initialLocation
@@ -2463,23 +2486,24 @@ async function initialize(): Promise<void> {
           String(chapter.chapterId) === initialLocation.location.chapterId,
       )
     : 0;
-  chapterWindowCenter = Math.max(0, initialChapterIndex);
+  const initialWindowCenter = Math.max(0, initialChapterIndex);
+  retainedChapterIndices = [initialWindowCenter];
   await document.fonts.ready;
   await waitForPageLayout();
   rebuildPages();
   try {
-    await ensureChapterLoaded(chapterWindowCenter);
+    await ensureChapterLoaded(initialWindowCenter);
   } catch (error: unknown) {
     rebuildPages();
     const placeholderIndex = pages.findIndex(
       (page) =>
         page.kind === "placeholder" &&
-        page.chapterIndex === chapterWindowCenter,
+        page.chapterIndex === initialWindowCenter,
     );
     if (placeholderIndex >= 0) {
       const step = pageStep();
       spreadStart = Math.floor(placeholderIndex / step) * step;
-      const failedChapter = chapterStates[chapterWindowCenter]?.chapter;
+      const failedChapter = chapterStates[initialWindowCenter]?.chapter;
       chapterSelect.value = failedChapter
         ? String(failedChapter.chapterId)
         : "";
@@ -2515,7 +2539,7 @@ async function initialize(): Promise<void> {
   syncCurrentLocation("replace");
   reportReady();
   startOpening();
-  queueChapterWindow(chapterWindowCenter);
+  queueChapterWindow(initialWindowCenter);
 }
 
 for (const corner of corners) {

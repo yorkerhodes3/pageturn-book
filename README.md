@@ -13,7 +13,8 @@ integration with the Ethical Tech CoLab website:
 - The new semantic-first Book Reader V2.
 - The isolated V3 semantic geometry reader, now exercised across the full
   22-volume shelf with bounded chapter loading, durable source locations,
-  persistent typography, and canonical sharing.
+  configurable right-hand chapter openings, persistent typography, and
+  canonical sharing.
 
 ## Project documents
 

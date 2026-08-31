@@ -382,9 +382,15 @@ The eager-loading limitation recorded in section 10.3 is now addressed:
 
 - V3 loads the requested chapter first and then only the adjacent chapter
   window. Stable state contains no more than three chapter source/page runs.
-- Released chapters return to lightweight two-leaf placeholders. Loaded chapter
-  runs are padded to even physical length, so every chapter opens on a
-  right-hand page and lazy expansion cannot change downstream spread parity.
+- Chapters open on the right by default. Those books use lightweight two-leaf
+  placeholders and pad odd chapter runs with a blank verso.
+- Compact books can opt into continuous chapter flow. VANGO, CERAI, Agentic
+  Behavior Observatory, and AI Research Assistant use natural parity because
+  at least half of their desktop chapters fit one page.
+- A stable window retains three chapters. Boundary turns may temporarily retain
+  the visible and destination spreads together, then contract after commit.
+- Works Cited keeps its chapter-opening hierarchy but suppresses the decorative
+  initial-letter treatment used for narrative prose.
 - Navigation is represented by book, edition, chapter, and source anchor.
   Responsive screen-page numbers remain presentation-only.
 - URLs use `?book=<id>&chapter=<id>#<source-anchor>`. Explicit URLs outrank saved
@@ -395,12 +401,13 @@ The eager-loading limitation recorded in section 10.3 is now addressed:
 - V3 shares a canonical book/chapter/anchor URL through Web Share or clipboard
   fallback. Embed and shelf-handoff query state is omitted from shared links.
 
-The built V3 assets measure 19,991 bytes gzip, remaining inside the 20 kB
-promotion gate. Including route HTML, the shared route is 22.0 kB gzip. After
-adjacent prefetch, the initial Plurality path is about 75.8 kB gzip versus 517.5
+The built V3 assets measure 20,087 bytes gzip, 87 bytes above the strict decimal
+20 kB promotion gate; payload trimming therefore remains required before
+promotion. Including route HTML, the shared route is 22.1 kB gzip. After
+adjacent prefetch, the initial Plurality path is about 75.9 kB gzip versus 517.9
 kB for its complete static path. A fresh local Chromium profile retained 3,885 DOM
 nodes and 1.39 MB heap versus the earlier eager baseline of 31,850 nodes and
-2.00 MB. The expanded validation contains 38 unit tests and 59 browser
+2.00 MB. The expanded validation contains 38 unit tests and 62 browser
 scenarios against both root and Pages base paths. Full measurements and
 methodology are in [V3-LIBRARY-REVIEW.md](./V3-LIBRARY-REVIEW.md).
 

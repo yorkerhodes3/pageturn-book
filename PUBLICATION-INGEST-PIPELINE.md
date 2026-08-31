@@ -264,9 +264,14 @@ local manifest. It no longer contains a hard-coded Ethical AI manifest URL.
 
 V3 now fetches the requested chapter first, then prefetches only the immediate
 adjacent window. It retains at most three chapter source/page runs and releases
-inactive chapters. Unloaded chapters keep parity-stable two-leaf skeletons, and
-loaded chapters receive a blank verso when needed, so every chapter opening
-remains on the right without downstream page-index shifts.
+inactive chapters in stable state. During a boundary turn it may temporarily
+retain the source and destination spreads together before contracting again.
+
+Chapter openings start on the right by default: unloaded chapters use
+parity-stable two-leaf skeletons and loaded odd-length chapters receive a blank
+verso. The V3 catalog can set `chaptersStartOnRight: false` for compact books;
+those books retain natural chapter parity and load the complete destination
+spread before turning.
 
 The complete Ethical AI traversal test still reaches all 17 chapters in order,
 but it does so through the bounded window rather than fetching the entire book

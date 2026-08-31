@@ -156,25 +156,13 @@ a {
 
 .v3-font-controls {
   display: flex;
-  flex: 0 0 auto;
-  align-items: center;
   border: 1px solid rgb(211 179 116 / 32%);
 }
 
 .v3-font-controls button,
 .v3-share {
-  min-height: 1.9rem;
   padding: 0.35rem 0.58rem;
   border: 0;
-  background: #17211f;
-  color: #ead9b7;
-  font-size: 0.68rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.v3-font-controls button:disabled {
-  cursor: default;
 }
 
 .v3-share {
@@ -563,20 +551,21 @@ a {
   text-transform: uppercase;
 }
 
-.v3-sheet-chapter-opening
-  .v3-sheet-content
-  > h1
-  + p::first-letter,
-.v3-sheet-chapter-opening
-  .v3-sheet-content
-  > hr
-  + p::first-letter {
-  float: left;
-  margin: 0.02em 0.1em 0 0;
-  color: #8f6d33;
-  font-size: 3.6em;
-  font-weight: 500;
-  line-height: 0.82;
+@media (min-width: 48.001rem) {
+  .v3-sheet-chapter-opening:not([data-v3-chapter="references"])
+    .v3-sheet-content
+    > h1
+    + p::first-letter,
+  .v3-sheet-chapter-opening:not([data-v3-chapter="references"])
+    .v3-sheet-content
+    > hr
+    + p::first-letter {
+    float: left;
+    margin: 0.02em 0.1em 0 0;
+    color: #8f6d33;
+    font-size: 3.6em;
+    line-height: 0.82;
+  }
 }
 
 .v3-sheet-content h2 {
@@ -709,12 +698,9 @@ a {
 
 .v3-placeholder-retry {
   justify-self: center;
-  background: transparent;
-  color: #644816;
 }
 
 .v3-sheet-blank .v3-sheet-running,
-.v3-sheet-blank .v3-sheet-content,
 .v3-sheet-blank .v3-sheet-folio {
   display: none;
 }
@@ -901,14 +887,20 @@ a {
   background: rgb(17 23 22 / 92%);
 }
 
+.v3-font-controls button,
+.v3-share,
+.v3-controls button,
+.v3-placeholder-retry {
+  background: #17211f;
+  color: #ead9b7;
+  font-weight: 800;
+}
+
 .v3-controls button,
 .v3-placeholder-retry {
   padding: 0.65rem 0.85rem;
   border: 1px solid #a7864c;
-  background: #17211f;
-  color: #ead9b7;
   font-size: 0.72rem;
-  font-weight: 800;
   cursor: pointer;
 }
 
@@ -1008,10 +1000,6 @@ a {
     flex-wrap: wrap;
   }
 
-  .v3-share-status {
-    flex: 1 1 12rem;
-  }
-
   .v3-chapter-picker {
     width: 100%;
   }
@@ -1029,20 +1017,6 @@ a {
     display: none;
   }
 
-  .v3-sheet-chapter-opening
-    .v3-sheet-content
-    > h1
-    + p::first-letter,
-  .v3-sheet-chapter-opening
-    .v3-sheet-content
-    > hr
-    + p::first-letter {
-    float: none;
-    margin: 0;
-    color: inherit;
-    font-size: inherit;
-    line-height: inherit;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -22,6 +22,7 @@ type CatalogBook = {
   facsimile: boolean;
   externalHref?: string;
   extentLabel?: string;
+  chaptersStartOnRight?: false;
 };
 
 const palettes = [
@@ -33,6 +34,13 @@ const palettes = [
   { color: "#17363e", accent: "#b9b075", material: "cloth" },
   { color: "#35251c", accent: "#c29a5f", material: "leather" },
 ] as const;
+
+const flowingChapterBooks = new Set([
+  "agentic-behavior-observatory",
+  "ai-research-assistant",
+  "cerai",
+  "vango",
+]);
 
 function appearance(
   index: number,
@@ -238,6 +246,9 @@ export const LIBRARY_BOOKS: CatalogBook[] = catalogSource.map(
     facsimile: true,
     ...(subtitle ? { subtitle } : {}),
     ...(semanticHref ? { semanticHref } : {}),
+    ...(flowingChapterBooks.has(id)
+      ? { chaptersStartOnRight: false as const }
+      : {}),
     geometryHref:
       geometryHref ??
       `../v3/?book=${encodeURIComponent(id)}&from=shelf`,

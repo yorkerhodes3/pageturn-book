@@ -12,6 +12,12 @@ const productionChapterPath = route(
 const productionReferencesPath = route(
   "/book/what-is-ethical-ai/2026-07/chapters/references/",
 );
+const flowingChapterBookIds = [
+  "agentic-behavior-observatory",
+  "ai-research-assistant",
+  "cerai",
+  "vango",
+];
 
 async function turnLeafState(leaf: Locator) {
   return leaf.evaluate((node) => {
@@ -483,6 +489,142 @@ test("traverses every page in the complete V3 Ethical AI edition", async ({
   expect(seen.join(" ")).not.toContain("34. 7 percent");
 });
 
+test("does not decorate a Works Cited entry as an opening initial", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=ai-carbon-footprint&chapter=references&embed=1#references",
+    ),
+  );
+
+  const opening = page.locator(
+    "[data-v3-stationary] .v3-sheet-chapter-opening",
+  );
+  await expect(
+    opening.getByRole("heading", { level: 1, name: "Works Cited" }),
+  ).toBeVisible();
+  await expect(opening).toHaveAttribute("data-v3-chapter", "references");
+  const firstLetterFloat = await opening
+    .locator(".v3-sheet-content > h1 + p")
+    .first()
+    .evaluate((paragraph) =>
+      getComputedStyle(paragraph, "::first-letter").float,
+    );
+  expect(firstLetterFloat).toBe("none");
+});
+
+test("defaults chapters to right pages and lets short books flow", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route("/v3/?book=vango&chapter=background&embed=1#background"),
+  );
+
+  const reader = page.locator("[data-v3-reader]");
+  const background = page.getByRole("heading", {
+    level: 1,
+    name: "Background and Rationale",
+  });
+  const objectives = page.getByRole("heading", {
+    level: 1,
+    name: "Objectives",
+  });
+  await expect(background).toBeVisible();
+  await expect(objectives).toBeVisible();
+  await expect(
+    background.locator("xpath=ancestor::article[1]"),
+  ).toHaveClass(/v3-sheet-left/);
+  await expect(
+    objectives.locator("xpath=ancestor::article[1]"),
+  ).toHaveClass(/v3-sheet-right/);
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet-blank"),
+  ).toHaveCount(0);
+
+  await page.goto(
+    route(
+      "/v3/?book=ai-carbon-footprint&chapter=conclusion&embed=1#conclusion",
+    ),
+  );
+  const conclusion = page.getByRole("heading", {
+    level: 1,
+    name: "Conclusion",
+  });
+  await expect(conclusion).toBeVisible();
+  await expect(
+    conclusion.locator("xpath=ancestor::article[1]"),
+  ).toHaveClass(/v3-sheet-right/);
+});
+
+test("traverses every VANGO chapter without forced blank versos", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(route("/v3/?book=vango&embed=1"));
+
+  const reader = page.locator("[data-v3-reader]");
+  const seen = new Set<string>();
+  const next = page.getByRole("button", { name: "Next spread" });
+  for (let index = 0; index < 50; index += 1) {
+    for (const heading of await page
+      .locator(
+        "[data-v3-stationary] .v3-sheet-chapter-opening .v3-sheet-content h1",
+      )
+      .allTextContents()) {
+      seen.add(heading.trim());
+    }
+    if (
+      (await reader.getAttribute("data-v3-at-end")) === "true"
+    ) {
+      break;
+    }
+    if (await next.isDisabled()) {
+      await expect(next).toBeEnabled({ timeout: 15_000 });
+    }
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+
+  expect(seen.size).toBe(15);
+  expect(seen).toContain("Foreword");
+  expect(seen).toContain("Background and Rationale");
+  expect(seen).toContain("Works Cited");
+  await expect(next).toBeDisabled();
+
+  const previous = page.getByRole("button", { name: "Previous spread" });
+  let previousChapterIndex = 14;
+  for (let index = 0; index < 50; index += 1) {
+    const selectedIndex = await page
+      .locator("[data-v3-chapter-select]")
+      .evaluate((select) => (select as HTMLSelectElement).selectedIndex - 1);
+    expect(selectedIndex).toBeLessThanOrEqual(previousChapterIndex);
+    previousChapterIndex = selectedIndex;
+    await expect(
+      page.locator("[data-v3-stationary] .v3-sheet-placeholder"),
+    ).toHaveCount(0);
+    if (await previous.isDisabled()) {
+      break;
+    }
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await previous.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  await expect(previous).toBeDisabled();
+  await expect(reader).toHaveAttribute("data-v3-page-index", "0");
+});
+
 test("loads and releases a bounded Plurality chapter window", async ({
   page,
 }) => {
@@ -931,6 +1073,13 @@ test("shares a canonical V3 chapter and source anchor", async ({ page }) => {
 test("renders the production library as optimized labeled bindings", async ({
   page,
 }) => {
+  expect(
+    new Set(
+      LIBRARY_BOOKS.filter(
+        (book) => book.chaptersStartOnRight === false,
+      ).map(({ id }) => id),
+    ),
+  ).toEqual(new Set(flowingChapterBookIds));
   await page.goto(route("/shelf/"));
 
   await expect(

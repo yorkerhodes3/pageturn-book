@@ -43,10 +43,18 @@ Each V3 publication uses:
 
 - its manifest title, subtitle, credits, and cover palette;
 - fresh pages at semantic chapter boundaries;
+- right-hand chapter openings by default, with an explicit continuous-flow
+  override for compact publications;
 - chapter labels derived from manifest chapter identity;
 - titles without duplicated numeric prefixes;
-- desktop drop caps on the first prose paragraph;
+- desktop drop caps on the first narrative paragraph, excluding Works Cited;
 - the same top/bottom, forward/backward fold solver.
+
+The catalog setting `chaptersStartOnRight` defaults to on. A 1440 x 1000
+pagination audit disabled it for the four publications where at least half of
+the chapters fit one semantic page: CERAI (73%), Agentic Behavior Observatory
+(71%), VANGO (60%), and AI Research Assistant (50%). VANGO consequently shows
+short adjacent chapters on the same spread rather than inserting a blank verso.
 
 ## 3. Ingest coverage
 
@@ -74,11 +82,17 @@ The Plurality importer preserves:
 
 ## 4. Controlled chapter-window measurements
 
-V3 now loads the current chapter first, prefetches only its immediate neighbor,
-and retains at most the active chapter plus one chapter on either side. Inactive
-source blocks and paginated pages are released. Two parity-stable placeholder
-leaves stand in for each unloaded chapter, so replacing a placeholder cannot
-shift downstream recto/verso alignment or skip a chapter opening.
+V3 now loads the current chapter first and maintains a stable active chapter
+plus one chapter on either side. Inactive source blocks and paginated pages are
+released. A boundary turn may transiently retain up to four chapter runs so the
+source and destination spreads remain available together; it contracts to the
+three-chapter window immediately after commit.
+
+Default-layout books use parity-stable two-leaf placeholders and add a blank
+verso only when required to start the next chapter on the right. Continuous-flow
+books keep their natural page count, remember each measured chapter's parity
+after release, and load every chapter needed by the destination spread before a
+turn. This avoids both forced blanks and placeholder-based chapter skipping.
 
 Fresh Chromium contexts at 1440 x 1000 were measured against the local
 production build after adjacent prefetch and garbage collection. Body bytes are
@@ -104,12 +118,12 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 31.1 kB | 72.8 kB | 57% |
-| Plurality | 75.8 kB | 517.5 kB | 85% |
-| Cyber Dictionary | 44.8 kB | 130.9 kB | 66% |
-| AI Models Research | 28.4 kB | 50.0 kB | 43% |
+| What Is Ethical AI? | 31.2 kB | 73.1 kB | 57% |
+| Plurality | 75.9 kB | 517.9 kB | 85% |
+| Cyber Dictionary | 44.9 kB | 131.1 kB | 66% |
+| AI Models Research | 28.5 kB | 50.2 kB | 43% |
 
-These gzip paths include the 22.0 kB shared V3 route (19,991-byte assets plus
+These gzip paths include the 22.1 kB shared V3 route (20,087-byte assets plus
 2.0 kB route HTML), the publication manifest, and either the first two chapters
 or the complete semantic corpus.
 
@@ -117,7 +131,7 @@ or the complete semantic corpus.
 
 - 23 fixtures build through the same publication CLI.
 - 324 static semantic chapter routes are emitted.
-- The Pages artifact contains 412 files totaling 6.11 MB raw / 1.67 MB gzip.
+- The Pages artifact contains 411 files totaling 6.11 MB raw / 1.67 MB gzip.
 - The Vite multi-page build processes 330 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
@@ -127,10 +141,11 @@ or the complete semantic corpus.
   are retained.
 - The complete Ethical AI traversal confirms all 17 chapter openings, all 122
   references, and the disclaimer.
-- All 38 unit tests and 59 browser scenarios pass against both root and GitHub
+- All 38 unit tests and 62 browser scenarios pass against both root and GitHub
   Pages base paths. The browser matrix includes lazy-window release, load
   failure/retry, turn/rebuild races, superseded navigation, resume/history,
-  deep-anchor typography, and sharing.
+  deep-anchor typography, configurable chapter flow, bidirectional VANGO
+  traversal, reference styling, and sharing.
 - V1 and V2 continue to use their original bundles and routes.
 - Source regeneration is deterministic: a complete lab/Plurality refresh
   produced the same whole-tree SHA-256 digest before and after regeneration.
