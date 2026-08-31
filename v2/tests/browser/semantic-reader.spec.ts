@@ -2017,6 +2017,7 @@ test("keeps Plurality chapter links local and maps licensed figures", async ({
 }) => {
   test.setTimeout(120_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1536, height: 864 });
   const figureResponses: string[] = [];
   page.on("response", (response) => {
     if (

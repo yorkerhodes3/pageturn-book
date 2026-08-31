@@ -857,8 +857,8 @@ a {
 .v3-corner {
   position: absolute;
   z-index: 12;
-  width: clamp(2.2rem, 8%, 5rem);
-  height: clamp(2.2rem, 14%, 5rem);
+  width: clamp(2.2rem, 5%, 3.25rem);
+  height: clamp(2.2rem, 8%, 3.25rem);
   padding: 0;
   border: 0;
   background: transparent;
@@ -906,6 +906,22 @@ a {
   top: 0.45rem;
   left: 0.45rem;
   border-width: 1px 0 0 1px;
+}
+
+.v3-corner-left.v3-corner-top {
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.v3-corner-right.v3-corner-top {
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.v3-corner-left.v3-corner-bottom {
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+
+.v3-corner-right.v3-corner-bottom {
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
 }
 
 .v3-corner-left.v3-corner-bottom::after {
