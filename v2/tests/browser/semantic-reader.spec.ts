@@ -487,6 +487,43 @@ test("uses clean opening focus and compact mobile running heads", async ({
         document.documentElement.clientWidth,
     ),
   ).toBeLessThanOrEqual(1);
+
+  await page.setViewportSize({ width: 256, height: 844 });
+  const narrowToolbar = page.getByRole("toolbar", {
+    name: "Reading controls",
+  });
+  const narrowLayout = await narrowToolbar.evaluate((node) => {
+    const font = node
+      .querySelector(".v3-font-controls")
+      ?.getBoundingClientRect();
+    const share = node
+      .querySelector("[data-v3-share]")
+      ?.getBoundingClientRect();
+    const media = node
+      .querySelector(".v3-media-picker")
+      ?.getBoundingClientRect();
+    return {
+      rows: getComputedStyle(node).gridTemplateRows.trim().split(/\s+/).length,
+      mediaBelowControls:
+        media !== undefined &&
+        font !== undefined &&
+        share !== undefined &&
+        media.top >= Math.max(font.bottom, share.bottom),
+      overflow:
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    };
+  });
+  expect(narrowLayout).toEqual({
+    rows: 4,
+    mediaBelowControls: true,
+    overflow: 0,
+  });
+  await page.getByRole("button", { name: "Explore" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Explore this book" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Close book tools" }).click();
 });
 
 test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
