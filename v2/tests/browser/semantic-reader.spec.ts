@@ -18,6 +18,9 @@ const flowingChapterBookIds = [
   "cerai",
   "vango",
 ];
+const worksCitedBookIds = LIBRARY_BOOKS.filter(
+  ({ id }) => id !== "plurality" && id !== "cyber-dictionary",
+).map(({ id }) => id);
 
 async function turnLeafState(leaf: Locator) {
   return leaf.evaluate((node) => {
@@ -133,12 +136,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(route("/v3/"));
 
-  await expect(
-  page.getByRole("heading", {
-    level: 1,
-    name: "V3 semantic geometry",
-  }),
-  ).toBeVisible();
+  await expect(page.locator(".v3-header")).toHaveCount(0);
+  await expect(page.locator(".v3-review-note")).toHaveCount(0);
+  await expect(page.locator(".v3-reader-toolbar")).toBeVisible();
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
   await expect(reader).toHaveAttribute("data-v3-opening", "false");
@@ -175,9 +175,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await page.mouse.move(startX, startY);
   await page.mouse.down();
   await page.mouse.move(
-  bounds.x + bounds.width * 0.61,
+  bounds.x + bounds.width * 0.27,
   bounds.y + bounds.height * 0.18,
-  { steps: 6 },
+  { steps: 12 },
   );
 
   const moving = page.locator(".v3-turn-surface");
@@ -188,6 +188,28 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await expect(revealed).toContainText("Executive Summary");
   await expect(moving).toHaveAttribute("aria-hidden", "true");
   await expect(revealed).toHaveAttribute("aria-hidden", "true");
+  const opaqueTurn = await moving.evaluate((node) => {
+    const sheet = node.querySelector(".v3-sheet");
+    const surface = getComputedStyle(node);
+    const backing = getComputedStyle(node, "::before");
+    const paper = sheet ? getComputedStyle(sheet) : undefined;
+    return {
+      surfaceColor: surface.backgroundColor,
+      surfaceOpacity: surface.opacity,
+      backingContent: backing.content,
+      backingImage: backing.backgroundImage,
+      paperColor: paper?.backgroundColor,
+      paperOpacity: paper?.opacity,
+    };
+  });
+  expect(opaqueTurn).toMatchObject({
+    surfaceColor: "rgb(255, 253, 248)",
+    surfaceOpacity: "1",
+    backingContent: '""',
+    paperColor: "rgb(255, 253, 248)",
+    paperOpacity: "1",
+  });
+  expect(opaqueTurn.backingImage).not.toBe("none");
   expect(
   await moving.evaluate((node) => getComputedStyle(node).clipPath),
   ).toMatch(/^polygon\(/);
@@ -237,6 +259,117 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await page.mouse.up();
   await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
   await expect(page.locator("[data-v3-counter]")).toHaveText(/Spread 1 of/);
+});
+
+test("shows only the book shell and returns to the referring page", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(route("/shelf/"));
+  const shelfUrl = page.url();
+  await page.goto(route("/v3/?book=vango"), { referer: shelfUrl });
+
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await expect(page.locator(".v3-header")).toHaveCount(0);
+  await expect(page.locator(".v3-review-note")).toHaveCount(0);
+  await expect(
+    page.getByText("Geometry with bounded reading state"),
+  ).toHaveCount(0);
+
+  const toolbar = page.locator(".v3-reader-toolbar");
+  await expect(toolbar).toBeVisible();
+  const toolbarRows = await toolbar.evaluate(
+    (node) => getComputedStyle(node).gridTemplateRows,
+  );
+  expect(toolbarRows.trim().split(/\s+/)).toHaveLength(1);
+  expect(
+    await toolbar.evaluate((node) => node.getBoundingClientRect().height),
+  ).toBeLessThanOrEqual(56);
+  for (const liveRegion of [
+    page.locator("[data-v3-status]"),
+    page.locator("[data-v3-share-status]"),
+  ]) {
+    await expect(liveRegion).toHaveClass(/v3-visually-hidden/);
+    expect(
+      await liveRegion.evaluate((node) => ({
+        width: node.getBoundingClientRect().width,
+        height: node.getBoundingClientRect().height,
+        clipPath: getComputedStyle(node).clipPath,
+      })),
+    ).toEqual({
+      width: 1,
+      height: 1,
+      clipPath: "inset(50%)",
+    });
+  }
+
+  const back = page.getByRole("link", { name: "Back" });
+  await expect(back).toHaveAttribute("data-v3-back-mode", "referrer");
+  await expect(back).toHaveAttribute("href", shelfUrl);
+  await back.click();
+  await expect(page).toHaveURL(shelfUrl);
+});
+
+test("uses the library as the direct-entry back destination", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto(route("/v3/?book=vango"));
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  const toolbar = page.getByRole("toolbar", { name: "Reading controls" });
+  await expect(toolbar).toBeVisible();
+  const toolbarLayout = await toolbar.evaluate((node) => {
+    const back = node.querySelector("[data-v3-back]")?.getBoundingClientRect();
+    const counter = node
+      .querySelector("[data-v3-counter]")
+      ?.getBoundingClientRect();
+    const font = node
+      .querySelector(".v3-font-controls")
+      ?.getBoundingClientRect();
+    const share = node.querySelector("[data-v3-share]")?.getBoundingClientRect();
+    const chapter = node
+      .querySelector(".v3-chapter-picker")
+      ?.getBoundingClientRect();
+    return {
+      rows: getComputedStyle(node).gridTemplateRows.trim().split(/\s+/).length,
+      height: node.getBoundingClientRect().height,
+      firstRowCenters: [back, counter, font, share].map((bounds) =>
+        bounds ? bounds.top + bounds.height / 2 : undefined,
+      ),
+      chapterTop: chapter?.top,
+      overflow:
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
+    };
+  });
+  expect(toolbarLayout.rows).toBe(2);
+  expect(toolbarLayout.height).toBeLessThanOrEqual(96);
+  const rowCenters = toolbarLayout.firstRowCenters.filter(
+    (value): value is number => value !== undefined,
+  );
+  expect(
+    Math.max(...rowCenters) - Math.min(...rowCenters),
+  ).toBeLessThanOrEqual(1);
+  expect(toolbarLayout.chapterTop).toBeGreaterThan(
+    toolbarLayout.firstRowCenters[0] ?? 0,
+  );
+  expect(toolbarLayout.overflow).toBeLessThanOrEqual(1);
+  await expect(
+    page.getByRole("button", { name: "Share location" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Page navigation" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Next spread" })).toBeVisible();
+  const back = page.getByRole("link", { name: "Library" });
+  await expect(back).toHaveAttribute("data-v3-back-mode", "library");
+  await expect(back).toHaveAttribute("href", /\/shelf\/$/);
 });
 
 test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
@@ -489,31 +622,66 @@ test("traverses every page in the complete V3 Ethical AI edition", async ({
   expect(seen.join(" ")).not.toContain("34. 7 percent");
 });
 
-test("does not decorate a Works Cited entry as an opening initial", async ({
+test("does not decorate Works Cited markers in any CoLab book", async ({
   page,
 }) => {
+  test.setTimeout(600_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(
-    route(
-      "/v3/?book=ai-carbon-footprint&chapter=references&embed=1#references",
-    ),
-  );
-
-  const opening = page.locator(
-    "[data-v3-stationary] .v3-sheet-chapter-opening",
-  );
-  await expect(
-    opening.getByRole("heading", { level: 1, name: "Works Cited" }),
-  ).toBeVisible();
-  await expect(opening).toHaveAttribute("data-v3-chapter", "references");
-  const firstLetterFloat = await opening
-    .locator(".v3-sheet-content > h1 + p")
-    .first()
-    .evaluate((paragraph) =>
+  for (const book of LIBRARY_BOOKS.filter(({ id }) =>
+    worksCitedBookIds.includes(id),
+  )) {
+    await page.goto(
+      route(
+        `/v3/?book=${encodeURIComponent(book.id)}&chapter=references&embed=1#references`,
+      ),
+    );
+    await expect(
+      page.locator("[data-v3-reader]"),
+      `${book.title} should initialize its reference chapter`,
+    ).toHaveAttribute("data-v3-ready", "true", { timeout: 120_000 });
+    await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+      "data-v3-loaded-chapters",
+      "2",
+      { timeout: 30_000 },
+    );
+    const opening = page.locator(
+      '[data-v3-stationary] .v3-sheet-chapter-opening[data-v3-chapter-role="references"]',
+    );
+    await expect(
+      opening.getByRole("heading", { level: 1, name: "Works Cited" }),
+      `${book.title} should expose its Works Cited opening`,
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(opening).toHaveAttribute(
+      "data-v3-chapter-role",
+      "references",
+    );
+    const firstEntry = opening
+      .locator(
+        '.v3-sheet-content > p[data-v3-leading-marker="reference"]',
+      )
+      .first();
+    await expect(
+      firstEntry,
+      `${book.title} should mark its first bracketed citation`,
+    ).toContainText(/^\[0?1\]/);
+    const firstLetterFloat = await firstEntry.evaluate((paragraph) =>
       getComputedStyle(paragraph, "::first-letter").float,
     );
-  expect(firstLetterFloat).toBe("none");
+    expect(firstLetterFloat, `${book.title} should not use a citation drop cap`).toBe(
+      "none",
+    );
+    const markerOnlyFloat = await firstEntry.evaluate((paragraph) => {
+      paragraph
+        .closest(".v3-sheet")
+        ?.removeAttribute("data-v3-chapter-role");
+      return getComputedStyle(paragraph, "::first-letter").float;
+    });
+    expect(
+      markerOnlyFloat,
+      `${book.title} should remain protected by its content marker`,
+    ).toBe("none");
+  }
 });
 
 test("defaults chapters to right pages and lets short books flow", async ({

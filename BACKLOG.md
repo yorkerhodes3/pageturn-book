@@ -2330,6 +2330,25 @@ Promote only if it materially improves fold fidelity while satisfying semantic,
 accessibility, payload, and runtime gates. Otherwise retain the current path and
 record the failed gate.
 
+### V3 beta open-work register
+
+The V3 route is a broad, book-first semantic beta across the full 22-volume
+shelf. The following work remains after the August 30, 2026 reader-shell,
+opaque-turn, reference-styling, and back-navigation pass.
+
+| ID | Priority | Status | Remaining work |
+|---|---|---|---|
+| V3-400 | P1 | Ready | Move adjacent prefetch to an idle scheduler, abort obsolete chapter requests, and incrementally paginate unusually long chapters. |
+| V3-401 | P1 | Ready | Complete publication-by-publication editorial parity, table splitting, responsive tables, formula typography, chart labels, and the AI Research Assistant appendix comparison. |
+| V3-402 | P2 | Ready | Verify all Plurality cross-chapter links and note back-links; decide which pinned figures should become bounded lazy images. |
+| V3-403 | P1 | Ready | Measure and tune turn frames on representative low-end mobile hardware, then record browser/device budgets. |
+| V3-410 | P2 | Ready | Add hierarchical contents navigation and in-book search for long publications. |
+| V3-411 | P2 | Ready | Add bookmarks and a visible start-from-beginning action for resumed books. |
+| V3-412 | P3 | Future | Extend sharing to selected text and exported annotations after privacy and content-boundary review. |
+
+These V3 items are independent of V2-232 through V2-238, which still govern
+whether the same geometry path is promoted into the V2 production reader.
+
 ## 22. Epic E16 - future product capabilities
 
 These stories are placeholders only. They must not enter implementation without

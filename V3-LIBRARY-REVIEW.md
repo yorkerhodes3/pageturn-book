@@ -118,20 +118,20 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 31.2 kB | 73.1 kB | 57% |
-| Plurality | 75.9 kB | 517.9 kB | 85% |
-| Cyber Dictionary | 44.9 kB | 131.1 kB | 66% |
-| AI Models Research | 28.5 kB | 50.2 kB | 43% |
+| What Is Ethical AI? | 30.9 kB | 72.7 kB | 57% |
+| Plurality | 75.5 kB | 517.5 kB | 85% |
+| Cyber Dictionary | 44.5 kB | 130.7 kB | 66% |
+| AI Models Research | 28.1 kB | 49.8 kB | 44% |
 
-These gzip paths include the 22.1 kB shared V3 route (20,087-byte assets plus
-2.0 kB route HTML), the publication manifest, and either the first two chapters
+These gzip paths include the 21.7 kB shared V3 route (20,189-byte assets plus
+1.5 kB route HTML), the publication manifest, and either the first two chapters
 or the complete semantic corpus.
 
 ## 5. Build and validation evidence
 
 - 23 fixtures build through the same publication CLI.
 - 324 static semantic chapter routes are emitted.
-- The Pages artifact contains 411 files totaling 6.11 MB raw / 1.67 MB gzip.
+- The Pages artifact contains 411 files totaling 6.10 MB raw / 1.67 MB gzip.
 - The Vite multi-page build processes 330 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
@@ -141,7 +141,7 @@ or the complete semantic corpus.
   are retained.
 - The complete Ethical AI traversal confirms all 17 chapter openings, all 122
   references, and the disclaimer.
-- All 38 unit tests and 62 browser scenarios pass against both root and GitHub
+- All 38 unit tests and 64 browser scenarios pass against both root and GitHub
   Pages base paths. The browser matrix includes lazy-window release, load
   failure/retry, turn/rebuild races, superseded navigation, resume/history,
   deep-anchor typography, configurable chapter flow, bidirectional VANGO
@@ -150,9 +150,24 @@ or the complete semantic corpus.
 - Source regeneration is deterministic: a complete lab/Plurality refresh
   produced the same whole-tree SHA-256 digest before and after regeneration.
 
-## 6. Remaining work before production
+## 6. Current V3 backlog
 
-### 6.1 Runtime
+### 6.0 Closed in the August 30 reader review
+
+- Removed the experiment masthead and explanatory review content from the
+  standalone V3 experience.
+- Consolidated chapter, progress, typography, sharing, and Back/Library
+  controls into one compact desktop toolbar.
+- Added a referrer-aware Back destination with a library fallback for direct
+  entry.
+- Added an opaque paper backing beneath every moving leaf so stationary text
+  cannot bleed through when a turn crosses the bound edge.
+- Suppressed opening drop caps for all current Works Cited chapters and for any
+  future bracket-numbered opening paragraph, independent of chapter naming.
+- Verified every CoLab Works Cited chapter and representative cross-spine turns
+  in browser tests.
+
+### 6.1 Runtime - open
 
 - Move adjacent prefetch to an explicit idle scheduler and add abort signals for
   obsolete chapter requests.
@@ -161,7 +176,7 @@ or the complete semantic corpus.
   retention remains material on low-memory phones.
 - Add progress feedback for Plurality and dictionary pagination.
 
-### 6.2 Content fidelity
+### 6.2 Content fidelity - open
 
 - Compare every generated lab chapter with its hand-composed report page.
 - Complete table splitting and responsive table presentation.
@@ -171,7 +186,7 @@ or the complete semantic corpus.
 - Verify all Plurality internal cross-chapter links and note back-links.
 - Finish the AI Research Assistant appendix comparison against its bespoke page.
 
-### 6.3 Reader features
+### 6.3 Reader features - open
 
 - Add hierarchical contents navigation and search for long books.
 - Add bookmarks and a visible "start from beginning" action for resumed books.

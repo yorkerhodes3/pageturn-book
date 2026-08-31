@@ -123,7 +123,7 @@ function applyPublicationIdentity(publication: V3Manifest): void {
   coverTitle.textContent = publication.title;
   coverSubtitle.textContent =
     publication.cover?.subtitle ?? "Complete semantic edition";
-  document.title = `${publication.title} - V3 semantic geometry`;
+  document.title = `${publication.title} - Semantic book reader`;
   const catalogCover = selectedBook?.appearance.cover;
   reader.style.setProperty(
     "--v3-cover-background",
@@ -471,6 +471,24 @@ function chapterLabelForChapter(
   return chapterNumber ? `Chapter ${chapterNumber}` : "Chapter";
 }
 
+function isReferenceSection(
+  chapterId: string | undefined,
+  title: string | undefined,
+): boolean {
+  return /\b(references|works cited|bibliography|endnotes|end notes)\b/i.test(
+    `${chapterId ?? ""} ${title ?? ""}`,
+  );
+}
+
+function markLeadingReferenceMarker(node: HTMLElement): void {
+  if (
+    node.matches("p") &&
+    /^\s*\[\s*0*\d+\s*\]\s*/.test(node.textContent ?? "")
+  ) {
+    node.dataset.v3LeadingMarker = "reference";
+  }
+}
+
 function semanticBlocks(
   article: HTMLElement,
   chapter: V3Chapter,
@@ -510,6 +528,7 @@ function semanticBlocks(
           index === 0,
         );
         paragraph.dataset.sourceAnchor = anchor;
+        markLeadingReferenceMarker(paragraph);
         blocks.push({
           node: paragraph,
           anchor,
@@ -529,6 +548,7 @@ function semanticBlocks(
       );
     }
     clone.dataset.sourceAnchor = anchor;
+    markLeadingReferenceMarker(clone);
     blocks.push({
       node: clone,
       anchor,
@@ -741,6 +761,9 @@ function createSheet(
   if (page.chapterId) {
     sheet.dataset.v3Chapter = page.chapterId;
   }
+  if (isReferenceSection(page.chapterId, page.runningTitle)) {
+    sheet.dataset.v3ChapterRole = "references";
+  }
   if (decorative) {
     sheet.setAttribute("aria-hidden", "true");
     sheet.inert = true;
@@ -806,6 +829,7 @@ const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
 const shareStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-share-status]",
 );
+const backLink = requiredElement<HTMLAnchorElement>("[data-v3-back]");
 const previous = requiredElement<HTMLButtonElement>("[data-v3-previous]");
 const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
 const corners = Array.from(
@@ -840,6 +864,30 @@ let pendingTurn = false;
 
 if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
+}
+
+function configureBackNavigation(): void {
+  const fallback = new URL("../shelf/", globalThis.location.href);
+  let destination = fallback;
+  let label = "Library";
+  try {
+    if (document.referrer) {
+      const referrer = new URL(document.referrer);
+      const current = new URL(globalThis.location.href);
+      if (
+        (referrer.protocol === "http:" || referrer.protocol === "https:") &&
+        referrer.href !== current.href
+      ) {
+        destination = referrer;
+        label = "Back";
+      }
+    }
+  } catch (error) {
+    console.warn("V3 could not restore the referring location", error);
+  }
+  backLink.href = destination.href;
+  backLink.textContent = label;
+  backLink.dataset.v3BackMode = label === "Back" ? "referrer" : "library";
 }
 
 function pageSize(): { width: number; height: number } {
@@ -1779,6 +1827,11 @@ function pageFits(blocks: readonly SemanticBlock[]): boolean {
     "v3-sheet-chapter-opening",
     blocks[0]?.chapterStart ?? false,
   );
+  if (isReferenceSection(undefined, blocks[0]?.chapterTitle)) {
+    measure.dataset.v3ChapterRole = "references";
+  } else {
+    delete measure.dataset.v3ChapterRole;
+  }
   measureContent.replaceChildren(
     ...(blocks[0]?.chapterStart
       ? [chapterOpeningLabel(blocks[0].chapterLabel)]
@@ -2628,6 +2681,7 @@ globalThis.addEventListener(
   { once: true },
 );
 
+configureBackNavigation();
 void initialize().catch((error: unknown) => {
   reportFailure("V3 could not initialize", error);
 });

@@ -11,10 +11,10 @@ integration with the Ethical Tech CoLab website:
 - The original fixed-page `read-as-book` viewer, preserved at revision
   `d1d1ec6`.
 - The new semantic-first Book Reader V2.
-- The isolated V3 semantic geometry reader, now exercised across the full
+- The book-first V3 semantic geometry reader, now exercised across the full
   22-volume shelf with bounded chapter loading, durable source locations,
   configurable right-hand chapter openings, persistent typography, and
-  canonical sharing.
+  canonical sharing in a compact reading-only shell.
 
 ## Project documents
 
@@ -50,9 +50,9 @@ GitHub Actions builds a Pages artifact containing:
   in V3; available V2, designed-page, and source-reader options remain separate.
 - `/dashboard/` - implementation status, showcase routes, sharing/commenting
   status, and measured V2-versus-legacy payload weight.
-- `/v3/` - isolated semantic page-turn geometry experiment using real
-  publication HTML without changing V2. It loads only the current/adjacent
-  chapter window and supports
+- `/v3/` - book-first semantic page-turn reader using real publication HTML
+  without changing V2. It loads only the current/adjacent chapter window and
+  supports
   `?book=<id>&chapter=<id>#<source-anchor>` deep links.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
   semantic scroll reader using production content.
