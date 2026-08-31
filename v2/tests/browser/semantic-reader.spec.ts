@@ -535,6 +535,11 @@ test("defaults chapters to right pages and lets short books flow", async ({
     name: "Objectives",
   });
   await expect(background).toBeVisible();
+  await expect(reader).toHaveAttribute(
+    "data-v3-loaded-chapter-ids",
+    "executive-summary,background,objectives",
+    { timeout: 15_000 },
+  );
   await expect(objectives).toBeVisible();
   await expect(
     background.locator("xpath=ancestor::article[1]"),
