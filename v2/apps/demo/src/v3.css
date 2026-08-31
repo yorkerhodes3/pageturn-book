@@ -1343,6 +1343,10 @@ a {
 }
 
 @media (max-width: 19rem) {
+  .v3-reader-toolbar {
+    column-gap: 0.35rem;
+  }
+
   .v3-media-picker {
     grid-row: 4;
     grid-column: 1 / -1;
@@ -1350,6 +1354,12 @@ a {
 
   .v3-media-picker select {
     width: 100%;
+  }
+
+  .v3-reader-toolbar > .v3-share {
+    overflow: hidden;
+    padding-inline: 0.4rem;
+    text-overflow: ellipsis;
   }
 }
 
