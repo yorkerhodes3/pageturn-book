@@ -14,7 +14,8 @@ integration with the Ethical Tech CoLab website:
 - The book-first V3 semantic geometry reader, now exercised across the full
   22-volume shelf with bounded chapter loading, durable source locations,
   configurable right-hand chapter openings, persistent typography, and
-  canonical sharing in a compact reading-only shell.
+  canonical sharing in a compact reading-only shell. Ethical AI also demonstrates
+  configurable Off, On-page, and Pop-out figure treatments.
 
 ## Project documents
 
@@ -53,7 +54,8 @@ GitHub Actions builds a Pages artifact containing:
 - `/v3/` - book-first semantic page-turn reader using real publication HTML
   without changing V2. It loads only the current/adjacent chapter window and
   supports
-  `?book=<id>&chapter=<id>#<source-anchor>` deep links.
+  `?book=<id>&chapter=<id>#<source-anchor>` deep links. Publications with mapped
+  figures can add `media=off`, `media=on`, or `media=popout`.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/` - V2
   semantic scroll reader using production content.
 - `/book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book` -
@@ -61,6 +63,10 @@ GitHub Actions builds a Pages artifact containing:
   open-book presentation.
 - `/compare/` - side-by-side view of the production 46-page legacy book, the V2
   semantic reader, and the isolated V3 geometry experiment.
+
+GitHub Pages may cache route HTML for up to ten minutes. After a deployment,
+hard-refresh an already open reader tab before assessing newly published CSS or
+JavaScript.
 
 The Pages deployment workflow is
 [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).

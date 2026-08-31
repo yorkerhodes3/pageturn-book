@@ -684,6 +684,186 @@ test("does not decorate Works Cited markers in any CoLab book", async ({
   }
 });
 
+test("loads configured Ethical AI figures only when a pop-out opens", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const mediaResponses: string[] = [];
+  page.on("response", (response) => {
+    if (
+      response.ok() &&
+      response.url().includes("/media/what-is-ethical-ai/")
+    ) {
+      mediaResponses.push(response.url());
+    }
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&embed=1&media=popout#responsible-ai",
+    ),
+  );
+
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await expect(reader).toHaveAttribute("data-v3-media-mode", "popout");
+  const treatment = page.getByLabel("Image treatment");
+  await expect(treatment).toHaveValue("popout");
+  expect(mediaResponses).toEqual([]);
+
+  const open = page.getByRole("button", {
+    name: "Open Figure 4. Ten landmark resources for building an AI ethics framework.",
+  });
+  const next = page.getByRole("button", { name: "Next spread" });
+  for (let index = 0; index < 8 && !(await open.isVisible()); index += 1) {
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  await expect(open).toBeVisible();
+  expect(mediaResponses).toEqual([]);
+
+  await open.click();
+  const dialog = page.getByRole("dialog", {
+    name: "Figure 4. Ten landmark resources for building an AI ethics framework.",
+  });
+  await expect(dialog).toBeVisible();
+  const image = page.locator("[data-v3-media-dialog-image]");
+  await expect(image).toHaveAttribute(
+    "alt",
+    /Circular diagram of ten landmark resources/,
+  );
+  await expect
+    .poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth))
+    .toBe(1656);
+  expect(new Set(mediaResponses).size).toBe(1);
+  const counterBeforeDialogKey = await page
+    .locator("[data-v3-counter]")
+    .textContent();
+  await image.click();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("[data-v3-counter]")).toHaveText(
+    counterBeforeDialogKey ?? "",
+  );
+  await dialog.getByRole("button", { name: "Close figure" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(open).toBeFocused();
+  await expect(image).not.toHaveAttribute("src");
+
+  await page.locator("[data-v3-chapter-select]").selectOption("colab");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "The Ethical Tech CoLab" }),
+  ).toBeVisible();
+  await treatment.selectOption("off");
+  await expect(reader).toHaveAttribute("data-v3-media-mode", "off");
+  await expect(page).toHaveURL(/media=off/);
+  await expect(page.locator("[data-v3-stationary] .v3-media-figure")).toHaveCount(
+    0,
+  );
+  await page.goBack();
+  await expect(reader).toHaveAttribute("data-v3-media-mode", "popout");
+  await expect(treatment).toHaveValue("popout");
+  await expect(page).toHaveURL(/chapter=responsible-ai.*media=popout/);
+});
+
+test("defers on-page Ethical AI figures until their page is reached", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const mediaResponses: string[] = [];
+  page.on("response", (response) => {
+    if (
+      response.ok() &&
+      response.url().includes("/media/what-is-ethical-ai/")
+    ) {
+      mediaResponses.push(response.url());
+    }
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&embed=1&media=on#responsible-ai",
+    ),
+  );
+
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await expect(reader).toHaveAttribute("data-v3-media-mode", "on");
+  expect(mediaResponses).toEqual([]);
+
+  const image = page.locator(
+    '[data-v3-stationary] .v3-media-on img[alt^="Circular diagram"]',
+  );
+  const next = page.getByRole("button", { name: "Next spread" });
+  for (let index = 0; index < 8 && !(await image.isVisible()); index += 1) {
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  await expect(image).toBeVisible();
+  await expect
+    .poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth))
+    .toBe(1656);
+  expect(new Set(mediaResponses).size).toBe(1);
+  await expect(page).toHaveURL(/#v3-media-ai-ethics-frameworks$/);
+  await page
+    .getByRole("button", { name: "Increase book text size" })
+    .click();
+  await expect(page.locator("[data-v3-font-status]")).toHaveText("110%");
+  await expect(image).toBeVisible();
+  await expect(page).toHaveURL(/#v3-media-ai-ethics-frameworks$/);
+  await expect(
+    page.locator("[data-v3-stationary] .v3-media-on figcaption"),
+  ).toContainText("Ten landmark resources");
+});
+
+test("inserts Ethical AI figures after complete source blocks", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=colab&embed=1&media=popout#colab",
+    ),
+  );
+
+  const next = page.getByRole("button", { name: "Next spread" });
+  const figure = page.locator(
+    '[data-v3-stationary] [data-v3-media-id="colab-portfolio-maturity"]',
+  );
+  for (let index = 0; index < 10 && !(await figure.isVisible()); index += 1) {
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  await expect(figure).toBeVisible();
+  const continuationAfterFigure = await figure.evaluate((node) => {
+    const anchor =
+      "p-each-project-is-best-understood-through-three-le-e0fb4bfc09";
+    let sibling = node.nextElementSibling;
+    while (sibling) {
+      if (
+        sibling instanceof HTMLElement &&
+        sibling.dataset.sourceAnchor === anchor
+      ) {
+        return sibling.textContent?.trim() ?? "";
+      }
+      sibling = sibling.nextElementSibling;
+    }
+    return "";
+  });
+  expect(continuationAfterFigure).toBe("");
+});
+
 test("defaults chapters to right pages and lets short books flow", async ({
   page,
 }) => {
@@ -2025,6 +2205,7 @@ test("shares the current canonical location from scroll and book views", async (
 
   await page.getByRole("button", { name: "Book view" }).click();
   const dialog = page.getByRole("dialog", { name: "What Is Ethical AI?" });
+  await expect(dialog.locator('.book-mode-spread[aria-busy="false"]')).toBeVisible();
   await dialog.getByRole("button", { name: "Share" }).click();
   await expect(dialog.locator(".book-mode-counter")).toHaveText(
     "Reading location shared",

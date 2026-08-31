@@ -149,8 +149,15 @@ These outputs are substantially smaller and more capable than facsimiles:
 - stable source anchors;
 - responsive pagination;
 - linkable contents and references;
-- no per-page image transfer;
+- no implicit per-page image transfer;
 - bounded attached page faces.
+
+The V3 media prototype separately maps three lossless figures extracted from
+the pinned *What Is Ethical AI?* PDF. `off` makes no image request, `popout`
+requests only the activated figure, and `on` defers the image until its semantic
+page is reached. This demo catalog is not yet the production ingest boundary;
+V3-404 moves figure metadata, provenance, dimensions, and responsive variants
+into the validated publication manifest/build pipeline.
 
 The beta intentionally compiles the pinned public TypeScript sources in a
 temporary directory during explicit synchronization. Production should replace

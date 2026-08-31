@@ -39,6 +39,7 @@ function copyPublicationData(source: string, destination: string): void {
 
 export default defineConfig(() => {
   const publicationRoot = resolve(root, "book");
+  const mediaRoot = resolve(root, "media");
   const htmlFiles = [
     resolve(root, "index.html"),
     resolve(root, "legacy", "index.html"),
@@ -78,6 +79,9 @@ export default defineConfig(() => {
         closeBundle() {
           if (existsSync(publicationRoot)) {
             copyPublicationData(publicationRoot, resolve(root, "dist", "book"));
+          }
+          if (existsSync(mediaRoot)) {
+            copyPublicationData(mediaRoot, resolve(root, "dist", "media"));
           }
         },
       },

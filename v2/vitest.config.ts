@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: [
+      "apps/demo/src/**/*.test.ts",
       "packages/**/*.test.ts",
       "tools/**/*.test.ts",
     ],
@@ -11,4 +12,3 @@ export default defineConfig({
     },
   },
 });
-

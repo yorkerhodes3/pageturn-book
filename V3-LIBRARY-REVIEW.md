@@ -118,20 +118,25 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 30.9 kB | 72.7 kB | 57% |
-| Plurality | 75.5 kB | 517.5 kB | 85% |
-| Cyber Dictionary | 44.5 kB | 130.7 kB | 66% |
-| AI Models Research | 28.1 kB | 49.8 kB | 44% |
+| What Is Ethical AI? | 33.2 kB | 75.0 kB | 56% |
+| Plurality | 77.9 kB | 519.9 kB | 85% |
+| Cyber Dictionary | 46.9 kB | 133.1 kB | 65% |
+| AI Models Research | 30.4 kB | 52.1 kB | 42% |
 
-These gzip paths include the 21.7 kB shared V3 route (20,189-byte assets plus
-1.5 kB route HTML), the publication manifest, and either the first two chapters
+These gzip paths include the 24.1 kB shared V3 route (22,368-byte assets plus
+1.7 kB route HTML), the publication manifest, and either the first two chapters
 or the complete semantic corpus.
+
+The three optional Ethical AI figure files add 123.0 kB to static hosting. They
+are already compressed lossless WebP, so aggregate artifact gzip is effectively
+the same size. Default Pop-out and Off sessions transfer zero figure bytes;
+opening or reaching one figure transfers only that asset.
 
 ## 5. Build and validation evidence
 
 - 23 fixtures build through the same publication CLI.
 - 324 static semantic chapter routes are emitted.
-- The Pages artifact contains 411 files totaling 6.10 MB raw / 1.67 MB gzip.
+- The Pages artifact contains 415 files totaling 6.24 MB raw / 1.79 MB gzip.
 - The Vite multi-page build processes 330 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf
@@ -141,11 +146,11 @@ or the complete semantic corpus.
   are retained.
 - The complete Ethical AI traversal confirms all 17 chapter openings, all 122
   references, and the disclaimer.
-- All 38 unit tests and 64 browser scenarios pass against both root and GitHub
+- All 40 unit tests and 67 browser scenarios pass against both root and GitHub
   Pages base paths. The browser matrix includes lazy-window release, load
   failure/retry, turn/rebuild races, superseded navigation, resume/history,
   deep-anchor typography, configurable chapter flow, bidirectional VANGO
-  traversal, reference styling, and sharing.
+  traversal, reference styling, figure loading/dialog focus, and sharing.
 - V1 and V2 continue to use their original bundles and routes.
 - Source regeneration is deterministic: a complete lab/Plurality refresh
   produced the same whole-tree SHA-256 digest before and after regeneration.
@@ -166,6 +171,11 @@ or the complete semantic corpus.
   future bracket-numbered opening paragraph, independent of chapter naming.
 - Verified every CoLab Works Cited chapter and representative cross-spine turns
   in browser tests.
+- Extracted three lossless Ethical AI figures from its pinned PDF with recorded
+  hashes, dimensions, captions, and meaningful alternatives.
+- Added configurable `off`, `on`, and `popout` treatments. Ethical AI defaults
+  to Pop-out, which transfers no image until a reader opens one; On page waits
+  until the figure page is reached.
 
 ### 6.1 Runtime - open
 
@@ -182,9 +192,11 @@ or the complete semantic corpus.
 - Complete table splitting and responsive table presentation.
 - Review formula typography and chart-table labels.
 - Decide which Plurality figures should become bounded lazy images instead of
-  pinned links.
+  pinned links, then map them through the proven media treatment.
 - Verify all Plurality internal cross-chapter links and note back-links.
 - Finish the AI Research Assistant appendix comparison against its bespoke page.
+- Move the V3 demo media catalog into publication manifests and the image build
+  pipeline with responsive variants and edition-level integrity metadata.
 
 ### 6.3 Reader features - open
 

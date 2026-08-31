@@ -2340,8 +2340,9 @@ opaque-turn, reference-styling, and back-navigation pass.
 |---|---|---|---|
 | V3-400 | P1 | Ready | Move adjacent prefetch to an idle scheduler, abort obsolete chapter requests, and incrementally paginate unusually long chapters. |
 | V3-401 | P1 | Ready | Complete publication-by-publication editorial parity, table splitting, responsive tables, formula typography, chart labels, and the AI Research Assistant appendix comparison. |
-| V3-402 | P2 | Ready | Verify all Plurality cross-chapter links and note back-links; decide which pinned figures should become bounded lazy images. |
+| V3-402 | P2 | Ready | Verify all Plurality cross-chapter links and note back-links; map licensed figures into the bounded Off/On-page/Pop-out treatment proven by Ethical AI. |
 | V3-403 | P1 | Ready | Measure and tune turn frames on representative low-end mobile hardware, then record browser/device budgets. |
+| V3-404 | P1 | Ready | Move the demo figure catalog into the validated publication manifest/build pipeline, generate measurement-driven responsive variants, and complete provenance/editorial mapping across the library. |
 | V3-410 | P2 | Ready | Add hierarchical contents navigation and in-book search for long publications. |
 | V3-411 | P2 | Ready | Add bookmarks and a visible start-from-beginning action for resumed books. |
 | V3-412 | P3 | Future | Extend sharing to selected text and exported annotations after privacy and content-boundary review. |

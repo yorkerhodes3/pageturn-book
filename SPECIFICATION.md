@@ -1305,6 +1305,11 @@ increase the active content window without an explicit performance review.
 | PAG-P-006 | Pagination is tested across the supported browser matrix. |
 | PAG-P-007 | Reduced motion removes spatial page transitions. |
 | PAG-P-008 | UI calls the value screen progress or screen page, not a durable citation page. |
+| PAG-P-009 | Publication figures may configure `off`, `on`, or `popout` treatment; absent media defaults to `off`. |
+| PAG-P-010 | `off` requests no figure assets; `popout` requests an asset only after activation; `on` requests it only when its semantic page becomes active. |
+| PAG-P-011 | Every configured figure records immutable provenance, intrinsic dimensions, meaningful alternative text, a caption, chapter identity, and a stable insertion anchor. |
+| PAG-P-012 | Pop-out dialogs trap focus natively, close by keyboard, return focus to their trigger, and release the image source when closed. |
+| PAG-P-013 | Changing figure treatment repaginates only the loaded chapter window and preserves the durable semantic source location. |
 
 The implementation may use CSS columns, explicit semantic segments, or a
 combination only after comparative prototype evidence.
@@ -1327,7 +1332,7 @@ collection, DOM ownership, continuous render loop, or all-page lifecycle.
 | TURN-P-008 | Pointer, keyboard/button, and corner-preview motion use the same geometry solver and face projection rather than separate visual approximations. |
 | TURN-P-009 | Resize, breakpoint, font-size, and content repagination safely cancel or settle active geometry before rebuilding pages. |
 | TURN-P-010 | Reduced motion bypasses spatial folding and preserves an understandable immediate end state. |
-| TURN-P-011 | The geometry path adds no publication-image requests, no page textures, no idle animation loop, and no more than 20 kB gzip of deployed runtime. |
+| TURN-P-011 | The geometry path adds no implicit publication-image requests, page textures, or idle animation loop. Explicit figure requests follow PAG-P-009 through PAG-P-013; deployed runtime remains subject to the 20 kB gzip promotion gate. |
 | TURN-P-012 | Active-frame work meets at least 55 FPS on the desktop reference profile and 45 FPS on the representative mobile profile without a task over 50 ms. |
 | TURN-P-013 | The current CSS turn remains available as an internal rollback until the geometry path passes promotion gates; the legacy fallback remains independently available. |
 | TURN-P-014 | Derived StPageFlip code and design retain the MIT copyright and permission notice in distributed source and notices. |

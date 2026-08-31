@@ -52,6 +52,17 @@
               aria-label="Increase book text size"
             >A+</button>
           </div>
+          <label class="v3-media-picker" data-v3-media-picker hidden>
+          <span>Images</span>
+          <select
+            data-v3-media-treatment
+            aria-label="Image treatment"
+          >
+            <option value="off">Off</option>
+            <option value="on">On page</option>
+            <option value="popout">Pop-out</option>
+          </select>
+          </label>
           <button
             type="button"
             class="v3-share"
@@ -147,6 +158,25 @@
         </nav>
       </section>
     </main>
+
+    <dialog
+      class="v3-media-dialog"
+      data-v3-media-dialog
+      aria-labelledby="v3-media-dialog-title"
+    >
+      <div class="v3-media-dialog-frame">
+        <form method="dialog">
+          <button type="submit" aria-label="Close figure">Close</button>
+        </form>
+        <h2 id="v3-media-dialog-title" data-v3-media-dialog-title>
+          Publication figure
+        </h2>
+        <figure>
+          <img data-v3-media-dialog-image alt="">
+          <figcaption data-v3-media-dialog-caption></figcaption>
+        </figure>
+      </div>
+    </dialog>
 
     <script type="module" src="/src/v3.ts"></script>
   </body>

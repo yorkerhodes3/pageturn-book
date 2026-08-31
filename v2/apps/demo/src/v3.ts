@@ -17,6 +17,11 @@ import {
   writeBookFontScale,
 } from "@ethical-tech/book-reader-ui";
 import { catalogBook } from "./library-catalog.js";
+import {
+  publicationMedia,
+  type V3MediaFigure,
+  type V3MediaTreatment,
+} from "./v3-media.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
@@ -102,6 +107,7 @@ const query = new URLSearchParams(globalThis.location.search);
 const requestedBookId = query.get("book") ?? "what-is-ethical-ai";
 const requestedChapterId = query.get("chapter");
 const selectedBook = catalogBook(requestedBookId);
+const mediaConfig = publicationMedia(requestedBookId);
 const maximumSegmentCharacters = 540;
 const chaptersStartOnRight = selectedBook?.chaptersStartOnRight ?? true;
 
@@ -114,6 +120,24 @@ function requiredElement<T extends Element>(
     throw new Error(`V3 prototype is missing required element: ${selector}`);
   }
   return node;
+}
+
+function mediaTreatmentFrom(
+  parameters: URLSearchParams,
+): V3MediaTreatment {
+  const requested = parameters.get("media");
+  if (requested === null) {
+    return mediaConfig?.defaultTreatment ?? "off";
+  }
+  if (requested === "off" || requested === "on" || requested === "popout") {
+    if (!mediaConfig && requested !== "off") {
+      throw new Error(
+        `V3 publication has no configured images: ${requestedBookId}`,
+      );
+    }
+    return requested;
+  }
+  throw new Error(`V3 image treatment is unavailable: ${requested}`);
 }
 
 function applyPublicationIdentity(publication: V3Manifest): void {
@@ -141,6 +165,11 @@ function applyPublicationIdentity(publication: V3Manifest): void {
     "--v3-cover-accent",
     catalogCover?.accent ?? publication.cover?.accent ?? "#b99a5e",
   );
+  mediaPicker.hidden = mediaConfig === undefined;
+  mediaSelect.disabled = mediaConfig === undefined;
+  mediaSelect.value = mediaTreatment;
+  reader.classList.toggle("v3-has-media", mediaConfig !== undefined);
+  reader.dataset.v3MediaMode = mediaTreatment;
   chapterSelect.replaceChildren(
     new Option("Front matter", ""),
     ...publication.chapters.map(
@@ -198,6 +227,88 @@ function chapterOpeningLabel(text: string): HTMLElement {
     text,
   );
   return label;
+}
+
+function mediaFigureBlock(
+  figure: V3MediaFigure,
+  chapterState: ChapterState,
+): SemanticBlock {
+  const node = createElement(
+    "figure",
+    `v3-media-figure v3-media-${mediaTreatment}`,
+  );
+  const anchor = `v3-media-${figure.id}`;
+  node.id = anchor;
+  node.dataset.v3MediaId = figure.id;
+  node.style.setProperty(
+    "--v3-media-aspect",
+    `${figure.width} / ${figure.height}`,
+  );
+  if (mediaTreatment === "on") {
+    const image = document.createElement("img");
+    image.alt = figure.alt;
+    image.width = figure.width;
+    image.height = figure.height;
+    image.loading = "lazy";
+    image.decoding = "async";
+    image.dataset.v3MediaSrc = new URL(
+      figure.src,
+      globalThis.location.href,
+    ).href;
+    node.append(image);
+  } else {
+    const open = createElement("button", undefined, "Open figure");
+    open.type = "button";
+    open.dataset.v3MediaOpen = figure.id;
+    open.setAttribute("aria-haspopup", "dialog");
+    open.setAttribute("aria-label", `Open ${figure.caption}`);
+    node.append(open);
+  }
+  node.append(createElement("figcaption", undefined, figure.caption));
+  return {
+    node,
+    anchor,
+    chapterTitle: chapterState.chapter.title,
+    chapterLabel: chapterLabelForChapter(chapterState.chapter),
+    chapterStart: false,
+  };
+}
+
+function blocksWithMedia(chapterState: ChapterState): readonly SemanticBlock[] {
+  const blocks = chapterState.blocks ?? [];
+  if (mediaTreatment === "off" || !mediaConfig) {
+    return blocks;
+  }
+  const result = [...blocks];
+  for (const figure of mediaConfig.figures.filter(
+    ({ chapterId }) => chapterId === String(chapterState.chapter.chapterId),
+  )) {
+    let anchorIndex = -1;
+    for (let index = result.length - 1; index >= 0; index -= 1) {
+      if (result[index]?.anchor === figure.afterAnchor) {
+        anchorIndex = index;
+        break;
+      }
+    }
+    if (anchorIndex < 0) {
+      throw new Error(
+        `V3 figure ${figure.id} cannot find anchor ${figure.afterAnchor}`,
+      );
+    }
+    result.splice(anchorIndex + 1, 0, mediaFigureBlock(figure, chapterState));
+  }
+  return result;
+}
+
+function activateMediaImages(root: ParentNode): void {
+  for (const image of root.querySelectorAll<HTMLImageElement>(
+    "img[data-v3-media-src]",
+  )) {
+    const src = image.dataset.v3MediaSrc;
+    if (src) {
+      image.src = src;
+    }
+  }
 }
 
 type TextRange = Readonly<{
@@ -778,6 +889,7 @@ function createSheet(
     content.append(chapterOpeningLabel(page.chapterLabel ?? "Chapter"));
   }
   content.append(...cloneNodes(page.nodes, !decorative));
+  activateMediaImages(content);
   const pageFolio = createElement("div", "v3-sheet-folio", String(folio));
   sheet.append(running, content, pageFolio);
   return sheet;
@@ -829,6 +941,22 @@ const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
 const shareStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-share-status]",
 );
+const mediaPicker = requiredElement<HTMLElement>("[data-v3-media-picker]");
+const mediaSelect = requiredElement<HTMLSelectElement>(
+  "[data-v3-media-treatment]",
+);
+const mediaDialog = requiredElement<HTMLDialogElement>(
+  "[data-v3-media-dialog]",
+);
+const mediaDialogTitle = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-title]",
+);
+const mediaDialogImage = requiredElement<HTMLImageElement>(
+  "[data-v3-media-dialog-image]",
+);
+const mediaDialogCaption = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-caption]",
+);
 const backLink = requiredElement<HTMLAnchorElement>("[data-v3-back]");
 const previous = requiredElement<HTMLButtonElement>("[data-v3-previous]");
 const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
@@ -852,6 +980,7 @@ let chapterWindowVersion = 0;
 let retainedChapterIndices: number[] = [];
 let opening = true;
 let fontScale = 1;
+let mediaTreatment: V3MediaTreatment = mediaConfig?.defaultTreatment ?? "off";
 let locationTrackingReady = false;
 let applyingHistory = false;
 let sharing = false;
@@ -861,6 +990,7 @@ let preferredAnchor:
 let locationNavigationVersion = 0;
 let failureReported = false;
 let pendingTurn = false;
+let mediaReturnFocus: HTMLElement | undefined;
 
 if (query.get("embed") === "1") {
   document.body.classList.add("v3-page-embedded");
@@ -1264,6 +1394,71 @@ function setFontScale(value: number): void {
   }
 }
 
+function setMediaTreatment(value: string): void {
+  if (!mediaConfig) {
+    throw new Error("V3 publication has no configured image treatment");
+  }
+  if (value !== "off" && value !== "on" && value !== "popout") {
+    throw new Error(`V3 image treatment is unavailable: ${value}`);
+  }
+  if (value === mediaTreatment) {
+    return;
+  }
+  const preservation = currentPreservation();
+  if (activeTurn) {
+    finishTurn(false);
+  }
+  if (mediaDialog.open) {
+    mediaDialog.close();
+  }
+  mediaTreatment = value;
+  mediaSelect.value = value;
+  reader.dataset.v3MediaMode = value;
+  if (!applyingHistory) {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("media", value);
+    globalThis.history.replaceState({ v3Location: true }, "", url);
+  }
+  reader.setAttribute("aria-busy", "true");
+  status.textContent = "Applying image treatment";
+  try {
+    rebuildPages(
+      preservation.anchor,
+      preservation.progress,
+      preservation.chapterIndex,
+      preservation.chapterPageOffset,
+    );
+    reportReadyIfHealthy();
+  } catch (error: unknown) {
+    reportFailure("V3 could not apply the image treatment", error);
+  }
+}
+
+function openMediaFigure(id: string, trigger: HTMLElement): void {
+  const figure = mediaConfig?.figures.find((candidate) => candidate.id === id);
+  if (!figure) {
+    throw new Error(`V3 publication figure is unavailable: ${id}`);
+  }
+  mediaReturnFocus = trigger;
+  mediaDialogTitle.textContent = figure.caption;
+  mediaDialogCaption.textContent =
+    `${figure.caption} Extracted from the immutable designed publication.`;
+  mediaDialogImage.alt = figure.alt;
+  mediaDialogImage.width = figure.width;
+  mediaDialogImage.height = figure.height;
+  mediaDialogImage.src = new URL(figure.src, globalThis.location.href).href;
+  mediaDialog.showModal();
+}
+
+function onMediaDialogClose(): void {
+  mediaDialogImage.removeAttribute("src");
+  mediaDialogImage.alt = "";
+  if (mediaReturnFocus?.isConnected) {
+    mediaReturnFocus.focus();
+  }
+  mediaReturnFocus = undefined;
+}
+
 async function shareCurrentLocation(): Promise<void> {
   if (!manifest || sharing) {
     return;
@@ -1303,6 +1498,19 @@ function onStationaryClick(event: MouseEvent): void {
     event.shiftKey ||
     !(event.target instanceof Element)
   ) {
+    return;
+  }
+  const mediaOpen = event.target.closest<HTMLButtonElement>(
+    "[data-v3-media-open]",
+  );
+  const mediaId = mediaOpen?.dataset.v3MediaOpen;
+  if (mediaOpen && mediaId) {
+    event.preventDefault();
+    try {
+      openMediaFigure(mediaId, mediaOpen);
+    } catch (error: unknown) {
+      reportFailure("V3 could not open the publication figure", error);
+    }
     return;
   }
   const retry = event.target.closest<HTMLButtonElement>(
@@ -1418,7 +1626,11 @@ async function goToLocation(
       chapterStates.length <= 1 ? 0 : chapterIndex / (chapterStates.length - 1),
   };
   while (navigationVersion === locationNavigationVersion) {
-    const result = await ensureChapterWindow(chapterIndex, preservation);
+    const result = await ensureChapterWindow(
+      chapterIndex,
+      preservation,
+      "none",
+    );
     if (navigationVersion !== locationNavigationVersion) {
       return;
     }
@@ -2000,6 +2212,18 @@ function paginateContent(
   const fittedBlocks = blocks.flatMap((block) => fitBlock(block));
 
   for (const block of fittedBlocks) {
+    if (block.node.matches(".v3-media-on")) {
+      if (current.length > 0) {
+        result.push(
+          pageFromBlocks(current, result.length + 1, chapterState),
+        );
+        current = [];
+      }
+      result.push(
+        pageFromBlocks([block], result.length + 1, chapterState),
+      );
+      continue;
+    }
     if (block.chapterStart && current.length > 0) {
       result.push(
         pageFromBlocks(current, result.length + 1, chapterState),
@@ -2104,7 +2328,7 @@ function repaginateLoadedChapters(): void {
   for (const chapterState of chapterStates) {
     if (chapterState.status === "ready" && chapterState.blocks) {
       const chapterPages = paginateContent(
-        chapterState.blocks,
+        blocksWithMedia(chapterState),
         chapterState,
       );
       const physicalPages =
@@ -2132,6 +2356,7 @@ function rebuildPages(
   preserveProgress = 0,
   preserveChapterIndex?: number,
   preserveChapterPageOffset?: number,
+  locationUpdate: LocationUpdate = "replace",
 ): void {
   if (!manifest) {
     return;
@@ -2196,7 +2421,7 @@ function rebuildPages(
     preservedIndex >= 0 ? preservedIndex : projectedIndex;
   spreadStart =
     Math.floor(Math.min(targetIndex, maximumStart) / step) * step;
-  renderStationary();
+  renderStationary(locationUpdate);
 }
 
 function currentPreservation(): Readonly<{
@@ -2256,6 +2481,7 @@ function releaseChaptersOutside(indices: readonly number[]): void {
 function rebuildChapterSet(
   indices: readonly number[],
   preservation: ReturnType<typeof currentPreservation>,
+  locationUpdate: LocationUpdate,
 ): void {
   releaseChaptersOutside(indices);
   if (activeTurn) {
@@ -2266,6 +2492,7 @@ function rebuildChapterSet(
     preservation.progress,
     preservation.chapterIndex,
     preservation.chapterPageOffset,
+    locationUpdate,
   );
 }
 
@@ -2316,6 +2543,7 @@ async function ensureChapterLoaded(index: number): Promise<void> {
 async function ensureChapterSet(
   requestedIndices: readonly number[],
   preservation: ReturnType<typeof currentPreservation>,
+  locationUpdate: LocationUpdate = "replace",
 ): Promise<boolean> {
   const desired = [...new Set(requestedIndices)]
     .filter((index) => index >= 0 && index < chapterStates.length)
@@ -2342,7 +2570,7 @@ async function ensureChapterSet(
       console.warn("V3 ignored a failure from an obsolete chapter window", error);
       return false;
     }
-    rebuildChapterSet(desired, preservation);
+    rebuildChapterSet(desired, preservation, locationUpdate);
     throw error;
   }
   if (version !== chapterWindowVersion) {
@@ -2350,7 +2578,7 @@ async function ensureChapterSet(
     return false;
   }
 
-  rebuildChapterSet(desired, preservation);
+  rebuildChapterSet(desired, preservation, locationUpdate);
   if (!opening) {
     reportReady();
   } else {
@@ -2362,6 +2590,7 @@ async function ensureChapterSet(
 async function ensureChapterWindow(
   centerIndex: number,
   preservation = currentPreservation(),
+  locationUpdate: LocationUpdate = "replace",
 ): Promise<boolean> {
   const boundedCenter = Math.min(
     chapterStates.length - 1,
@@ -2370,6 +2599,7 @@ async function ensureChapterWindow(
   return ensureChapterSet(
     [boundedCenter - 1, boundedCenter, boundedCenter + 1],
     preservation,
+    locationUpdate,
   );
 }
 
@@ -2488,6 +2718,7 @@ async function restoreHistoryLocation(): Promise<void> {
   }
   const chapterId = params.get("chapter");
   const anchor = decodeLocationHash();
+  const restoredMediaTreatment = mediaTreatmentFrom(params);
   if (anchor && chapterId === null) {
     throw new Error(
       "V3 source-anchor URLs must include their chapter parameter",
@@ -2495,6 +2726,9 @@ async function restoreHistoryLocation(): Promise<void> {
   }
   applyingHistory = true;
   try {
+    if (restoredMediaTreatment !== mediaTreatment) {
+      setMediaTreatment(restoredMediaTreatment);
+    }
     await goToLocation(chapterId ?? "", anchor, "none");
     const restored = currentReadingLocation();
     if (restored) {
@@ -2520,6 +2754,7 @@ async function initialize(): Promise<void> {
       `V3 requested ${requestedBookId} but loaded ${manifest.bookId}`,
     );
   }
+  mediaTreatment = mediaTreatmentFrom(query);
   applyPublicationIdentity(manifest);
   applyFontScale(readBookFontScale(manifest.bookId, 1));
   chapterStates = manifest.chapters.map((chapter, index) => ({
@@ -2607,6 +2842,14 @@ next.addEventListener("click", () => void automaticTurn("forward"));
 decreaseFont.addEventListener("click", () => setFontScale(fontScale - 0.1));
 increaseFont.addEventListener("click", () => setFontScale(fontScale + 0.1));
 shareButton.addEventListener("click", () => void shareCurrentLocation());
+mediaSelect.addEventListener("change", () => {
+  try {
+    setMediaTreatment(mediaSelect.value);
+  } catch (error: unknown) {
+    reportFailure("V3 could not change the image treatment", error);
+  }
+});
+mediaDialog.addEventListener("close", onMediaDialogClose);
 chapterSelect.addEventListener("change", () =>
   void goToChapter(chapterSelect.value).catch((error: unknown) => {
     reportFailure("V3 could not open the selected chapter", error);
@@ -2615,6 +2858,7 @@ chapterSelect.addEventListener("change", () =>
 
 const onKeyDown = (event: KeyboardEvent) => {
   if (
+    mediaDialog.open ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
@@ -2670,6 +2914,8 @@ globalThis.addEventListener(
     document.removeEventListener("keydown", onKeyDown);
     globalThis.removeEventListener("popstate", onPopState);
     stationary.removeEventListener("click", onStationaryClick);
+    mediaDialog.removeEventListener("close", onMediaDialogClose);
+    mediaDialogImage.removeAttribute("src");
     chapterSelect.replaceChildren();
     if (resizeTimer !== undefined) {
       clearTimeout(resizeTimer);
