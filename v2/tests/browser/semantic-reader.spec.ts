@@ -522,31 +522,32 @@ test("defaults chapters to right pages and lets short books flow", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(
-    route("/v3/?book=vango&chapter=background&embed=1#background"),
+    route("/v3/?book=vango&chapter=foreword&embed=1#foreword"),
   );
 
   const reader = page.locator("[data-v3-reader]");
-  const background = page.getByRole("heading", {
+  const foreword = page.getByRole("heading", {
     level: 1,
-    name: "Background and Rationale",
+    name: "Foreword",
   });
-  const objectives = page.getByRole("heading", {
-    level: 1,
-    name: "Objectives",
-  });
-  await expect(background).toBeVisible();
+  await expect(foreword).toBeVisible();
   await expect(reader).toHaveAttribute(
     "data-v3-loaded-chapter-ids",
-    "executive-summary,background,objectives",
+    "foreword,executive-summary",
     { timeout: 15_000 },
   );
-  await expect(objectives).toBeVisible();
+  const counter = page.locator("[data-v3-counter]");
+  const before = await counter.textContent();
+  await page.getByRole("button", { name: "Next spread" }).click();
+  await expect.poll(() => counter.textContent()).not.toBe(before);
+  const executiveSummary = page.getByRole("heading", {
+    level: 1,
+    name: "Executive Summary",
+  });
+  await expect(executiveSummary).toBeVisible();
   await expect(
-    background.locator("xpath=ancestor::article[1]"),
+    executiveSummary.locator("xpath=ancestor::article[1]"),
   ).toHaveClass(/v3-sheet-left/);
-  await expect(
-    objectives.locator("xpath=ancestor::article[1]"),
-  ).toHaveClass(/v3-sheet-right/);
   await expect(
     page.locator("[data-v3-stationary] .v3-sheet-blank"),
   ).toHaveCount(0);
