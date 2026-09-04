@@ -56,7 +56,7 @@
 }
 
 .v3-reader {
-  width: min(94rem, 100%);
+  width: min(86rem, calc(100% - clamp(1rem, 4vw, 3rem)));
   margin: 0 auto;
 }
 
@@ -302,16 +302,16 @@
 
 .v3-spread {
   position: relative;
-  z-index: 2;
+  z-index: auto;
   width: calc(100% - clamp(1.2rem, 3vw, 2.4rem));
   margin: 0 auto;
   overflow: visible;
   aspect-ratio: 1.54;
+  border-radius: 0.42rem / 0.3rem;
   background: #e9dfcf;
   box-shadow:
     0 0.9rem 1.4rem rgb(0 0 0 / 45%),
     inset 0 0 0 1px rgb(79 59 34 / 25%);
-  isolation: isolate;
 }
 
 .v3-stationary {
@@ -438,16 +438,57 @@
 
 .v3-sheet-left {
   left: 0;
+  border-radius: 0.46rem 0.08rem 0.16rem 0.58rem /
+    0.3rem 0.06rem 0.2rem 0.54rem;
   box-shadow:
     inset -1.8rem 0 2rem -1.7rem rgb(54 38 20 / 54%),
-    inset 0.35rem 0 0.65rem rgb(255 255 255 / 36%);
+    inset 0.35rem 0 0.65rem rgb(255 255 255 / 36%),
+    inset 0 0.55rem 0.8rem -0.7rem rgb(91 64 31 / 35%),
+    inset 0 -0.55rem 0.8rem -0.7rem rgb(91 64 31 / 28%);
 }
 
 .v3-sheet-right {
   left: 50%;
+  border-radius: 0.08rem 0.46rem 0.58rem 0.16rem /
+    0.06rem 0.3rem 0.54rem 0.2rem;
   box-shadow:
     inset 1.8rem 0 2rem -1.7rem rgb(54 38 20 / 54%),
-    inset -0.35rem 0 0.65rem rgb(255 255 255 / 36%);
+    inset -0.35rem 0 0.65rem rgb(255 255 255 / 36%),
+    inset 0 0.55rem 0.8rem -0.7rem rgb(91 64 31 / 35%),
+    inset 0 -0.55rem 0.8rem -0.7rem rgb(91 64 31 / 28%);
+}
+
+.v3-sheet-left::before,
+.v3-sheet-right::before {
+  position: absolute;
+  z-index: 3;
+  top: 0.35%;
+  bottom: 0.45%;
+  width: clamp(0.4rem, 2.4cqw, 1.05rem);
+  content: "";
+  pointer-events: none;
+}
+
+.v3-sheet-left::before {
+  left: 0;
+  border-radius: 0.46rem 0 0 0.58rem / 0.3rem 0 0 0.54rem;
+  background: linear-gradient(
+    90deg,
+    rgb(76 53 27 / 18%),
+    rgb(255 255 255 / 18%) 32%,
+    transparent
+  );
+}
+
+.v3-sheet-right::before {
+  right: 0;
+  border-radius: 0 0.46rem 0.58rem 0 / 0 0.3rem 0.54rem 0;
+  background: linear-gradient(
+    270deg,
+    rgb(76 53 27 / 18%),
+    rgb(255 255 255 / 18%) 32%,
+    transparent
+  );
 }
 
 .v3-sheet-left::after,
@@ -742,7 +783,8 @@
 }
 
 .v3-sheet-blank .v3-sheet-running,
-.v3-sheet-blank .v3-sheet-folio {
+.v3-sheet-blank .v3-sheet-folio,
+.v3-sheet-placeholder .v3-sheet-folio {
   display: none;
 }
 
@@ -1215,6 +1257,10 @@
 }
 
 @media (max-width: 48rem) {
+  .v3-reader {
+    width: 100%;
+  }
+
   .v3-main {
     width: min(100% - 0.5rem, 48rem);
   }

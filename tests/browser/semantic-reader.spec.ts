@@ -181,6 +181,46 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await expect(page.locator(".book-mode-overlay")).toHaveCount(0);
 
   const spread = page.locator("[data-v3-spread]");
+  const physicalGeometry = await page.evaluate(() => {
+    const reader = document.querySelector<HTMLElement>("[data-v3-reader]");
+    const spread = document.querySelector<HTMLElement>("[data-v3-spread]");
+    const fanLeft = document.querySelector<HTMLElement>(".v3-page-fan-left");
+    const fanRight = document.querySelector<HTMLElement>(".v3-page-fan-right");
+    const left = document.querySelector<HTMLElement>(
+      "[data-v3-stationary] .v3-sheet-left",
+    );
+    const right = document.querySelector<HTMLElement>(
+      "[data-v3-stationary] .v3-sheet-right",
+    );
+    if (!reader || !spread || !fanLeft || !fanRight || !left || !right) {
+      throw new Error("Expected complete V3 resting book geometry");
+    }
+    const readerBounds = reader.getBoundingClientRect();
+    const spreadBounds = spread.getBoundingClientRect();
+    const leftFanBounds = fanLeft.getBoundingClientRect();
+    const rightFanBounds = fanRight.getBoundingClientRect();
+    return {
+      readerWidth: readerBounds.width,
+      leftFanVisible: leftFanBounds.left < spreadBounds.left,
+      rightFanVisible: rightFanBounds.right > spreadBounds.right,
+      leftRadius: getComputedStyle(left).borderRadius,
+      rightRadius: getComputedStyle(right).borderRadius,
+      leftTransform: getComputedStyle(left).transform,
+      rightTransform: getComputedStyle(right).transform,
+      spreadZIndex: getComputedStyle(spread).zIndex,
+      spreadIsolation: getComputedStyle(spread).isolation,
+    };
+  });
+  expect(physicalGeometry.readerWidth).toBeLessThanOrEqual(1377);
+  expect(physicalGeometry.leftFanVisible).toBe(true);
+  expect(physicalGeometry.rightFanVisible).toBe(true);
+  expect(physicalGeometry.leftRadius).not.toBe("0px");
+  expect(physicalGeometry.rightRadius).not.toBe("0px");
+  expect(physicalGeometry.leftTransform).toBe("none");
+  expect(physicalGeometry.rightTransform).toBe("none");
+  expect(physicalGeometry.spreadZIndex).toBe("auto");
+  expect(physicalGeometry.spreadIsolation).toBe("auto");
+
   const bounds = await spread.boundingBox();
   const corner = page.getByRole("button", {
   name: "Turn the next page from its top corner",
@@ -222,6 +262,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       backingInset: backingStyle?.inset,
       paperColor: paper?.backgroundColor,
       paperOpacity: paper?.opacity,
+      surfaceZIndex: surface.zIndex,
     };
   });
   expect(opaqueTurn).toMatchObject({
@@ -232,7 +273,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     backingInset: "-1px",
     paperColor: "rgb(255, 253, 248)",
     paperOpacity: "1",
+    surfaceZIndex: "6",
   });
+  await expect(page.locator(".v3-spine")).toHaveCSS("z-index", "3");
   expect(
   await moving.evaluate((node) => getComputedStyle(node).clipPath),
   ).toMatch(/^polygon\(/);
@@ -2074,6 +2117,7 @@ test("keeps Plurality chapter links local and maps licensed figures", async ({
       figureResponses.push(response.url());
     }
   });
+
   const policyAnchor =
     "p-the-principle-of-circular-investment-that-we-des-4cb5ed5d63";
   await page.goto(
@@ -2122,6 +2166,68 @@ test("keeps Plurality chapter links local and maps licensed figures", async ({
   expect(listItemCounts).toEqual([5, 4]);
 });
 
+test("uses chapter-local Plurality folios independent of lazy loading", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(route("/v3/?book=plurality&chapter=7-0#7-0"));
+
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  const heading = page.getByRole("heading", { level: 1, name: "Policy" });
+  await expect(heading).toBeVisible();
+  const openingSheet = heading.locator("xpath=ancestor::article[1]");
+  const folio = openingSheet.locator(".v3-sheet-folio");
+  await expect(folio).toHaveAttribute("data-v3-folio-scope", "chapter");
+  await expect(folio).toHaveText(/^1 \/ \d+$/);
+  const initialFolio = await folio.textContent();
+  const chapterPageCount = initialFolio?.split(" / ")[1];
+  await expect(page.locator("[data-v3-counter]")).toContainText(
+    `page 1/${chapterPageCount}`,
+  );
+  expect(
+    Number(await reader.getAttribute("data-v3-page-index")),
+  ).toBeGreaterThan(10);
+
+  await expect
+    .poll(() =>
+      reader
+        .getAttribute("data-v3-loaded-chapters")
+        .then((value) => Number(value)),
+    )
+    .toBe(3);
+  await expect(folio).toHaveText(initialFolio ?? "");
+});
+
+test("labels an unnumbered mobile blank verso without resetting to page one", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(
+    route("/v3/?book=what-is-ethical-ai&chapter=executive-summary#executive-summary"),
+  );
+
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  const next = page.getByRole("button", { name: "Next spread" });
+  const stationary = page.locator("[data-v3-stationary]");
+  for (let turn = 0; turn < 8; turn += 1) {
+    if ((await stationary.locator(".v3-sheet-blank").count()) > 0) {
+      break;
+    }
+    await next.click();
+  }
+  await expect(stationary.locator(".v3-sheet-blank")).toBeVisible();
+  await expect(page.locator("[data-v3-counter]")).toContainText("blank verso");
+  await expect(page.locator("[data-v3-counter]")).not.toContainText("page 1/");
+  await expect(
+    stationary.locator(".v3-sheet-blank .v3-sheet-folio"),
+  ).toBeHidden();
+});
+
 test("pulls a shelf volume into the semantic reader", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(route("/shelf/"));
@@ -2167,6 +2273,16 @@ test("animates a selected binding into the V3 geometry reader", async ({
   page,
 }) => {
   test.setTimeout(60_000);
+  await page.addInitScript(() => {
+    const animations: string[] = [];
+    Object.defineProperty(globalThis, "__v3StartedAnimations", {
+      configurable: true,
+      value: animations,
+    });
+    document.addEventListener("animationstart", (event) => {
+      animations.push(event.animationName);
+    });
+  });
   await page.goto(route("/shelf/"));
   await page
     .getByRole("button", { name: "What Is Ethical AI?, 46 pages" })
@@ -2183,8 +2299,17 @@ test("animates a selected binding into the V3 geometry reader", async ({
   );
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
-  await expect(reader).toHaveAttribute("data-v3-opening", "true");
-  await expect(page.locator("[data-v3-entry-cover]")).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        (
+          globalThis as typeof globalThis & {
+            __v3StartedAnimations?: string[];
+          }
+        ).__v3StartedAnimations?.includes("v3-entry-cover-open"),
+      ),
+    )
+    .toBe(true);
   await expect(reader).toHaveAttribute("data-v3-opening", "false");
 });
 

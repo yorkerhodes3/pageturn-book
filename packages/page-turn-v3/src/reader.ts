@@ -1014,6 +1014,39 @@ function blankChapterPage(chapterState: ChapterState): PrototypePage {
   };
 }
 
+function numberedChapterPages(chapterIndex: number): PrototypePage[] {
+  return (
+    chapterStates[chapterIndex]?.pages?.filter(
+      (chapterPage) => chapterPage.kind === "content",
+    ) ?? []
+  );
+}
+
+function folioLabel(
+  page: PrototypePage,
+  composedFolio: number,
+): Readonly<{ text: string; ariaLabel: string }> | undefined {
+  if (page.kind === "front-matter") {
+    const roman = ["i", "ii", "iii"][composedFolio - 1];
+    return roman
+      ? { text: roman, ariaLabel: `Front matter page ${composedFolio} of 3` }
+      : undefined;
+  }
+  if (page.kind !== "content" || page.chapterIndex === undefined) {
+    return undefined;
+  }
+  const contentPages = numberedChapterPages(page.chapterIndex);
+  const chapterPageIndex = contentPages.indexOf(page);
+  if (chapterPageIndex < 0) {
+    return undefined;
+  }
+  return {
+    text: `${chapterPageIndex + 1} / ${contentPages.length}`,
+    ariaLabel:
+      `Chapter page ${chapterPageIndex + 1} of ${contentPages.length}`,
+  };
+}
+
 function createSheet(
   page: PrototypePage,
   side: "left" | "right",
@@ -1059,7 +1092,16 @@ function createSheet(
   if (!decorative) {
     applyAnnotationMarkers(content);
   }
-  const pageFolio = createElement("div", "v3-sheet-folio", String(folio));
+  const pageFolio = createElement("div", "v3-sheet-folio");
+  const displayedFolio = folioLabel(page, folio);
+  if (displayedFolio) {
+    pageFolio.textContent = displayedFolio.text;
+    pageFolio.setAttribute("aria-label", displayedFolio.ariaLabel);
+    pageFolio.dataset.v3FolioScope =
+      page.kind === "content" ? "chapter" : "front-matter";
+  } else {
+    pageFolio.hidden = true;
+  }
   sheet.append(running, content, pageFolio);
   return sheet;
 }
@@ -2045,8 +2087,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
     visiblePages.filter((page) => page?.kind === "content").at(-1) ??
     visiblePages.find((page) => page?.chapterIndex !== undefined);
   if (focusedPage?.chapterIndex !== undefined) {
-    const chapterState = chapterStates[focusedPage.chapterIndex];
-    const chapterPages = chapterState?.pages ?? [];
+    const chapterPages = numberedChapterPages(focusedPage.chapterIndex);
     const localIndices = visiblePages.flatMap((page) => {
       const localIndex = chapterPages.indexOf(page);
       return localIndex >= 0 ? [localIndex + 1] : [];
@@ -2054,10 +2095,17 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
     const pageLabel =
       localIndices.length > 1
         ? `pages ${localIndices[0]}–${localIndices.at(-1)}`
-        : `page ${localIndices[0] ?? 1}`;
+        : localIndices.length === 1
+          ? `page ${localIndices[0]}`
+          : focusedPage.kind === "blank"
+            ? "blank verso"
+            : "chapter loading";
     counter.value =
       `Chapter ${focusedPage.chapterIndex + 1}/${chapterStates.length}` +
-      ` · ${pageLabel}/${Math.max(1, chapterPages.length)}` +
+      ` · ${pageLabel}` +
+      (localIndices.length > 0
+        ? `/${Math.max(1, chapterPages.length)}`
+        : "") +
       (singlePage
         ? ` · Page ${spreadStart + 1} of ${pages.length}`
         : ` · Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`);
