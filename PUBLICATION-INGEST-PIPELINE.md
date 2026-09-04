@@ -26,7 +26,7 @@ At the pinned Ethical Tech CoLab website revision:
   542 terms and 105 library sources.
 
 Only *What Is Ethical AI?* originally worked in V2/V3 semantic mode because
-`v2/scripts/sync-production-fixture.mjs` was written as a one-book validation
+`scripts/sync-production-fixture.mjs` was written as a one-book validation
 adapter. It hard-codes that source URL, export name, output directory, metadata,
 and edition. Its block converter supports only strings, lead paragraphs, and
 simple lists. There is no generalized report export, no automatic fixture
@@ -214,7 +214,7 @@ The importer does not scrape plurality.net or use the stale assembled
 `english.md`. It rewrites floating figure references to the pinned revision,
 converts figures to immutable lightweight links, and turns Pandoc-style
 footnotes into linked chapter notes. The complete source/license record is
-[v2/apps/fixtures/plurality/SOURCE.md](./v2/apps/fixtures/plurality/SOURCE.md).
+[apps/fixtures/plurality/SOURCE.md](./apps/fixtures/plurality/SOURCE.md).
 
 ### 4.2 Specific risks
 

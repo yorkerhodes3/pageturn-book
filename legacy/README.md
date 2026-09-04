@@ -1,7 +1,7 @@
 # Legacy `read-as-book` fallback
 
-The original viewer is preserved as an independent fallback while Book Reader
-V2 is implemented and evaluated.
+The original viewer is preserved as an independent fallback for PageTurn Book
+V3.
 
 ## Pinned baseline
 
@@ -16,14 +16,14 @@ fallback is needed.
 
 ## Preservation rules
 
-1. V2 work is implemented under [`v2/`](../v2/) and does not modify the legacy
-   source.
-2. V2 uses only the legacy public API through a separately loaded compatibility
+1. V3 work is implemented in the [repository root](../) and does not modify the
+   legacy source.
+2. Compatibility code uses only the legacy public API through a separately loaded
    adapter.
 3. A legacy safety or compatibility fix must be released independently and
    remain reversible to the pinned baseline.
-4. V2 features are not added to the legacy package.
-5. Removing the fallback requires a separate product decision after the V2
+4. V3 features are not added to the legacy package.
+5. Removing the fallback requires a separate product decision after the V3
    pilot, accessibility review, performance review, migration test, and
    rollback review.
 
@@ -42,12 +42,11 @@ fallback is needed.
   dependency requires a newer Node runtime.
 
 These limitations are documented so the fallback is used knowingly. They do
-not authorize V2 work to overwrite the baseline.
+not authorize V3 work to overwrite the baseline.
 
 ## Rollback principle
 
 Publication entry points must be able to select the pinned legacy viewer
-without depending on V2 internals. Until the legacy decommission conditions in
+without depending on V3 internals. Until the legacy decommission conditions in
 [SPECIFICATION.md](../SPECIFICATION.md) are approved, the pinned revision
 remains the independent rollback target.
-

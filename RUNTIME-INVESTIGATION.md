@@ -67,7 +67,7 @@ reader bounds decorative DOM layers.
 The pinned content sync script:
 
 ```text
-v2/scripts/sync-production-fixture.mjs
+scripts/sync-production-fixture.mjs
 ```
 
 downloads the structured source at the pinned website revision and generates

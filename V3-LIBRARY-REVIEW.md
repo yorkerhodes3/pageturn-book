@@ -134,14 +134,15 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 39.9 kB | 81.7 kB | 51% |
-| Plurality | 83.3 kB | 521.2 kB | 84% |
-| Cyber Dictionary | 53.6 kB | 139.8 kB | 62% |
-| AI Models Research | 37.2 kB | 58.8 kB | 37% |
+| What Is Ethical AI? | 40.8 kB | 82.6 kB | 51% |
+| Plurality | 84.2 kB | 522.1 kB | 84% |
+| Cyber Dictionary | 54.5 kB | 140.7 kB | 61% |
+| AI Models Research | 38.1 kB | 59.7 kB | 36% |
 
-These gzip paths include the 30.9 kB shared V3 route (28,475-byte assets plus
-2.4 kB route HTML), the publication manifest, and either the first two chapters
-or the complete semantic corpus.
+These gzip paths include the 31.8 kB catalog-enabled V3 route (31,242-byte
+assets plus 0.5 kB route HTML), the publication manifest, and either the first
+two chapters or the complete semantic corpus. The catalog-free SDK example is
+26.6 kB including route HTML.
 
 The three optional Ethical AI figure files add 123.0 kB to static hosting. They
 are already compressed lossless WebP, so aggregate artifact gzip is effectively
@@ -152,7 +153,7 @@ opening or reaching one figure transfers only that asset.
 
 - 24 fixtures build through the same publication CLI.
 - 333 static semantic chapter routes are emitted.
-- The build artifact contains 428 files totaling 6.65 MB raw / 1.84 MB gzip.
+- The build artifact contains 431 files totaling 6.65 MB raw / 1.85 MB gzip.
 - The Vite multi-page build processes 339 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf

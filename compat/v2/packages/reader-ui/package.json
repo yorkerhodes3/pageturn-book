@@ -1,0 +1,23 @@
+{
+  "name": "@ethical-tech/book-reader-ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@ethical-tech/book-publication-model": "*",
+    "@ethical-tech/book-reader-core": "*",
+    "@ethical-tech/pageturn-book": "3.0.0"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  }
+}

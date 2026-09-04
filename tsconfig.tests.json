@@ -1,0 +1,41 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "types": ["node", "vitest/globals", "@playwright/test"],
+    "paths": {
+      "@ethical-tech/book-publication-model": [
+        "./packages/publication-model/src/index.ts"
+      ],
+      "@ethical-tech/pageturn-book": [
+        "./packages/page-turn-v3/src/index.ts"
+      ],
+      "@ethical-tech/book-reader-core": [
+        "./compat/v2/packages/reader-core/src/index.ts"
+      ],
+      "@ethical-tech/book-reader-ui": [
+        "./compat/v2/packages/reader-ui/src/index.ts"
+      ],
+      "@ethical-tech/book-renderer-semantic": [
+        "./compat/v2/packages/renderer-semantic/src/index.ts"
+      ]
+    }
+  },
+  "include": [
+    "apps/demo/src/**/*.ts",
+    "apps/demo/vite.config.ts",
+    "packages/**/*.test.ts",
+    "compat/v2/packages/**/*.test.ts",
+    "playwright.config.ts",
+    "tests/**/*.ts",
+    "tools/**/*.test.ts",
+    "vitest.config.ts"
+  ],
+  "exclude": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "apps/demo/book/**"
+  ]
+}

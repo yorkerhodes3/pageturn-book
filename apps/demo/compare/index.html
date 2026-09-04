@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book reader side-by-side comparison</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='25' font-size='24'>📖</text></svg>">
+    <link rel="stylesheet" href="/src/demo.css">
+  </head>
+  <body class="compare-page">
+    <header class="compare-header">
+      <div>
+        <p class="comparison-version">Ethical Tech CoLab</p>
+        <h1>Reader comparison</h1>
+      </div>
+      <a href="../">Back to overview</a>
+    </header>
+    <main class="compare-grid">
+      <section class="compare-panel">
+        <h2>Version 1 - fixed-page fallback</h2>
+        <iframe
+          src="../legacy/?view=book"
+          title="Legacy fixed-page reader"
+        ></iframe>
+      </section>
+      <section class="compare-panel">
+        <h2>Version 2 - compatibility reader</h2>
+        <iframe
+          src="../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book"
+          title="V2 semantic reader"
+        ></iframe>
+      </section>
+      <section class="compare-panel compare-panel-v3">
+        <h2>Version 3 - supported PageTurn reader</h2>
+        <iframe
+          src="../v3/?embed=1"
+          title="V3 supported PageTurn reader"
+        ></iframe>
+      </section>
+    </main>
+  </body>
+</html>

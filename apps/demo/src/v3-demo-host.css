@@ -1,0 +1,14 @@
+html,
+body {
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  background: #101717;
+}
+
+[data-sdk-destroy] {
+  position: fixed;
+  z-index: 20;
+  right: 0.5rem;
+  bottom: 0.5rem;
+}

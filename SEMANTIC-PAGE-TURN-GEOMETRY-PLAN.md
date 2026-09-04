@@ -224,7 +224,8 @@ Rules:
 
 ## 8. Implementation layout
 
-Planned modules under `v2/packages/reader-ui/src/`:
+The geometry modules originally planned under `v2/packages/reader-ui/src/` now
+ship from `packages/page-turn-v3/src/`:
 
 ```text
 page-turn-geometry.ts       pure types, constraints, intersections, solver
@@ -401,9 +402,10 @@ The eager-loading limitation recorded in section 10.3 is now addressed:
 - V3 shares a canonical book/chapter/anchor URL through Web Share or clipboard
   fallback. Embed and shelf-handoff query state is omitted from shared links.
 
-The built V3 assets measure 28,475 bytes gzip, 8,475 bytes above the strict decimal
-20 kB promotion gate; payload trimming therefore remains required before
-promotion. Including route HTML, the shared route is 30.9 kB gzip. After
+The catalog-enabled V3 assets measure 31,242 bytes gzip, 11,242 bytes above the
+strict decimal 20 kB optimization target; payload trimming therefore remains
+open even though V3 is now the supported product path. Including route HTML,
+the shared route is 31.8 kB gzip; the catalog-free SDK example is 26.6 kB. After
 adjacent prefetch, the initial Plurality path is about 83.3 kB gzip versus 521.2
 kB for its complete static path. A fresh local Chromium profile retained 3,885 DOM
 nodes and 1.39 MB heap versus the earlier eager baseline of 31,850 nodes and

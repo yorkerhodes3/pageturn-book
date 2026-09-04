@@ -1,4 +1,13 @@
 .DS_Store
 Thumbs.db
 .vscode/
-
+node_modules/
+*.tsbuildinfo
+packages/*/dist/
+compat/v2/packages/*/dist/
+tools/*/dist/
+apps/demo/book/
+apps/demo/dist/
+test-results/
+playwright-report/
+coverage/

@@ -27,7 +27,7 @@ bringing the 4x p95 frame interval below 22.2 ms.
 Build the root artifact, then run:
 
 ```powershell
-Set-Location .\v2
+Set-Location .\pageturn-book
 $env:V3_CPU_RATE = "1"
 $env:V3_MEASURE_PORT = "4183"
 npm run measure:v3-mobile

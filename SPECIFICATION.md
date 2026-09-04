@@ -1,9 +1,16 @@
-# Ethical Tech CoLab Book Reader V2 - Product and Technical Specification
+# PageTurn Book V3 - Specification and historical V2 design record
+
+> **Current product:** PageTurn Book V3, version 3.0.0.
+>
+> The repository-root [`@ethical-tech/pageturn-book`](./packages/page-turn-v3/)
+> package is the supported SDK. The V2 requirements below document the
+> semantic-first foundation that V3 superseded; they are retained for
+> traceability and compatibility review, not as current integration guidance.
 
 | Field | Value |
 |---|---|
-| Status | Draft for implementation planning |
-| Version | 0.1 |
+| Status | V3 accepted; historical V2 baseline retained |
+| Version | 3.0.0 |
 | Date | 2026-08-27 |
 | Architecture basis | [ARCHITECTURE-REVIEW.md](./ARCHITECTURE-REVIEW.md) |
 | Concept basis | [CONCEPT-IDEA.md](./CONCEPT-IDEA.md) |
@@ -12,8 +19,9 @@
 
 ## 1. Decision summary
 
-Book Reader V2 will be a **semantic-first scholarly reader** built alongside,
-not over, the existing `read-as-book` implementation.
+Book Reader V2 was the **semantic-first scholarly reader** built alongside,
+not over, the existing `read-as-book` implementation. PageTurn V3 now carries
+that semantic foundation into the supported book-first SDK.
 
 The first releasable V2 milestone will contain:
 
@@ -58,9 +66,9 @@ V2 work must not overwrite, silently replace, or destructively refactor it.
 
 ### 2.2 Side-by-side development
 
-Until the V2 approach is accepted after implementation review:
+During V2 incubation, before the V3 approach was accepted:
 
-- V2 source will live under a distinct `v2/` boundary.
+- V2 source lived under a distinct `v2/` boundary.
 - Existing source, generated pages, manifests, package metadata, and public APIs
   remain unchanged.
 - V2 packages will not import private modules from the legacy implementation.
@@ -73,9 +81,9 @@ Until the V2 approach is accepted after implementation review:
 - Removing the legacy implementation requires a separate decision after V2
   acceptance, migration verification, and rollback review.
 
-### 2.3 Recommended workspace boundary
+### 2.3 Historical workspace boundary
 
-The implementation should use a visibly separate tree:
+The incubation implementation used a visibly separate tree:
 
 ```text
 /
@@ -285,9 +293,11 @@ The baseline deployment target is an HTTPS static host or CDN supporting:
 
 No server-rendered application runtime is required for R1.
 
-## 7. Proposed V2 workspace
+## 7. Historical V2 workspace
 
-The initial workspace will be a TypeScript package workspace under `v2/`.
+The initial workspace was a TypeScript package workspace under `v2/`. Its
+V2-only packages now live under `compat/v2/`; active V3 packages live at the
+repository root.
 
 ```text
 v2/

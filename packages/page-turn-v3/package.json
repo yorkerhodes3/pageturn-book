@@ -1,0 +1,31 @@
+{
+  "name": "@ethical-tech/pageturn-book",
+  "version": "3.0.0",
+  "description": "Semantic, bounded-loading page-turn book reader and library SDK",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "files": ["dist", "styles.css", "THIRD_PARTY_NOTICES.md", "README.md", "LICENSE"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./geometry": {
+      "types": "./dist/page-turn-geometry.d.ts",
+      "default": "./dist/page-turn-geometry.js"
+    },
+    "./projection": {
+      "types": "./dist/page-turn-projection.d.ts",
+      "default": "./dist/page-turn-projection.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "scripts": {
+    "build": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.tsbuildinfo',{force:true})\" && tsc -b"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

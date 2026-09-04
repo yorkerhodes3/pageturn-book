@@ -16,8 +16,8 @@ Assumptions: LTR physical-book mode first, current 99/221 responsive pagination,
 
 Measurements are from the current repository and Edge 152:
 
-- Current [book-mode.ts](./v2/packages/reader-ui/src/book-mode.ts): **2,604 lines**.
-- Current [theme.css](./v2/packages/theme/theme.css): **2,942 lines** across all reader/shelf presentation.
+- Historical V2 [book-mode.ts](./compat/v2/packages/reader-ui/src/book-mode.ts): **2,604 lines**.
+- Historical V2 [theme.css](./compat/v2/packages/theme/theme.css): **2,942 lines** across its reader/shelf presentation.
 - Installed StPageFlip 2.0.7 complete TypeScript source: **3,312 lines / 118 KB**.
 - StPageFlip flip/render/page/collection subsystem: approximately **2,300 lines**.
 - Shipped StPageFlip module: **43.4 KB raw / 10.2 KB gzip**.

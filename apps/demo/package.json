@@ -1,0 +1,15 @@
+{
+  "name": "@ethical-tech/book-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ethical-tech/book-publication-model": "*",
+    "@ethical-tech/book-reader-core": "*",
+    "@ethical-tech/book-reader-ui": "*",
+    "@ethical-tech/book-renderer-semantic": "*",
+    "@ethical-tech/book-theme": "*",
+    "@ethical-tech/pageturn-book": "3.0.0",
+    "read-as-book": "git+https://github.com/Ethical-Tech-CoLab/read-as-book.git#d1d1ec6193867c13637636fc03e538c27d95261c"
+  }
+}

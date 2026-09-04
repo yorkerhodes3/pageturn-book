@@ -1,8 +1,15 @@
-# Ethical Tech CoLab Book Reader V2 - Implementation Backlog
+# PageTurn Book V3 - Backlog and historical V2 delivery record
+
+> **Current product:** PageTurn Book V3, version 3.0.0, at the repository root.
+>
+> The V2 waves below are retained as implementation history. They are not
+> instructions for new integrations. New work uses
+> [`@ethical-tech/pageturn-book`](./packages/page-turn-v3/); V2-only code is
+> isolated under [`compat/v2/`](./compat/v2/).
 
 | Field | Value |
 |---|---|
-| Status | Initial implementation backlog |
+| Status | V3 active; V2 sections retained as completed history |
 | Date | 2026-08-27 |
 | Specification | [SPECIFICATION.md](./SPECIFICATION.md) |
 | Architecture | [ARCHITECTURE-REVIEW.md](./ARCHITECTURE-REVIEW.md) |
@@ -66,8 +73,9 @@ recommended scope from [SPECIFICATION.md](./SPECIFICATION.md):
 - Existing viewer retained unchanged behind a separate fallback adapter.
 - New bounded facsimile and semantic paged modes remain prototype-gated.
 
-Implementation starts in a new `v2/` workspace. The upstream legacy revision
-remains pinned and independently recoverable.
+Implementation originally started in a separate `v2/` workspace. That
+incubation boundary has been retired: V3 is now the root workspace, V2-specific
+code is under `compat/v2/`, and the upstream legacy revision remains pinned.
 
 ## 3. Release map
 
@@ -2350,6 +2358,7 @@ reference-styling, and back-navigation pass.
 | V3-411 | P2 | Complete | Added edition-scoped local bookmarks and a visible start-from-beginning action on automatic resume. |
 | V3-412 | P3 | Complete (beta) | Added explicit selected-text sharing plus local-only quote/note storage, deletion, navigation, and Markdown export after privacy review. |
 | V3-413 | P2 | Ready | Migrate beta bookmark/annotation arrays to the versioned IndexedDB schemas, add whole-publication deletion/import, and complete assistive-technology review. |
+| V3-414 | P0 | Complete | Made the repository root the V3 workspace, extracted `@ethical-tech/pageturn-book` 3.0.0 with mount/destroy and injected manifest configuration, added packed clean-consumer and browser examples, and isolated V2-only packages under `compat/v2/`. |
 
 These V3 items are independent of V2-232 through V2-238, which still govern
 whether the same geometry path is promoted into the V2 production reader.

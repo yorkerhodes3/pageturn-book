@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/publication-model" },
+    { "path": "./packages/page-turn-v3" },
+    { "path": "./compat/v2/packages/reader-core" },
+    { "path": "./compat/v2/packages/reader-ui" },
+    { "path": "./compat/v2/packages/renderer-semantic" },
+    { "path": "./tools/publication-cli" }
+  ]
+}
