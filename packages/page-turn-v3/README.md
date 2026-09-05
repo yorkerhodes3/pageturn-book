@@ -161,6 +161,8 @@ const reader = createPageTurnBook({
   // Embedded hosts supply their own durable URL builder.
   locationUrl: ({ chapterId, anchor }) =>
     `/reader/${chapterId}/#${encodeURIComponent(anchor)}`,
+  appearanceControls: true,
+  appearancePreset: "modern-lab",
 });
 ```
 
@@ -170,6 +172,79 @@ project-reviewed rights. The available treatments are `off`, `on`, and
 `locationUrl` when PageTurn owns its book/chapter/hash browser history. It can
 also set `keyboardScope: "document"` for full-page arrow-key navigation;
 embedded readers leave keyboard events outside their root untouched.
+
+### Appearance configuration
+
+The same typed appearance object drives the open reader and shelf. It separates
+four concerns:
+
+- `cover` — cover colors and subtitle.
+- `binding` — leather/cloth/paper, thickness, hubs, page count, board
+  thickness, and flat/raised/exposed-stitch spine.
+- `paper` — stock, highlight, edge and ink colors, age, fiber texture,
+  plain/lined/grid background, rule color, and spacing.
+- `fan` — plain, gold, red, or marbled page-block edges and their stripe colors.
+- `typography` — body/heading/UI families, line height, base scale, and drop
+  caps.
+- `geometry` — gutter lift, floating bottom/fore-edge lift, corner roundness,
+  turning fold radius, fold shadow, and cover-board overhang.
+
+```ts
+reader.setAppearance("antique-greek");
+
+reader.setAppearance({
+  paper: {
+    color: "#fffdf4",
+    pattern: "grid",
+    ruleColor: "#b8d0cc",
+  },
+  typography: {
+    bodyFamily: '"Segoe Print", "Bradley Hand", cursive',
+    lineHeight: 1.62,
+  },
+  geometry: {
+    gutterLift: 0.8,
+    bottomLift: 0.6,
+    foldRadius: 0.9,
+  },
+});
+
+const activeAppearance = reader.getAppearance();
+```
+
+Available presets are:
+
+- `default`
+- `antique-greek`
+- `historical-tome`
+- `modern-lab`
+- `lined-journal`
+- `grid-lab`
+- `handwritten-notebook`
+
+`appearanceControls: true` exposes the same fields through the compact Style
+gear and session-only overlay. Typeface and line-height changes repaginate
+around the current source anchor; paint-only changes apply immediately.
+
+The appearance object also drives `mountBookshelf()`. A shelf volume can choose
+an optional pose without changing its interaction or action model:
+
+```ts
+const volumes = [
+  {
+    ...book,
+    placement: { pose: "stacked", stackId: "lab-notebooks", order: 0 },
+  },
+  {
+    ...antiqueBook,
+    placement: { pose: "open-on-stand", standStyle: "lectern" },
+  },
+];
+```
+
+Supported poses are `upright`, `stacked`, and `open-on-stand`. Stack members
+remain separate keyboard-reachable books. The open display and stand are
+rendered with CSS and do not require decorative raster assets.
 
 ## Lower-level integration
 

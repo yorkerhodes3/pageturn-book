@@ -115,6 +115,8 @@ try {
         manifestUrl: "/books/external-book/manifest.json",
       });
       void reader.ready.catch(() => undefined);
+      reader.setAppearance("antique-greek");
+      reader.getAppearance().paper.age;
       reader.destroy();
     `,
   );

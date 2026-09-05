@@ -601,9 +601,9 @@ export function solvePageTurn(input: PageTurnInput): PageTurnResult {
           : Math.PI - unsignedShadowAngle,
         progress,
         widthFactor:
-          0.025 + 0.11 * Math.sin(Math.PI * progress),
+          0.018 + 0.055 * Math.sin(Math.PI * progress),
         opacityFactor:
-          0.18 + 0.5 * Math.sin(Math.PI * progress),
+          0.1 + 0.28 * Math.sin(Math.PI * progress),
       },
     },
   };

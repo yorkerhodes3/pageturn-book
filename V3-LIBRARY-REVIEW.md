@@ -49,6 +49,18 @@ The existing shelf flight runs before navigation. V3 then opens a
 publication-colored cover over the semantic spread. The fixed-page legacy
 viewer and V2 reader remain separate.
 
+The shelf presentation is now data-driven as well: most books remain upright,
+two three-volume groups lie horizontally, and the antique Cyber Dictionary is
+displayed open on a CSS lectern. These poses keep the same buttons, labels,
+keyboard sequence, selection card, and reading actions. The visual references
+under the ignored `temp-assets/` design folder were used only for top-down
+curvature/material study; no unlicensed raster reference is shipped.
+
+The reader's Style gear exercises the public V3 appearance configuration. Seven
+presets cover contemporary, antique, thick-tome, modern-lab, lined, grid, and
+handwritten treatments, with individual controls for paper, typography,
+binding, gutter/edge lift, fold radius, and shadow.
+
 Each V3 publication uses:
 
 - its manifest title, subtitle, credits, and cover palette;
@@ -134,15 +146,15 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 41.7 kB | 83.5 kB | 50% |
-| Plurality | 85.1 kB | 523.0 kB | 84% |
-| Cyber Dictionary | 55.4 kB | 141.6 kB | 61% |
-| AI Models Research | 39.0 kB | 60.6 kB | 36% |
+| What Is Ethical AI? | 49.8 kB | 91.6 kB | 46% |
+| Plurality | 93.2 kB | 531.1 kB | 82% |
+| Cyber Dictionary | 63.5 kB | 149.7 kB | 58% |
+| AI Models Research | 47.1 kB | 68.7 kB | 31% |
 
-These gzip paths include the 32.7 kB catalog-enabled V3 route (32,209-byte
+These gzip paths include the 40.8 kB catalog-enabled V3 route (40,263-byte
 assets plus 0.5 kB route HTML), the publication manifest, and either the first
 two chapters or the complete semantic corpus. The catalog-free SDK example is
-27.5 kB including route HTML.
+35.5 kB including route HTML.
 
 The three optional Ethical AI figure files add 123.0 kB to static hosting. They
 are already compressed lossless WebP, so aggregate artifact gzip is effectively
@@ -153,7 +165,7 @@ opening or reaching one figure transfers only that asset.
 
 - 24 fixtures build through the same publication CLI.
 - 333 static semantic chapter routes are emitted.
-- The build artifact contains 431 files totaling 6.65 MB raw / 1.85 MB gzip.
+- The build artifact contains 431 files totaling 6.69 MB raw / 1.86 MB gzip.
 - The Vite multi-page build processes 339 HTML entries in roughly 5-30 seconds
   on the development machine, depending on filesystem cache and contention.
 - One automated browser scenario initializes every one of the 22 shelf

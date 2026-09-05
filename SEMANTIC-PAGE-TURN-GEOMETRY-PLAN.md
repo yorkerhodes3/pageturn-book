@@ -402,11 +402,11 @@ The eager-loading limitation recorded in section 10.3 is now addressed:
 - V3 shares a canonical book/chapter/anchor URL through Web Share or clipboard
   fallback. Embed and shelf-handoff query state is omitted from shared links.
 
-The catalog-enabled V3 assets measure 32,209 bytes gzip, 12,209 bytes above the
+The catalog-enabled V3 assets measure 40,263 bytes gzip, 20,263 bytes above the
 strict decimal 20 kB optimization target; payload trimming therefore remains
 open even though V3 is now the supported product path. Including route HTML,
-the shared route is 32.7 kB gzip; the catalog-free SDK example is 27.5 kB. After
-adjacent prefetch, the initial Plurality path is about 83.3 kB gzip versus 521.2
+the shared route is 40.8 kB gzip; the catalog-free SDK example is 35.5 kB. After
+adjacent prefetch, the initial Plurality path is about 93.2 kB gzip versus 531.1
 kB for its complete static path. A fresh local Chromium profile retained 3,885 DOM
 nodes and 1.39 MB heap versus the earlier eager baseline of 31,850 nodes and
 2.00 MB. The expanded validation contains 42 unit tests and 73 browser

@@ -186,19 +186,31 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     const spread = document.querySelector<HTMLElement>("[data-v3-spread]");
     const fanLeft = document.querySelector<HTMLElement>(".v3-page-fan-left");
     const fanRight = document.querySelector<HTMLElement>(".v3-page-fan-right");
+    const stationary = document.querySelector<HTMLElement>(
+      "[data-v3-stationary]",
+    );
     const left = document.querySelector<HTMLElement>(
       "[data-v3-stationary] .v3-sheet-left",
     );
     const right = document.querySelector<HTMLElement>(
       "[data-v3-stationary] .v3-sheet-right",
     );
-    if (!reader || !spread || !fanLeft || !fanRight || !left || !right) {
+    if (
+      !reader ||
+      !spread ||
+      !fanLeft ||
+      !fanRight ||
+      !stationary ||
+      !left ||
+      !right
+    ) {
       throw new Error("Expected complete V3 resting book geometry");
     }
     const readerBounds = reader.getBoundingClientRect();
     const spreadBounds = spread.getBoundingClientRect();
     const leftFanBounds = fanLeft.getBoundingClientRect();
     const rightFanBounds = fanRight.getBoundingClientRect();
+    const bottomLift = getComputedStyle(stationary, "::before");
     return {
       readerWidth: readerBounds.width,
       leftFanVisible: leftFanBounds.left < spreadBounds.left,
@@ -207,6 +219,8 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       rightRadius: getComputedStyle(right).borderRadius,
       leftTransform: getComputedStyle(left).transform,
       rightTransform: getComputedStyle(right).transform,
+      leftFilter: getComputedStyle(left).filter,
+      bottomLiftHeight: Number.parseFloat(bottomLift.height),
       spreadZIndex: getComputedStyle(spread).zIndex,
       spreadIsolation: getComputedStyle(spread).isolation,
     };
@@ -218,6 +232,8 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   expect(physicalGeometry.rightRadius).not.toBe("0px");
   expect(physicalGeometry.leftTransform).toBe("none");
   expect(physicalGeometry.rightTransform).toBe("none");
+  expect(physicalGeometry.leftFilter).not.toBe("none");
+  expect(physicalGeometry.bottomLiftHeight).toBeGreaterThan(8);
   expect(physicalGeometry.spreadZIndex).toBe("auto");
   expect(physicalGeometry.spreadIsolation).toBe("auto");
 
@@ -546,6 +562,9 @@ test("uses the library as the direct-entry back destination", async ({
     const explore = node
       .querySelector("[data-v3-explore]")
       ?.getBoundingClientRect();
+    const appearance = node
+      .querySelector("[data-v3-appearance]")
+      ?.getBoundingClientRect();
     const counter = node
       .querySelector("[data-v3-counter]")
       ?.getBoundingClientRect();
@@ -559,15 +578,17 @@ test("uses the library as the direct-entry back destination", async ({
     return {
       rows: getComputedStyle(node).gridTemplateRows.trim().split(/\s+/).length,
       height: node.getBoundingClientRect().height,
-      firstRowCenters: [back, explore, counter].map((bounds) =>
+      firstRowCenters: [back, explore, appearance, counter].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
       firstRowSeparated:
         back !== undefined &&
         explore !== undefined &&
+        appearance !== undefined &&
         counter !== undefined &&
         back.right <= explore.left &&
-        explore.right <= counter.left,
+        explore.right <= appearance.left &&
+        appearance.right <= counter.left,
       thirdRowCenters: [font, share].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
@@ -714,6 +735,109 @@ test("uses clean opening focus and compact mobile running heads", async ({
     page.getByRole("dialog", { name: "Explore this book" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close book tools" }).click();
+});
+
+test("previews typed book appearance presets from the gear dialog", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai#responsible-ai",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await page.getByRole("button", { name: "Book appearance settings" }).click();
+  const dialog = page.getByRole("dialog", { name: "Book appearance" });
+  await expect(dialog).toBeVisible();
+  const preset = dialog.getByLabel("Preset");
+  await expect(preset.locator("option")).toHaveCount(8);
+
+  await preset.selectOption("antique-greek");
+  await expect(reader).toHaveAttribute(
+    "data-v3-appearance-theme",
+    "antique-greek",
+  );
+  await expect(reader).toHaveAttribute("data-v3-binding-material", "leather");
+  await expect(reader).toHaveAttribute("data-v3-page-edge-style", "marbled");
+  await expect(reader).toHaveCSS("--v3-page-paper", "#ead9af");
+  await expect(reader).toHaveCSS("--v3-gutter-radius", "1.20rem");
+  await expect(page.locator("[data-v3-counter]")).toContainText("Chapter 9/17");
+
+  await preset.selectOption("grid-lab");
+  await expect(reader).toHaveAttribute("data-v3-page-pattern", "grid");
+  await expect(reader).toHaveAttribute("data-v3-drop-cap", "false");
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet").first(),
+  ).toHaveCSS("font-family", /IBM Plex Mono|Consolas|Courier New/);
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet").first(),
+  ).toHaveCSS("background-image", /repeating-linear-gradient/);
+  await page.waitForTimeout(500);
+  await expect(reader).toHaveAttribute("aria-busy", "false");
+
+  const paginationBeforePaint = await reader.getAttribute(
+    "data-v3-pagination-version",
+  );
+  await dialog.getByLabel("Paper aging").evaluate((input) => {
+    const range = input as HTMLInputElement;
+    range.value = "0.5";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await page.waitForTimeout(220);
+  await expect(reader).toHaveAttribute(
+    "data-v3-pagination-version",
+    paginationBeforePaint ?? "",
+  );
+
+  const paginationBeforeType = Number(
+    await reader.getAttribute("data-v3-pagination-version"),
+  );
+  await dialog.getByLabel("Line height").evaluate((input) => {
+    const range = input as HTMLInputElement;
+    range.value = "1.7";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect
+    .poll(() =>
+      reader
+        .getAttribute("data-v3-pagination-version")
+        .then((value) => Number(value)),
+    )
+    .toBeGreaterThan(paginationBeforeType);
+
+  await dialog.getByLabel("Gutter lift").evaluate((input) => {
+    const range = input as HTMLInputElement;
+    range.value = "1";
+    range.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(reader).toHaveAttribute("data-v3-appearance-theme", "custom");
+  await expect(reader).toHaveCSS("--v3-gutter-radius", "1.43rem");
+
+  const pageCount = dialog.getByLabel("Pages in binding");
+  expect(
+    await pageCount.evaluate((input) => {
+      const number = input as HTMLInputElement;
+      number.value = "1";
+      number.dispatchEvent(new Event("input", { bubbles: true }));
+      return number.value;
+    }),
+  ).toBe("1");
+  await pageCount.evaluate((input) => {
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await expect(pageCount).toHaveValue("16");
+
+  await dialog
+    .getByRole("button", { name: "Reset publication appearance" })
+    .click();
+  await expect(reader).toHaveAttribute("data-v3-appearance-theme", "default");
+  await dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
+  await expect(dialog).toBeHidden();
 });
 
 test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
@@ -2004,6 +2128,43 @@ test("renders the production library as optimized labeled bindings", async ({
   await expect(page.locator(".bookshelf-book")).toHaveCount(22);
   await expect(page.locator(".bookshelf-book-spine")).toHaveCount(22);
   await expect(page.locator("img")).toHaveCount(0);
+  await expect(page.locator(".bookshelf-stack")).toHaveCount(2);
+  await expect(page.locator(".bookshelf-book-stacked")).toHaveCount(6);
+  await expect(page.locator(".bookshelf-book-open-on-stand")).toHaveCount(1);
+  await expect(page.locator(".bookshelf-open-page")).toHaveCount(2);
+  await expect(
+    page.getByRole("button", { name: "Cyber Dictionary, 44 pages" }),
+  ).toHaveAttribute("data-shelf-pose", "open-on-stand");
+  await expect(
+    page
+      .getByRole("button", {
+        name: /AI MODELS RESEARCH: AI Model Performance/,
+      })
+      .locator(".bookshelf-book-hub"),
+  ).toHaveCount(0);
+  const [stackedBox, openBookBox, openPageBox, standBox] = await Promise.all([
+    page.locator(".bookshelf-book-stacked").first().boundingBox(),
+    page.locator(".bookshelf-book-open-on-stand").boundingBox(),
+    page.locator(".bookshelf-open-book").boundingBox(),
+    page.locator(".bookshelf-stand").boundingBox(),
+  ]);
+  if (!stackedBox || !openBookBox || !openPageBox || !standBox) {
+    throw new Error("Expected complete mixed bookshelf geometry");
+  }
+  expect(stackedBox.width).toBeGreaterThan(stackedBox.height * 3);
+  expect(openBookBox.width).toBeGreaterThan(openBookBox.height);
+  expect(openPageBox.width).toBeGreaterThan(100);
+  expect(standBox.height).toBeGreaterThan(50);
+  const openDisplay = page.getByRole("button", {
+    name: "Cyber Dictionary, 44 pages",
+  });
+  await openDisplay.focus();
+  await openDisplay.press("ArrowRight");
+  await expect(
+    page.getByRole("button", {
+      name: /PROVENANCE PASSPORT: The Digital Provenance Passport/,
+    }),
+  ).toBeFocused();
   await expect(
     page.getByRole("heading", { level: 2, name: "Humanitarian Systems" }),
   ).toBeVisible();
@@ -3347,6 +3508,7 @@ test("enhances the existing semantic chapter through a reader session", async ({
 test("opens a semantic spread and keeps scroll navigation in sync", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await page.route("**/chapters/principles/index.html", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 2_000));
     await route.continue();

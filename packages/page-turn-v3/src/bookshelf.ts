@@ -1,11 +1,22 @@
 import type { PageTurnPublicationAppearance } from "./publication-types.js";
-import { applyPublicationAppearance } from "./appearance.js";
+import {
+  applyPublicationAppearance,
+  resolvePageTurnAppearance,
+} from "./appearance.js";
 
 export type BookshelfAction = {
   label: string;
   href: string;
   description?: string;
 };
+
+export type BookshelfPlacement =
+  | Readonly<{ pose: "upright" }>
+  | Readonly<{ pose: "stacked"; stackId: string; order: number }>
+  | Readonly<{
+      pose: "open-on-stand";
+      standStyle?: "lectern" | "easel";
+    }>;
 
 export type BookshelfVolume = {
   id: string;
@@ -17,6 +28,7 @@ export type BookshelfVolume = {
   actions: BookshelfAction[];
   subtitle?: string;
   extentLabel?: string;
+  placement?: BookshelfPlacement;
 };
 
 export type BookshelfSection = {
@@ -84,6 +96,7 @@ export function mountBookshelf(
 
   const allVolumes = sections.flatMap(({ volumes }) => volumes);
   const volumeIds = new Set<string>();
+  const stackOrders = new Map<string, Set<number>>();
   for (const volume of allVolumes) {
     if (volumeIds.has(volume.id)) {
       throw new Error(`Bookshelf volume ID is duplicated: ${volume.id}`);
@@ -97,6 +110,23 @@ export function mountBookshelf(
       volume.shelfLabel.trim().length === 0
     ) {
       throw new Error(`Bookshelf volume metadata is invalid: ${volume.id}`);
+    }
+    if (volume.placement?.pose === "stacked") {
+      if (
+        volume.placement.stackId.trim() === "" ||
+        !Number.isInteger(volume.placement.order) ||
+        volume.placement.order < 0
+      ) {
+        throw new Error(`Bookshelf stack metadata is invalid: ${volume.id}`);
+      }
+      const orders = stackOrders.get(volume.placement.stackId) ?? new Set();
+      if (orders.has(volume.placement.order)) {
+        throw new Error(
+          `Bookshelf stack order is duplicated: ${volume.placement.stackId}`,
+        );
+      }
+      orders.add(volume.placement.order);
+      stackOrders.set(volume.placement.stackId, orders);
     }
     volumeIds.add(volume.id);
   }
@@ -113,6 +143,87 @@ export function mountBookshelf(
   const buttonsById = new Map<string, HTMLButtonElement>();
   const volumesById = new Map(allVolumes.map((volume) => [volume.id, volume]));
 
+  const createVolumeItem = (volume: BookshelfVolume) => {
+    const placement = volume.placement ?? { pose: "upright" as const };
+    const item = element(
+      "div",
+      `bookshelf-volume-item bookshelf-volume-item-${placement.pose}`,
+    );
+    item.setAttribute("role", "listitem");
+    if (placement.pose === "stacked") {
+      item.style.setProperty("--shelf-stack-order", String(placement.order));
+      item.style.setProperty(
+        "--shelf-stack-bottom",
+        `${(0.45 + placement.order * 1.42).toFixed(2)}rem`,
+      );
+      item.style.setProperty(
+        "--shelf-stack-tilt",
+        `${((placement.order - 1) * 0.65).toFixed(2)}deg`,
+      );
+    }
+    const button = element(
+      "button",
+      `bookshelf-book bookshelf-book-${placement.pose}`,
+    );
+    button.type = "button";
+    button.dataset.bookId = volume.id;
+    button.dataset.shelfPose = placement.pose;
+    const normalizedLabel = volume.shelfLabel.toLocaleLowerCase();
+    const normalizedTitle = volume.title.toLocaleLowerCase();
+    const labelAlreadyInTitle =
+      normalizedLabel === normalizedTitle ||
+      normalizedTitle.startsWith(`${normalizedLabel}:`);
+    button.setAttribute(
+      "aria-label",
+      labelAlreadyInTitle
+        ? `${volume.title}, ${volume.pageCount} pages`
+        : `${volume.shelfLabel}: ${volume.title}, ${volume.pageCount} pages`,
+    );
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-controls", "bookshelf-selection");
+    button.title = volume.subtitle ?? volume.title;
+    button.style.setProperty("--shelf-book-width", spineWidth(volume.pageCount));
+    button.style.setProperty("--shelf-book-height", volumeHeight(volume.id));
+    button.style.setProperty("--shelf-book-tilt", volumeTilt(volume.id));
+    const resolvedAppearance = resolvePageTurnAppearance(volume.appearance);
+    applyPublicationAppearance(button, resolvedAppearance);
+
+    const spine = element("span", "bookshelf-book-spine");
+    const headband = element("span", "bookshelf-book-headband");
+    const tailband = element("span", "bookshelf-book-tailband");
+    const label = element("span", "bookshelf-book-label", volume.shelfLabel);
+    const pageCount = element(
+      "span",
+      "bookshelf-book-pages",
+      `${volume.pageCount} pages`,
+    );
+    const hubs = element("span", "bookshelf-book-hubs");
+    for (let index = 0; index < resolvedAppearance.binding.hubs; index += 1) {
+      hubs.append(element("span", "bookshelf-book-hub"));
+    }
+    spine.append(headband, hubs, label, pageCount, tailband);
+    button.append(spine);
+    if (placement.pose === "open-on-stand") {
+      const display = element("span", "bookshelf-open-display");
+      const stand = element(
+        "span",
+        `bookshelf-stand bookshelf-stand-${placement.standStyle ?? "lectern"}`,
+      );
+      const openBook = element("span", "bookshelf-open-book");
+      openBook.append(
+        element("span", "bookshelf-open-page bookshelf-open-page-left"),
+        element("span", "bookshelf-open-page bookshelf-open-page-right"),
+        element("span", "bookshelf-open-gutter"),
+      );
+      display.append(stand, openBook);
+      button.append(display);
+    }
+    item.append(button);
+    bookButtons.push(button);
+    buttonsById.set(volume.id, button);
+    return item;
+  };
+
   for (const section of sections) {
     const bay = element("section", "bookshelf-bay");
     const heading = element("h2", "bookshelf-bay-title", section.title);
@@ -122,50 +233,39 @@ export function mountBookshelf(
     const row = element("div", "bookshelf-volume-row");
     row.setAttribute("role", "list");
 
+    const renderedStacks = new Set<string>();
     for (const volume of section.volumes) {
-      const item = element("div", "bookshelf-volume-item");
-      item.setAttribute("role", "listitem");
-      const button = element("button", "bookshelf-book");
-      button.type = "button";
-      button.dataset.bookId = volume.id;
-      const normalizedLabel = volume.shelfLabel.toLocaleLowerCase();
-      const normalizedTitle = volume.title.toLocaleLowerCase();
-      const labelAlreadyInTitle =
-        normalizedLabel === normalizedTitle ||
-        normalizedTitle.startsWith(`${normalizedLabel}:`);
-      button.setAttribute(
-        "aria-label",
-        labelAlreadyInTitle
-          ? `${volume.title}, ${volume.pageCount} pages`
-          : `${volume.shelfLabel}: ${volume.title}, ${volume.pageCount} pages`,
-      );
-      button.setAttribute("aria-pressed", "false");
-      button.setAttribute("aria-controls", "bookshelf-selection");
-      button.title = volume.subtitle ?? volume.title;
-      button.style.setProperty("--shelf-book-width", spineWidth(volume.pageCount));
-      button.style.setProperty("--shelf-book-height", volumeHeight(volume.id));
-      button.style.setProperty("--shelf-book-tilt", volumeTilt(volume.id));
-      applyPublicationAppearance(button, volume.appearance);
-
-      const spine = element("span", "bookshelf-book-spine");
-      const headband = element("span", "bookshelf-book-headband");
-      const tailband = element("span", "bookshelf-book-tailband");
-      const label = element("span", "bookshelf-book-label", volume.shelfLabel);
-      const pageCount = element(
-        "span",
-        "bookshelf-book-pages",
-        `${volume.pageCount} pages`,
-      );
-      const hubs = element("span", "bookshelf-book-hubs");
-      for (let index = 0; index < volume.appearance.binding.hubs; index += 1) {
-        hubs.append(element("span", "bookshelf-book-hub"));
+      const placement = volume.placement ?? { pose: "upright" as const };
+      if (placement.pose !== "stacked") {
+        row.append(createVolumeItem(volume));
+        continue;
       }
-      spine.append(headband, hubs, label, pageCount, tailband);
-      button.append(spine);
-      item.append(button);
-      row.append(item);
-      bookButtons.push(button);
-      buttonsById.set(volume.id, button);
+      if (renderedStacks.has(placement.stackId)) {
+        continue;
+      }
+      renderedStacks.add(placement.stackId);
+      const stack = element("div", "bookshelf-stack");
+      stack.setAttribute("role", "group");
+      stack.setAttribute("aria-label", "Horizontal book stack");
+      const stackVolumes = section.volumes
+        .filter(
+          (candidate) =>
+            candidate.placement?.pose === "stacked" &&
+            candidate.placement.stackId === placement.stackId,
+        )
+        .sort((left, right) => {
+          const leftOrder =
+            left.placement?.pose === "stacked"
+              ? left.placement.order
+              : 0;
+          const rightOrder =
+            right.placement?.pose === "stacked"
+              ? right.placement.order
+              : 0;
+          return leftOrder - rightOrder;
+        });
+      stack.append(...stackVolumes.map(createVolumeItem));
+      row.append(stack);
     }
 
     const shelfBoard = element("div", "bookshelf-shelf-board");
@@ -244,7 +344,11 @@ export function mountBookshelf(
     root.classList.add("bookshelf-navigating");
     source.classList.add("bookshelf-book-departing");
 
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      volume.placement?.pose === "stacked" ||
+      volume.placement?.pose === "open-on-stand"
+    ) {
       globalThis.location.assign(action.href);
       return;
     }

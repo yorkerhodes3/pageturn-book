@@ -1,4 +1,17 @@
-import type { PageTurnSemanticChapter } from "./publication-types.js";
+import {
+  PAGE_TURN_APPEARANCE_PRESETS,
+  applyPageTurnAppearance,
+  resolvePageTurnAppearance,
+} from "./appearance.js";
+import type {
+  PageTurnAppearanceInput,
+  PageTurnAppearancePresetId,
+  PageTurnBindingAppearance,
+  PageTurnPageFanAppearance,
+  PageTurnPaperPattern,
+  PageTurnResolvedAppearance,
+  PageTurnSemanticChapter,
+} from "./publication-types.js";
 import {
   solvePageTurn,
   type PageTurnCorner,
@@ -93,13 +106,9 @@ export type PageTurnBookOptions = Readonly<{
   manifestUrl: string | URL;
   chapterId?: string;
   chaptersStartOnRight?: boolean;
-  appearance?: Readonly<{
-    cover?: Readonly<{
-      background?: string;
-      foreground?: string;
-      accent?: string;
-    }>;
-  }>;
+  appearance?: PageTurnAppearanceInput;
+  appearancePreset?: PageTurnAppearancePresetId;
+  appearanceControls?: boolean;
   media?: PageTurnBookMedia;
   mediaTreatment?: PageTurnBookMediaTreatment;
   fetch?: typeof globalThis.fetch;
@@ -113,6 +122,10 @@ export type PageTurnBookOptions = Readonly<{
 
 export type PageTurnBookHandle = Readonly<{
   ready: Promise<void>;
+  getAppearance(): PageTurnResolvedAppearance;
+  setAppearance(
+    appearance: PageTurnAppearanceInput | PageTurnAppearancePresetId,
+  ): void;
   destroy(): void;
 }>;
 
@@ -198,6 +211,14 @@ const canCreateDurableLinks =
 const originalDocumentTitle = document.title;
 const managesDocumentTitle = options.updateDocumentTitle ?? managesUrl;
 let assignedDocumentTitle: string | undefined;
+let baseAppearance: PageTurnAppearanceInput = options.appearance ?? {};
+let requestedAppearancePreset: PageTurnAppearancePresetId =
+  options.appearancePreset ?? baseAppearance.preset ?? "default";
+let requestedAppearanceOverrides: PageTurnAppearanceInput | undefined;
+let currentAppearance = resolvePageTurnAppearance(
+  baseAppearance,
+  requestedAppearancePreset,
+);
 
 function requiredElement<T extends Element>(
   selector: string,
@@ -239,23 +260,30 @@ function applyPublicationIdentity(publication: PageTurnBookManifest): void {
     assignedDocumentTitle = `${publication.title} - Semantic book reader`;
     document.title = assignedDocumentTitle;
   }
-  const catalogCover = options.appearance?.cover;
-  reader.style.setProperty(
-    "--v3-cover-background",
-    catalogCover?.background ??
-      publication.cover?.background ??
-      "#111b31",
+  baseAppearance = {
+    ...options.appearance,
+    cover: {
+      ...(publication.cover?.background
+        ? { background: publication.cover.background }
+        : {}),
+      ...(publication.cover?.foreground
+        ? { foreground: publication.cover.foreground }
+        : {}),
+      ...(publication.cover?.accent
+        ? { accent: publication.cover.accent }
+        : {}),
+      ...options.appearance?.cover,
+    },
+  };
+  currentAppearance = resolvePageTurnAppearance(
+    baseAppearance,
+    requestedAppearancePreset,
+    requestedAppearanceOverrides
+      ? { ...requestedAppearanceOverrides, preset: "custom" }
+      : undefined,
   );
-  reader.style.setProperty(
-    "--v3-cover-foreground",
-    catalogCover?.foreground ??
-      publication.cover?.foreground ??
-      "#f1ead8",
-  );
-  reader.style.setProperty(
-    "--v3-cover-accent",
-    catalogCover?.accent ?? publication.cover?.accent ?? "#b99a5e",
-  );
+  applyPageTurnAppearance(reader, currentAppearance);
+  renderAppearanceControls();
   mediaPicker.hidden = mediaConfig === undefined;
   mediaSelect.disabled = mediaConfig === undefined;
   mediaSelect.value = mediaTreatment;
@@ -1170,6 +1198,93 @@ const mediaDialogCaption = requiredElement<HTMLElement>(
   "[data-v3-media-dialog-caption]",
 );
 const exploreButton = requiredElement<HTMLButtonElement>("[data-v3-explore]");
+const appearanceButton = requiredElement<HTMLButtonElement>(
+  "[data-v3-appearance]",
+);
+const appearanceDialog = requiredElement<HTMLDialogElement>(
+  "[data-v3-appearance-dialog]",
+);
+const appearanceForm = requiredElement<HTMLFormElement>(
+  "[data-v3-appearance-form]",
+);
+const closeAppearance = requiredElement<HTMLButtonElement>(
+  "[data-v3-close-appearance]",
+);
+const appearancePreset = requiredElement<HTMLSelectElement>(
+  "[data-v3-appearance-preset]",
+);
+const paperColor = requiredElement<HTMLInputElement>("[data-v3-paper-color]");
+const inkColor = requiredElement<HTMLInputElement>("[data-v3-ink-color]");
+const paperHighlight = requiredElement<HTMLInputElement>(
+  "[data-v3-paper-highlight]",
+);
+const pageEdgeColor = requiredElement<HTMLInputElement>(
+  "[data-v3-page-edge-color]",
+);
+const pageEdgeStyle = requiredElement<HTMLSelectElement>(
+  "[data-v3-page-edge-style]",
+);
+const pagePattern = requiredElement<HTMLSelectElement>("[data-v3-page-pattern]");
+const ruleColor = requiredElement<HTMLInputElement>("[data-v3-rule-color]");
+const ruleSpacing = requiredElement<HTMLInputElement>(
+  "[data-v3-rule-spacing]",
+);
+const paperAge = requiredElement<HTMLInputElement>("[data-v3-paper-age]");
+const paperTexture = requiredElement<HTMLInputElement>(
+  "[data-v3-paper-texture]",
+);
+const typeface = requiredElement<HTMLSelectElement>("[data-v3-typeface]");
+const appearanceLineHeight = requiredElement<HTMLInputElement>(
+  "[data-v3-line-height]",
+);
+const baseTypeScale = requiredElement<HTMLInputElement>(
+  "[data-v3-base-type-scale]",
+);
+const dropCap = requiredElement<HTMLInputElement>("[data-v3-drop-cap]");
+const gutterLift = requiredElement<HTMLInputElement>("[data-v3-gutter-lift]");
+const bottomLift = requiredElement<HTMLInputElement>("[data-v3-bottom-lift]");
+const foreEdgeLift = requiredElement<HTMLInputElement>(
+  "[data-v3-fore-edge-lift]",
+);
+const cornerRoundness = requiredElement<HTMLInputElement>(
+  "[data-v3-corner-roundness]",
+);
+const foldRadius = requiredElement<HTMLInputElement>("[data-v3-fold-radius]");
+const foldShadow = requiredElement<HTMLInputElement>("[data-v3-fold-shadow]");
+const boardOverhang = requiredElement<HTMLInputElement>(
+  "[data-v3-board-overhang]",
+);
+const bindingMaterial = requiredElement<HTMLSelectElement>(
+  "[data-v3-binding-material]",
+);
+const bindingDepth = requiredElement<HTMLSelectElement>(
+  "[data-v3-binding-depth]",
+);
+const spineStyle = requiredElement<HTMLSelectElement>(
+  "[data-v3-spine-style]",
+);
+const appearancePageCount = requiredElement<HTMLInputElement>(
+  "[data-v3-page-count]",
+);
+const bindingHubs = requiredElement<HTMLInputElement>(
+  "[data-v3-binding-hubs]",
+);
+const coverColor = requiredElement<HTMLInputElement>("[data-v3-cover-color]");
+const coverForeground = requiredElement<HTMLInputElement>(
+  "[data-v3-cover-foreground]",
+);
+const bindingColor = requiredElement<HTMLInputElement>(
+  "[data-v3-binding-color]",
+);
+const accentColor = requiredElement<HTMLInputElement>(
+  "[data-v3-accent-color]",
+);
+const resetAppearance = requiredElement<HTMLButtonElement>(
+  "[data-v3-reset-appearance]",
+);
+const appearanceStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-appearance-status]",
+);
 const exploreDialog = requiredElement<HTMLDialogElement>(
   "[data-v3-explore-dialog]",
 );
@@ -1211,6 +1326,7 @@ const corners = Array.from(
   root.querySelectorAll<HTMLButtonElement>("[data-v3-direction]"),
 );
 shareButton.hidden = !canCreateDurableLinks;
+appearanceButton.hidden = !(options.appearanceControls ?? managesUrl);
 const singlePageMedia = globalThis.matchMedia("(max-width: 48rem)");
 const reducedMotion = globalThis.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -1220,9 +1336,11 @@ let manifest: PageTurnBookManifest | undefined;
 let manifestUrl: URL | undefined;
 let chapterStates: ChapterState[] = [];
 let pages: PrototypePage[] = [];
+let paginationVersion = 0;
 let spreadStart = 0;
 let activeTurn: ActiveTurn | undefined;
 let resizeTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+let appearanceTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let openingTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let chapterWindowVersion = 0;
 let retainedChapterIndices: number[] = [];
@@ -2031,8 +2149,344 @@ function renderSelectionControls(): void {
 
 function applyFontScale(value: number): void {
   fontScale = normalizeBookFontScale(value);
-  reader.style.setProperty("--v3-font-scale", String(fontScale));
+  reader.style.setProperty(
+    "--v3-font-scale",
+    String(fontScale * currentAppearance.typography.baseScale),
+  );
   renderFontControls();
+}
+
+const typefaceOptions = {
+  classic: {
+    bodyFamily: 'Georgia, "Times New Roman", serif',
+    headingFamily: 'Georgia, "Times New Roman", serif',
+  },
+  antique: {
+    bodyFamily: 'Palatino Linotype, Book Antiqua, Georgia, serif',
+    headingFamily: 'Palatino Linotype, Book Antiqua, Georgia, serif',
+  },
+  modern: {
+    bodyFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+    headingFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+  },
+  technical: {
+    bodyFamily: 'IBM Plex Mono, Consolas, "Courier New", monospace',
+    headingFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+  },
+  handwritten: {
+    bodyFamily: '"Segoe Print", "Bradley Hand", cursive',
+    headingFamily: '"Segoe Print", "Bradley Hand", cursive',
+  },
+} as const;
+
+type TypefaceId = keyof typeof typefaceOptions;
+
+function currentTypeface(): TypefaceId {
+  const entry = Object.entries(typefaceOptions).find(
+    ([, fonts]) =>
+      fonts.bodyFamily === currentAppearance.typography.bodyFamily &&
+      fonts.headingFamily === currentAppearance.typography.headingFamily,
+  );
+  return (entry?.[0] as TypefaceId | undefined) ?? "classic";
+}
+
+function selectedPaperPattern(value: string): PageTurnPaperPattern {
+  return value === "lined" || value === "grid" ? value : "plain";
+}
+
+function selectedPageEdgeStyle(
+  value: string,
+): PageTurnPageFanAppearance["edgeStyle"] {
+  return value === "gold" || value === "red" || value === "marbled"
+    ? value
+    : "plain";
+}
+
+function fanForStyle(
+  edgeStyle: PageTurnPageFanAppearance["edgeStyle"],
+): Partial<PageTurnPageFanAppearance> {
+  if (edgeStyle === "gold") {
+    return {
+      edgeStyle,
+      stripeDark: "#8d6427",
+      stripeLight: "#e0bd67",
+      stripeMid: "#b98a35",
+    };
+  }
+  if (edgeStyle === "red") {
+    return {
+      edgeStyle,
+      stripeDark: "#71332f",
+      stripeLight: "#d6b4a6",
+      stripeMid: "#a9574e",
+    };
+  }
+  if (edgeStyle === "marbled") {
+    return {
+      edgeStyle,
+      stripeDark: "#6f4729",
+      stripeLight: "#d3ad65",
+      stripeMid: "#98683d",
+    };
+  }
+  return {
+    edgeStyle,
+    stripeDark: "#b9ab91",
+    stripeLight: "#f2eadc",
+    stripeMid: "#d8cbb6",
+  };
+}
+
+function selectedBindingMaterial(
+  value: string,
+): PageTurnBindingAppearance["material"] {
+  return value === "cloth" || value === "paper" ? value : "leather";
+}
+
+function selectedBindingDepth(
+  value: string,
+): PageTurnBindingAppearance["depth"] {
+  return value === "slim" || value === "thick" ? value : "standard";
+}
+
+function selectedSpineStyle(
+  value: string,
+): Required<PageTurnBindingAppearance>["spineStyle"] {
+  return value === "flat" || value === "exposed-stitch"
+    ? value
+    : "raised-hubs";
+}
+
+function selectedTypeface(value: string): TypefaceId {
+  return value in typefaceOptions ? (value as TypefaceId) : "classic";
+}
+
+function presetLabel(presetId: PageTurnAppearancePresetId): string {
+  return (
+    PAGE_TURN_APPEARANCE_PRESETS.find(({ id }) => id === presetId)?.label ??
+    "Custom"
+  );
+}
+
+function presetDescription(presetId: PageTurnAppearancePresetId): string {
+  return (
+    PAGE_TURN_APPEARANCE_PRESETS.find(({ id }) => id === presetId)
+      ?.description ?? "Custom appearance combination"
+  );
+}
+
+function renderAppearanceControls(): void {
+  if (appearancePreset.options.length === 0) {
+    appearancePreset.append(
+      ...PAGE_TURN_APPEARANCE_PRESETS.map(
+        ({ id, label }) => new Option(label, id),
+      ),
+      new Option("Custom", "custom"),
+    );
+  }
+  appearancePreset.value = currentAppearance.preset;
+  paperColor.value = currentAppearance.paper.color;
+  inkColor.value = currentAppearance.paper.inkColor;
+  paperHighlight.value = currentAppearance.paper.highlight;
+  pageEdgeColor.value = currentAppearance.paper.edgeColor;
+  pageEdgeStyle.value = currentAppearance.fan.edgeStyle;
+  pagePattern.value = currentAppearance.paper.pattern;
+  ruleColor.value = currentAppearance.paper.ruleColor;
+  ruleSpacing.value = String(currentAppearance.paper.ruleSpacingRem);
+  paperAge.value = String(currentAppearance.paper.age);
+  paperTexture.value = String(currentAppearance.paper.texture);
+  typeface.value = currentTypeface();
+  appearanceLineHeight.value = String(
+    currentAppearance.typography.lineHeight,
+  );
+  baseTypeScale.value = String(currentAppearance.typography.baseScale);
+  dropCap.checked = currentAppearance.typography.dropCap;
+  gutterLift.value = String(currentAppearance.geometry.gutterLift);
+  bottomLift.value = String(currentAppearance.geometry.bottomLift);
+  foreEdgeLift.value = String(currentAppearance.geometry.foreEdgeLift);
+  cornerRoundness.value = String(
+    currentAppearance.geometry.cornerRoundness,
+  );
+  foldRadius.value = String(currentAppearance.geometry.foldRadius);
+  foldShadow.value = String(currentAppearance.geometry.foldShadow);
+  boardOverhang.value = String(currentAppearance.geometry.boardOverhang);
+  bindingMaterial.value = currentAppearance.binding.material;
+  bindingDepth.value = currentAppearance.binding.depth;
+  spineStyle.value = currentAppearance.binding.spineStyle;
+  appearancePageCount.value = String(currentAppearance.binding.pageCount);
+  bindingHubs.value = String(currentAppearance.binding.hubs);
+  coverColor.value = currentAppearance.cover.background;
+  coverForeground.value = currentAppearance.cover.foreground;
+  bindingColor.value = currentAppearance.binding.color;
+  accentColor.value = currentAppearance.binding.accent;
+  appearanceStatus.value =
+    `${presetLabel(currentAppearance.preset)} — ` +
+    presetDescription(currentAppearance.preset);
+}
+
+function scheduleAppearanceRepagination(): void {
+  if (!manifest || pages.length === 0) {
+    return;
+  }
+  if (appearanceTimer !== undefined) {
+    clearTimeout(appearanceTimer);
+  }
+  appearanceTimer = globalThis.setTimeout(() => {
+    appearanceTimer = undefined;
+    if (destroyed) {
+      return;
+    }
+    const preservation = currentPreservation();
+    if (activeTurn) {
+      finishTurn(false);
+    }
+    reader.setAttribute("aria-busy", "true");
+    status.textContent = "Applying book appearance";
+    void document.fonts.ready
+      .then(() => {
+        if (destroyed) {
+          return;
+        }
+        rebuildPages(
+          preservation.anchor,
+          preservation.progress,
+          preservation.chapterIndex,
+          preservation.chapterPageOffset,
+        );
+        reportReadyIfHealthy();
+      })
+      .catch((error: unknown) => {
+        reportFailure("V3 could not apply the book appearance", error);
+      });
+  }, 140);
+}
+
+function applyAppearance(
+  appearance: PageTurnResolvedAppearance,
+  repaginate: boolean,
+): void {
+  currentAppearance = appearance;
+  applyPageTurnAppearance(reader, currentAppearance);
+  applyFontScale(fontScale);
+  renderAppearanceControls();
+  if (repaginate) {
+    scheduleAppearanceRepagination();
+  }
+}
+
+function mergeAppearanceInputs(
+  previous: PageTurnAppearanceInput | undefined,
+  next: PageTurnAppearanceInput,
+): PageTurnAppearanceInput {
+  return {
+    ...previous,
+    ...next,
+    cover: { ...previous?.cover, ...next.cover },
+    binding: { ...previous?.binding, ...next.binding },
+    paper: { ...previous?.paper, ...next.paper },
+    fan: { ...previous?.fan, ...next.fan },
+    typography: { ...previous?.typography, ...next.typography },
+    geometry: { ...previous?.geometry, ...next.geometry },
+  };
+}
+
+function requiresAppearanceRepagination(
+  previous: PageTurnResolvedAppearance,
+  next: PageTurnResolvedAppearance,
+): boolean {
+  return (
+    previous.typography.bodyFamily !== next.typography.bodyFamily ||
+    previous.typography.headingFamily !== next.typography.headingFamily ||
+    previous.typography.lineHeight !== next.typography.lineHeight ||
+    previous.typography.baseScale !== next.typography.baseScale ||
+    previous.typography.dropCap !== next.typography.dropCap
+  );
+}
+
+function setBookAppearance(
+  appearance: PageTurnAppearanceInput | PageTurnAppearancePresetId,
+): void {
+  if (typeof appearance === "string") {
+    requestedAppearancePreset = appearance;
+    requestedAppearanceOverrides = undefined;
+    const next = resolvePageTurnAppearance(baseAppearance, appearance);
+    applyAppearance(
+      next,
+      requiresAppearanceRepagination(currentAppearance, next),
+    );
+    return;
+  }
+  if (appearance.preset && appearance.preset !== "custom") {
+    requestedAppearancePreset = appearance.preset;
+  }
+  requestedAppearanceOverrides = mergeAppearanceInputs(
+    requestedAppearanceOverrides,
+    appearance,
+  );
+  const next = resolvePageTurnAppearance(
+    baseAppearance,
+    requestedAppearancePreset,
+    { ...requestedAppearanceOverrides, preset: "custom" },
+  );
+  applyAppearance(
+    next,
+    requiresAppearanceRepagination(currentAppearance, next),
+  );
+}
+
+function appearanceFromControls(): PageTurnAppearanceInput {
+  const selectedFonts = typefaceOptions[selectedTypeface(typeface.value)];
+  const depth = selectedBindingDepth(bindingDepth.value);
+  return {
+    preset: "custom",
+    cover: {
+      background: coverColor.value,
+      foreground: coverForeground.value,
+      accent: accentColor.value,
+    },
+    binding: {
+      material: selectedBindingMaterial(bindingMaterial.value),
+      color: bindingColor.value,
+      accent: accentColor.value,
+      depth,
+      boardThickness: depth,
+      spineStyle: selectedSpineStyle(spineStyle.value),
+      pageCount: Number(appearancePageCount.value),
+      hubs: Number(bindingHubs.value),
+    },
+    paper: {
+      color: paperColor.value,
+      highlight: paperHighlight.value,
+      edgeColor: pageEdgeColor.value,
+      inkColor: inkColor.value,
+      pattern: selectedPaperPattern(pagePattern.value),
+      ruleColor: ruleColor.value,
+      ruleSpacingRem: Number(ruleSpacing.value),
+      age: Number(paperAge.value),
+      texture: Number(paperTexture.value),
+    },
+    fan: fanForStyle(selectedPageEdgeStyle(pageEdgeStyle.value)),
+    typography: {
+      ...selectedFonts,
+      lineHeight: Number(appearanceLineHeight.value),
+      baseScale: Number(baseTypeScale.value),
+      dropCap: dropCap.checked,
+    },
+    geometry: {
+      gutterLift: Number(gutterLift.value),
+      bottomLift: Number(bottomLift.value),
+      foreEdgeLift: Number(foreEdgeLift.value),
+      cornerRoundness: Number(cornerRoundness.value),
+      foldRadius: Number(foldRadius.value),
+      foldShadow: Number(foldShadow.value),
+      boardOverhang: Number(boardOverhang.value),
+    },
+  };
+}
+
+function openAppearanceDialog(): void {
+  renderAppearanceControls();
+  appearanceDialog.showModal();
 }
 
 function renderControls(): void {
@@ -2591,7 +3045,9 @@ function applyFrame(frame: PageTurnFrame): void {
   if (!turn) {
     return;
   }
-  const projection = projectPageTurn(frame);
+  const projection = projectPageTurn(frame, {
+    foldCurvature: currentAppearance.geometry.foldRadius,
+  });
   const singlePageOffset =
     singlePageMedia.matches && frame.direction === "forward"
       ? -frame.page.width
@@ -2619,17 +3075,34 @@ function applyFrame(frame: PageTurnFrame): void {
   turn.revealed.style.clipPath = pageTurnPolygon(projection.revealed.clip);
 
   const shadow = projection.foldShadow;
-  const shadowWidth = Math.max(4, shadow.width);
-  const curveWidth = Math.max(10, shadow.width * 0.8);
+  const shadowScale =
+    0.55 + currentAppearance.geometry.foldShadow * 0.75;
+  const shadowWidth = Math.max(3, shadow.width * shadowScale);
+  const curveWidth = Math.min(
+    frame.page.width * 0.26,
+    Math.max(
+      frame.page.width *
+        (0.08 + currentAppearance.geometry.foldRadius * 0.12),
+      shadow.width * 1.35,
+    ),
+  );
   const normalX = Math.cos(shadow.angleRadians);
   const normalY = Math.sin(shadow.angleRadians);
   const shadowOffset =
     shadow.gradient === "to-left" ? -shadowWidth : 0;
-  const curveOffset = -curveWidth / 2;
+  const curveOffset =
+    shadow.gradient === "to-right" ? -curveWidth : 0;
   turn.shadow.style.width = `${shadowWidth}px`;
   turn.shadow.style.height = `${shadow.length}px`;
   turn.shadow.style.opacity = String(
-    Math.min(0.52, Math.max(0, shadow.opacity * 0.52)),
+    Math.min(
+      0.42,
+      Math.max(
+        0,
+        shadow.opacity *
+          (0.28 + currentAppearance.geometry.foldShadow * 0.42),
+      ),
+    ),
   );
   turn.shadow.style.background =
     shadow.gradient === "to-right"
@@ -2644,7 +3117,12 @@ function applyFrame(frame: PageTurnFrame): void {
   turn.curve.style.width = `${curveWidth}px`;
   turn.curve.style.height = `${shadow.length}px`;
   turn.curve.style.opacity = String(
-    Math.min(0.96, 0.42 + shadow.opacity * 0.6),
+    Math.min(
+      0.62,
+      0.22 +
+        shadow.opacity *
+          (0.25 + currentAppearance.geometry.foldRadius * 0.28),
+    ),
   );
   turn.curve.style.setProperty(
     "--v3-fold-curve-direction",
@@ -3241,6 +3719,8 @@ function rebuildPages(
   if (!manifest) {
     return;
   }
+  paginationVersion += 1;
+  reader.dataset.v3PaginationVersion = String(paginationVersion);
   spread.classList.toggle("v3-spread-single", singlePageMedia.matches);
   measure.hidden = false;
   repaginateLoadedChapters();
@@ -3761,6 +4241,58 @@ shareButton.addEventListener(
   () => void shareCurrentLocation(),
   listenerOptions,
 );
+appearanceButton.addEventListener(
+  "click",
+  openAppearanceDialog,
+  listenerOptions,
+);
+closeAppearance.addEventListener(
+  "click",
+  () => appearanceDialog.close(),
+  listenerOptions,
+);
+appearancePreset.addEventListener(
+  "change",
+  () =>
+    setBookAppearance(
+      appearancePreset.value as PageTurnAppearancePresetId,
+    ),
+  listenerOptions,
+);
+appearanceForm.addEventListener(
+  "input",
+  (event) => {
+    if (
+      event.target === appearancePreset ||
+      (event.target instanceof HTMLInputElement &&
+        event.target.type === "number")
+    ) {
+      return;
+    }
+    setBookAppearance(appearanceFromControls());
+  },
+  listenerOptions,
+);
+appearanceForm.addEventListener(
+  "change",
+  (event) => {
+    if (
+      event.target instanceof HTMLInputElement &&
+      event.target.type === "number"
+    ) {
+      setBookAppearance(appearanceFromControls());
+    }
+  },
+  listenerOptions,
+);
+resetAppearance.addEventListener(
+  "click",
+  () =>
+    setBookAppearance(
+      options.appearancePreset ?? baseAppearance.preset ?? "default",
+    ),
+  listenerOptions,
+);
 exploreButton.addEventListener("click", openExploreDialog, listenerOptions);
 exploreDialog.addEventListener("click", onExploreDialogClick, listenerOptions);
 exploreDialog.addEventListener("close", onExploreDialogClose, listenerOptions);
@@ -3806,6 +4338,7 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
   if (
     mediaDialog.open ||
+    appearanceDialog.open ||
     exploreDialog.open ||
     event.altKey ||
     event.ctrlKey ||
@@ -3836,6 +4369,9 @@ const observer = new ResizeObserver(() => {
   }
   if (resizeTimer !== undefined) {
     clearTimeout(resizeTimer);
+  }
+  if (appearanceTimer !== undefined) {
+    clearTimeout(appearanceTimer);
   }
   resizeTimer = globalThis.setTimeout(() => {
     resizeTimer = undefined;
@@ -3871,6 +4407,9 @@ function destroy(): void {
   chapterSelect.replaceChildren();
   if (resizeTimer !== undefined) {
     clearTimeout(resizeTimer);
+  }
+  if (appearanceTimer !== undefined) {
+    clearTimeout(appearanceTimer);
   }
   if (openingTimer !== undefined) {
     clearTimeout(openingTimer);
@@ -3909,5 +4448,10 @@ const ready = initialize().catch((error: unknown) => {
   throw error;
 });
 
-return { ready, destroy };
+return {
+  ready,
+  getAppearance: () => currentAppearance,
+  setAppearance: setBookAppearance,
+  destroy,
+};
 }

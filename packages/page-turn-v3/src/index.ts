@@ -1,14 +1,21 @@
 export {
+  DEFAULT_PAGE_TURN_APPEARANCE,
   DEFAULT_BINDING_APPEARANCE,
   DEFAULT_COVER_APPEARANCE,
+  PAGE_TURN_APPEARANCE_PRESETS,
+  applyPageTurnAppearance,
   applyPublicationAppearance,
+  pageTurnAppearanceVariables,
   publicationAppearanceVariables,
   publicationPageFanCount,
+  resolvePageTurnAppearance,
+  type PageTurnAppearancePreset,
 } from "./appearance.js";
 export { mountBookshelf } from "./bookshelf.js";
 export type {
   BookshelfAction,
   BookshelfHandle,
+  BookshelfPlacement,
   BookshelfSection,
   BookshelfVolume,
 } from "./bookshelf.js";
@@ -27,6 +34,7 @@ export {
 export {
   pageTurnPolygon,
   projectPageTurn,
+  type PageTurnProjectionOptions,
   type ProjectedPageTurn,
 } from "./page-turn-projection.js";
 export {
@@ -39,10 +47,18 @@ export {
   type V3Bookmark,
 } from "./personal.js";
 export type {
+  PageTurnAppearanceInput,
+  PageTurnAppearancePresetId,
   PageTurnBindingAppearance,
   PageTurnCoverAppearance,
+  PageTurnGeometryAppearance,
+  PageTurnPageFanAppearance,
+  PageTurnPaperAppearance,
+  PageTurnPaperPattern,
   PageTurnPublicationAppearance,
+  PageTurnResolvedAppearance,
   PageTurnSemanticChapter,
+  PageTurnTypographyAppearance,
 } from "./publication-types.js";
 export {
   attachPageTurnBook,
@@ -84,6 +100,8 @@ export function createPageTurnBook(
 
   return {
     ready: controller.ready,
+    getAppearance: controller.getAppearance,
+    setAppearance: controller.setAppearance,
     destroy() {
       controller.destroy();
       shell.destroy();

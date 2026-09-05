@@ -67,7 +67,8 @@ npm install @ethical-tech/pageturn-book@^3
 ```
 
 See the [V3 SDK guide](./packages/page-turn-v3/README.md) for Vanilla, React,
-media, geometry-only, publication-hosting, and lifecycle examples.
+media, appearance presets, geometry-only, publication-hosting, and lifecycle
+examples.
 
 ## V3 experience
 
@@ -82,7 +83,10 @@ media, geometry-only, publication-hosting, and lifecycle examples.
 - Local bookmarks, resume restart, selected-text sharing, annotations, and
   Markdown export.
 - Deferred Off, On-page, and Pop-out publication media treatments.
-- A metadata-driven library shelf.
+- Typed material, paper, typography, binding, and curvature configuration with
+  live appearance presets from the Style gear.
+- A metadata-driven library shelf with upright bindings, horizontal stacks,
+  and an antique open display volume.
 
 ## Build a publication
 

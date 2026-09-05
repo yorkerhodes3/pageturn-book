@@ -1329,6 +1329,12 @@ increase the active content window without an explicit performance review.
 | PAG-P-011 | Every configured figure records immutable provenance, intrinsic dimensions, meaningful alternative text, a caption, chapter identity, and a stable insertion anchor. |
 | PAG-P-012 | Pop-out dialogs trap focus natively, close by keyboard, return focus to their trigger, and release the image source when closed. |
 | PAG-P-013 | Changing figure treatment repaginates only the loaded chapter window and preserves the durable semantic source location. |
+| PAG-P-014 | Book appearance is a typed SDK configuration spanning cover, binding, paper, typography, page geometry, fold radius, and fold shadow rather than demo-only CSS constants. |
+| PAG-P-015 | The hosted reader exposes appearance testing through a compact Style control and modal overlay without changing the primary reader layout. |
+| PAG-P-016 | Presets include default, antique Greek, historical tome, modern lab, lined journal, grid lab, and handwritten notebook treatments; consumers may override individual fields. |
+| PAG-P-017 | Typography or line-height changes repaginate around the current semantic location; paint-only appearance changes apply without changing durable location. |
+| PAG-P-018 | Resting pages visually rise from the gutter and float above the rigid cover while moving leaves remain independent of stationary page-fan and cover-edge decoration. |
+| PAG-P-019 | Shelf metadata may render books upright, in horizontal stacks, or open on a stand while preserving one keyboard navigation sequence and one action model. |
 
 The implementation may use CSS columns, explicit semantic segments, or a
 combination only after comparative prototype evidence.

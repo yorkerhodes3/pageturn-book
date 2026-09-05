@@ -1,4 +1,5 @@
 import {
+  PAGE_TURN_APPEARANCE_PRESETS,
   createPageTurnBook,
   type PageTurnBookHandle,
 } from "@ethical-tech/pageturn-book";
@@ -26,6 +27,23 @@ const reader: PageTurnBookHandle = createPageTurnBook({
     globalThis.location.href,
   ),
 });
+
+const sdkQuery = new URLSearchParams(globalThis.location.search);
+const requestedAppearance = sdkQuery.get("appearance");
+const appearancePreset = PAGE_TURN_APPEARANCE_PRESETS.find(
+  ({ id }) => id === requestedAppearance,
+)?.id;
+if (appearancePreset) {
+  reader.setAppearance(appearancePreset);
+}
+const requestedPaper = sdkQuery.get("paper");
+if (requestedPaper && /^#[0-9a-f]{6}$/i.test(requestedPaper)) {
+  reader.setAppearance({ paper: { color: requestedPaper } });
+}
+const requestedInk = sdkQuery.get("ink");
+if (requestedInk && /^#[0-9a-f]{6}$/i.test(requestedInk)) {
+  reader.setAppearance({ paper: { inkColor: requestedInk } });
+}
 
 void reader.ready
   .then(() => {

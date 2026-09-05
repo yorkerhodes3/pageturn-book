@@ -23,6 +23,10 @@ export type ProjectedPageTurn = Readonly<{
   }>;
 }>;
 
+export type PageTurnProjectionOptions = Readonly<{
+  foldCurvature?: number;
+}>;
+
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
@@ -34,7 +38,10 @@ function samePoint(first: PageTurnPoint, second: PageTurnPoint): boolean {
   );
 }
 
-function foldCurve(frame: PageTurnFrame): readonly PageTurnPoint[] {
+function foldCurve(
+  frame: PageTurnFrame,
+  options: PageTurnProjectionOptions,
+): readonly PageTurnPoint[] {
   const { start, end } = frame.shadow;
   const dx = end.x - start.x;
   const dy = end.y - start.y;
@@ -49,7 +56,11 @@ function foldCurve(frame: PageTurnFrame): readonly PageTurnPoint[] {
     normalY *= -1;
   }
   const bend =
-    Math.min(frame.page.width * 0.03, 18) *
+    Math.min(
+      frame.page.width *
+        (0.012 + 0.034 * clamp(options.foldCurvature ?? 0.72, 0, 1)),
+      28,
+    ) *
     Math.sin(Math.PI * frame.progress);
   return Array.from({ length: 9 }, (_, index) => {
     if (index === 0) {
@@ -154,7 +165,10 @@ function toSpreadPoint(
   };
 }
 
-export function projectPageTurn(frame: PageTurnFrame): ProjectedPageTurn {
+export function projectPageTurn(
+  frame: PageTurnFrame,
+  options: PageTurnProjectionOptions = {},
+): ProjectedPageTurn {
   const movingTranslate = toSpreadPoint(frame, frame.movingOrigin);
   const revealedTranslate = toSpreadPoint(
     frame,
@@ -164,7 +178,7 @@ export function projectPageTurn(frame: PageTurnFrame): ProjectedPageTurn {
   const shadowEnd = toSpreadPoint(frame, frame.shadow.end);
   const shadowDx = shadowEnd.x - shadowOrigin.x;
   const shadowDy = shadowEnd.y - shadowOrigin.y;
-  const curve = foldCurve(frame);
+  const curve = foldCurve(frame, options);
   const movingClip = frame.movingClip.map((point) =>
     movingClipPoint(frame, point),
   );

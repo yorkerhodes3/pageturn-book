@@ -19,6 +19,15 @@ test("mounts and destroys V3 through the public SDK", async ({ page }) => {
   ).toBeVisible();
   await expect(page).toHaveTitle("PageTurn Book V3 SDK example");
   await expect(page.getByRole("link", { name: "Library" })).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Book appearance settings" }),
+  ).toHaveCount(0);
+  expect(
+    await page.locator("[data-v3-appearance]").evaluate((button) => ({
+      hidden: (button as HTMLElement).hidden,
+      display: getComputedStyle(button).display,
+    })),
+  ).toEqual({ hidden: true, display: "none" });
   await expect(page.getByRole("button", { name: "Share location" })).toHaveCount(
     0,
   );
@@ -54,4 +63,34 @@ test("cancels a hidden SDK mount cleanly during layout", async ({ page }) => {
   await expect(root).toHaveAttribute("data-sdk-ready", "true");
   await expect(root).toBeEmpty();
   expect(pageErrors).toEqual([]);
+});
+
+test("retains an SDK appearance selected before ready", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route(
+      "/sdk/?appearance=modern-lab&paper=%23ffffff&ink=%23112233",
+    ),
+  );
+
+  const root = page.locator("#page-turn-book");
+  await expect(root).toHaveAttribute("data-sdk-ready", "true");
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-appearance-theme",
+    "custom",
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveCSS(
+    "--v3-page-paper",
+    "#ffffff",
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveCSS(
+    "--v3-page-ink",
+    "#112233",
+  );
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet").first(),
+  ).toHaveCSS(
+    "font-family",
+    /Inter|ui-sans-serif|system-ui/,
+  );
 });

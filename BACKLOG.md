@@ -2359,6 +2359,8 @@ reference-styling, and back-navigation pass.
 | V3-412 | P3 | Complete (beta) | Added explicit selected-text sharing plus local-only quote/note storage, deletion, navigation, and Markdown export after privacy review. |
 | V3-413 | P2 | Ready | Migrate beta bookmark/annotation arrays to the versioned IndexedDB schemas, add whole-publication deletion/import, and complete assistive-technology review. |
 | V3-414 | P0 | Complete | Made the repository root the V3 workspace, extracted `@ethical-tech/pageturn-book` 3.0.0 with mount/destroy and injected manifest configuration, added packed clean-consumer and browser examples, and isolated V2-only packages under `compat/v2/`. |
+| V3-415 | P1 | Complete | Extracted typed material, paper, typography, binding, gutter, edge, and fold configuration; added seven live Style presets and session-only test controls. |
+| V3-416 | P2 | Complete | Added data-driven horizontal shelf stacks and an antique open display volume on a CSS lectern without shipping unlicensed reference images. |
 
 These V3 items are independent of V2-232 through V2-238, which still govern
 whether the same geometry path is promoted into the V2 production reader.

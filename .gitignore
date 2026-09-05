@@ -11,3 +11,4 @@ apps/demo/dist/
 test-results/
 playwright-report/
 coverage/
+temp-assets/

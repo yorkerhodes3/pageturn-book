@@ -23,6 +23,13 @@ const shellMarkup = `
           aria-haspopup="dialog"
           disabled
         >Explore</button>
+        <button
+          type="button"
+          class="v3-appearance"
+          data-v3-appearance
+          aria-haspopup="dialog"
+          aria-label="Book appearance settings"
+        ><span aria-hidden="true">&#9881;</span><span>Style</span></button>
         <label class="v3-chapter-picker">
           <span>Chapter</span>
           <select data-v3-chapter-select disabled>
@@ -159,6 +166,204 @@ const shellMarkup = `
         <figcaption data-v3-media-dialog-caption></figcaption>
       </figure>
     </div>
+  </dialog>
+
+  <dialog
+    class="v3-appearance-dialog"
+    data-v3-appearance-dialog
+    aria-labelledby="v3-appearance-title"
+  >
+    <form class="v3-appearance-frame" data-v3-appearance-form>
+      <div class="v3-dialog-close">
+        <button
+          type="button"
+          data-v3-close-appearance
+          aria-label="Close book appearance settings"
+        >Close</button>
+      </div>
+      <h2 id="v3-appearance-title">Book appearance</h2>
+      <p>
+        Test material, paper, typography, and physical-page combinations.
+        Changes affect this reader session only.
+      </p>
+
+      <label class="v3-appearance-wide">
+        <span>Preset</span>
+        <select data-v3-appearance-preset></select>
+      </label>
+
+      <fieldset>
+        <legend>Paper</legend>
+        <label>
+          <span>Paper color</span>
+          <input type="color" data-v3-paper-color>
+        </label>
+        <label>
+          <span>Ink color</span>
+          <input type="color" data-v3-ink-color>
+        </label>
+        <label>
+          <span>Paper highlight</span>
+          <input type="color" data-v3-paper-highlight>
+        </label>
+        <label>
+          <span>Page-edge color</span>
+          <input type="color" data-v3-page-edge-color>
+        </label>
+        <label>
+          <span>Page-edge finish</span>
+          <select data-v3-page-edge-style>
+            <option value="plain">Plain</option>
+            <option value="gold">Gold</option>
+            <option value="red">Red</option>
+            <option value="marbled">Marbled</option>
+          </select>
+        </label>
+        <label>
+          <span>Page background</span>
+          <select data-v3-page-pattern>
+            <option value="plain">Plain</option>
+            <option value="lined">Lined journal</option>
+            <option value="grid">Lab grid</option>
+          </select>
+        </label>
+        <label>
+          <span>Rule color</span>
+          <input type="color" data-v3-rule-color>
+        </label>
+        <label>
+          <span>Rule spacing</span>
+          <input type="range" min="0.5" max="3" step="0.1" data-v3-rule-spacing>
+        </label>
+        <label>
+          <span>Paper aging</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-paper-age>
+        </label>
+        <label>
+          <span>Paper texture</span>
+          <input type="range" min="0" max="0.3" step="0.01" data-v3-paper-texture>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Typography</legend>
+        <label>
+          <span>Typeface</span>
+          <select data-v3-typeface>
+            <option value="classic">Classic serif</option>
+            <option value="antique">Antique serif</option>
+            <option value="modern">Modern sans serif</option>
+            <option value="technical">Technical monospace</option>
+            <option value="handwritten">Handwritten notebook</option>
+          </select>
+        </label>
+        <label>
+          <span>Line height</span>
+          <input type="range" min="1.25" max="1.8" step="0.01" data-v3-line-height>
+        </label>
+        <label>
+          <span>Base type scale</span>
+          <input type="range" min="0.75" max="1.35" step="0.01" data-v3-base-type-scale>
+        </label>
+        <label class="v3-appearance-checkbox">
+          <input type="checkbox" data-v3-drop-cap>
+          <span>Decorative opening initial</span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Page geometry</legend>
+        <label>
+          <span>Gutter lift</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-gutter-lift>
+        </label>
+        <label>
+          <span>Bottom edge lift</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-bottom-lift>
+        </label>
+        <label>
+          <span>Fore-edge lift</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-fore-edge-lift>
+        </label>
+        <label>
+          <span>Corner roundness</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-corner-roundness>
+        </label>
+        <label>
+          <span>Turning fold radius</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-fold-radius>
+        </label>
+        <label>
+          <span>Fold shadow</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-fold-shadow>
+        </label>
+        <label>
+          <span>Board overhang</span>
+          <input type="range" min="0" max="1" step="0.05" data-v3-board-overhang>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Binding</legend>
+        <label>
+          <span>Material</span>
+          <select data-v3-binding-material>
+            <option value="leather">Leather</option>
+            <option value="cloth">Cloth</option>
+            <option value="paper">Paper cover</option>
+          </select>
+        </label>
+        <label>
+          <span>Thickness</span>
+          <select data-v3-binding-depth>
+            <option value="slim">Slim</option>
+            <option value="standard">Standard</option>
+            <option value="thick">Thick</option>
+          </select>
+        </label>
+        <label>
+          <span>Spine style</span>
+          <select data-v3-spine-style>
+            <option value="flat">Flat</option>
+            <option value="raised-hubs">Raised hubs</option>
+            <option value="exposed-stitch">Exposed stitch</option>
+          </select>
+        </label>
+        <label>
+          <span>Pages in binding</span>
+          <input type="number" min="16" max="1200" step="1" data-v3-page-count>
+        </label>
+        <label>
+          <span>Raised spine hubs</span>
+          <input type="number" min="0" max="8" step="1" data-v3-binding-hubs>
+        </label>
+        <label>
+          <span>Cover color</span>
+          <input type="color" data-v3-cover-color>
+        </label>
+        <label>
+          <span>Cover text</span>
+          <input type="color" data-v3-cover-foreground>
+        </label>
+        <label>
+          <span>Binding color</span>
+          <input type="color" data-v3-binding-color>
+        </label>
+        <label>
+          <span>Accent color</span>
+          <input type="color" data-v3-accent-color>
+        </label>
+      </fieldset>
+
+      <div class="v3-appearance-actions">
+        <button type="button" data-v3-reset-appearance>
+          Reset publication appearance
+        </button>
+        <output data-v3-appearance-status role="status">
+          PageTurn default
+        </output>
+      </div>
+    </form>
   </dialog>
 
   <dialog

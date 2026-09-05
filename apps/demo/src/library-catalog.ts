@@ -1,8 +1,9 @@
-import type { PublicationAppearance } from "@ethical-tech/book-publication-model";
 import type {
   BookshelfAction,
   BookshelfSection,
   BookshelfVolume,
+  PageTurnAppearancePresetId,
+  PageTurnPublicationAppearance,
 } from "@ethical-tech/pageturn-book";
 
 export const PRODUCTION_REVISION =
@@ -14,7 +15,7 @@ export type CatalogBook = {
   shelfLabel: string;
   collection: string;
   pageCount: number;
-  appearance: PublicationAppearance;
+  appearance: PageTurnPublicationAppearance;
   subtitle?: string;
   semanticHref?: string;
   geometryHref?: string;
@@ -23,6 +24,7 @@ export type CatalogBook = {
   externalHref?: string;
   extentLabel?: string;
   chaptersStartOnRight?: false;
+  placement?: BookshelfVolume["placement"];
 };
 
 const palettes = [
@@ -42,15 +44,42 @@ const flowingChapterBooks = new Set([
   "vango",
 ]);
 
+const appearancePresetByBook = new Map<
+  string,
+  Exclude<PageTurnAppearancePresetId, "custom" | "default">
+>([
+  ["plurality", "historical-tome"],
+  ["cyber-dictionary", "antique-greek"],
+  ["ai-models-research", "grid-lab"],
+  ["ai-research-assistant", "modern-lab"],
+  ["vango", "lined-journal"],
+]);
+
+const shelfPlacementByBook = new Map<
+  string,
+  NonNullable<BookshelfVolume["placement"]>
+>([
+  ["ai-carbon-footprint", { pose: "stacked", stackId: "policy-stack", order: 0 }],
+  ["ai-models-research", { pose: "stacked", stackId: "policy-stack", order: 1 }],
+  ["erus", { pose: "stacked", stackId: "policy-stack", order: 2 }],
+  ["haste", { pose: "stacked", stackId: "response-stack", order: 0 }],
+  ["mariupol-severity-model", { pose: "stacked", stackId: "response-stack", order: 1 }],
+  ["forced-labor-structural-risk-index", { pose: "stacked", stackId: "response-stack", order: 2 }],
+  ["cyber-dictionary", { pose: "open-on-stand", standStyle: "lectern" }],
+]);
+
 function appearance(
+  id: string,
   index: number,
   pageCount: number,
   shelfLabel: string,
-): PublicationAppearance {
+): PageTurnPublicationAppearance {
   const palette = palettes[index % palettes.length] ?? palettes[0];
+  const preset = appearancePresetByBook.get(id);
   const depth =
     pageCount >= 30 ? "thick" : pageCount >= 18 ? "standard" : "slim";
   return {
+    ...(preset ? { preset } : {}),
     cover: {
       background: palette.color,
       foreground: "#f3ead6",
@@ -235,24 +264,28 @@ export const LIBRARY_BOOKS: CatalogBook[] = catalogSource.map(
       geometryHref,
     ],
     index,
-  ) => ({
-    id,
-    title,
-    shelfLabel,
-    collection,
-    pageCount,
-    appearance: appearance(index, pageCount, shelfLabel),
-    semanticEdition: id === "what-is-ethical-ai" ? "2026-07" : "2026-08",
-    facsimile: true,
-    ...(subtitle ? { subtitle } : {}),
-    ...(semanticHref ? { semanticHref } : {}),
-    ...(flowingChapterBooks.has(id)
-      ? { chaptersStartOnRight: false as const }
-      : {}),
-    geometryHref:
-      geometryHref ??
-      `../v3/?book=${encodeURIComponent(id)}&from=shelf`,
-  }),
+  ) => {
+    const placement = shelfPlacementByBook.get(id);
+    return {
+      id,
+      title,
+      shelfLabel,
+      collection,
+      pageCount,
+      appearance: appearance(id, index, pageCount, shelfLabel),
+      semanticEdition: id === "what-is-ethical-ai" ? "2026-07" : "2026-08",
+      facsimile: true,
+      ...(subtitle ? { subtitle } : {}),
+      ...(semanticHref ? { semanticHref } : {}),
+      ...(flowingChapterBooks.has(id)
+        ? { chaptersStartOnRight: false as const }
+        : {}),
+      ...(placement ? { placement } : {}),
+      geometryHref:
+        geometryHref ??
+        `../v3/?book=${encodeURIComponent(id)}&from=shelf`,
+    };
+  },
 );
 
 LIBRARY_BOOKS.push({
@@ -268,6 +301,7 @@ LIBRARY_BOOKS.push({
   externalHref: "https://www.plurality.net/read/",
   extentLabel: "586-page print edition · 30 semantic chapters",
   appearance: {
+    preset: "historical-tome",
     cover: {
       background: "#39295d",
       foreground: "#f5efe2",
@@ -388,6 +422,7 @@ function bookshelfVolume(book: CatalogBook): BookshelfVolume {
     appearance: book.appearance,
     ...(book.subtitle ? { subtitle: book.subtitle } : {}),
     ...(book.extentLabel ? { extentLabel: book.extentLabel } : {}),
+    ...(book.placement ? { placement: book.placement } : {}),
     actions,
   };
 }
