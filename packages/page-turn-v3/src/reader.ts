@@ -1147,6 +1147,7 @@ function interpolate(
 }
 
 const reader = requiredElement<HTMLElement>("[data-v3-reader]");
+const pageRoot = reader.closest<HTMLElement>(".v3-page");
 const spread = requiredElement<HTMLElement>("[data-v3-spread]");
 const stationary = requiredElement<HTMLElement>("[data-v3-stationary]");
 const turnLayer = requiredElement<HTMLElement>("[data-v3-turn-layer]");
@@ -2570,6 +2571,9 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
       : `Front matter · Spread ${spreadStart / 2 + 1} of ${Math.ceil(pages.length / 2)}`;
   }
   reader.dataset.v3Turning = "false";
+  if (pageRoot) {
+    pageRoot.dataset.v3Turning = "false";
+  }
   reader.dataset.v3PageIndex = String(spreadStart);
   reader.dataset.v3PageCount = String(pages.length);
   reader.dataset.v3AtEnd = String(!canTurn("forward"));
@@ -3034,6 +3038,9 @@ function beginTurn(
     shadow,
   };
   reader.dataset.v3Turning = "true";
+  if (pageRoot) {
+    pageRoot.dataset.v3Turning = "true";
+  }
   counter.value = "Turning semantic leaf";
   renderControls();
   applyTurn(pointer);
@@ -4428,6 +4435,7 @@ function destroy(): void {
   }
   const embeddedRoot = root instanceof HTMLElement ? root : document.body;
   embeddedRoot.classList.remove("v3-page-embedded");
+  delete pageRoot?.dataset.v3Turning;
 }
 
 globalThis.addEventListener("pagehide", destroy, {

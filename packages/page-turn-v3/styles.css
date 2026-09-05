@@ -47,11 +47,17 @@
 }
 
 .v3-page {
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   background:
     radial-gradient(circle at 50% -8rem, rgb(205 166 92 / 17%), transparent 34rem),
     linear-gradient(90deg, rgb(0 0 0 / 22%), transparent 20% 80%, rgb(0 0 0 / 22%)),
     repeating-linear-gradient(45deg, #111918 0 2px, #131c1b 2px 4px);
+}
+
+.v3-page[data-v3-turning="true"] {
+  overflow-y: hidden;
 }
 
 .v3-main {
@@ -74,7 +80,7 @@
   --v3-page-edge: #d8cbb6;
   --v3-page-ink: #29251f;
   --v3-page-age-color: rgb(158 103 43 / 1.6%);
-  --v3-page-texture-color: rgb(83 55 26 / 3.5%);
+  --v3-page-texture-color: rgb(83 55 26 / 0.1%);
   --v3-page-rule-color: #9db8d8;
   --v3-page-rule-spacing: 1.5rem;
   --v3-paper-pattern: linear-gradient(transparent, transparent);
@@ -89,7 +95,7 @@
   --v3-page-bottom-shadow-height: 1.13rem;
   --v3-fore-edge-width: 0.73rem;
   --v3-page-outer-radius: 0.51rem;
-  --v3-page-block-depth: 0.66rem;
+  --v3-page-block-depth: 0.41rem;
   --v3-page-fan-dark: #b9ab91;
   --v3-page-fan-light: #f2eadc;
   --v3-page-fan-mid: #d8cbb6;
@@ -357,7 +363,7 @@
   position: absolute;
   z-index: 1;
   top: calc(var(--v3-board-overhang) + 0.7rem);
-  bottom: calc(var(--v3-board-overhang) + 0.2rem);
+  bottom: calc(var(--v3-board-overhang) + 0.7rem);
   width: calc(50% - clamp(1.2rem, 3vw, 2.4rem));
   background:
     repeating-linear-gradient(
@@ -368,7 +374,7 @@
     );
   box-shadow:
     0.2rem 0.4rem 0.7rem rgb(0 0 0 / 30%),
-    0 var(--v3-page-block-depth) 0
+    0 min(var(--v3-page-block-depth), 0.55rem) 0
       color-mix(in srgb, var(--v3-page-edge) 68%, #5e4327),
     inset 0 0 0.65rem rgb(75 57 35 / 30%);
 }
@@ -577,11 +583,15 @@
   border: 0;
   background:
     var(--v3-paper-pattern),
-    repeating-linear-gradient(
-      96deg,
-      transparent 0 5px,
-      var(--v3-page-texture-color) 5.5px 6px,
-      transparent 6.5px 12px
+    radial-gradient(
+      ellipse at 72% 24%,
+      var(--v3-page-texture-color),
+      transparent 31%
+    ),
+    radial-gradient(
+      ellipse at 28% 82%,
+      var(--v3-page-texture-color),
+      transparent 34%
     ),
     radial-gradient(circle at 18% 8%, var(--v3-page-age-color), transparent 36%),
     linear-gradient(
@@ -1008,7 +1018,7 @@
   width: 50%;
   height: 100%;
   overflow: hidden;
-  background-color: #fffdf8;
+  background-color: var(--v3-page-paper, #fffdf8);
   opacity: 1;
   transform-origin: 0 0;
   isolation: isolate;
@@ -1029,8 +1039,8 @@
   position: absolute;
   z-index: 0;
   inset: -1px;
-  background: #fffdf8;
-  box-shadow: inset 0 0 0 1px #fffdf8;
+  background: var(--v3-page-paper, #fffdf8);
+  box-shadow: inset 0 0 0 1px var(--v3-page-paper, #fffdf8);
   opacity: 1;
   backface-visibility: hidden;
   pointer-events: none;
@@ -1065,11 +1075,12 @@
 .v3-revealed-page .v3-sheet {
   left: 0;
   width: 100%;
-  background-color: #fffdf8;
+  background-color: var(--v3-page-paper, #fffdf8);
   opacity: 1;
 }
 
-.v3-turn-surface .v3-sheet::before {
+.v3-turn-surface .v3-sheet::before,
+.v3-turn-surface .v3-sheet::after {
   display: none;
 }
 
@@ -1103,7 +1114,7 @@
     rgb(83 58 30 / 4%) 34%,
     rgb(78 54 27 / 10%) 66%,
     rgb(255 255 255 / 22%) 88%,
-    rgb(255 253 248 / 48%) 100%
+    color-mix(in srgb, var(--v3-page-paper, #fffdf8) 48%, transparent) 100%
   );
   box-shadow:
     inset 0.06rem 0 0.16rem rgb(255 255 255 / 15%);

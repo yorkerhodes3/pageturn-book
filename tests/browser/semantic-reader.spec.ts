@@ -273,6 +273,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     const restingEdge = sheet
       ? getComputedStyle(sheet, "::before")
       : undefined;
+    const restingGutter = sheet
+      ? getComputedStyle(sheet, "::after")
+      : undefined;
     return {
       surfaceColor: surface.backgroundColor,
       surfaceOpacity: surface.opacity,
@@ -282,6 +285,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       paperColor: paper?.backgroundColor,
       paperOpacity: paper?.opacity,
       restingEdgeDisplay: restingEdge?.display,
+      restingGutterDisplay: restingGutter?.display,
       surfaceZIndex: surface.zIndex,
     };
   });
@@ -294,6 +298,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     paperColor: "rgb(255, 253, 248)",
     paperOpacity: "1",
     restingEdgeDisplay: "none",
+    restingGutterDisplay: "none",
     surfaceZIndex: "6",
   });
   await expect(page.locator(".v3-spine")).toHaveCSS("z-index", "3");
@@ -487,6 +492,9 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
   );
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await reader.evaluate((node) => {
+    node.style.setProperty("--v3-page-paper", "#ead9af");
+  });
   const spread = page.locator("[data-v3-spread]");
   const corner = page.getByRole("button", {
     name: "Turn the next page from its bottom corner",
@@ -495,6 +503,10 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     spread.boundingBox(),
     corner.boundingBox(),
   ]);
+  const readerWidthBeforeTurn = await page
+    .locator(".v3-page")
+    .evaluate((root) => root.clientWidth);
+  await expect(page.locator(".v3-page")).toHaveCSS("overflow-y", "auto");
   if (!spreadBounds || !cornerBounds) {
     throw new Error("Expected V3 bottom-corner bounds");
   }
@@ -513,8 +525,10 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
     const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
     const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
+    const backing = moving?.querySelector<HTMLElement>(".v3-paper-occluder");
     const spread = layer.closest("[data-v3-spread]");
-    if (!moving || !shadow || !curve || !spread) {
+    const readerRoot = layer.closest<HTMLElement>(".v3-page");
+    if (!moving || !shadow || !curve || !backing || !spread || !readerRoot) {
       throw new Error("Expected complete bottom-corner fold layers");
     }
     const layerBounds = layer.getBoundingClientRect();
@@ -527,6 +541,13 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
         Math.abs(layerBounds.width - spreadBounds.width) <= 1 &&
         Math.abs(layerBounds.height - spreadBounds.height) <= 1,
       overflow: getComputedStyle(layer).overflow,
+      readerOverflowY: getComputedStyle(readerRoot).overflowY,
+      readerScrollTop: readerRoot.scrollTop,
+      readerWidth: readerRoot.clientWidth,
+      movingPaper: getComputedStyle(moving).backgroundColor,
+      backingPaper: getComputedStyle(backing).backgroundColor,
+      spreadLeft: spreadBounds.left,
+      spreadWidth: spreadBounds.width,
       vertices: clipPath.split(",").length,
       shadowHeight: Number.parseFloat(getComputedStyle(shadow).height),
       curveHeight: Number.parseFloat(getComputedStyle(curve).height),
@@ -538,11 +559,43 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
   });
   expect(fold.sameBounds).toBe(true);
   expect(fold.overflow).toBe("visible");
+  expect(fold.readerOverflowY).toBe("hidden");
+  expect(fold.readerScrollTop).toBe(0);
+  expect(fold.readerWidth).toBe(readerWidthBeforeTurn);
+  expect(fold.movingPaper).toBe("rgb(234, 217, 175)");
+  expect(fold.backingPaper).toBe(fold.movingPaper);
+  expect(fold.spreadLeft).toBeCloseTo(spreadBounds.x, 1);
+  expect(fold.spreadWidth).toBeCloseTo(spreadBounds.width, 1);
   expect(fold.vertices).toBeGreaterThan(4);
   expect(fold.shadowHeight).toBeLessThanOrEqual(fold.pageDiagonal + 1);
   expect(fold.curveHeight).toBeCloseTo(fold.shadowHeight, 1);
   await page.mouse.up();
   await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
+  const constrainedHost = await page.locator(".v3-page").evaluate((root) => {
+    root.style.minHeight = "0";
+    root.style.height = "400px";
+    const widthAtRest = root.clientWidth;
+    root.dataset.v3Turning = "true";
+    const widthDuringTurn = root.clientWidth;
+    root.dataset.v3Turning = "false";
+    root.scrollTop = root.scrollHeight;
+    return {
+      overflowY: getComputedStyle(root).overflowY,
+      scrollbarGutter: getComputedStyle(root).scrollbarGutter,
+      scrollTop: root.scrollTop,
+      scrollHeight: root.scrollHeight,
+      clientHeight: root.clientHeight,
+      widthAtRest,
+      widthDuringTurn,
+    };
+  });
+  expect(constrainedHost.overflowY).toBe("auto");
+  expect(constrainedHost.scrollbarGutter).toBe("stable");
+  expect(constrainedHost.widthDuringTurn).toBe(constrainedHost.widthAtRest);
+  expect(constrainedHost.scrollHeight).toBeGreaterThan(
+    constrainedHost.clientHeight,
+  );
+  expect(constrainedHost.scrollTop).toBeGreaterThan(0);
 });
 
 test("uses the library as the direct-entry back destination", async ({
@@ -2132,6 +2185,8 @@ test("renders the production library as optimized labeled bindings", async ({
   await expect(page.locator(".bookshelf-book-stacked")).toHaveCount(6);
   await expect(page.locator(".bookshelf-book-open-on-stand")).toHaveCount(1);
   await expect(page.locator(".bookshelf-open-page")).toHaveCount(2);
+  await expect(page.locator(".bookshelf-open-board")).toHaveCount(2);
+  await expect(page.locator(".bookshelf-open-page-block")).toHaveCount(2);
   await expect(
     page.getByRole("button", { name: "Cyber Dictionary, 44 pages" }),
   ).toHaveAttribute("data-shelf-pose", "open-on-stand");
@@ -2154,7 +2209,84 @@ test("renders the production library as optimized labeled bindings", async ({
   expect(stackedBox.width).toBeGreaterThan(stackedBox.height * 3);
   expect(openBookBox.width).toBeGreaterThan(openBookBox.height);
   expect(openPageBox.width).toBeGreaterThan(100);
+  expect(openPageBox.height).toBeGreaterThan(80);
   expect(standBox.height).toBeGreaterThan(50);
+  await expect(
+    page
+      .getByRole("button", { name: "Cyber Dictionary, 44 pages" })
+      .locator(".bookshelf-open-page-title"),
+  ).toHaveText(["CYBER DICTIONARY", "Cyber Dictionary"]);
+  const stackGeometry = await page
+    .locator(".bookshelf-stack")
+    .first()
+    .evaluate((stack) => {
+      const stackWidth = stack.getBoundingClientRect().width;
+      const rowBounds = stack
+        .closest<HTMLElement>(".bookshelf-volume-row")
+        ?.getBoundingClientRect();
+      if (!rowBounds) {
+        throw new Error("Expected stack row geometry");
+      }
+      const rem = Number.parseFloat(
+        getComputedStyle(document.documentElement).fontSize,
+      );
+      const books = Array.from(
+        stack.querySelectorAll<HTMLElement>(".bookshelf-book-stacked"),
+      ).map((book) => {
+        const style = getComputedStyle(book);
+        const item = book.closest<HTMLElement>(".bookshelf-volume-item");
+        const label = book.querySelector<HTMLElement>(".bookshelf-book-label");
+        if (!item || !label) {
+          throw new Error("Expected complete stacked-book geometry");
+        }
+        return {
+          width: Number.parseFloat(style.width),
+          height: Number.parseFloat(style.height),
+          expectedWidth: Number.parseFloat(
+            style.getPropertyValue("--shelf-book-height"),
+          ) * rem,
+          expectedHeight: Number.parseFloat(
+            style.getPropertyValue("--shelf-book-width"),
+          ) * rem,
+          bottom: Number.parseFloat(
+            item.style.getPropertyValue("--shelf-stack-bottom"),
+          ) * rem,
+          labelFits: label.scrollWidth <= label.clientWidth + 1,
+          contained:
+            book.getBoundingClientRect().top >= rowBounds.top - 1 &&
+            book.getBoundingClientRect().bottom <= rowBounds.bottom + 1,
+        };
+      });
+      return { stackWidth, rowHeight: rowBounds.height, books };
+    });
+  const openPagePaint = await page
+    .locator(".bookshelf-open-page")
+    .first()
+    .evaluate((openPage) => getComputedStyle(openPage).backgroundImage);
+  expect(openPagePaint).toContain("radial-gradient");
+  expect(openPagePaint).not.toBe("none");
+  expect(stackGeometry.books).toHaveLength(3);
+  for (const book of stackGeometry.books) {
+    expect(book.width).toBeCloseTo(book.expectedWidth, 1);
+    expect(book.height).toBeCloseTo(book.expectedHeight, 1);
+    expect(book.labelFits).toBe(true);
+    expect(book.contained).toBe(true);
+    expect(stackGeometry.stackWidth).toBeGreaterThanOrEqual(book.width);
+  }
+  expect(stackGeometry.rowHeight).toBeGreaterThanOrEqual(14.8 * 16 - 1);
+  const booksByBottom = [...stackGeometry.books].sort(
+    (left, right) => left.bottom - right.bottom,
+  );
+  for (let index = 1; index < booksByBottom.length; index += 1) {
+    const lowerBook = booksByBottom[index - 1];
+    const upperBook = booksByBottom[index];
+    if (!lowerBook || !upperBook) {
+      throw new Error("Expected neighboring stacked books");
+    }
+    expect(upperBook.bottom - lowerBook.bottom).toBeGreaterThan(
+      lowerBook.height,
+    );
+  }
   const openDisplay = page.getByRole("button", {
     name: "Cyber Dictionary, 44 pages",
   });

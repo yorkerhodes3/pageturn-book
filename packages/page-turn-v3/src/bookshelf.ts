@@ -56,16 +56,39 @@ function element<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function spineWidth(pageCount: number): string {
-  return `${Math.min(3.8, Math.max(1.7, 1.15 + Math.sqrt(pageCount) * 0.38)).toFixed(2)}rem`;
+function spineWidthRem(pageCount: number): number {
+  return Math.min(3.8, Math.max(1.7, 1.15 + Math.sqrt(pageCount) * 0.38));
 }
 
-function volumeHeight(id: string): string {
+function spineWidth(pageCount: number): string {
+  return `${spineWidthRem(pageCount).toFixed(2)}rem`;
+}
+
+export function bookshelfStackLayout(
+  pageCounts: readonly number[],
+): Readonly<{ bottomsRem: readonly number[]; rowHeightRem: number }> {
+  let bottomRem = 0.45;
+  const bottomsRem = pageCounts.map((pageCount) => {
+    const currentBottom = bottomRem;
+    bottomRem += spineWidthRem(pageCount) + 0.18;
+    return currentBottom;
+  });
+  return {
+    bottomsRem,
+    rowHeightRem: Math.max(14.8, bottomRem + 1.4),
+  };
+}
+
+function volumeHeightRem(id: string): number {
   const variance = Array.from(id).reduce(
     (total, character) => total + character.charCodeAt(0),
     0,
   );
-  return `${(11.3 + (variance % 5) * 0.28).toFixed(2)}rem`;
+  return 11.3 + (variance % 5) * 0.28;
+}
+
+function volumeHeight(id: string): string {
+  return `${volumeHeightRem(id).toFixed(2)}rem`;
 }
 
 function volumeTilt(id: string): string {
@@ -143,7 +166,10 @@ export function mountBookshelf(
   const buttonsById = new Map<string, HTMLButtonElement>();
   const volumesById = new Map(allVolumes.map((volume) => [volume.id, volume]));
 
-  const createVolumeItem = (volume: BookshelfVolume) => {
+  const createVolumeItem = (
+    volume: BookshelfVolume,
+    stackBottomRem = 0.45,
+  ) => {
     const placement = volume.placement ?? { pose: "upright" as const };
     const item = element(
       "div",
@@ -154,7 +180,7 @@ export function mountBookshelf(
       item.style.setProperty("--shelf-stack-order", String(placement.order));
       item.style.setProperty(
         "--shelf-stack-bottom",
-        `${(0.45 + placement.order * 1.42).toFixed(2)}rem`,
+        `${stackBottomRem.toFixed(2)}rem`,
       );
       item.style.setProperty(
         "--shelf-stack-tilt",
@@ -210,9 +236,52 @@ export function mountBookshelf(
         `bookshelf-stand bookshelf-stand-${placement.standStyle ?? "lectern"}`,
       );
       const openBook = element("span", "bookshelf-open-book");
+      openBook.setAttribute("aria-hidden", "true");
+      const leftPage = element(
+        "span",
+        "bookshelf-open-page bookshelf-open-page-left",
+      );
+      const rightPage = element(
+        "span",
+        "bookshelf-open-page bookshelf-open-page-right",
+      );
+      leftPage.append(
+        element("span", "bookshelf-open-page-kicker", "Ethical Tech CoLab"),
+        element("strong", "bookshelf-open-page-title", volume.shelfLabel),
+        element(
+          "span",
+          "bookshelf-open-page-meta",
+          volume.extentLabel ?? `${volume.pageCount} pages`,
+        ),
+      );
+      rightPage.append(
+        element("span", "bookshelf-open-page-kicker", volume.collection),
+        element("strong", "bookshelf-open-page-title", volume.title),
+        element(
+          "span",
+          "bookshelf-open-page-meta",
+          volume.subtitle ?? "Open semantic edition",
+        ),
+      );
       openBook.append(
-        element("span", "bookshelf-open-page bookshelf-open-page-left"),
-        element("span", "bookshelf-open-page bookshelf-open-page-right"),
+        element(
+          "span",
+          "bookshelf-open-board bookshelf-open-board-left",
+        ),
+        element(
+          "span",
+          "bookshelf-open-board bookshelf-open-board-right",
+        ),
+        element(
+          "span",
+          "bookshelf-open-page-block bookshelf-open-page-block-left",
+        ),
+        element(
+          "span",
+          "bookshelf-open-page-block bookshelf-open-page-block-right",
+        ),
+        leftPage,
+        rightPage,
         element("span", "bookshelf-open-gutter"),
       );
       display.append(stand, openBook);
@@ -232,6 +301,7 @@ export function mountBookshelf(
     const recess = element("div", "bookshelf-recess");
     const row = element("div", "bookshelf-volume-row");
     row.setAttribute("role", "list");
+    let rowHeightRem = 14.8;
 
     const renderedStacks = new Set<string>();
     for (const volume of section.volumes) {
@@ -264,9 +334,27 @@ export function mountBookshelf(
               : 0;
           return leftOrder - rightOrder;
         });
-      stack.append(...stackVolumes.map(createVolumeItem));
+      stack.style.setProperty(
+        "--shelf-stack-width",
+        `${(Math.max(...stackVolumes.map(({ id }) => volumeHeightRem(id))) + 0.55).toFixed(2)}rem`,
+      );
+      const stackLayout = bookshelfStackLayout(
+        stackVolumes.map(({ pageCount }) => pageCount),
+      );
+      rowHeightRem = Math.max(rowHeightRem, stackLayout.rowHeightRem);
+      const stackItems = stackVolumes.map((stackVolume, index) =>
+        createVolumeItem(
+          stackVolume,
+          stackLayout.bottomsRem[index] ?? 0.45,
+        ),
+      );
+      stack.append(...stackItems);
       row.append(stack);
     }
+    row.style.setProperty(
+      "--shelf-row-height",
+      `${rowHeightRem.toFixed(2)}rem`,
+    );
 
     const shelfBoard = element("div", "bookshelf-shelf-board");
     shelfBoard.setAttribute("aria-hidden", "true");

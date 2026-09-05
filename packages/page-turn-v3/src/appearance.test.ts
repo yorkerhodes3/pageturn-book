@@ -74,6 +74,7 @@ describe("publicationAppearanceVariables", () => {
     ]);
 
     const antique = resolvePageTurnAppearance(undefined, "antique-greek");
+    const historical = resolvePageTurnAppearance(undefined, "historical-tome");
     const modern = resolvePageTurnAppearance(undefined, "modern-lab");
     const grid = resolvePageTurnAppearance(undefined, "grid-lab");
     expect(antique.paper.age).toBeGreaterThan(modern.paper.age);
@@ -82,6 +83,12 @@ describe("publicationAppearanceVariables", () => {
     );
     expect(antique.binding.depth).toBe("thick");
     expect(antique.fan.edgeStyle).toBe("marbled");
+    expect(
+      pageTurnAppearanceVariables(antique)["--v3-page-texture-color"],
+    ).toBe("rgb(83 55 26 / 0.019)");
+    expect(
+      pageTurnAppearanceVariables(historical)["--v3-page-block-depth"],
+    ).toBe("0.82rem");
     expect(modern.binding.depth).toBe("slim");
     expect(grid.paper.pattern).toBe("grid");
   });

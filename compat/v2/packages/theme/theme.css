@@ -2463,7 +2463,7 @@ a:hover {
   display: flex;
   gap: clamp(0.12rem, 0.3vw, 0.35rem);
   align-items: end;
-  height: 14.8rem;
+  height: var(--shelf-row-height, 14.8rem);
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -2482,7 +2482,8 @@ a:hover {
 
 .bookshelf-stack {
   position: relative;
-  flex: 0 0 11.4rem;
+  flex: 0 0 var(--shelf-stack-width, 11.4rem);
+  width: var(--shelf-stack-width, 11.4rem);
   height: 100%;
 }
 
@@ -2491,14 +2492,15 @@ a:hover {
   right: 0;
   bottom: var(--shelf-stack-bottom);
   left: 0;
-  display: block;
+  display: flex;
+  justify-content: center;
   height: auto;
 }
 
 .bookshelf-stack .bookshelf-book-stacked {
-  flex: 0 0 10.8rem;
-  width: 10.8rem;
-  height: clamp(1.4rem, var(--shelf-book-width), 2.35rem);
+  flex: 0 0 var(--shelf-book-height);
+  width: var(--shelf-book-height);
+  height: var(--shelf-book-width);
   transform: rotate(var(--shelf-stack-tilt)) translateZ(0);
   transform-origin: center;
 }
@@ -2513,10 +2515,11 @@ a:hover {
 }
 
 .bookshelf-book-stacked .bookshelf-book-label {
-  max-width: calc(100% - 3.5rem);
+  max-width: calc(100% - 1.8rem);
   max-height: none;
   overflow: hidden;
-  padding: 0.22rem 0.55rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.52rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   writing-mode: horizontal-tb;
@@ -2581,15 +2584,44 @@ a:hover {
 }
 
 .bookshelf-volume-item-open-on-stand {
-  flex: 0 0 14rem;
+  flex: 0 0 15.5rem;
 }
 
 .bookshelf-volume-item-open-on-stand .bookshelf-book-open-on-stand {
-  flex: 0 0 14rem;
-  width: 14rem;
-  height: 12.4rem;
+  --v3-paper-pattern: linear-gradient(transparent, transparent);
+  flex: 0 0 15.5rem;
+  width: 15.5rem;
+  height: 13.2rem;
   transform: none;
   filter: drop-shadow(0 0.55rem 0.55rem rgb(0 0 0 / 58%));
+}
+
+.bookshelf-book-open-on-stand[data-v3-page-pattern="lined"] {
+  --v3-paper-pattern: repeating-linear-gradient(
+    180deg,
+    transparent 0 calc(var(--v3-page-rule-spacing) - 1px),
+    color-mix(in srgb, var(--v3-page-rule-color) 44%, transparent)
+      calc(var(--v3-page-rule-spacing) - 1px)
+      var(--v3-page-rule-spacing)
+  );
+}
+
+.bookshelf-book-open-on-stand[data-v3-page-pattern="grid"] {
+  --v3-paper-pattern:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--v3-page-rule-spacing) - 1px),
+      color-mix(in srgb, var(--v3-page-rule-color) 34%, transparent)
+        calc(var(--v3-page-rule-spacing) - 1px)
+        var(--v3-page-rule-spacing)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 calc(var(--v3-page-rule-spacing) - 1px),
+      color-mix(in srgb, var(--v3-page-rule-color) 28%, transparent)
+        calc(var(--v3-page-rule-spacing) - 1px)
+        var(--v3-page-rule-spacing)
+    );
 }
 
 .bookshelf-book-open-on-stand:hover,
@@ -2609,87 +2641,301 @@ a:hover {
   position: absolute;
   inset: 0;
   display: block;
-  perspective: 24rem;
+  perspective: 30rem;
 }
 
 .bookshelf-stand {
   position: absolute;
-  right: 0.8rem;
-  bottom: 0.2rem;
-  left: 0.8rem;
-  height: 5.2rem;
-  clip-path: polygon(12% 100%, 28% 8%, 72% 8%, 88% 100%, 76% 100%, 68% 28%, 32% 28%, 24% 100%);
-  background:
-    linear-gradient(90deg, rgb(255 255 255 / 8%), transparent 22% 78%, rgb(0 0 0 / 28%)),
-    #5b321c;
+  right: 0.65rem;
+  bottom: 0.1rem;
+  left: 0.65rem;
+  height: 5.4rem;
 }
 
-.bookshelf-stand-easel {
+.bookshelf-stand::before {
+  position: absolute;
+  top: 0.2rem;
+  right: 0;
+  bottom: 0.42rem;
+  left: 0;
+  clip-path: polygon(12% 100%, 28% 8%, 72% 8%, 88% 100%, 76% 100%, 68% 28%, 32% 28%, 24% 100%);
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 10%), transparent 22% 72%, rgb(0 0 0 / 34%)),
+    linear-gradient(180deg, #7d4a2b, #402013 68%, #281108);
+  box-shadow: 0 0.35rem 0.45rem rgb(0 0 0 / 48%);
+  content: "";
+}
+
+.bookshelf-stand::after {
+  position: absolute;
+  right: 10%;
+  bottom: 0;
+  left: 10%;
+  height: 0.52rem;
+  border: 1px solid #281108;
+  border-radius: 0.1rem;
+  background: linear-gradient(180deg, #98603c, #4a2515 54%, #271007);
+  box-shadow:
+    inset 0 0.1rem rgb(255 233 190 / 12%),
+    0 0.2rem 0.28rem rgb(0 0 0 / 52%);
+  content: "";
+}
+
+.bookshelf-stand-easel::before {
   clip-path: polygon(6% 100%, 34% 4%, 66% 4%, 94% 100%, 80% 100%, 62% 28%, 38% 28%, 20% 100%);
 }
 
 .bookshelf-open-book {
   position: absolute;
-  right: 0.5rem;
-  bottom: 2.4rem;
-  left: 0.5rem;
+  right: 0.35rem;
+  bottom: 2.15rem;
+  left: 0.35rem;
   display: block;
-  height: 7.2rem;
-  transform: rotateX(48deg) translateZ(0.4rem);
+  height: 8.5rem;
+  transform: rotateX(24deg) translateZ(0.55rem);
   transform-origin: bottom center;
   transform-style: preserve-3d;
 }
 
+.bookshelf-open-book::before {
+  position: absolute;
+  z-index: 0;
+  top: 0.35rem;
+  bottom: -0.8rem;
+  left: 50%;
+  width: 0.75rem;
+  transform: translateX(-50%) translateZ(-0.3rem);
+  border-radius: 45%;
+  background: var(--v3-binding-color);
+  box-shadow: 0 0.18rem 0.3rem rgb(0 0 0 / 55%);
+  content: "";
+}
+
+.bookshelf-open-board,
+.bookshelf-open-page-block,
 .bookshelf-open-page {
   position: absolute;
-  top: 0;
   width: 50%;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--v3-page-edge) 58%, #704c28);
+  transform-style: preserve-3d;
+}
+
+.bookshelf-open-board {
+  z-index: 0;
+  top: 0.28rem;
+  bottom: -0.72rem;
+  border: var(--book-board-thickness) solid
+    color-mix(in srgb, var(--book-cover-background) 76%, #000);
+  background:
+    radial-gradient(circle at 24% 12%, rgb(255 255 255 / 8%), transparent 30%),
+    repeating-linear-gradient(
+      87deg,
+      transparent 0 5px,
+      rgb(255 255 255 / 2%) 6px,
+      transparent 7px 12px
+    ),
+    var(--book-cover-background);
+  box-shadow:
+    inset 0 0 0 1px var(--book-cover-accent),
+    inset 0 0 0.7rem rgb(0 0 0 / 52%),
+    0 0.32rem 0.42rem rgb(0 0 0 / 44%);
+}
+
+[data-book-binding-material="cloth"] .bookshelf-open-board {
   background:
     repeating-linear-gradient(
-      180deg,
-      transparent 0 0.65rem,
-      color-mix(in srgb, var(--v3-page-ink) 10%, transparent) 0.67rem 0.7rem
+      0deg,
+      rgb(255 255 255 / 3%) 0 1px,
+      rgb(0 0 0 / 4%) 1px 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(255 255 255 / 2%) 0 1px,
+      transparent 1px 3px
+    ),
+    var(--book-cover-background);
+}
+
+[data-book-binding-material="paper"] .bookshelf-open-board {
+  background:
+    radial-gradient(circle at 25% 12%, rgb(255 255 255 / 14%), transparent 34%),
+    var(--book-cover-background);
+}
+
+.bookshelf-open-page-block {
+  z-index: 1;
+  top: 0.18rem;
+  bottom: -0.46rem;
+  border: 1px solid color-mix(in srgb, var(--v3-page-edge) 68%, #51351d);
+  background: repeating-linear-gradient(
+    0deg,
+    var(--v3-page-fan-dark) 0 1px,
+    var(--v3-page-fan-light) 1px 3px,
+    var(--v3-page-fan-mid) 3px 4px
+  );
+  box-shadow:
+    0 0.2rem 0 color-mix(in srgb, var(--v3-page-edge) 72%, #6f4d2b),
+    0 0.42rem 0 color-mix(in srgb, var(--v3-page-edge) 58%, #4a321e);
+}
+
+.bookshelf-open-page {
+  z-index: 2;
+  top: 0;
+  display: flex;
+  height: calc(100% - 0.12rem);
+  overflow: hidden;
+  flex-direction: column;
+  gap: 0.35rem;
+  justify-content: center;
+  padding: 0.82rem 0.72rem 0.62rem;
+  border: 1px solid color-mix(in srgb, var(--v3-page-edge) 58%, #704c28);
+  background:
+    var(--v3-paper-pattern),
+    radial-gradient(
+      ellipse at 72% 24%,
+      var(--v3-page-texture-color),
+      transparent 31%
+    ),
+    radial-gradient(
+      ellipse at 28% 82%,
+      var(--v3-page-texture-color),
+      transparent 34%
     ),
     radial-gradient(circle at 20% 12%, var(--v3-page-age-color), transparent 46%),
-    var(--v3-page-paper);
-  box-shadow:
-    0 0.22rem 0 var(--v3-page-edge),
-    0 0.42rem 0 color-mix(in srgb, var(--v3-page-edge) 72%, #6f4d2b),
-    0 0.62rem 0 color-mix(in srgb, var(--v3-page-edge) 56%, #4a321e);
+    linear-gradient(
+      100deg,
+      var(--v3-page-paper-highlight),
+      var(--v3-page-paper) 24% 78%,
+      color-mix(in srgb, var(--v3-page-edge) 62%, var(--v3-page-paper))
+    );
+  color: var(--v3-page-ink);
+  font-family: var(--v3-body-font);
+  text-align: center;
+  box-shadow: 0 var(--v3-page-bottom-lift) var(--v3-page-bottom-blur)
+    color-mix(in srgb, var(--v3-page-edge) 42%, transparent);
 }
 
+.bookshelf-open-board-left,
+.bookshelf-open-page-block-left,
 .bookshelf-open-page-left {
   left: 0;
-  transform: rotateY(13deg);
+  transform: rotateY(8deg);
   transform-origin: right center;
-  border-radius: 0.55rem 0.12rem 0.2rem 0.75rem;
+  border-radius:
+    var(--v3-page-outer-radius) 0.1rem var(--v3-gutter-radius)
+    var(--v3-page-outer-radius);
 }
 
+.bookshelf-open-board-right,
+.bookshelf-open-page-block-right,
 .bookshelf-open-page-right {
   right: 0;
-  transform: rotateY(-13deg);
+  transform: rotateY(-8deg);
   transform-origin: left center;
-  border-radius: 0.12rem 0.55rem 0.75rem 0.2rem;
+  border-radius:
+    0.1rem var(--v3-page-outer-radius) var(--v3-page-outer-radius)
+    var(--v3-gutter-radius);
+}
+
+.bookshelf-open-board-left {
+  left: -0.24rem;
+}
+
+.bookshelf-open-board-right {
+  right: -0.24rem;
+}
+
+.bookshelf-open-page::before,
+.bookshelf-open-page::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.bookshelf-open-page::before {
+  width: 0.42rem;
+}
+
+.bookshelf-open-page-left::before {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--v3-page-edge) 68%, transparent),
+    rgb(255 255 255 / 18%) 32%,
+    transparent
+  );
+}
+
+.bookshelf-open-page-right::before {
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    color-mix(in srgb, var(--v3-page-edge) 68%, transparent),
+    rgb(255 255 255 / 18%) 32%,
+    transparent
+  );
+}
+
+.bookshelf-open-page::after {
+  width: min(38%, var(--v3-gutter-shadow-width));
+}
+
+.bookshelf-open-page-left::after {
+  right: 0;
+  background: linear-gradient(to left, rgb(54 38 20 / 20%), transparent);
+}
+
+.bookshelf-open-page-right::after {
+  left: 0;
+  background: linear-gradient(to right, rgb(54 38 20 / 20%), transparent);
+}
+
+.bookshelf-open-page-kicker,
+.bookshelf-open-page-meta {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: color-mix(in srgb, var(--v3-page-ink) 62%, transparent);
+  font-family: var(--v3-ui-font);
+  font-size: 0.38rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.bookshelf-open-page-title {
+  position: relative;
+  z-index: 1;
+  display: block;
+  color: var(--v3-page-ink);
+  font: 600 0.78rem/1.05 var(--v3-heading-font);
+  letter-spacing: 0.015em;
+  text-wrap: balance;
+}
+
+.bookshelf-open-page-meta {
+  margin-top: auto;
+  font-size: 0.34rem;
 }
 
 .bookshelf-open-gutter {
   position: absolute;
-  z-index: 3;
-  top: 0.15rem;
-  bottom: -0.6rem;
+  z-index: 4;
+  top: 0.1rem;
+  bottom: -0.48rem;
   left: 50%;
-  width: 0.55rem;
-  transform: translateX(-50%);
+  width: 0.34rem;
+  transform: translateX(-50%) translateZ(0.08rem);
   border-radius: 50%;
   background: linear-gradient(
     90deg,
-    rgb(67 45 25 / 54%),
-    rgb(255 244 218 / 22%) 50%,
-    rgb(67 45 25 / 54%)
+    rgb(67 45 25 / 62%),
+    rgb(255 244 218 / 18%) 46% 54%,
+    rgb(67 45 25 / 62%)
   );
+  box-shadow: 0 0.12rem 0.18rem rgb(0 0 0 / 34%);
 }
 
 .bookshelf-book {

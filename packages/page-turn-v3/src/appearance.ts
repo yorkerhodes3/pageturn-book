@@ -509,12 +509,13 @@ export function pageTurnAppearanceVariables(
   const outerRadius = 0.18 + appearance.geometry.cornerRoundness * 0.68;
   const boardOverhang = 0.35 + appearance.geometry.boardOverhang * 0.75;
   const pageBlockDepth = Math.min(
-    1.5,
+    0.82,
     Math.max(
-      0.45,
-      0.34 + Math.sqrt(appearance.binding.pageCount) * 0.04,
+      0.36,
+      0.26 + Math.sqrt(appearance.binding.pageCount) * 0.019,
     ),
   );
+  const textureOpacity = appearance.paper.texture * 0.12;
   return {
     "--v3-cover-background": appearance.cover.background,
     "--v3-cover-foreground": appearance.cover.foreground,
@@ -533,7 +534,7 @@ export function pageTurnAppearanceVariables(
       `rgb(158 103 43 / ${(appearance.paper.age * 0.2).toFixed(3)})`,
     "--v3-page-texture": appearance.paper.texture.toFixed(3),
     "--v3-page-texture-color":
-      `rgb(83 55 26 / ${appearance.paper.texture.toFixed(3)})`,
+      `rgb(83 55 26 / ${textureOpacity.toFixed(3)})`,
     "--v3-page-rule-color": appearance.paper.ruleColor,
     "--v3-page-rule-spacing": `${appearance.paper.ruleSpacingRem.toFixed(2)}rem`,
     "--v3-page-fan-dark": appearance.fan.stripeDark,
