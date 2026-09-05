@@ -26,6 +26,7 @@ export type PageTurnRect = Readonly<{
 
 export type PageTurnShadow = Readonly<{
   start: PageTurnPoint;
+  end: PageTurnPoint;
   angleRadians: number;
   progress: number;
   widthFactor: number;
@@ -496,7 +497,10 @@ function revealedClip(
     points.push({ x: page.width, y: page.height });
   }
 
-  points.push(bottom, top);
+  points.push(
+    corner === "top" && side !== undefined ? undefined : bottom,
+    top,
+  );
   return compactPolygon(points);
 }
 
@@ -591,12 +595,15 @@ export function solvePageTurn(input: PageTurnInput): PageTurnResult {
         : { x: input.page.width, y: 0 },
       shadow: {
         start: foldSegment[0],
+        end: foldSegment[1],
         angleRadians: forward
           ? unsignedShadowAngle
           : Math.PI - unsignedShadowAngle,
         progress,
-        widthFactor: 0.75 * progress,
-        opacityFactor: 1 - progress,
+        widthFactor:
+          0.025 + 0.11 * Math.sin(Math.PI * progress),
+        opacityFactor:
+          0.18 + 0.5 * Math.sin(Math.PI * progress),
       },
     },
   };

@@ -174,6 +174,7 @@ type ActiveTurn = {
   pendingPointer?: PageTurnPoint;
   moving: HTMLElement;
   revealed: HTMLElement;
+  curve: HTMLElement;
   shadow: HTMLElement;
 };
 
@@ -2563,7 +2564,9 @@ function beginTurn(
   );
   const shadow = createElement("div", "v3-fold-shadow");
   shadow.setAttribute("aria-hidden", "true");
-  turnLayer.replaceChildren(revealed, moving, shadow);
+  const curve = createElement("div", "v3-fold-curve");
+  curve.setAttribute("aria-hidden", "true");
+  turnLayer.replaceChildren(revealed, moving, shadow, curve);
 
   activeTurn = {
     direction,
@@ -2573,6 +2576,7 @@ function beginTurn(
     progress: 0,
     moving,
     revealed,
+    curve,
     shadow,
   };
   reader.dataset.v3Turning = "true";
@@ -2615,10 +2619,15 @@ function applyFrame(frame: PageTurnFrame): void {
   turn.revealed.style.clipPath = pageTurnPolygon(projection.revealed.clip);
 
   const shadow = projection.foldShadow;
-  const shadowTranslate =
-    frame.direction === "backward" ? shadow.width : 0;
-  turn.shadow.style.width = `${Math.max(1, shadow.width)}px`;
-  turn.shadow.style.height = `${frame.page.height * 2}px`;
+  const shadowWidth = Math.max(4, shadow.width);
+  const curveWidth = Math.max(10, shadow.width * 0.8);
+  const normalX = Math.cos(shadow.angleRadians);
+  const normalY = Math.sin(shadow.angleRadians);
+  const shadowOffset =
+    shadow.gradient === "to-left" ? -shadowWidth : 0;
+  const curveOffset = -curveWidth / 2;
+  turn.shadow.style.width = `${shadowWidth}px`;
+  turn.shadow.style.height = `${shadow.length}px`;
   turn.shadow.style.opacity = String(
     Math.min(0.52, Math.max(0, shadow.opacity * 0.52)),
   );
@@ -2626,10 +2635,25 @@ function applyFrame(frame: PageTurnFrame): void {
     shadow.gradient === "to-right"
       ? "linear-gradient(to right, rgb(38 27 16 / 58%), transparent)"
       : "linear-gradient(to left, rgb(38 27 16 / 58%), transparent)";
-  turn.shadow.style.transformOrigin = `${shadowTranslate}px ${frame.page.height}px`;
+  turn.shadow.style.transformOrigin = "0 0";
   turn.shadow.style.transform = [
-    `translate3d(${shadow.origin.x + singlePageOffset - shadowTranslate}px,`,
-    `${shadow.origin.y - frame.page.height}px, 0)`,
+    `translate3d(${shadow.origin.x + singlePageOffset + normalX * shadowOffset}px,`,
+    `${shadow.origin.y + normalY * shadowOffset}px, 0)`,
+    `rotate(${shadow.angleRadians}rad)`,
+  ].join(" ");
+  turn.curve.style.width = `${curveWidth}px`;
+  turn.curve.style.height = `${shadow.length}px`;
+  turn.curve.style.opacity = String(
+    Math.min(0.96, 0.42 + shadow.opacity * 0.6),
+  );
+  turn.curve.style.setProperty(
+    "--v3-fold-curve-direction",
+    shadow.gradient === "to-right" ? "90deg" : "270deg",
+  );
+  turn.curve.style.transformOrigin = "0 0";
+  turn.curve.style.transform = [
+    `translate3d(${shadow.origin.x + singlePageOffset + normalX * curveOffset}px,`,
+    `${shadow.origin.y + normalY * curveOffset}px, 0)`,
     `rotate(${shadow.angleRadians}rad)`,
   ].join(" ");
 }

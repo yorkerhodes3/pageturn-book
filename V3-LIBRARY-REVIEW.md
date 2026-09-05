@@ -134,15 +134,15 @@ chapter remains an independently addressable file in the Pages artifact.
 
 | Publication | Initial gzip path after adjacent prefetch | Complete static gzip path | Initial reduction |
 |---|---:|---:|---:|
-| What Is Ethical AI? | 41.1 kB | 82.9 kB | 50% |
-| Plurality | 84.5 kB | 522.4 kB | 84% |
-| Cyber Dictionary | 54.8 kB | 141.0 kB | 61% |
-| AI Models Research | 38.4 kB | 60.0 kB | 36% |
+| What Is Ethical AI? | 41.7 kB | 83.5 kB | 50% |
+| Plurality | 85.1 kB | 523.0 kB | 84% |
+| Cyber Dictionary | 55.4 kB | 141.6 kB | 61% |
+| AI Models Research | 39.0 kB | 60.6 kB | 36% |
 
-These gzip paths include the 32.1 kB catalog-enabled V3 route (31,599-byte
+These gzip paths include the 32.7 kB catalog-enabled V3 route (32,209-byte
 assets plus 0.5 kB route HTML), the publication manifest, and either the first
 two chapters or the complete semantic corpus. The catalog-free SDK example is
-26.9 kB including route HTML.
+27.5 kB including route HTML.
 
 The three optional Ethical AI figure files add 123.0 kB to static hosting. They
 are already compressed lossless WebP, so aggregate artifact gzip is effectively

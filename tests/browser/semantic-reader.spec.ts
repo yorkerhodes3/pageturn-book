@@ -254,6 +254,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     const surface = getComputedStyle(node);
     const backingStyle = backing ? getComputedStyle(backing) : undefined;
     const paper = sheet ? getComputedStyle(sheet) : undefined;
+    const restingEdge = sheet
+      ? getComputedStyle(sheet, "::before")
+      : undefined;
     return {
       surfaceColor: surface.backgroundColor,
       surfaceOpacity: surface.opacity,
@@ -262,6 +265,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       backingInset: backingStyle?.inset,
       paperColor: paper?.backgroundColor,
       paperOpacity: paper?.opacity,
+      restingEdgeDisplay: restingEdge?.display,
       surfaceZIndex: surface.zIndex,
     };
   });
@@ -273,9 +277,87 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
     backingInset: "-1px",
     paperColor: "rgb(255, 253, 248)",
     paperOpacity: "1",
+    restingEdgeDisplay: "none",
     surfaceZIndex: "6",
   });
   await expect(page.locator(".v3-spine")).toHaveCSS("z-index", "3");
+  const foldGeometry = await page
+    .locator("[data-v3-turn-layer]")
+    .evaluate((layer) => {
+      const spread = layer.closest("[data-v3-spread]");
+      const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
+      const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
+      const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
+      if (!spread || !shadow || !curve || !moving) {
+        throw new Error("Expected complete V3 fold layers");
+      }
+      const layerBounds = layer.getBoundingClientRect();
+      const spreadBounds = spread.getBoundingClientRect();
+      const layerStyle = getComputedStyle(layer);
+      const shadowStyle = getComputedStyle(shadow);
+      const curveStyle = getComputedStyle(curve);
+      const clipPath = getComputedStyle(moving).clipPath;
+      const transform = new DOMMatrix(getComputedStyle(moving).transform);
+      const paintedPoints = [...clipPath.matchAll(
+        /(-?\d+(?:\.\d+)?)px (-?\d+(?:\.\d+)?)px/g,
+      )].map((match) =>
+        new DOMPoint(Number(match[1]), Number(match[2])).matrixTransform(
+          transform,
+        ),
+      );
+      return {
+        sameBounds:
+          Math.abs(layerBounds.left - spreadBounds.left) <= 1 &&
+          Math.abs(layerBounds.top - spreadBounds.top) <= 1 &&
+          Math.abs(layerBounds.width - spreadBounds.width) <= 1 &&
+          Math.abs(layerBounds.height - spreadBounds.height) <= 1,
+        movingOverhangsSpread:
+          paintedPoints.some(
+            (point) =>
+              point.x < -1 ||
+              point.y < -1 ||
+              point.x > spreadBounds.width + 1 ||
+              point.y > spreadBounds.height + 1,
+          ),
+        overflow: layerStyle.overflow,
+        layerZIndex: layerStyle.zIndex,
+        shadowZIndex: shadowStyle.zIndex,
+        shadowWidth: Number.parseFloat(shadowStyle.width),
+        shadowHeight: Number.parseFloat(shadowStyle.height),
+        shadowRadius: shadowStyle.borderRadius,
+        curveZIndex: curveStyle.zIndex,
+        curveWidth: Number.parseFloat(curveStyle.width),
+        curveHeight: Number.parseFloat(curveStyle.height),
+        curveRadius: curveStyle.borderRadius,
+        curveBackground: curveStyle.backgroundImage,
+        clipVertices: clipPath.split(",").length,
+        pageWidth: spreadBounds.width / 2,
+        pageDiagonal: Math.hypot(spreadBounds.width / 2, spreadBounds.height),
+      };
+    });
+  expect(foldGeometry.sameBounds).toBe(true);
+  expect(foldGeometry.overflow).toBe("visible");
+  expect(foldGeometry.movingOverhangsSpread).toBe(true);
+  expect(foldGeometry.layerZIndex).toBe("4");
+  expect(foldGeometry.shadowZIndex).toBe("5");
+  expect(foldGeometry.curveZIndex).toBe("7");
+  expect(foldGeometry.shadowWidth).toBeLessThan(
+    foldGeometry.pageWidth * 0.16,
+  );
+  expect(foldGeometry.shadowHeight).toBeLessThanOrEqual(
+    foldGeometry.pageDiagonal + 1,
+  );
+  expect(foldGeometry.curveWidth).toBeLessThan(
+    foldGeometry.pageWidth * 0.18,
+  );
+  expect(foldGeometry.curveHeight).toBeCloseTo(
+    foldGeometry.shadowHeight,
+    1,
+  );
+  expect(foldGeometry.shadowRadius).not.toBe("0px");
+  expect(foldGeometry.curveRadius).not.toBe("0px");
+  expect(foldGeometry.curveBackground).toContain("linear-gradient");
+  expect(foldGeometry.clipVertices).toBeGreaterThan(4);
   expect(
   await moving.evaluate((node) => getComputedStyle(node).clipPath),
   ).toMatch(/^polygon\(/);
@@ -376,6 +458,75 @@ test("shows only the book shell and returns to the referring page", async ({
   await expect(back).toHaveAttribute("href", shelfUrl);
   await back.click();
   await expect(page).toHaveURL(shelfUrl);
+});
+
+test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=ethical-tech#ethical-tech",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  const spread = page.locator("[data-v3-spread]");
+  const corner = page.getByRole("button", {
+    name: "Turn the next page from its bottom corner",
+  });
+  const [spreadBounds, cornerBounds] = await Promise.all([
+    spread.boundingBox(),
+    corner.boundingBox(),
+  ]);
+  if (!spreadBounds || !cornerBounds) {
+    throw new Error("Expected V3 bottom-corner bounds");
+  }
+  await page.mouse.move(
+    cornerBounds.x + cornerBounds.width * 0.75,
+    cornerBounds.y + cornerBounds.height * 0.75,
+  );
+  await page.mouse.down();
+  await page.mouse.move(
+    spreadBounds.x + spreadBounds.width * 0.43,
+    spreadBounds.y + spreadBounds.height * 0.7,
+    { steps: 12 },
+  );
+
+  const fold = await page.locator("[data-v3-turn-layer]").evaluate((layer) => {
+    const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
+    const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
+    const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
+    const spread = layer.closest("[data-v3-spread]");
+    if (!moving || !shadow || !curve || !spread) {
+      throw new Error("Expected complete bottom-corner fold layers");
+    }
+    const layerBounds = layer.getBoundingClientRect();
+    const spreadBounds = spread.getBoundingClientRect();
+    const clipPath = getComputedStyle(moving).clipPath;
+    return {
+      sameBounds:
+        Math.abs(layerBounds.left - spreadBounds.left) <= 1 &&
+        Math.abs(layerBounds.top - spreadBounds.top) <= 1 &&
+        Math.abs(layerBounds.width - spreadBounds.width) <= 1 &&
+        Math.abs(layerBounds.height - spreadBounds.height) <= 1,
+      overflow: getComputedStyle(layer).overflow,
+      vertices: clipPath.split(",").length,
+      shadowHeight: Number.parseFloat(getComputedStyle(shadow).height),
+      curveHeight: Number.parseFloat(getComputedStyle(curve).height),
+      pageDiagonal: Math.hypot(
+        spreadBounds.width / 2,
+        spreadBounds.height,
+      ),
+    };
+  });
+  expect(fold.sameBounds).toBe(true);
+  expect(fold.overflow).toBe("visible");
+  expect(fold.vertices).toBeGreaterThan(4);
+  expect(fold.shadowHeight).toBeLessThanOrEqual(fold.pageDiagonal + 1);
+  expect(fold.curveHeight).toBeCloseTo(fold.shadowHeight, 1);
+  await page.mouse.up();
+  await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
 });
 
 test("uses the library as the direct-entry back destination", async ({

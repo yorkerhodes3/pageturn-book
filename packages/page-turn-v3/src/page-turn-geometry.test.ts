@@ -36,12 +36,19 @@ function expectFiniteFrame(frame: PageTurnFrame): void {
   expectFinitePoint(frame.movingOrigin);
   expectFinitePoint(frame.underlayPosition);
   expectFinitePoint(frame.shadow.start);
+  expectFinitePoint(frame.shadow.end);
   expect(Number.isFinite(frame.angleRadians)).toBe(true);
   expect(Number.isFinite(frame.shadow.angleRadians)).toBe(true);
   expect(frame.progress).toBeGreaterThanOrEqual(0);
   expect(frame.progress).toBeLessThanOrEqual(1);
   expect(frame.shadow.widthFactor).toBeGreaterThanOrEqual(0);
   expect(frame.shadow.opacityFactor).toBeGreaterThanOrEqual(0);
+  expect(
+    Math.hypot(
+      frame.shadow.end.x - frame.shadow.start.x,
+      frame.shadow.end.y - frame.shadow.start.y,
+    ),
+  ).toBeGreaterThan(0);
   for (const point of [
     frame.pageRect.topLeft,
     frame.pageRect.topRight,
