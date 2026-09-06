@@ -2361,9 +2361,16 @@ reference-styling, and back-navigation pass.
 | V3-414 | P0 | Complete | Made the repository root the V3 workspace, extracted `@ethical-tech/pageturn-book` 3.0.0 with mount/destroy and injected manifest configuration, added packed clean-consumer and browser examples, and isolated V2-only packages under `compat/v2/`. |
 | V3-415 | P1 | Complete | Extracted typed material, paper, typography, binding, gutter, edge, and fold configuration; added seven live Style presets and session-only test controls. |
 | V3-416 | P2 | Complete | Added data-driven horizontal shelf stacks and an antique open display volume on a CSS lectern without shipping unlicensed reference images. |
+| V3-417 | P3 | Future | Prototype the optional hybrid Three.js presentation adapter described in [THREEJS-PLAN.md](./THREEJS-PLAN.md): integrate PageTurn books into host-owned Three.js scenes for shelf geometry, bindings, pickup/carry, and presentation while keeping full-book reading semantic and ensuring the lightweight V3 SDK never installs or downloads Three.js. |
 
 These V3 items are independent of V2-232 through V2-238, which still govern
 whether the same geometry path is promoted into the V2 production reader.
+
+V3-417 is deliberately backlog-only. Its first approved implementation must be
+an isolated prototype, must integrate with an existing host-owned Three.js
+scene, and must pass the dependency, semantic-reading, accessibility, fallback,
+payload, and performance gates in
+[THREEJS-PLAN.md](./THREEJS-PLAN.md) before any production promotion.
 
 ## 22. Epic E16 - future product capabilities
 

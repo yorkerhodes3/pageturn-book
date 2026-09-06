@@ -425,6 +425,12 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await expect(page.locator(".v3-revealed-page")).toContainText(
   "Publication record",
   );
+  await expect(
+    page.locator(".v3-turn-surface .v3-sheet-right"),
+  ).toHaveCSS("border-bottom-left-radius", "0px");
+  await expect(
+    page.locator(".v3-revealed-page .v3-sheet-left"),
+  ).toHaveCSS("border-bottom-right-radius", "0px");
   await page.mouse.up();
   await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
   await expect(page.locator("[data-v3-counter]")).toHaveText(/Spread 1 of/);
@@ -526,9 +532,22 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
     const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
     const backing = moving?.querySelector<HTMLElement>(".v3-paper-occluder");
+    const movingSheet = moving?.querySelector<HTMLElement>(".v3-sheet");
     const spread = layer.closest("[data-v3-spread]");
     const readerRoot = layer.closest<HTMLElement>(".v3-page");
-    if (!moving || !shadow || !curve || !backing || !spread || !readerRoot) {
+    const restingLeft = spread?.querySelector<HTMLElement>(
+      "[data-v3-stationary] .v3-sheet-left",
+    );
+    if (
+      !moving ||
+      !shadow ||
+      !curve ||
+      !backing ||
+      !movingSheet ||
+      !spread ||
+      !readerRoot ||
+      !restingLeft
+    ) {
       throw new Error("Expected complete bottom-corner fold layers");
     }
     const layerBounds = layer.getBoundingClientRect();
@@ -546,6 +565,10 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
       readerWidth: readerRoot.clientWidth,
       movingPaper: getComputedStyle(moving).backgroundColor,
       backingPaper: getComputedStyle(backing).backgroundColor,
+      movingBottomRightRadius:
+        getComputedStyle(movingSheet).borderBottomRightRadius,
+      restingBottomRightRadius:
+        getComputedStyle(restingLeft).borderBottomRightRadius,
       spreadLeft: spreadBounds.left,
       spreadWidth: spreadBounds.width,
       vertices: clipPath.split(",").length,
@@ -564,11 +587,54 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
   expect(fold.readerWidth).toBe(readerWidthBeforeTurn);
   expect(fold.movingPaper).toBe("rgb(234, 217, 175)");
   expect(fold.backingPaper).toBe(fold.movingPaper);
+  expect(fold.movingBottomRightRadius).toBe("0px");
+  expect(fold.restingBottomRightRadius).not.toBe("0px");
   expect(fold.spreadLeft).toBeCloseTo(spreadBounds.x, 1);
   expect(fold.spreadWidth).toBeCloseTo(spreadBounds.width, 1);
   expect(fold.vertices).toBeGreaterThan(4);
   expect(fold.shadowHeight).toBeLessThanOrEqual(fold.pageDiagonal + 1);
   expect(fold.curveHeight).toBeCloseTo(fold.shadowHeight, 1);
+  await page.mouse.move(
+    spreadBounds.x - spreadBounds.width * 0.1,
+    spreadBounds.y + spreadBounds.height * 0.94,
+    { steps: 12 },
+  );
+  const landing = await page
+    .locator(".v3-turn-surface")
+    .evaluate((moving) => {
+      const layer = moving.closest("[data-v3-turn-layer]");
+      const spread = moving.closest("[data-v3-spread]");
+      const sheet = moving.querySelector<HTMLElement>(".v3-sheet-left");
+      const revealedSheet = layer?.querySelector<HTMLElement>(
+        ".v3-revealed-page .v3-sheet-right",
+      );
+      if (!layer || !spread || !sheet || !revealedSheet) {
+        throw new Error("Expected bottom binding landing geometry");
+      }
+      const movingStyle = getComputedStyle(moving);
+      const transform = new DOMMatrix(movingStyle.transform);
+      const corner = new DOMPoint(
+        Number.parseFloat(movingStyle.width),
+        Number.parseFloat(movingStyle.height),
+      ).matrixTransform(transform);
+      const layerBounds = layer.getBoundingClientRect();
+      const spreadBounds = spread.getBoundingClientRect();
+      return {
+        progress: Number(moving.getAttribute("data-v3-progress")),
+        cornerX: layerBounds.left + corner.x,
+        cornerY: layerBounds.top + corner.y,
+        bindingX: spreadBounds.left + spreadBounds.width / 2,
+        bindingY: spreadBounds.bottom,
+        bottomRightRadius: getComputedStyle(sheet).borderBottomRightRadius,
+        revealedBottomLeftRadius:
+          getComputedStyle(revealedSheet).borderBottomLeftRadius,
+      };
+    });
+  expect(landing.progress).toBeGreaterThan(0.99);
+  expect(landing.cornerX).toBeCloseTo(landing.bindingX, 0);
+  expect(landing.cornerY).toBeCloseTo(landing.bindingY, 0);
+  expect(landing.bottomRightRadius).toBe("0px");
+  expect(landing.revealedBottomLeftRadius).toBe("0px");
   await page.mouse.up();
   await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
   const constrainedHost = await page.locator(".v3-page").evaluate((root) => {

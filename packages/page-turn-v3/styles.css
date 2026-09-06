@@ -1088,6 +1088,16 @@
   z-index: 1;
 }
 
+.v3-turn-surface .v3-sheet-left,
+.v3-revealed-page .v3-sheet-left {
+  border-bottom-right-radius: 0;
+}
+
+.v3-turn-surface .v3-sheet-right,
+.v3-revealed-page .v3-sheet-right {
+  border-bottom-left-radius: 0;
+}
+
 .v3-fold-shadow {
   position: absolute;
   z-index: 5;
