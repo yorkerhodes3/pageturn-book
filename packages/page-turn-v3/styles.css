@@ -1574,6 +1574,35 @@
   align-items: start;
 }
 
+.v3-personal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.v3-import-picker {
+  display: grid;
+  gap: 0.35rem;
+  margin-block: 0.7rem;
+}
+
+[data-v3-import-preview] {
+  margin-block: 0.7rem;
+  padding: 0.7rem;
+  border: 1px solid rgb(211 179 116 / 28%);
+}
+
+[data-v3-import-preview] h4 {
+  margin-block: 0 0.4rem;
+}
+
+[data-v3-personal-status] {
+  display: block;
+  margin-top: 0.7rem;
+  color: #d7c7a8;
+}
+
 .v3-tool-list blockquote {
   margin: 0.45rem 0;
   color: #c9c0af;

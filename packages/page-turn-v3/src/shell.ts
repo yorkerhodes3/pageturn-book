@@ -419,9 +419,14 @@ const shellMarkup = `
       <section aria-labelledby="v3-annotations-title">
         <div class="v3-tool-heading">
           <h3 id="v3-annotations-title">Private annotations</h3>
-          <button type="button" data-v3-export-annotations disabled>
-            Export Markdown
-          </button>
+          <div class="v3-personal-actions">
+            <button type="button" data-v3-export-annotations disabled>
+              Export Markdown
+            </button>
+            <button type="button" data-v3-backup-annotations disabled>
+              Backup JSON
+            </button>
+          </div>
         </div>
         <blockquote data-v3-selection-preview hidden></blockquote>
         <label class="v3-annotation-editor">
@@ -437,6 +442,51 @@ const shellMarkup = `
           Save selected text
         </button>
         <ol data-v3-annotation-list class="v3-tool-list"></ol>
+      </section>
+
+      <section aria-labelledby="v3-personal-data-title">
+        <h3 id="v3-personal-data-title">Local research data</h3>
+        <p>
+          Import and deletion affect bookmarks and annotations only. Reading
+          position and typography are separate.
+        </p>
+        <label class="v3-import-picker">
+          <span>Choose a PageTurn version 2 JSON backup</span>
+          <input
+            type="file"
+            data-v3-import-annotations
+            accept="application/json,.json"
+          >
+        </label>
+        <div data-v3-import-preview hidden>
+          <h4>Import preview</h4>
+          <p data-v3-import-counts></p>
+          <label>
+            <input type="checkbox" data-v3-import-conflicts>
+            <span>Import ID conflicts as copies</span>
+          </label>
+          <div class="v3-personal-actions">
+            <button type="button" data-v3-import-merge>Merge annotations</button>
+            <label>
+              <input type="checkbox" data-v3-confirm-replace>
+              <span>Confirm replacement of this edition's annotations</span>
+            </label>
+            <button type="button" data-v3-import-replace disabled>
+              Replace this edition's annotations
+            </button>
+          </div>
+        </div>
+        <div class="v3-personal-actions">
+          <button type="button" data-v3-delete-edition>
+            Delete current edition research data
+          </button>
+          <button type="button" data-v3-delete-publication>
+            Delete all publication research data
+          </button>
+        </div>
+        <output data-v3-personal-status role="status" aria-live="polite">
+          Local storage is loading.
+        </output>
       </section>
     </div>
   </dialog>

@@ -1671,10 +1671,165 @@ test("shares selected text and exports local-only annotations", async ({
   expect(markdown).toContain("local-only V3 reader");
   expect(markdown).toContain(selected);
   expect(markdown).toContain("institutional accountability");
+  const backupPromise = page.waitForEvent("download");
+  await dialog.getByRole("button", { name: "Backup JSON" }).click();
+  const backupDownload = await backupPromise;
+  expect(backupDownload.suggestedFilename()).toBe(
+    "what-is-ethical-ai-2026-07-annotations-v2.json",
+  );
+  const backupStream = await backupDownload.createReadStream();
+  if (!backupStream) {
+    throw new Error("Expected annotation backup stream");
+  }
+  const backupChunks: Buffer[] = [];
+  for await (const chunk of backupStream) {
+    backupChunks.push(Buffer.from(chunk));
+  }
+  const backupJson = Buffer.concat(backupChunks);
+  expect(JSON.parse(backupJson.toString("utf8"))).toMatchObject({
+    schemaVersion: 2,
+    publication: {
+      bookId: "what-is-ethical-ai",
+      editionId: "2026-07",
+    },
+  });
   await dialog
     .getByRole("button", { name: "Delete private annotation" })
     .click();
   await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(0);
+  await dialog.locator("[data-v3-import-annotations]").setInputFiles({
+    name: "annotations.json",
+    mimeType:
+      "application/vnd.ethical-tech.pageturn-annotations+json;version=2",
+    buffer: backupJson,
+  });
+  await expect(dialog.locator("[data-v3-import-counts]")).toContainText(
+    "1 new, 0 identical duplicates, 0 ID conflicts, 0 unresolved",
+  );
+  await dialog.getByRole("button", { name: "Merge annotations" }).click();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
+  await dialog.locator("[data-v3-import-annotations]").setInputFiles({
+    name: "annotations.json",
+    mimeType:
+      "application/vnd.ethical-tech.pageturn-annotations+json;version=2",
+    buffer: backupJson,
+  });
+  await expect(dialog.locator("[data-v3-import-counts]")).toContainText(
+    "0 new, 1 identical duplicate",
+  );
+  const replace = dialog.getByRole("button", {
+    name: "Replace this edition's annotations",
+  });
+  await expect(replace).toBeDisabled();
+  await dialog
+    .getByRole("checkbox", {
+      name: "Confirm replacement of this edition's annotations",
+    })
+    .check();
+  await expect(replace).toBeEnabled();
+  await replace.click();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
+  await dialog.getByRole("button", { name: "Bookmark current passage" }).click();
+  await expect(dialog.locator("[data-v3-bookmark-list] > li")).toHaveCount(1);
+  page.once("dialog", (confirmation) => confirmation.accept());
+  await dialog
+    .getByRole("button", { name: "Delete current edition research data" })
+    .click();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(0);
+  await expect(dialog.locator("[data-v3-bookmark-list] > li")).toHaveCount(0);
+  await expect(dialog.locator("[data-v3-personal-status]")).toContainText(
+    "This edition",
+  );
+  await page.evaluate(async () => {
+    localStorage.setItem(
+      "ethical-tech-book-v3-annotations:what-is-ethical-ai:unmigrated-edition",
+      "{malformed beta data",
+    );
+    localStorage.setItem(
+      "ethical-tech-book-v3-bookmarks:what-is-ethical-ai:unmigrated-edition",
+      JSON.stringify([
+        {
+          chapterId: "power",
+          anchor: "power",
+          label: "Unmigrated",
+          createdAt: "2026-09-01T12:00:00.000Z",
+        },
+      ]),
+    );
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("ethical-tech-pageturn-personal", 2);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const transaction = database.transaction(
+      ["bookmarks", "annotations"],
+      "readwrite",
+    );
+    transaction.objectStore("bookmarks").put({
+      bookmarkId: "other-edition-bookmark",
+      schemaVersion: 1,
+      bookId: "what-is-ethical-ai",
+      editionId: "older-edition",
+      location: { chapterId: "power", anchor: "power" },
+      createdAt: "2026-09-01T12:00:00.000Z",
+      updatedAt: "2026-09-01T12:00:00.000Z",
+    });
+    transaction.objectStore("annotations").put({
+      annotationId: "other-edition-annotation",
+      bookId: "what-is-ethical-ai",
+      editionId: "older-edition",
+    });
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  page.once("dialog", (confirmation) => confirmation.accept());
+  await dialog
+    .getByRole("button", { name: "Delete all publication research data" })
+    .click();
+  await expect(dialog.locator("[data-v3-personal-status]")).toContainText(
+    "All publication",
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(async () => {
+        const database = await new Promise<IDBDatabase>((resolve, reject) => {
+          const request = indexedDB.open("ethical-tech-pageturn-personal", 2);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        const transaction = database.transaction(
+          ["bookmarks", "annotations"],
+          "readonly",
+        );
+        const counts = await Promise.all(
+          ["bookmarks", "annotations"].map(
+            (name) =>
+              new Promise<number>((resolve, reject) => {
+                const request = transaction
+                  .objectStore(name)
+                  .index("bookId")
+                  .count(IDBKeyRange.only("what-is-ethical-ai"));
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+              }),
+          ),
+        );
+        database.close();
+        return counts;
+      }),
+    )
+    .toEqual([0, 0]);
+  expect(
+    await page.evaluate(() =>
+      [
+        "ethical-tech-book-v3-annotations:what-is-ethical-ai:unmigrated-edition",
+        "ethical-tech-book-v3-bookmarks:what-is-ethical-ai:unmigrated-edition",
+      ].map((key) => localStorage.getItem(key)),
+    ),
+  ).toEqual([null, null]);
   await page.goto(sharedUrl);
   await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
     "data-v3-ready",
@@ -1735,6 +1890,173 @@ test("keeps reading available when an exact quote token is malformed", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: "Executive Summary" }),
   ).toBeVisible();
+});
+
+test("transactionally migrates beta annotations and quarantines unresolved text", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=power&media=off#power",
+    ),
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  const sources = page.locator(
+    '[data-v3-stationary] .v3-sheet[data-v3-chapter="power"] p[data-source-anchor]',
+  );
+  const legacy = await sources.evaluateAll((nodes) => {
+    const resolved = nodes[0];
+    const unresolved =
+      nodes.find(
+        (node) =>
+          (node as HTMLElement).dataset.sourceAnchor !==
+          (resolved as HTMLElement | undefined)?.dataset.sourceAnchor,
+      ) ?? nodes[1];
+    const quote = (resolved?.textContent ?? "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80);
+    return {
+      anchor: (resolved as HTMLElement | undefined)?.dataset.sourceAnchor ?? "",
+      unresolvedAnchor:
+        (unresolved as HTMLElement | undefined)?.dataset.sourceAnchor ?? "",
+      quote,
+    };
+  });
+  await page.evaluate(({ anchor, unresolvedAnchor, quote }) => {
+    localStorage.setItem(
+      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+      JSON.stringify([
+        {
+          id: "legacy-resolved",
+          chapterId: "power",
+          anchor,
+          quote,
+          note: "Resolved beta note",
+          createdAt: "2026-09-01T12:00:00.000Z",
+        },
+        {
+          id: "legacy-unresolved",
+          chapterId: "power",
+          anchor: unresolvedAnchor,
+          quote: "A quotation which is definitely absent.",
+          note: "Keep this note",
+          createdAt: "2026-09-01T12:01:00.000Z",
+        },
+      ]),
+    );
+  }, legacy);
+  await page.reload();
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(2);
+  await expect(dialog.getByText(/Unresolved: this note/)).toHaveCount(1);
+  await expect(
+    page.locator(
+      `[data-v3-stationary] [data-source-anchor="${legacy.unresolvedAnchor}"].v3-annotated`,
+    ),
+  ).toHaveCount(0);
+  await expect(
+    page.locator(
+      `[data-v3-stationary] [data-source-anchor="${legacy.anchor}"].v3-annotated`,
+    ).first(),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem(
+        "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+      ),
+    ),
+  ).toBeNull();
+});
+
+test("does not block the first readable page on beta migration fetches", async ({
+  page,
+}) => {
+  let releaseMigration: (() => void) | undefined;
+  let markMigrationRequest: (() => void) | undefined;
+  const migrationGate = new Promise<void>((resolve) => {
+    releaseMigration = resolve;
+  });
+  const migrationRequest = new Promise<void>((resolve) => {
+    markMigrationRequest = resolve;
+  });
+  await page.route("**/chapters/colab/index.html*", async (route) => {
+    markMigrationRequest?.();
+    await migrationGate;
+    await route.continue();
+  });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+      JSON.stringify([
+        {
+          id: "remote-legacy-note",
+          chapterId: "colab",
+          anchor: "colab",
+          quote: "A deliberately absent legacy quotation.",
+          note: "Migration should not delay reading.",
+          createdAt: "2026-09-01T12:00:00.000Z",
+        },
+      ]),
+    );
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route("/v3/?book=what-is-ethical-ai&chapter=power#power"),
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+    { timeout: 5_000 },
+  );
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Humanity's Relationship with Power",
+    }),
+  ).toBeVisible();
+  await Promise.race([
+    migrationRequest,
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error("Expected delayed beta migration request")),
+        5_000,
+      ),
+    ),
+  ]);
+  await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  await expect(
+    dialog.getByRole("button", {
+      name: "Delete current edition research data",
+    }),
+  ).toBeDisabled();
+  await expect(
+    dialog.getByRole("button", {
+      name: "Delete all publication research data",
+    }),
+  ).toBeDisabled();
+  releaseMigration?.();
+  await expect(dialog.locator("[data-v3-personal-status]")).toContainText(
+    "Migrated",
+  );
+  await expect(
+    dialog.getByRole("button", {
+      name: "Delete current edition research data",
+    }),
+  ).toBeEnabled();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
+  await expect(dialog.getByText(/Unresolved: this note/)).toBeVisible();
 });
 
 test("restores an exact quote from a continuation page", async ({ page }) => {

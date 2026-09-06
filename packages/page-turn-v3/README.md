@@ -289,6 +289,19 @@ See
 for the selector contract and the dependent contextual-action, marginalia, and
 visual-sharing work packages.
 
+### Personal data
+
+The reader stores versioned bookmarks and annotation records in native
+IndexedDB. Resume and typography settings remain separate in `localStorage`.
+Explore provides Markdown export, version 2 JSON backup/import, and
+current-edition or all-edition research-data deletion.
+
+Hosts can use `openPageTurnPersonalStore()`,
+`createPageTurnAnnotationBackup()`, `parsePageTurnAnnotationBackup()`, and
+`previewPageTurnAnnotationImport()` directly. JSON backup uses
+`application/vnd.ethical-tech.pageturn-annotations+json;version=2`; annotation
+data is limited to 16 MiB per book/edition and imports to 20 MiB.
+
 ## Runtime behavior
 
 - Semantic HTML remains canonical and selectable.

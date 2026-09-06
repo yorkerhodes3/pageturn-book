@@ -729,6 +729,127 @@ async function checksum(target: PreparedTarget): Promise<string> {
   return bytesToBase64Url(new Uint8Array(digest).slice(0, 12));
 }
 
+export async function validatePageTurnTextTarget(
+  value: unknown,
+): Promise<PageTurnTextTargetV1> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("Text target must be an object");
+  }
+  const target = value as Record<string, unknown>;
+  const start = target.start as Record<string, unknown> | undefined;
+  const end = target.end as Record<string, unknown> | undefined;
+  const quote = target.quote as Record<string, unknown> | undefined;
+  const hasExactKeys = (
+    record: Record<string, unknown>,
+    keys: readonly string[],
+  ) =>
+    Object.keys(record).length === keys.length &&
+    keys.every((key) => key in record);
+  const hasCanonicalContext = (text: string) =>
+    text.normalize("NFC") === text &&
+    !/[^\S ]/u.test(text) &&
+    !/ {2,}/u.test(text);
+  const hasCanonicalExact = (text: string) => {
+    const segments = text.split("\n");
+    return (
+      segments[0] !== "" &&
+      segments.at(-1) !== "" &&
+      segments.every(
+        (segment) =>
+          segment === "" || normalizePageTurnText(segment) === segment,
+      )
+    );
+  };
+  if (
+    !hasExactKeys(target, [
+      "version",
+      "bookId",
+      "editionId",
+      "chapterId",
+      "chapterContentHash",
+      "start",
+      "end",
+      "quote",
+      "checksum",
+    ]) ||
+    target.version !== PAGE_TURN_TEXT_TARGET_VERSION ||
+    typeof target.bookId !== "string" ||
+    typeof target.editionId !== "string" ||
+    typeof target.chapterId !== "string" ||
+    typeof target.chapterContentHash !== "string" ||
+    !CHAPTER_HASH_PATTERN.test(target.chapterContentHash) ||
+    typeof start !== "object" ||
+    start === null ||
+    !hasExactKeys(start, ["anchor", "offset"]) ||
+    typeof start.anchor !== "string" ||
+    !Number.isSafeInteger(start.offset) ||
+    Number(start.offset) < 0 ||
+    typeof end !== "object" ||
+    end === null ||
+    !hasExactKeys(end, ["anchor", "offset"]) ||
+    typeof end.anchor !== "string" ||
+    !Number.isSafeInteger(end.offset) ||
+    Number(end.offset) < 0 ||
+    typeof quote !== "object" ||
+    quote === null ||
+    !hasExactKeys(quote, ["exact", "prefix", "suffix"]) ||
+    typeof quote.exact !== "string" ||
+    !hasCanonicalExact(quote.exact) ||
+    codePointLength(quote.exact) === 0 ||
+    codePointLength(quote.exact) >
+      PAGE_TURN_TEXT_TARGET_MAX_QUOTE_CODE_POINTS ||
+    typeof quote.prefix !== "string" ||
+    !hasCanonicalContext(quote.prefix) ||
+    codePointLength(quote.prefix) > TEXT_CONTEXT_CODE_POINTS ||
+    typeof quote.suffix !== "string" ||
+    !hasCanonicalContext(quote.suffix) ||
+    codePointLength(quote.suffix) > TEXT_CONTEXT_CODE_POINTS ||
+    typeof target.checksum !== "string" ||
+    !/^[A-Za-z0-9_-]{16}$/.test(target.checksum) ||
+    (start.anchor === end.anchor &&
+      Number(end.offset) <= Number(start.offset))
+  ) {
+    throw new Error("Text target is invalid");
+  }
+  const parsed: PageTurnTextTargetV1 = {
+    version: PAGE_TURN_TEXT_TARGET_VERSION,
+    bookId: assertNonEmpty(target.bookId, "target.bookId"),
+    editionId: assertNonEmpty(target.editionId, "target.editionId"),
+    chapterId: assertNonEmpty(target.chapterId, "target.chapterId"),
+    chapterContentHash: target.chapterContentHash,
+    start: {
+      anchor: assertNonEmpty(start.anchor, "target.start.anchor"),
+      offset: Number(start.offset),
+    },
+    end: {
+      anchor: assertNonEmpty(end.anchor, "target.end.anchor"),
+      offset: Number(end.offset),
+    },
+    quote: {
+      exact: quote.exact,
+      prefix: quote.prefix,
+      suffix: quote.suffix,
+    },
+    checksum: target.checksum,
+  };
+  if (
+    parsed.checksum !==
+    (await checksum({
+      version: parsed.version,
+      bookId: parsed.bookId,
+      editionId: parsed.editionId,
+      chapterId: parsed.chapterId,
+      chapterContentHash: parsed.chapterContentHash,
+      start: parsed.start,
+      end: parsed.end,
+      quote: parsed.quote,
+    }))
+  ) {
+    throw new Error("Text target checksum is invalid");
+  }
+  return parsed;
+}
+
 export async function createPageTurnTextTarget(
   input: PageTurnTextTargetInput,
 ): Promise<PageTurnTextTargetV1> {

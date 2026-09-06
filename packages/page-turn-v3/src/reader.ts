@@ -30,16 +30,21 @@ import {
 } from "./font-scale.js";
 import { shareReadingLocation } from "./share.js";
 import {
+  PAGE_TURN_ANNOTATION_BACKUP_MEDIA_TYPE,
   annotationMarkdown,
-  readAnnotations,
-  readBookmarks,
-  writeAnnotations,
-  writeBookmarks,
+  createPageTurnAnnotationBackup,
+  openPageTurnPersonalStore,
+  parsePageTurnAnnotationBackup,
+  previewPageTurnAnnotationImport,
+  type PageTurnAnnotationBackupV2,
+  type PageTurnAnnotationV2,
+  type PageTurnBookmarkV1,
+  type PageTurnPersonalStore,
   type V3Annotation,
-  type V3Bookmark,
 } from "./personal.js";
 import {
   capturePageTurnTextTarget,
+  createPageTurnTextTarget,
   normalizePageTurnText,
   pageTurnTextOffsetAt,
   pageTurnTextSegmentRange,
@@ -1375,6 +1380,33 @@ const annotationList = requiredElement<HTMLOListElement>(
 const exportAnnotations = requiredElement<HTMLButtonElement>(
   "[data-v3-export-annotations]",
 );
+const backupAnnotations = requiredElement<HTMLButtonElement>(
+  "[data-v3-backup-annotations]",
+);
+const importAnnotations = requiredElement<HTMLInputElement>(
+  "[data-v3-import-annotations]",
+);
+const importPreview = requiredElement<HTMLElement>("[data-v3-import-preview]");
+const importCounts = requiredElement<HTMLElement>("[data-v3-import-counts]");
+const importConflicts = requiredElement<HTMLInputElement>(
+  "[data-v3-import-conflicts]",
+);
+const confirmReplace = requiredElement<HTMLInputElement>(
+  "[data-v3-confirm-replace]",
+);
+const importMerge = requiredElement<HTMLButtonElement>("[data-v3-import-merge]");
+const importReplace = requiredElement<HTMLButtonElement>(
+  "[data-v3-import-replace]",
+);
+const deleteEdition = requiredElement<HTMLButtonElement>(
+  "[data-v3-delete-edition]",
+);
+const deletePublication = requiredElement<HTMLButtonElement>(
+  "[data-v3-delete-publication]",
+);
+const personalStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-personal-status]",
+);
 const resumeNotice = requiredElement<HTMLElement>("[data-v3-resume-notice]");
 const resumeLabel = requiredElement<HTMLElement>("[data-v3-resume-label]");
 const startOver = requiredElement<HTMLButtonElement>("[data-v3-start-over]");
@@ -1418,13 +1450,20 @@ let historyRestoreVersion = 0;
 let failureReported = false;
 let pendingTurn = false;
 let mediaReturnFocus: HTMLElement | undefined;
-let bookmarks: V3Bookmark[] = [];
-let annotations: V3Annotation[] = [];
+let personalStore: PageTurnPersonalStore | undefined;
+let personalBusy = false;
+let bookmarks: PageTurnBookmarkV1[] = [];
+let annotations: PageTurnAnnotationV2[] = [];
+let pendingAnnotationImport: PageTurnAnnotationBackupV2 | undefined;
 let pendingSelection: V3Selection | undefined;
 let selectionCaptureVersion = 0;
 let sharedTextTarget: PageTurnTextTargetV1 | undefined;
 let searchRecordsPromise: Promise<readonly V3SearchRecord[]> | undefined;
 let searchController: AbortController | undefined;
+const legacyChapterSources = new Map<
+  string,
+  Promise<readonly PageTurnTextSourceBlock[]>
+>();
 let resumedFromStorage = false;
 let destroyed = false;
 
@@ -1674,11 +1713,12 @@ function renderBookmarks(): void {
   const location = currentReadingLocation();
   const currentBookmark = location
     ? bookmarks.find(
-        ({ chapterId, anchor }) =>
-          chapterId === location.chapterId && anchor === location.anchor,
+        ({ location: saved }) =>
+          saved.chapterId === location.chapterId &&
+          saved.anchor === location.anchor,
       )
     : undefined;
-  bookmarkCurrent.disabled = location === undefined;
+  bookmarkCurrent.disabled = location === undefined || !personalStore || personalBusy;
   bookmarkCurrent.setAttribute(
     "aria-pressed",
     String(currentBookmark !== undefined),
@@ -1687,54 +1727,85 @@ function renderBookmarks(): void {
     ? "Remove current bookmark"
     : "Bookmark current passage";
   bookmarkList.replaceChildren(
-    ...bookmarks.map((bookmark, index) => {
+    ...bookmarks.map((bookmark) => {
       const item = createElement("li");
       item.append(
         toolLocationButton(
-          bookmark.label,
-          bookmark.chapterId,
-          bookmark.anchor,
+          bookmark.label ?? bookmark.excerpt ?? "Saved passage",
+          bookmark.location.chapterId,
+          bookmark.location.anchor,
         ),
       );
       const remove = createElement("button", undefined, "Remove");
       remove.type = "button";
-      remove.dataset.v3RemoveBookmark = String(index);
-      remove.setAttribute("aria-label", `Remove bookmark: ${bookmark.label}`);
+      remove.dataset.v3RemoveBookmark = bookmark.bookmarkId;
+      remove.disabled = !personalStore || personalBusy;
+      remove.setAttribute(
+        "aria-label",
+        `Remove bookmark: ${bookmark.label ?? "Saved passage"}`,
+      );
       item.append(remove);
       return item;
     }),
   );
 }
 
+function annotationLocation(annotation: PageTurnAnnotationV2): {
+  chapterId: string;
+  anchor: string;
+  quote: string;
+} {
+  return annotation.target.state === "resolved"
+    ? {
+        chapterId: annotation.target.selector.chapterId,
+        anchor: annotation.target.selector.start.anchor,
+        quote: annotation.target.selector.quote.exact,
+      }
+    : annotation.target.legacy;
+}
+
 function renderAnnotations(): void {
   selectionPreview.hidden = pendingSelection === undefined;
   selectionPreview.textContent = pendingSelection?.quote ?? "";
   annotationNote.disabled = pendingSelection?.target === undefined;
-  saveAnnotation.disabled = pendingSelection?.target === undefined;
+  saveAnnotation.disabled =
+    pendingSelection?.target === undefined || !personalStore || personalBusy;
   exportAnnotations.disabled =
     annotations.length === 0 || !canCreateDurableLinks;
+  backupAnnotations.disabled = annotations.length === 0 || !personalStore;
   annotationList.replaceChildren(
     ...annotations.map((annotation) => {
+      const location = annotationLocation(annotation);
       const item = createElement("li");
       const quote = createElement(
         "blockquote",
         undefined,
-        annotation.quote,
+        location.quote,
       );
       item.append(
         toolLocationButton(
-          annotation.note.trim() || annotation.quote.slice(0, 80),
-          annotation.chapterId,
-          annotation.anchor,
+          annotation.body?.value.trim() || location.quote.slice(0, 80),
+          location.chapterId,
+          location.anchor,
         ),
         quote,
       );
-      if (annotation.note.trim()) {
-        item.append(createElement("p", undefined, annotation.note));
+      if (annotation.target.state === "unresolved") {
+        const unresolved = createElement(
+          "p",
+          "v3-unresolved-note",
+          "Unresolved: this note is not attached to current text.",
+        );
+        unresolved.setAttribute("role", "status");
+        item.append(unresolved);
+      }
+      if (annotation.body?.value.trim()) {
+        item.append(createElement("p", undefined, annotation.body.value));
       }
       const remove = createElement("button", undefined, "Delete");
       remove.type = "button";
-      remove.dataset.v3RemoveAnnotation = annotation.id;
+      remove.disabled = !personalStore || personalBusy;
+      remove.dataset.v3RemoveAnnotation = annotation.annotationId;
       remove.setAttribute("aria-label", "Delete private annotation");
       item.append(remove);
       return item;
@@ -1745,6 +1816,13 @@ function renderAnnotations(): void {
 function renderPersonalTools(): void {
   renderBookmarks();
   renderAnnotations();
+  const storageUnavailable = personalStore === undefined;
+  importAnnotations.disabled = storageUnavailable || personalBusy;
+  deleteEdition.disabled = storageUnavailable || personalBusy;
+  deletePublication.disabled = storageUnavailable || personalBusy;
+  importMerge.disabled = storageUnavailable || personalBusy;
+  importReplace.disabled =
+    storageUnavailable || personalBusy || !confirmReplace.checked;
 }
 
 function selectionElement(node: Node | null): Element | undefined {
@@ -1760,6 +1838,7 @@ function textSourceBlocks(chapterId: string): PageTurnTextSourceBlock[] {
   if (!chapterState) {
     return [];
   }
+
   const result: PageTurnTextSourceBlock[] = [];
   const byAnchor = new Map<string, string>();
   for (const block of chapterState.blocks ?? []) {
@@ -1809,6 +1888,100 @@ function textSourceBlocks(chapterId: string): PageTurnTextSourceBlock[] {
     result.splice(index + 1, 0, source);
   }
   return result;
+}
+
+async function legacyTextSourceBlocks(
+  chapterId: string,
+): Promise<readonly PageTurnTextSourceBlock[]> {
+  const existing = legacyChapterSources.get(chapterId);
+  if (existing) {
+    return existing;
+  }
+  if (!manifest || !manifestUrl) {
+    throw new Error("V3 publication is unavailable");
+  }
+  const chapter = manifest.chapters.find(
+    ({ chapterId: candidate }) => String(candidate) === chapterId,
+  );
+  if (!chapter) {
+    return [];
+  }
+  const promise = (async () => {
+    const response = await fetcher(new URL(chapter.href, manifestUrl), {
+      signal: requestController.signal,
+    });
+    if (!response.ok) {
+      throw new Error(
+        `V3 could not load legacy annotation source (${response.status})`,
+      );
+    }
+    const parsed = new DOMParser().parseFromString(
+      await response.text(),
+      "text/html",
+    );
+    const article = parsed.querySelector<HTMLElement>("[data-reader-content]");
+    if (!article) {
+      throw new Error("V3 could not find legacy annotation source");
+    }
+    const sources = new Map<string, string>();
+    for (const block of semanticBlocks(article, chapter)) {
+      sources.set(block.anchor, block.sourceText);
+    }
+    return [...sources].map(([anchor, text]) => ({ anchor, text }));
+  })();
+  legacyChapterSources.set(chapterId, promise);
+  return promise;
+}
+
+async function resolveLegacyAnnotation(
+  annotation: V3Annotation,
+): Promise<
+  | Readonly<{ state: "resolved"; selector: PageTurnTextTargetV1 }>
+  | Readonly<{
+      state: "unresolved";
+      reason: "missing-anchor" | "quote-mismatch" | "ambiguous-quote";
+    }>
+> {
+  if (!manifest) {
+    return { state: "unresolved", reason: "missing-anchor" };
+  }
+  const chapter = manifest.chapters.find(
+    ({ chapterId }) => String(chapterId) === annotation.chapterId,
+  );
+  const blocks = await legacyTextSourceBlocks(annotation.chapterId);
+  const block = blocks.find(({ anchor }) => anchor === annotation.anchor);
+  if (!chapter || !block) {
+    return { state: "unresolved", reason: "missing-anchor" };
+  }
+  const quote = normalizePageTurnText(annotation.quote);
+  const source = normalizePageTurnText(block.text);
+  const matches: number[] = [];
+  let cursor = source.indexOf(quote);
+  while (cursor >= 0) {
+    matches.push(cursor);
+    cursor = source.indexOf(quote, cursor + 1);
+  }
+  const match = matches[0];
+  if (matches.length !== 1 || match === undefined) {
+    return {
+      state: "unresolved",
+      reason: matches.length > 1 ? "ambiguous-quote" : "quote-mismatch",
+    };
+  }
+  const start = Array.from(source.slice(0, match)).length;
+  const selector = await createPageTurnTextTarget({
+    bookId: manifest.bookId,
+    editionId: manifest.editionId,
+    chapterId: annotation.chapterId,
+    chapterContentHash: chapter.contentHash,
+    blocks,
+    start: { anchor: annotation.anchor, offset: start },
+    end: {
+      anchor: annotation.anchor,
+      offset: start + Array.from(quote).length,
+    },
+  });
+  return { state: "resolved", selector };
 }
 
 type HighlightRegistryLike = Readonly<{
@@ -1973,8 +2146,33 @@ function onSelectionChange(): void {
   }
 }
 
-function toggleCurrentBookmark(): void {
-  if (!manifest) {
+async function runPersonalAction(
+  pendingMessage: string,
+  successMessage: string,
+  action: () => Promise<void>,
+): Promise<void> {
+  if (personalBusy) {
+    return;
+  }
+  personalBusy = true;
+  personalStatus.value = pendingMessage;
+  renderPersonalTools();
+  try {
+    await action();
+    if (personalStatus.value === pendingMessage) {
+      personalStatus.value = successMessage;
+    }
+  } catch (error) {
+    personalStatus.value =
+      error instanceof Error ? error.message : "Local storage failed.";
+  } finally {
+    personalBusy = false;
+    renderPersonalTools();
+  }
+}
+
+async function toggleCurrentBookmark(): Promise<void> {
+  if (!manifest || !personalStore) {
     return;
   }
   const location = currentReadingLocation();
@@ -1982,45 +2180,109 @@ function toggleCurrentBookmark(): void {
     return;
   }
   const index = bookmarks.findIndex(
-    ({ chapterId, anchor }) =>
-      chapterId === location.chapterId && anchor === location.anchor,
+    ({ location: saved }) =>
+      saved.chapterId === location.chapterId &&
+      saved.anchor === location.anchor,
   );
-  if (index >= 0) {
-    bookmarks.splice(index, 1);
-  } else {
-    const chapter = manifest.chapters.find(
-      ({ chapterId }) => String(chapterId) === location.chapterId,
-    );
-    bookmarks.push({
-      chapterId: location.chapterId,
-      anchor: location.anchor,
-      label: chapter?.title ?? activePage()?.runningTitle ?? "Saved passage",
-      createdAt: new Date().toISOString(),
-    });
-  }
-  writeBookmarks(manifest.bookId, manifest.editionId, bookmarks);
-  renderBookmarks();
+  await runPersonalAction(
+    index >= 0 ? "Removing bookmark..." : "Saving bookmark...",
+    index >= 0 ? "Bookmark removed." : "Bookmark saved in this browser.",
+    async () => {
+      if (!manifest || !personalStore) {
+        return;
+      }
+      if (index >= 0) {
+        const bookmark = bookmarks[index];
+        if (!bookmark) {
+          return;
+        }
+        await personalStore.deleteBookmark(
+          manifest.bookId,
+          manifest.editionId,
+          bookmark.bookmarkId,
+        );
+        bookmarks.splice(index, 1);
+      } else {
+        const chapter = manifest.chapters.find(
+          ({ chapterId }) => String(chapterId) === location.chapterId,
+        );
+        const timestamp = new Date().toISOString();
+        const bookmark: PageTurnBookmarkV1 = {
+          bookmarkId: crypto.randomUUID(),
+          schemaVersion: 1,
+          bookId: manifest.bookId,
+          editionId: manifest.editionId,
+          location: {
+            chapterId: location.chapterId,
+            anchor: location.anchor,
+          },
+          label:
+            chapter?.title ?? activePage()?.runningTitle ?? "Saved passage",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        await personalStore.putBookmark(bookmark);
+        bookmarks.push(bookmark);
+      }
+    },
+  );
 }
 
-function saveCurrentAnnotation(): void {
-  if (!manifest || !pendingSelection) {
+async function saveCurrentAnnotation(): Promise<void> {
+  if (!manifest || !pendingSelection?.target || !personalStore) {
     return;
   }
-  annotations.push({
-    id: crypto.randomUUID(),
-    chapterId: pendingSelection.chapterId,
-    anchor: pendingSelection.anchor,
-    quote: pendingSelection.quote,
-    note: annotationNote.value.trim(),
-    createdAt: new Date().toISOString(),
-  });
-  writeAnnotations(manifest.bookId, manifest.editionId, annotations);
-  annotationNote.value = "";
-  selectionCaptureVersion += 1;
-  pendingSelection = undefined;
-  document.getSelection()?.removeAllRanges();
-  renderAnnotations();
-  renderStationary("none");
+  const selection = pendingSelection;
+  const selectionTarget = selection.target;
+  if (!selectionTarget) {
+    return;
+  }
+  const note = annotationNote.value.trim();
+  const timestamp = new Date().toISOString();
+  const annotation: PageTurnAnnotationV2 = {
+    annotationId: crypto.randomUUID(),
+    schemaVersion: 2,
+    bookId: manifest.bookId,
+    editionId: manifest.editionId,
+    motivation: note === "" ? "highlighting" : "commenting",
+    target: { state: "resolved", selector: selectionTarget },
+    ...(note === ""
+      ? {}
+      : { body: { format: "text/markdown" as const, value: note } }),
+    style: { color: "yellow", treatment: "highlight" },
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+  await runPersonalAction(
+    "Saving annotation...",
+    "Annotation saved in this browser.",
+    async () => {
+      if (!personalStore) {
+        return;
+      }
+      await personalStore.putAnnotation(annotation);
+      annotations.push(annotation);
+      annotationNote.value = "";
+      selectionCaptureVersion += 1;
+      pendingSelection = undefined;
+      document.getSelection()?.removeAllRanges();
+      renderStationary("none");
+    },
+  );
+}
+
+function downloadPersonalFile(
+  contents: string,
+  type: string,
+  filename: string,
+): void {
+  const blob = new Blob([contents], { type });
+  const url = URL.createObjectURL(blob);
+  const download = createElement("a");
+  download.href = url;
+  download.download = filename;
+  download.click();
+  globalThis.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 function exportPrivateAnnotations(): void {
@@ -2032,17 +2294,121 @@ function exportPrivateAnnotations(): void {
     annotations,
     ({ chapterId, anchor }) => personalLocationUrl(chapterId, anchor),
   );
-  const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const download = createElement("a");
-  download.href = url;
-  download.download = `${manifest.bookId}-annotations.md`;
-  download.click();
-  globalThis.setTimeout(() => URL.revokeObjectURL(url), 0);
+  downloadPersonalFile(
+    markdown,
+    "text/markdown;charset=utf-8",
+    `${manifest.bookId}-annotations.md`,
+  );
+}
+
+function backupPrivateAnnotations(): void {
+  if (!manifest || annotations.length === 0) {
+    personalStatus.value = "There are no annotations to back up.";
+    return;
+  }
+  try {
+    const backup = createPageTurnAnnotationBackup(
+      {
+        bookId: manifest.bookId,
+        editionId: manifest.editionId,
+        title: manifest.title,
+      },
+      annotations,
+    );
+    downloadPersonalFile(
+      JSON.stringify(backup),
+      PAGE_TURN_ANNOTATION_BACKUP_MEDIA_TYPE,
+      `${manifest.bookId}-${manifest.editionId}-annotations-v2.json`,
+    );
+    personalStatus.value = "Version 2 annotation backup downloaded.";
+  } catch (error) {
+    personalStatus.value =
+      error instanceof Error ? error.message : "Annotation backup failed.";
+  }
+}
+
+async function previewAnnotationFile(file: File): Promise<void> {
+  if (!manifest || !personalStore) {
+    return;
+  }
+  pendingAnnotationImport = undefined;
+  importPreview.hidden = true;
+  if (file.size > 20 * 1024 * 1024) {
+    personalStatus.value = "Annotation backup exceeds the 20 MiB import limit.";
+    return;
+  }
+  await runPersonalAction(
+    "Validating annotation backup...",
+    "Annotation backup is valid. Review the counts before importing.",
+    async () => {
+      if (!manifest) {
+        return;
+      }
+      const backup = await parsePageTurnAnnotationBackup(await file.text(), {
+        bookId: manifest.bookId,
+        editionId: manifest.editionId,
+      });
+      const preview = previewPageTurnAnnotationImport(
+        backup.annotations,
+        annotations,
+      );
+      pendingAnnotationImport = backup;
+      importCounts.textContent =
+        `${preview.newRecords} new, ${preview.identicalDuplicates} identical ` +
+        `duplicate${preview.identicalDuplicates === 1 ? "" : "s"}, ` +
+        `${preview.idConflicts} ID conflict${preview.idConflicts === 1 ? "" : "s"}, ` +
+        `${preview.unresolvedRecords} unresolved.`;
+      importConflicts.checked = false;
+      confirmReplace.checked = false;
+      importPreview.hidden = false;
+    },
+  );
+}
+
+async function applyAnnotationImport(mode: "merge" | "replace"): Promise<void> {
+  if (!personalStore || !pendingAnnotationImport || !manifest) {
+    return;
+  }
+  if (mode === "replace" && !confirmReplace.checked) {
+    personalStatus.value = "Confirm replacement before continuing.";
+    return;
+  }
+  await runPersonalAction(
+    mode === "replace" ? "Replacing annotations..." : "Merging annotations...",
+    "Annotation import completed.",
+    async () => {
+      if (!personalStore || !pendingAnnotationImport || !manifest) {
+        return;
+      }
+      const result = await personalStore.importAnnotations(
+        pendingAnnotationImport,
+        {
+          mode,
+          conflicts: importConflicts.checked
+            ? "import-as-copy"
+            : "keep-existing",
+        },
+      );
+      annotations = (
+        await personalStore.readEdition(manifest.bookId, manifest.editionId)
+      ).annotations;
+      pendingAnnotationImport = undefined;
+      importPreview.hidden = true;
+      importAnnotations.value = "";
+      personalStatus.value =
+        `Imported ${result.imported}; skipped ${result.identicalDuplicates} ` +
+        `identical duplicate${result.identicalDuplicates === 1 ? "" : "s"}.`;
+      renderStationary("none");
+    },
+  );
 }
 
 function applyAnnotationMarkers(root: ParentNode): void {
-  const anchors = new Set(annotations.map(({ anchor }) => anchor));
+  const anchors = new Set(
+    annotations.flatMap(({ target }) =>
+      target.state === "resolved" ? [target.selector.start.anchor] : [],
+    ),
+  );
   for (const node of root.querySelectorAll<HTMLElement>(
     "[data-source-anchor]",
   )) {
@@ -2081,25 +2447,87 @@ function onExploreDialogClick(event: MouseEvent): void {
   const bookmarkRemoval = event.target.closest<HTMLElement>(
     "[data-v3-remove-bookmark]",
   )?.dataset.v3RemoveBookmark;
-  if (bookmarkRemoval !== undefined && manifest) {
-    const index = Number(bookmarkRemoval);
-    if (!Number.isInteger(index) || index < 0 || index >= bookmarks.length) {
-      throw new Error(`V3 bookmark index is unavailable: ${bookmarkRemoval}`);
+  if (bookmarkRemoval !== undefined && manifest && personalStore) {
+    const bookmark = bookmarks.find(
+      ({ bookmarkId }) => bookmarkId === bookmarkRemoval,
+    );
+    if (!bookmark) {
+      personalStatus.value = "The selected bookmark is unavailable.";
+      return;
     }
-    bookmarks.splice(index, 1);
-    writeBookmarks(manifest.bookId, manifest.editionId, bookmarks);
-    renderBookmarks();
+    void runPersonalAction(
+      "Removing bookmark...",
+      "Bookmark removed.",
+      async () => {
+        if (!manifest || !personalStore) {
+          return;
+        }
+        await personalStore.deleteBookmark(
+          manifest.bookId,
+          manifest.editionId,
+          bookmark.bookmarkId,
+        );
+        bookmarks = bookmarks.filter(
+          ({ bookmarkId }) => bookmarkId !== bookmark.bookmarkId,
+        );
+      },
+    );
     return;
   }
   const annotationRemoval = event.target.closest<HTMLElement>(
     "[data-v3-remove-annotation]",
   )?.dataset.v3RemoveAnnotation;
-  if (annotationRemoval && manifest) {
-    annotations = annotations.filter(({ id }) => id !== annotationRemoval);
-    writeAnnotations(manifest.bookId, manifest.editionId, annotations);
-    renderAnnotations();
-    renderStationary("none");
+  if (annotationRemoval && manifest && personalStore) {
+    void runPersonalAction(
+      "Deleting annotation...",
+      "Annotation deleted.",
+      async () => {
+        if (!manifest || !personalStore) {
+          return;
+        }
+        await personalStore.deleteAnnotation(
+          manifest.bookId,
+          manifest.editionId,
+          annotationRemoval,
+        );
+        annotations = annotations.filter(
+          ({ annotationId }) => annotationId !== annotationRemoval,
+        );
+        renderStationary("none");
+      },
+    );
   }
+}
+
+async function deletePersonalData(allEditions: boolean): Promise<void> {
+  if (!manifest || !personalStore) {
+    return;
+  }
+  const scope = allEditions
+    ? "all bookmark and annotation data for every edition of this publication"
+    : "all bookmark and annotation data for this edition";
+  if (!globalThis.confirm(`Delete ${scope}? This cannot be undone.`)) {
+    personalStatus.value = "Deletion cancelled.";
+    return;
+  }
+  await runPersonalAction(
+    "Deleting local research data...",
+    allEditions
+      ? "All publication bookmark and annotation data was deleted."
+      : "This edition's bookmark and annotation data was deleted.",
+    async () => {
+      if (!manifest || !personalStore) {
+        return;
+      }
+      await personalStore.deleteResearchData(
+        manifest.bookId,
+        allEditions ? undefined : manifest.editionId,
+      );
+      bookmarks = [];
+      annotations = [];
+      renderStationary("none");
+    },
+  );
 }
 
 function startFromBeginning(): void {
@@ -4603,6 +5031,69 @@ function onPopState(): void {
   });
 }
 
+async function initializePersonalData(): Promise<void> {
+  if (!manifest || destroyed) {
+    return;
+  }
+  try {
+    const store = await openPageTurnPersonalStore();
+    if (destroyed) {
+      store.close();
+      return;
+    }
+    try {
+      const personal = await store.migrateLegacyEdition(
+        manifest.bookId,
+        manifest.editionId,
+        resolveLegacyAnnotation,
+      );
+      if (destroyed) {
+        store.close();
+        return;
+      }
+      personalStore = store;
+      bookmarks = personal.bookmarks;
+      annotations = personal.annotations;
+      personalStatus.value =
+        personal.migratedBookmarks + personal.migratedAnnotations > 0
+          ? `Migrated ${personal.migratedBookmarks} bookmark${
+              personal.migratedBookmarks === 1 ? "" : "s"
+            } and ${personal.migratedAnnotations} annotation${
+              personal.migratedAnnotations === 1 ? "" : "s"
+            } to versioned local storage.`
+          : "Bookmarks and annotations are stored only in this browser.";
+    } catch (error) {
+      const personal = await store.readEdition(
+        manifest.bookId,
+        manifest.editionId,
+      );
+      if (destroyed) {
+        store.close();
+        return;
+      }
+      personalStore = store;
+      bookmarks = personal.bookmarks;
+      annotations = personal.annotations;
+      personalStatus.value =
+        error instanceof Error
+          ? error.message
+          : "Stored beta data could not be migrated.";
+    }
+  } catch (error) {
+    personalStore?.close();
+    personalStore = undefined;
+    personalStatus.value =
+      error instanceof Error
+        ? error.message
+        : "Personal storage is unavailable.";
+  }
+  if (destroyed) {
+    return;
+  }
+  renderPersonalTools();
+  renderStationary("none");
+}
+
 async function initialize(): Promise<void> {
   const loaded = await fetchManifest();
   manifest = loaded.manifest;
@@ -4615,8 +5106,6 @@ async function initialize(): Promise<void> {
   mediaTreatment = mediaTreatmentFrom(query);
   applyPublicationIdentity(manifest);
   applyFontScale(readBookFontScale(manifest.bookId, 1));
-  bookmarks = readBookmarks(manifest.bookId, manifest.editionId);
-  annotations = readAnnotations(manifest.bookId, manifest.editionId);
   renderContents();
   chapterStates = manifest.chapters.map((chapter, index) => ({
     chapter,
@@ -4704,6 +5193,7 @@ async function initialize(): Promise<void> {
   reportReady();
   startOpening();
   queueChapterWindow(initialWindowCenter);
+  void initializePersonalData();
 }
 
 const lifecycle = new AbortController();
@@ -4805,11 +5295,55 @@ searchForm.addEventListener("submit", (event) => {
         : `Search failed: ${prototypeErrorMessage(error)}`;
   });
 }, listenerOptions);
-bookmarkCurrent.addEventListener("click", toggleCurrentBookmark, listenerOptions);
-saveAnnotation.addEventListener("click", saveCurrentAnnotation, listenerOptions);
+bookmarkCurrent.addEventListener(
+  "click",
+  () => void toggleCurrentBookmark(),
+  listenerOptions,
+);
+saveAnnotation.addEventListener(
+  "click",
+  () => void saveCurrentAnnotation(),
+  listenerOptions,
+);
 exportAnnotations.addEventListener(
   "click",
   exportPrivateAnnotations,
+  listenerOptions,
+);
+backupAnnotations.addEventListener(
+  "click",
+  backupPrivateAnnotations,
+  listenerOptions,
+);
+importAnnotations.addEventListener(
+  "change",
+  () => {
+    const file = importAnnotations.files?.[0];
+    if (file) {
+      void previewAnnotationFile(file);
+    }
+  },
+  listenerOptions,
+);
+confirmReplace.addEventListener("change", renderPersonalTools, listenerOptions);
+importMerge.addEventListener(
+  "click",
+  () => void applyAnnotationImport("merge"),
+  listenerOptions,
+);
+importReplace.addEventListener(
+  "click",
+  () => void applyAnnotationImport("replace"),
+  listenerOptions,
+);
+deleteEdition.addEventListener(
+  "click",
+  () => void deletePersonalData(false),
+  listenerOptions,
+);
+deletePublication.addEventListener(
+  "click",
+  () => void deletePersonalData(true),
   listenerOptions,
 );
 startOver.addEventListener("click", startFromBeginning, listenerOptions);
@@ -4903,6 +5437,8 @@ function destroy(): void {
   requestController.abort();
   observer.disconnect();
   searchController?.abort();
+  personalStore?.close();
+  personalStore = undefined;
   clearSharedTextHighlight();
   mediaDialogImage.removeAttribute("src");
   chapterSelect.replaceChildren();
