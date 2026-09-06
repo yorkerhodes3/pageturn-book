@@ -30,6 +30,10 @@ import {
 } from "./font-scale.js";
 import { shareReadingLocation } from "./share.js";
 import {
+  placePageTurnSelectionActions,
+  type PageTurnRect,
+} from "./selection-actions.js";
+import {
   PAGE_TURN_ANNOTATION_BACKUP_MEDIA_TYPE,
   annotationMarkdown,
   createPageTurnAnnotationBackup,
@@ -136,8 +140,24 @@ export type PageTurnBookOptions = Readonly<{
   locationUrl?(location: PageTurnBookLocation): string | URL;
   embedded?: boolean;
   keyboardScope?: "root" | "document";
+  selectionActions?: boolean;
+  selectionActionShortcut?: PageTurnSelectionActionShortcut | false;
   urlMode?: "managed" | "none";
   updateDocumentTitle?: boolean;
+}>;
+
+export type PageTurnSelectionActionShortcut = Readonly<{
+  key: string;
+  altKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+}>;
+
+export type PageTurnSelectionActionDetail = Readonly<{
+  text: string;
+  target: PageTurnTextTargetV1;
+  location: PageTurnBookLocation;
 }>;
 
 export type PageTurnBookHandle = Readonly<{
@@ -161,6 +181,9 @@ type V3Selection = Readonly<{
   anchor: string;
   quote: string;
   target?: PageTurnTextTargetV1;
+  range?: Range;
+  source?: HTMLElement;
+  modality?: "keyboard" | "mouse" | "touch" | "pen";
 }>;
 
 type V3SelectionCandidate = Readonly<{
@@ -218,6 +241,40 @@ type ActiveTurn = {
   curve: HTMLElement;
   shadow: HTMLElement;
 };
+
+type HighlightRegistryLike = Readonly<{
+  set(name: string, highlight: unknown): void;
+  delete(name: string): boolean;
+}>;
+
+type HighlightConstructorLike = new (...ranges: Range[]) => unknown;
+
+const personalHighlightOwners = new Map<symbol, Range[]>();
+const sharedHighlightOwners = new Map<symbol, Range[]>();
+
+function syncOwnedHighlights(
+  name: string,
+  owners: ReadonlyMap<symbol, readonly Range[]>,
+): boolean {
+  const css = globalThis.CSS as typeof CSS & {
+    highlights?: HighlightRegistryLike;
+  };
+  const HighlightConstructor = (
+    globalThis as typeof globalThis & {
+      Highlight?: HighlightConstructorLike;
+    }
+  ).Highlight;
+  const ranges = Array.from(owners.values()).flat();
+  if (!css.highlights || !HighlightConstructor) {
+    return false;
+  }
+  if (ranges.length === 0) {
+    css.highlights.delete(name);
+  } else {
+    css.highlights.set(name, new HighlightConstructor(...ranges));
+  }
+  return true;
+}
 
 export function attachPageTurnBook(
   options: PageTurnBookOptions,
@@ -1181,9 +1238,6 @@ function createSheet(
   }
   content.append(...cloneNodes(page.nodes, !decorative));
   activateMediaImages(content);
-  if (!decorative) {
-    applyAnnotationMarkers(content);
-  }
   const pageFolio = createElement("div", "v3-sheet-folio");
   const displayedFolio = folioLabel(page, folio);
   if (displayedFolio) {
@@ -1211,7 +1265,9 @@ function interpolate(
 
 const reader = requiredElement<HTMLElement>("[data-v3-reader]");
 const pageRoot = reader.closest<HTMLElement>(".v3-page");
+const bookShell = requiredElement<HTMLElement>(".v3-book-shell");
 const spread = requiredElement<HTMLElement>("[data-v3-spread]");
+const spine = requiredElement<HTMLElement>(".v3-spine");
 const stationary = requiredElement<HTMLElement>("[data-v3-stationary]");
 const turnLayer = requiredElement<HTMLElement>("[data-v3-turn-layer]");
 const entryCover = requiredElement<HTMLElement>("[data-v3-entry-cover]");
@@ -1244,6 +1300,32 @@ const fontStatus = requiredElement<HTMLOutputElement>(
 const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
 const shareStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-share-status]",
+);
+const selectionEntry = requiredElement<HTMLButtonElement>(
+  "[data-v3-selection-entry]",
+);
+const selectionActions = requiredElement<HTMLElement>(
+  "[data-v3-selection-actions]",
+);
+const selectionDescription = requiredElement<HTMLElement>(
+  "[data-v3-selection-description]",
+);
+const selectionStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-selection-status]",
+);
+const selectionFeedback = requiredElement<HTMLElement>(
+  "[data-v3-selection-feedback]",
+);
+const selectionUndo = requiredElement<HTMLButtonElement>(
+  "[data-v3-selection-undo]",
+);
+const selectionLive = requiredElement<HTMLElement>(
+  "[data-v3-selection-live]",
+);
+const selectionActionButtons = Array.from(
+  selectionActions.querySelectorAll<HTMLButtonElement>(
+    "[data-v3-selection-action]",
+  ),
 );
 const mediaPicker = requiredElement<HTMLElement>("[data-v3-media-picker]");
 const mediaSelect = requiredElement<HTMLSelectElement>(
@@ -1422,6 +1504,16 @@ const singlePageMedia = globalThis.matchMedia("(max-width: 48rem)");
 const reducedMotion = globalThis.matchMedia(
   "(prefers-reduced-motion: reduce)",
 );
+const selectionActionsEnabled = options.selectionActions ?? false;
+const defaultSelectionShortcut: PageTurnSelectionActionShortcut = {
+  key: "a",
+  altKey: true,
+  shiftKey: true,
+};
+const selectionShortcut =
+  options.selectionActionShortcut === false
+    ? undefined
+    : (options.selectionActionShortcut ?? defaultSelectionShortcut);
 
 let manifest: PageTurnBookManifest | undefined;
 let manifestUrl: URL | undefined;
@@ -1457,6 +1549,19 @@ let annotations: PageTurnAnnotationV2[] = [];
 let pendingAnnotationImport: PageTurnAnnotationBackupV2 | undefined;
 let pendingSelection: V3Selection | undefined;
 let selectionCaptureVersion = 0;
+let selectionTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+let selectionPlacementFrame: number | undefined;
+let selectionUndoTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
+let selectionFeedbackTimer:
+  | ReturnType<typeof globalThis.setTimeout>
+  | undefined;
+let selectionUndoAnnotation: PageTurnAnnotationV2 | undefined;
+let selectionReturnTarget: HTMLElement | undefined;
+let selectionReturnTargetHadTabindex = false;
+let selectionFocusActive = false;
+let exploreSelectionActive = false;
+const highlightOwner = Symbol("pageturn-reader");
+let lastSelectionModality: NonNullable<V3Selection["modality"]> = "keyboard";
 let sharedTextTarget: PageTurnTextTargetV1 | undefined;
 let searchRecordsPromise: Promise<readonly V3SearchRecord[]> | undefined;
 let searchController: AbortController | undefined;
@@ -1823,6 +1928,7 @@ function renderPersonalTools(): void {
   importMerge.disabled = storageUnavailable || personalBusy;
   importReplace.disabled =
     storageUnavailable || personalBusy || !confirmReplace.checked;
+  updateSelectionActionCapabilities();
 }
 
 function selectionElement(node: Node | null): Element | undefined {
@@ -1984,18 +2090,9 @@ async function resolveLegacyAnnotation(
   return { state: "resolved", selector };
 }
 
-type HighlightRegistryLike = Readonly<{
-  set(name: string, highlight: unknown): void;
-  delete(name: string): boolean;
-}>;
-
-type HighlightConstructorLike = new (...ranges: Range[]) => unknown;
-
 function clearSharedTextHighlight(): void {
-  const css = globalThis.CSS as typeof CSS & {
-    highlights?: HighlightRegistryLike;
-  };
-  css.highlights?.delete("v3-shared-quote");
+  sharedHighlightOwners.delete(highlightOwner);
+  syncOwnedHighlights("v3-shared-quote", sharedHighlightOwners);
   for (const element of stationary.querySelectorAll<HTMLElement>(
     "[data-v3-shared-range]",
   )) {
@@ -2025,21 +2122,11 @@ function renderSharedTextHighlight():
   if (ranges.length === 0) {
     return "unavailable";
   }
-  const css = globalThis.CSS as typeof CSS & {
-    highlights?: HighlightRegistryLike;
-  };
-  const HighlightConstructor = (
-    globalThis as typeof globalThis & {
-      Highlight?: HighlightConstructorLike;
-    }
-  ).Highlight;
-  if (css.highlights && HighlightConstructor) {
-    css.highlights.set(
-      "v3-shared-quote",
-      new HighlightConstructor(...ranges),
-    );
+  sharedHighlightOwners.set(highlightOwner, ranges);
+  if (syncOwnedHighlights("v3-shared-quote", sharedHighlightOwners)) {
     return "highlighted";
   }
+  sharedHighlightOwners.delete(highlightOwner);
   return "unsupported";
 }
 
@@ -2100,50 +2187,289 @@ function currentTextSelection(): V3SelectionCandidate | undefined {
     : undefined;
 }
 
-function onSelectionChange(): void {
-  const selection = currentTextSelection();
-  if (selection) {
-    const version = ++selectionCaptureVersion;
-    pendingSelection = {
-      chapterId: selection.chapterId,
-      anchor: selection.anchor,
-      quote: selection.quote,
-    };
-    void capturePageTurnTextTarget(selection.input)
-      .then((target) => {
-        if (destroyed || version !== selectionCaptureVersion) {
-          return;
-        }
-        pendingSelection = {
-          chapterId: selection.chapterId,
-          anchor: target.start.anchor,
-          quote: target.quote.exact,
-          target,
-        };
-        renderControls();
-        if (exploreDialog.open) {
-          renderAnnotations();
-        }
-      })
-      .catch((error: unknown) => {
-        if (destroyed || version !== selectionCaptureVersion) {
-          return;
-        }
-        pendingSelection = undefined;
-        shareStatus.value =
-          error instanceof Error
-            ? `Selection unavailable: ${error.message}`
-            : "Selection unavailable";
-        renderControls();
-        if (exploreDialog.open) {
-          renderAnnotations();
-        }
-      });
+function domRect(value: DOMRect | DOMRectReadOnly): PageTurnRect {
+  return {
+    left: value.left,
+    top: value.top,
+    right: value.right,
+    bottom: value.bottom,
+    width: value.width,
+    height: value.height,
+  };
+}
+
+function clearSelectionReturnTarget(): void {
+  const target = selectionReturnTarget;
+  if (target?.isConnected && !selectionReturnTargetHadTabindex) {
+    if (document.activeElement === target) {
+      target.addEventListener(
+        "blur",
+        () => target.removeAttribute("tabindex"),
+        { once: true },
+      );
+    } else {
+      target.removeAttribute("tabindex");
+    }
   }
+  selectionReturnTarget = undefined;
+  selectionReturnTargetHadTabindex = false;
+  selectionFocusActive = false;
+}
+
+function dismissSelectionActions(
+  clearSelection = true,
+  restoreFocus = false,
+): void {
+  hideSelectionActionSurface();
+  if (
+    restoreFocus &&
+    selectionReturnTarget?.isConnected &&
+    selectionFocusActive
+  ) {
+    selectionReturnTarget.focus({ preventScroll: true });
+  }
+  clearSelectionReturnTarget();
+  if (clearSelection) {
+    selectionCaptureVersion += 1;
+    pendingSelection = undefined;
+    renderSelectionControls();
+  }
+}
+
+function hideSelectionActionSurface(): void {
+  if (selectionTimer !== undefined) {
+    clearTimeout(selectionTimer);
+    selectionTimer = undefined;
+  }
+  if (selectionPlacementFrame !== undefined) {
+    cancelAnimationFrame(selectionPlacementFrame);
+    selectionPlacementFrame = undefined;
+  }
+  selectionActions.hidden = true;
+  selectionActions.classList.remove("v3-selection-actions-permanent");
+  selectionActions.classList.remove("v3-selection-actions-touch");
+  delete selectionActions.dataset.v3Placement;
+  selectionEntry.hidden = true;
+}
+
+function selectionActionButtonsAvailable(): HTMLButtonElement[] {
+  return selectionActionButtons.filter(
+    (button) => !button.hidden && !button.disabled,
+  );
+}
+
+function updateSelectionActionCapabilities(): void {
+  const share = selectionActions.querySelector<HTMLButtonElement>(
+    '[data-v3-selection-action="share"]',
+  );
+  const highlight = selectionActions.querySelector<HTMLButtonElement>(
+    '[data-v3-selection-action="highlight"]',
+  );
+  const annotate = selectionActions.querySelector<HTMLButtonElement>(
+    '[data-v3-selection-action="annotate"]',
+  );
+  if (share) {
+    share.hidden = !canCreateDurableLinks;
+    share.disabled = sharing;
+  }
+  if (highlight) {
+    highlight.disabled = personalStore === undefined || personalBusy;
+  }
+  if (annotate) {
+    annotate.hidden = personalStore === undefined;
+    annotate.disabled = personalBusy;
+  }
+  const available = selectionActionButtonsAvailable();
+  for (const [index, button] of available.entries()) {
+    button.tabIndex = index === 0 ? 0 : -1;
+  }
+}
+
+function selectionViewportRect(): PageTurnRect {
+  const viewport = globalThis.visualViewport;
+  const left = viewport?.offsetLeft ?? 0;
+  const top = viewport?.offsetTop ?? 0;
+  const width = viewport?.width ?? globalThis.innerWidth;
+  const height = viewport?.height ?? globalThis.innerHeight;
+  return {
+    left,
+    top,
+    right: left + width,
+    bottom: top + height,
+    width,
+    height,
+  };
+}
+
+function showPermanentSelectionActions(): void {
+  if (!pendingSelection?.target) {
+    return;
+  }
+  updateSelectionActionCapabilities();
+  const toolbar = requiredElement<HTMLElement>(".v3-reader-toolbar");
+  const bounds = toolbar.getBoundingClientRect();
+  selectionActions.classList.add("v3-selection-actions-permanent");
+  selectionActions.dataset.v3Placement = "permanent";
+  selectionActions.style.left = `${Math.max(8, bounds.left)}px`;
+  selectionActions.style.top = `${bounds.bottom + 4}px`;
+  selectionActions.hidden = false;
+}
+
+function positionSelectionActions(): void {
+  selectionPlacementFrame = undefined;
+  const selection = pendingSelection;
+  if (!selectionActionsEnabled || !selection?.target || !selection.range) {
+    selectionActions.hidden = true;
+    return;
+  }
+  updateSelectionActionCapabilities();
+  selectionActions.classList.remove("v3-selection-actions-permanent");
+  selectionActions.classList.toggle(
+    "v3-selection-actions-touch",
+    selection.modality === "touch" || selection.modality === "pen",
+  );
+  selectionActions.style.left = "0px";
+  selectionActions.style.top = "0px";
+  selectionActions.style.visibility = "hidden";
+  selectionActions.hidden = false;
+  const size = {
+    width: selectionActions.offsetWidth,
+    height: selectionActions.offsetHeight,
+  };
+  const exclusions = [
+    spine.getBoundingClientRect(),
+    ...corners
+     .filter((corner) => !corner.disabled)
+     .map((corner) => corner.getBoundingClientRect()),
+  ].map(domRect);
+  const safeAreaBottom = Number.parseFloat(
+    getComputedStyle(pageRoot ?? reader).getPropertyValue(
+     "--v3-safe-area-bottom",
+    ),
+  );
+  const placement = placePageTurnSelectionActions({
+    selectionRects: Array.from(selection.range.getClientRects(), domRect),
+    bounds: domRect(bookShell.getBoundingClientRect()),
+    viewport: selectionViewportRect(),
+    toolbarSize: size,
+    exclusions,
+    touch: selection.modality === "touch" || selection.modality === "pen",
+    safeAreaBottom:
+      12 + (Number.isFinite(safeAreaBottom) ? safeAreaBottom : 0),
+  });
+  selectionActions.style.visibility = "";
+  if (placement.mode === "hidden") {
+    selectionActions.hidden = true;
+    selectionEntry.hidden = false;
+    return;
+  }
+  selectionEntry.hidden = true;
+  selectionActions.dataset.v3Placement = placement.mode;
+  selectionActions.style.left = `${placement.left}px`;
+  selectionActions.style.top = `${placement.top}px`;
+}
+
+function queueSelectionActionPlacement(): void {
+  if (selectionPlacementFrame !== undefined) {
+    cancelAnimationFrame(selectionPlacementFrame);
+  }
+  selectionPlacementFrame = requestAnimationFrame(positionSelectionActions);
+}
+
+function captureSelectionCandidate(selection: V3SelectionCandidate): void {
+  const version = ++selectionCaptureVersion;
+  const range = selection.input.range.cloneRange();
+  const source = selectionElement(range.startContainer)?.closest<HTMLElement>(
+    "[data-source-anchor]",
+  );
+  pendingSelection = {
+    chapterId: selection.chapterId,
+    anchor: selection.anchor,
+    quote: selection.quote,
+    range,
+    ...(source ? { source } : {}),
+    modality: lastSelectionModality,
+  };
   renderSelectionControls();
-  if (exploreDialog.open) {
-    renderAnnotations();
+  void capturePageTurnTextTarget(selection.input)
+    .then((target) => {
+     if (destroyed || version !== selectionCaptureVersion) {
+       return;
+     }
+     pendingSelection = {
+       chapterId: selection.chapterId,
+       anchor: target.start.anchor,
+       quote: target.quote.exact,
+       target,
+       range,
+       ...(source ? { source } : {}),
+       modality: lastSelectionModality,
+     };
+     renderControls();
+     queueSelectionActionPlacement();
+     if (lastSelectionModality === "keyboard" && selectionActionsEnabled) {
+       selectionLive.textContent = "";
+       requestAnimationFrame(() => {
+         selectionLive.textContent =
+           `Selection actions available. ${selectionShortcutText()}`;
+       });
+     }
+     if (exploreDialog.open) {
+       renderAnnotations();
+     }
+    })
+    .catch((error: unknown) => {
+     if (destroyed || version !== selectionCaptureVersion) {
+       return;
+     }
+     dismissSelectionActions();
+     shareStatus.value =
+       error instanceof Error
+         ? `Selection unavailable: ${error.message}`
+         : "Selection unavailable";
+     renderControls();
+     if (exploreDialog.open) {
+       renderAnnotations();
+     }
+    });
+}
+
+function onSelectionChange(): void {
+  if (
+    (selectionFocusActive &&
+      selectionActions.contains(document.activeElement)) ||
+    (exploreDialog.open && pendingSelection?.target !== undefined)
+  ) {
+    return;
   }
+  const selection = currentTextSelection();
+  if (!selection) {
+    dismissSelectionActions();
+    if (exploreDialog.open) {
+     renderAnnotations();
+    }
+    return;
+  }
+  if (selectionTimer !== undefined) {
+    clearTimeout(selectionTimer);
+  }
+  const delay =
+    lastSelectionModality === "touch" || lastSelectionModality === "pen"
+     ? 220
+     : 0;
+  if (delay === 0) {
+    captureSelectionCandidate(selection);
+    return;
+  }
+  selectionTimer = globalThis.setTimeout(() => {
+    selectionTimer = undefined;
+    const stableSelection = currentTextSelection();
+    if (stableSelection) {
+     captureSelectionCandidate(stableSelection);
+    } else {
+     dismissSelectionActions();
+    }
+  }, delay);
 }
 
 async function runPersonalAction(
@@ -2168,6 +2494,229 @@ async function runPersonalAction(
   } finally {
     personalBusy = false;
     renderPersonalTools();
+  }
+}
+
+function currentSelectionAction():
+  | Readonly<{
+      selection: V3Selection & Readonly<{ target: PageTurnTextTargetV1 }>;
+      detail: PageTurnSelectionActionDetail;
+    }>
+  | undefined {
+  const selection = pendingSelection;
+  const target = selection?.target;
+  if (!manifest || !selection || !target) {
+    return undefined;
+  }
+  const ranges = pageTurnTextTargetRanges(
+    target,
+    textSourceBlocks(target.chapterId),
+    stationary,
+  );
+  if (
+    ranges.length === 0 ||
+    normalizePageTurnText(ranges.map((range) => range.toString()).join(" ")) !==
+      target.quote.exact
+  ) {
+    selectionStatus.value = "The selection changed. Select the text again.";
+    selectionFeedback.hidden = false;
+    dismissSelectionActions();
+    return undefined;
+  }
+  return {
+    selection: selection as V3Selection &
+      Readonly<{ target: PageTurnTextTargetV1 }>,
+    detail: {
+      text: target.quote.exact,
+      target,
+      location: {
+        bookId: manifest.bookId,
+        editionId: manifest.editionId,
+        chapterId: target.chapterId,
+        anchor: target.start.anchor,
+      },
+    },
+  };
+}
+
+function dispatchSelectionAction(
+  action: "share" | "annotate",
+  detail: PageTurnSelectionActionDetail,
+): void {
+  reader.dispatchEvent(
+    new CustomEvent<PageTurnSelectionActionDetail>(
+      `pageturn:${action}-selection`,
+      { bubbles: true, detail },
+    ),
+  );
+}
+
+function showSelectionFeedback(message: string, timeout = 4_000): void {
+  if (selectionFeedbackTimer !== undefined) {
+    clearTimeout(selectionFeedbackTimer);
+    selectionFeedbackTimer = undefined;
+  }
+  selectionStatus.value = message;
+  selectionFeedback.hidden = false;
+  if (timeout > 0) {
+    selectionFeedbackTimer = globalThis.setTimeout(() => {
+      selectionFeedbackTimer = undefined;
+      if (selectionUndo.hidden) {
+        selectionFeedback.hidden = true;
+      }
+    }, timeout);
+  }
+}
+
+async function copySelectedText(): Promise<void> {
+  const current = currentSelectionAction();
+  if (!current) {
+    return;
+  }
+  if (!navigator.clipboard?.writeText) {
+    showSelectionFeedback(
+      "Automatic copy is unavailable. Use the browser's Copy command.",
+      0,
+    );
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(current.detail.text);
+    showSelectionFeedback("Selected text copied.");
+    dismissSelectionActions(true, selectionFocusActive);
+  } catch {
+    showSelectionFeedback(
+      "Automatic copy was not permitted. Use the browser's Copy command.",
+      0,
+    );
+  }
+}
+
+async function highlightSelectedText(): Promise<void> {
+  const current = currentSelectionAction();
+  if (!current || !manifest || !personalStore || personalBusy) {
+    return;
+  }
+  const timestamp = new Date().toISOString();
+  const annotation: PageTurnAnnotationV2 = {
+    annotationId: crypto.randomUUID(),
+    schemaVersion: 2,
+    bookId: manifest.bookId,
+    editionId: manifest.editionId,
+    motivation: "highlighting",
+    target: { state: "resolved", selector: current.detail.target },
+    body: { format: "text/markdown", value: "" },
+    style: { color: "yellow", treatment: "highlight" },
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+  const store = personalStore;
+  personalBusy = true;
+  updateSelectionActionCapabilities();
+  try {
+    await store.putAnnotation(annotation);
+    if (destroyed || personalStore !== store) {
+      return;
+    }
+    annotations.push(annotation);
+    selectionUndoAnnotation = annotation;
+    if (selectionUndoTimer !== undefined) {
+      clearTimeout(selectionUndoTimer);
+    }
+    selectionUndo.hidden = false;
+    showSelectionFeedback("Highlight saved in this browser.", 0);
+    selectionUndoTimer = globalThis.setTimeout(() => {
+      selectionUndoTimer = undefined;
+      selectionUndoAnnotation = undefined;
+      selectionUndo.hidden = true;
+      selectionFeedback.hidden = true;
+    }, 8_000);
+    renderPersonalTextHighlights();
+    renderPersonalTools();
+    dismissSelectionActions(true, selectionFocusActive);
+  } catch (error) {
+    showSelectionFeedback(
+      error instanceof Error ? error.message : "Highlight could not be saved.",
+      0,
+    );
+  } finally {
+    personalBusy = false;
+    if (!destroyed) {
+      updateSelectionActionCapabilities();
+    }
+  }
+}
+
+async function undoSelectionHighlight(): Promise<void> {
+  const annotation = selectionUndoAnnotation;
+  if (!annotation || !personalStore || personalBusy) {
+    return;
+  }
+  const store = personalStore;
+  personalBusy = true;
+  selectionUndo.disabled = true;
+  try {
+    await store.deleteAnnotation(
+      annotation.bookId,
+      annotation.editionId,
+      annotation.annotationId,
+    );
+    if (destroyed || personalStore !== store) {
+      return;
+    }
+    annotations = annotations.filter(
+      ({ annotationId }) => annotationId !== annotation.annotationId,
+    );
+    renderPersonalTextHighlights();
+    renderPersonalTools();
+    selectionUndoAnnotation = undefined;
+    selectionUndo.hidden = true;
+    showSelectionFeedback("Highlight removed.");
+  } catch (error) {
+    showSelectionFeedback(
+      error instanceof Error ? error.message : "Highlight could not be removed.",
+      0,
+    );
+  } finally {
+    personalBusy = false;
+    if (!destroyed) {
+      selectionUndo.disabled = false;
+    }
+  }
+}
+
+async function shareSelectedText(): Promise<void> {
+  const current = currentSelectionAction();
+  if (!current || !canCreateDurableLinks) {
+    return;
+  }
+  dispatchSelectionAction("share", current.detail);
+  await shareCurrentLocation();
+  dismissSelectionActions(true, selectionFocusActive);
+}
+
+function annotateSelectedText(): void {
+  const current = currentSelectionAction();
+  if (!current || !personalStore) {
+    return;
+  }
+  dispatchSelectionAction("annotate", current.detail);
+  selectionActions.hidden = true;
+  selectionEntry.hidden = true;
+  selectionFocusActive = true;
+  openExploreDialog(true);
+  requestAnimationFrame(() => annotationNote.focus({ preventScroll: true }));
+}
+
+function activateSelectionAction(action: string | undefined): void {
+  if (action === "copy") {
+    void copySelectedText();
+  } else if (action === "share") {
+    void shareSelectedText();
+  } else if (action === "highlight") {
+    void highlightSelectedText();
+  } else if (action === "annotate") {
+    annotateSelectedText();
   }
 }
 
@@ -2403,22 +2952,39 @@ async function applyAnnotationImport(mode: "merge" | "replace"): Promise<void> {
   );
 }
 
-function applyAnnotationMarkers(root: ParentNode): void {
-  const anchors = new Set(
-    annotations.flatMap(({ target }) =>
-      target.state === "resolved" ? [target.selector.start.anchor] : [],
-    ),
+function clearPersonalTextHighlights(): void {
+  personalHighlightOwners.delete(highlightOwner);
+  syncOwnedHighlights("v3-personal-annotations", personalHighlightOwners);
+}
+
+function renderPersonalTextHighlights(): void {
+  clearPersonalTextHighlights();
+  const ranges = annotations.flatMap(({ target }) =>
+    target.state === "resolved"
+      ? pageTurnTextTargetRanges(
+          target.selector,
+          textSourceBlocks(target.selector.chapterId),
+          stationary,
+        )
+      : [],
   );
-  for (const node of root.querySelectorAll<HTMLElement>(
-    "[data-source-anchor]",
-  )) {
-    if (node.dataset.sourceAnchor && anchors.has(node.dataset.sourceAnchor)) {
-      node.classList.add("v3-annotated");
-    }
+  if (ranges.length === 0) {
+    return;
+  }
+  personalHighlightOwners.set(highlightOwner, ranges);
+  if (!syncOwnedHighlights("v3-personal-annotations", personalHighlightOwners)) {
+    personalHighlightOwners.delete(highlightOwner);
   }
 }
 
-function openExploreDialog(): void {
+function openExploreDialog(preserveSelection = false): void {
+  exploreSelectionActive = preserveSelection;
+  if (preserveSelection) {
+    hideSelectionActionSurface();
+  } else {
+    dismissSelectionActions();
+    document.getSelection()?.removeAllRanges();
+  }
   renderPersonalTools();
   exploreDialog.showModal();
 }
@@ -2426,6 +2992,10 @@ function openExploreDialog(): void {
 function onExploreDialogClose(): void {
   searchController?.abort();
   searchController = undefined;
+  if (exploreSelectionActive) {
+    dismissSelectionActions(true, selectionFocusActive);
+  }
+  exploreSelectionActive = false;
 }
 
 function onExploreDialogClick(event: MouseEvent): void {
@@ -2854,6 +3424,7 @@ function renderSelectionControls(): void {
         ? "Share selected text and location"
         : "Share location",
   );
+  updateSelectionActionCapabilities();
 }
 
 function applyFontScale(value: number): void {
@@ -3037,6 +3608,7 @@ function scheduleAppearanceRepagination(): void {
   if (!manifest || pages.length === 0) {
     return;
   }
+  dismissSelectionActions();
   if (appearanceTimer !== undefined) {
     clearTimeout(appearanceTimer);
   }
@@ -3194,6 +3766,7 @@ function appearanceFromControls(): PageTurnAppearanceInput {
 }
 
 function openAppearanceDialog(): void {
+  dismissSelectionActions();
   renderAppearanceControls();
   appearanceDialog.showModal();
 }
@@ -3232,6 +3805,7 @@ function renderControls(): void {
 }
 
 function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
+  dismissSelectionActions();
   const singlePage = singlePageMedia.matches;
   spread.classList.toggle("v3-spread-single", singlePage);
   stationary.replaceChildren(
@@ -3248,6 +3822,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
         ]),
   );
   renderSharedTextHighlight();
+  renderPersonalTextHighlights();
   const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
   const focusedPage =
     visiblePages.filter((page) => page?.kind === "content").at(-1) ??
@@ -3335,6 +3910,7 @@ function setFontScale(value: number): void {
   if (nextScale === fontScale) {
     return;
   }
+  dismissSelectionActions();
   const preservation = currentPreservation();
   if (activeTurn) {
     finishTurn(false);
@@ -3366,6 +3942,7 @@ function setMediaTreatment(value: string): void {
   if (value === mediaTreatment) {
     return;
   }
+  dismissSelectionActions();
   const preservation = currentPreservation();
   if (activeTurn) {
     finishTurn(false);
@@ -3397,6 +3974,7 @@ function setMediaTreatment(value: string): void {
 }
 
 function openMediaFigure(id: string, trigger: HTMLElement): void {
+  dismissSelectionActions();
   const figure = mediaConfig?.figures.find((candidate) => candidate.id === id);
   if (!figure) {
     throw new Error(`V3 publication figure is unavailable: ${id}`);
@@ -3435,6 +4013,11 @@ async function shareCurrentLocation(): Promise<void> {
     renderControls();
     return;
   }
+  if (selectedText?.target && !currentSelectionAction()) {
+    sharing = false;
+    renderControls();
+    return;
+  }
   const currentLocation = currentReadingLocation();
   const location =
     selectedText && currentLocation
@@ -3461,7 +4044,6 @@ async function shareCurrentLocation(): Promise<void> {
   if (selectedText) {
     selectionCaptureVersion += 1;
     pendingSelection = undefined;
-    document.getSelection()?.removeAllRanges();
   }
   sharing = false;
   renderControls();
@@ -3607,6 +4189,7 @@ async function goToLocation(
   anchor: string | undefined,
   locationUpdate: LocationUpdate,
 ): Promise<void> {
+  dismissSelectionActions();
   const navigationVersion = ++locationNavigationVersion;
   if (!manifest || chapterId === "") {
     if (navigationVersion === locationNavigationVersion) {
@@ -3990,6 +4573,7 @@ function onCornerPointerDown(event: PointerEvent): void {
   ) {
     throw new Error("V3 corner control has invalid turn metadata");
   }
+  dismissSelectionActions();
   if (resizeTimer !== undefined) {
     clearTimeout(resizeTimer);
     resizeTimer = undefined;
@@ -4105,6 +4689,7 @@ async function automaticTurn(direction: PageTurnDirection): Promise<void> {
   if (pendingTurn) {
     return;
   }
+  dismissSelectionActions();
   pendingTurn = true;
   renderControls();
   try {
@@ -5091,7 +5676,7 @@ async function initializePersonalData(): Promise<void> {
     return;
   }
   renderPersonalTools();
-  renderStationary("none");
+  renderPersonalTextHighlights();
 }
 
 async function initialize(): Promise<void> {
@@ -5196,6 +5781,111 @@ async function initialize(): Promise<void> {
   void initializePersonalData();
 }
 
+function selectionShortcutText(): string {
+  if (!selectionShortcut) {
+    return "Use the Selection actions control to move focus to these actions.";
+  }
+  const parts = [
+    selectionShortcut.ctrlKey ? "Ctrl" : "",
+    selectionShortcut.altKey ? "Alt" : "",
+    selectionShortcut.shiftKey ? "Shift" : "",
+    selectionShortcut.metaKey ? "Meta" : "",
+    selectionShortcut.key.toUpperCase(),
+  ].filter(Boolean);
+  return `Press ${parts.join("+")} to move focus to selection actions.`;
+}
+
+function selectionShortcutAria(): string | undefined {
+  if (!selectionShortcut) {
+    return undefined;
+  }
+  return [
+    selectionShortcut.ctrlKey ? "Control" : "",
+    selectionShortcut.altKey ? "Alt" : "",
+    selectionShortcut.shiftKey ? "Shift" : "",
+    selectionShortcut.metaKey ? "Meta" : "",
+    selectionShortcut.key.toUpperCase(),
+  ]
+    .filter(Boolean)
+    .join("+");
+}
+
+function matchesSelectionShortcut(event: KeyboardEvent): boolean {
+  return (
+    selectionShortcut !== undefined &&
+    event.key.toLowerCase() === selectionShortcut.key.toLowerCase() &&
+    event.altKey === (selectionShortcut.altKey ?? false) &&
+    event.ctrlKey === (selectionShortcut.ctrlKey ?? false) &&
+    event.metaKey === (selectionShortcut.metaKey ?? false) &&
+    event.shiftKey === (selectionShortcut.shiftKey ?? false)
+  );
+}
+
+function focusSelectionActions(): void {
+  const selection = pendingSelection;
+  if (!selectionActionsEnabled || !selection?.target) {
+    return;
+  }
+  if (selectionActions.hidden) {
+    showPermanentSelectionActions();
+  }
+  const source = selection.source;
+  if (source?.isConnected) {
+    selectionReturnTarget = source;
+    selectionReturnTargetHadTabindex = source.hasAttribute("tabindex");
+    if (!selectionReturnTargetHadTabindex) {
+      source.tabIndex = -1;
+    }
+  }
+  selectionFocusActive = true;
+  selectionActionButtonsAvailable()[0]?.focus({ preventScroll: true });
+}
+
+function onSelectionActionsKeyDown(event: KeyboardEvent): void {
+  const available = selectionActionButtonsAvailable();
+  const activeIndex = available.indexOf(
+    document.activeElement as HTMLButtonElement,
+  );
+  if (event.key === "Escape") {
+    event.preventDefault();
+    dismissSelectionActions(true, true);
+    return;
+  }
+  if (activeIndex < 0) {
+    return;
+  }
+  let nextIndex: number | undefined;
+  if (event.key === "ArrowRight") {
+    nextIndex = (activeIndex + 1) % available.length;
+  } else if (event.key === "ArrowLeft") {
+    nextIndex = (activeIndex - 1 + available.length) % available.length;
+  } else if (event.key === "Home") {
+    nextIndex = 0;
+  } else if (event.key === "End") {
+    nextIndex = available.length - 1;
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    available[activeIndex]?.click();
+  }
+  if (nextIndex !== undefined) {
+    event.preventDefault();
+    for (const [index, button] of available.entries()) {
+      button.tabIndex = index === nextIndex ? 0 : -1;
+    }
+    available[nextIndex]?.focus({ preventScroll: true });
+  }
+}
+
+selectionDescription.textContent = selectionShortcutText();
+const shortcutAria = selectionShortcutAria();
+if (shortcutAria) {
+  selectionActions.setAttribute("aria-keyshortcuts", shortcutAria);
+  selectionEntry.setAttribute("aria-keyshortcuts", shortcutAria);
+} else {
+  selectionActions.removeAttribute("aria-keyshortcuts");
+  selectionEntry.removeAttribute("aria-keyshortcuts");
+}
+
 const lifecycle = new AbortController();
 const listenerOptions = { signal: lifecycle.signal };
 
@@ -5205,6 +5895,20 @@ for (const corner of corners) {
 spread.addEventListener("pointermove", onPointerMove, listenerOptions);
 spread.addEventListener("pointerup", onPointerEnd, listenerOptions);
 spread.addEventListener("pointercancel", onPointerCancel, listenerOptions);
+stationary.addEventListener(
+  "pointerdown",
+  (event) => {
+    if (event.isPrimary) {
+      lastSelectionModality =
+        event.pointerType === "touch"
+          ? "touch"
+          : event.pointerType === "pen"
+            ? "pen"
+            : "mouse";
+    }
+  },
+  listenerOptions,
+);
 stationary.addEventListener("click", onStationaryClick, listenerOptions);
 previous.addEventListener(
   "click",
@@ -5283,7 +5987,7 @@ resetAppearance.addEventListener(
     ),
   listenerOptions,
 );
-exploreButton.addEventListener("click", openExploreDialog, listenerOptions);
+exploreButton.addEventListener("click", () => openExploreDialog(), listenerOptions);
 exploreDialog.addEventListener("click", onExploreDialogClick, listenerOptions);
 exploreDialog.addEventListener("close", onExploreDialogClose, listenerOptions);
 searchForm.addEventListener("submit", (event) => {
@@ -5347,6 +6051,39 @@ deletePublication.addEventListener(
   listenerOptions,
 );
 startOver.addEventListener("click", startFromBeginning, listenerOptions);
+selectionEntry.addEventListener("click", focusSelectionActions, listenerOptions);
+selectionActions.addEventListener(
+  "pointerdown",
+  (event) => {
+    if (event.isPrimary) {
+      event.preventDefault();
+    }
+  },
+  listenerOptions,
+);
+selectionActions.addEventListener(
+  "click",
+  (event) => {
+    const button =
+      event.target instanceof Element
+        ? event.target.closest<HTMLButtonElement>("[data-v3-selection-action]")
+        : null;
+    if (button && !button.disabled) {
+      activateSelectionAction(button.dataset.v3SelectionAction);
+    }
+  },
+  listenerOptions,
+);
+selectionActions.addEventListener(
+  "keydown",
+  onSelectionActionsKeyDown,
+  listenerOptions,
+);
+selectionUndo.addEventListener(
+  "click",
+  () => void undoSelectionHighlight(),
+  listenerOptions,
+);
 mediaSelect.addEventListener("change", () => {
   try {
     setMediaTreatment(mediaSelect.value);
@@ -5371,6 +6108,24 @@ const onKeyDown = (event: KeyboardEvent) => {
     return;
   }
   if (
+    event.key === "Escape" &&
+    (!selectionActions.hidden || !selectionEntry.hidden)
+  ) {
+    event.preventDefault();
+    dismissSelectionActions(true, selectionFocusActive);
+    return;
+  }
+  if (matchesSelectionShortcut(event)) {
+    if (pendingSelection?.target && selectionActionsEnabled) {
+      event.preventDefault();
+      focusSelectionActions();
+    }
+    return;
+  }
+  if (event.shiftKey) {
+    lastSelectionModality = "keyboard";
+  }
+  if (
     mediaDialog.open ||
     appearanceDialog.open ||
     exploreDialog.open ||
@@ -5393,11 +6148,32 @@ const onKeyDown = (event: KeyboardEvent) => {
 };
 document.addEventListener("keydown", onKeyDown, listenerOptions);
 document.addEventListener("selectionchange", onSelectionChange, listenerOptions);
+document.addEventListener(
+  "pointerdown",
+  (event) => {
+    const actionTarget =
+      event.target instanceof Element
+        ? event.target.closest(
+            "[data-v3-selection-actions], [data-v3-selection-entry], " +
+              "[data-v3-share], [data-v3-explore]",
+          )
+        : null;
+    if (
+      (!selectionActions.hidden || !selectionEntry.hidden) &&
+      event.target instanceof Node &&
+      actionTarget === null
+    ) {
+      dismissSelectionActions();
+    }
+  },
+  { capture: true, signal: lifecycle.signal },
+);
 if (managesUrl) {
   globalThis.addEventListener("popstate", onPopState, listenerOptions);
 }
 
 const observer = new ResizeObserver(() => {
+  dismissSelectionActions();
   if (!manifest || pages.length === 0) {
     return;
   }
@@ -5427,6 +6203,16 @@ const observer = new ResizeObserver(() => {
   }, 120);
 });
 observer.observe(spread);
+globalThis.visualViewport?.addEventListener(
+  "resize",
+  queueSelectionActionPlacement,
+  listenerOptions,
+);
+globalThis.visualViewport?.addEventListener(
+  "scroll",
+  queueSelectionActionPlacement,
+  listenerOptions,
+);
 
 function destroy(): void {
   if (destroyed) {
@@ -5439,7 +6225,9 @@ function destroy(): void {
   searchController?.abort();
   personalStore?.close();
   personalStore = undefined;
+  dismissSelectionActions();
   clearSharedTextHighlight();
+  clearPersonalTextHighlights();
   mediaDialogImage.removeAttribute("src");
   chapterSelect.replaceChildren();
   if (resizeTimer !== undefined) {
@@ -5450,6 +6238,12 @@ function destroy(): void {
   }
   if (openingTimer !== undefined) {
     clearTimeout(openingTimer);
+  }
+  if (selectionUndoTimer !== undefined) {
+    clearTimeout(selectionUndoTimer);
+  }
+  if (selectionFeedbackTimer !== undefined) {
+    clearTimeout(selectionFeedbackTimer);
   }
   if (activeTurn?.animationFrame !== undefined) {
     cancelAnimationFrame(activeTurn.animationFrame);

@@ -1352,7 +1352,7 @@ After V3-418 and before V3-419 persistence actions, V3-413 must:
 
 **Priority:** P1
 
-**Status:** Ready
+**Status:** Complete
 
 **Depends on:** V3-418, V3-413
 

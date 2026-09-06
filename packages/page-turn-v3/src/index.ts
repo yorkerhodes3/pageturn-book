@@ -117,6 +117,8 @@ export {
   type PageTurnBookMediaFigure,
   type PageTurnBookMediaTreatment,
   type PageTurnBookOptions,
+  type PageTurnSelectionActionDetail,
+  type PageTurnSelectionActionShortcut,
 } from "./reader.js";
 export {
   mountPageTurnBookShell,

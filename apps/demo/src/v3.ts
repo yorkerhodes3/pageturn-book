@@ -37,6 +37,7 @@ const reader: PageTurnBookHandle = createPageTurnBook({
   ...(media ? { media } : {}),
   libraryUrl: new URL("../shelf/", globalThis.location.href),
   appearanceControls: true,
+  selectionActions: true,
   embedded: query.get("embed") === "1",
   keyboardScope: "document",
   urlMode: "managed",

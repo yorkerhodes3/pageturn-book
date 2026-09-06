@@ -64,6 +64,14 @@ const shellMarkup = `
           data-v3-share
           aria-label="Share location"
         >Share</button>
+        <button
+          type="button"
+          class="v3-selection-entry"
+          data-v3-selection-entry
+          aria-controls="v3-selection-actions"
+          aria-keyshortcuts="Alt+Shift+A"
+          hidden
+        >Selection actions</button>
         <span class="v3-visually-hidden" data-v3-status role="status">
           Loading semantic pages
         </span>
@@ -74,6 +82,79 @@ const shellMarkup = `
           aria-live="polite"
         >Share this chapter or passage</output>
       </div>
+      <div
+        id="v3-selection-actions"
+        class="v3-selection-actions"
+        data-v3-selection-actions
+        role="toolbar"
+        aria-label="Selected text actions"
+        aria-describedby="v3-selection-actions-description"
+        aria-keyshortcuts="Alt+Shift+A"
+        hidden
+      >
+        <span
+          id="v3-selection-actions-description"
+          class="v3-visually-hidden"
+          data-v3-selection-description
+        >Press Alt+Shift+A to move focus to selection actions.</span>
+        <button
+          type="button"
+          data-v3-selection-action="copy"
+          data-tooltip="Copy"
+          aria-label="Copy selected text"
+          tabindex="0"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M8 7V4h11v13h-3M5 7h11v13H5z"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          data-v3-selection-action="share"
+          data-tooltip="Share"
+          aria-label="Share selected text"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="18" cy="5" r="2.5"></circle>
+            <circle cx="6" cy="12" r="2.5"></circle>
+            <circle cx="18" cy="19" r="2.5"></circle>
+            <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          data-v3-selection-action="highlight"
+          data-tooltip="Highlight"
+          aria-label="Highlight selected text"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="m7 15 8-8 3 3-8 8H7zM5 20h14"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          data-v3-selection-action="annotate"
+          data-tooltip="Annotate"
+          aria-label="Annotate selected text"
+          tabindex="-1"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 4h14v13H9l-4 3zM8 8h8M8 12h6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="v3-selection-feedback" data-v3-selection-feedback hidden>
+        <output data-v3-selection-status role="status" aria-live="polite"></output>
+        <button type="button" data-v3-selection-undo hidden>Undo</button>
+      </div>
+      <span
+        class="v3-visually-hidden"
+        data-v3-selection-live
+        role="status"
+        aria-live="polite"
+      ></span>
       <aside class="v3-resume-notice" data-v3-resume-notice hidden>
         <span data-v3-resume-label>Resumed at your last reading location.</span>
         <button type="button" data-v3-start-over>Start from beginning</button>

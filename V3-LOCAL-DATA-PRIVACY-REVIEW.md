@@ -8,7 +8,7 @@
 | Analytics | None |
 | Storage | Same-origin IndexedDB; resume/typography remain in `localStorage` |
 | Export | Explicit local Markdown or version 2 JSON download |
-| Sharing | Explicit Web Share or clipboard action |
+| Sharing | Explicit contextual Copy or Share action |
 
 ## Data handled
 
@@ -30,9 +30,11 @@ send no personal data to an application service. Search fetches static
 publication chapters from the same deployment and retains a text index only in
 memory.
 
-Selected text leaves the reader only after the reader activates **Share
-selection**. The payload is handed to the operating-system Web Share surface,
-or copied with its canonical source URL when clipboard fallback is used.
+Selected text leaves the reader only after the reader activates **Copy** or
+**Share selection**. Copy writes only the normalized selected text after the
+explicit action and truthfully instructs manual browser copying when clipboard
+access is unavailable. Share hands the exact selector and edition-bound
+location to the existing explicit share flow.
 
 Annotation export creates a local Markdown or version 2 JSON `Blob` after an
 explicit export/backup action. Import reads only the local file selected by the
@@ -68,6 +70,9 @@ reader. V3 does not upload the file or choose a remote destination.
   painted onto publication text.
 - Storage failures retain the current UI data and announce an error rather than
   claiming success.
+- Contextual selection controls use an accessible toolbar, do not take focus
+  after pointer selection, retain native selection, and provide keyboard entry,
+  roving focus, Escape return, touch-safe placement, and a visible Undo action.
 
 An explicit pre-share preview remains required if sharing moves beyond the
 browser/OS share surface.

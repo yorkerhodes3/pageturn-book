@@ -163,6 +163,7 @@ const reader = createPageTurnBook({
     `/reader/${chapterId}/#${encodeURIComponent(anchor)}`,
   appearanceControls: true,
   appearancePreset: "modern-lab",
+  selectionActions: true,
 });
 ```
 
@@ -172,6 +173,24 @@ project-reviewed rights. The available treatments are `off`, `on`, and
 `locationUrl` when PageTurn owns its book/chapter/hash browser history. It can
 also set `keyboardScope: "document"` for full-page arrow-key navigation;
 embedded readers leave keyboard events outside their root untouched.
+
+### Contextual selection actions
+
+Set `selectionActions: true` to enable the accessible Copy, Share, Highlight,
+and Annotate toolbar. The hosted reader enables it; SDK consumers opt in.
+Share appears only when `urlMode: "managed"` or `locationUrl` provides durable
+links, and Annotate appears after local IndexedDB storage is available.
+Highlights store a resolved `PageTurnAnnotationV2` locally and render the exact
+range.
+
+Pointer and touch selection retain the browser's native selection. Keyboard
+selection is announced, and `Alt+Shift+A` (`Option+Shift+A` on macOS) moves
+focus into the toolbar. Override the command with
+`selectionActionShortcut: { key, altKey, ctrlKey, metaKey, shiftKey }`, or set
+it to `false`. The reader emits `pageturn:share-selection` and
+`pageturn:annotate-selection`; each event's `detail` is a
+`PageTurnSelectionActionDetail` containing normalized text, the exact
+`PageTurnTextTargetV1`, and its edition-scoped location.
 
 ### Appearance configuration
 

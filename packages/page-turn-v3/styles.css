@@ -47,6 +47,7 @@
 }
 
 .v3-page {
+  --v3-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   overflow-x: clip;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -133,7 +134,7 @@
 
 .v3-reader-toolbar {
   display: grid;
-  grid-template-columns: auto auto auto minmax(14rem, 1fr) auto auto auto auto;
+  grid-template-columns: auto auto auto minmax(14rem, 1fr) auto auto auto auto auto;
   gap: 0.55rem;
   align-items: center;
   min-height: 2.8rem;
@@ -161,13 +162,146 @@
 .v3-explore,
 .v3-appearance,
 .v3-font-controls button,
-.v3-share {
+.v3-share,
+.v3-selection-entry {
   min-height: 1.9rem;
   border: 1px solid #a7864c;
   background: #17211f;
   color: #ead9b7;
   font-size: 0.68rem;
   font-weight: 800;
+}
+
+.v3-selection-actions {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  gap: 0.18rem;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100vw - 1rem);
+  padding: 0.24rem;
+  border: 1px solid #a7864c;
+  border-radius: 999px;
+  background: #17211f;
+  box-shadow:
+    0 0.45rem 1rem rgb(17 11 7 / 28%),
+    inset 0 1px rgb(255 248 222 / 10%);
+  color: #f1e2c5;
+  animation: v3-selection-actions-in 110ms ease-out;
+}
+
+.v3-selection-actions[hidden] {
+  display: none;
+}
+
+.v3-selection-actions button {
+  position: relative;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0.48rem;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.v3-selection-actions button:hover {
+  border-color: #c9a965;
+  background: rgb(201 169 101 / 16%);
+}
+
+.v3-selection-actions button:focus-visible {
+  outline: 3px solid #f5ca69;
+  outline-offset: 2px;
+}
+
+.v3-selection-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.v3-selection-actions svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.v3-selection-actions button::after {
+  position: absolute;
+  bottom: calc(100% + 0.45rem);
+  left: 50%;
+  display: none;
+  padding: 0.2rem 0.38rem;
+  border-radius: 0.25rem;
+  background: #0e1514;
+  color: #fff8e8;
+  content: attr(data-tooltip);
+  font: 700 0.68rem/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
+  pointer-events: none;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.v3-selection-actions button:hover::after,
+.v3-selection-actions button:focus-visible::after {
+  display: block;
+}
+
+.v3-selection-actions-permanent {
+  border-radius: 0.55rem;
+}
+
+.v3-selection-feedback {
+  position: fixed;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 82;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  max-width: min(28rem, calc(100vw - 1.5rem));
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #a7864c;
+  border-radius: 0.45rem;
+  background: #17211f;
+  box-shadow: 0 0.35rem 0.9rem rgb(17 11 7 / 25%);
+  color: #f1e2c5;
+  font: 700 0.75rem/1.35 Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.v3-selection-feedback[hidden] {
+  display: none;
+}
+
+.v3-selection-feedback button {
+  min-width: 2.75rem;
+  min-height: 2.25rem;
+  border: 1px solid #c9a965;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+@keyframes v3-selection-actions-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .v3-back {
@@ -937,16 +1071,20 @@
   box-shadow: inset 0 -0.08em rgb(180 150 92 / 65%);
 }
 
-.v3-annotated {
-  box-shadow: inset 0 -0.16em rgb(217 173 90 / 35%);
-}
-
 ::highlight(v3-shared-quote) {
   background: rgb(230 187 84 / 42%);
   color: inherit;
   text-decoration: underline;
   text-decoration-color: rgb(137 91 25 / 72%);
   text-decoration-thickness: 0.08em;
+}
+
+::highlight(v3-personal-annotations) {
+  background: rgb(245 198 77 / 46%);
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgb(128 79 16 / 64%);
+  text-decoration-thickness: 0.06em;
 }
 
 .v3-sheet-front-matter .v3-sheet-content {
@@ -1774,6 +1912,11 @@
     grid-column: 4;
   }
 
+  .v3-reader-toolbar > .v3-selection-entry {
+    grid-row: 4;
+    grid-column: 1 / -1;
+  }
+
   .v3-resume-notice {
     align-items: flex-start;
   }
@@ -1828,7 +1971,31 @@
   }
 }
 
+.v3-selection-actions-touch button {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+}
+
+@media (pointer: coarse) {
+  .v3-selection-actions button {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .v3-selection-feedback button {
+    min-height: 2.75rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .v3-selection-actions {
+    animation: none;
+  }
+
   .v3-corner::after {
     transition: none;
   }
@@ -1841,5 +2008,31 @@
   .v3-reader .v3-stationary {
     opacity: 1;
     animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .v3-selection-actions,
+  .v3-selection-feedback {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .v3-selection-actions button {
+    border-color: ButtonText;
+  }
+
+  .v3-selection-actions button:focus-visible,
+  .v3-selection-feedback button:focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  ::highlight(v3-personal-annotations),
+  ::highlight(v3-shared-quote) {
+    background: Mark;
+    color: MarkText;
+    text-decoration: underline;
   }
 }

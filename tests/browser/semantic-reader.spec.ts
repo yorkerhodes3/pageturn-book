@@ -1636,7 +1636,9 @@ test("shares selected text and exports local-only annotations", async ({
   );
 
   await selectLeadingText(page, paragraph);
-  await page.getByRole("button", { name: "Explore" }).click();
+  await page
+    .getByRole("button", { name: "Annotate selected text" })
+    .click();
   const dialog = page.getByRole("dialog", { name: "Explore this book" });
   await expect(dialog.getByText("Nothing is uploaded")).toBeVisible();
   await expect(dialog.locator("[data-v3-selection-preview]")).toContainText(
@@ -1648,9 +1650,18 @@ test("shares selected text and exports local-only annotations", async ({
   await dialog.getByRole("button", { name: "Save selected text" }).click();
   await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
   await dialog.getByRole("button", { name: "Close book tools" }).click();
-  await expect(
-    page.locator("[data-v3-stationary] .v3-annotated"),
-  ).toHaveCount(1);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (
+            CSS as typeof CSS & {
+              highlights?: Readonly<{ has(name: string): boolean }>;
+            }
+          ).highlights?.has("v3-personal-annotations") ?? false,
+      ),
+    )
+    .toBe(true);
 
   await page.getByRole("button", { name: "Explore" }).click();
   const downloadPromise = page.waitForEvent("download");
