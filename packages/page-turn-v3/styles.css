@@ -100,6 +100,9 @@
   --v3-page-fan-dark: #b9ab91;
   --v3-page-fan-light: #f2eadc;
   --v3-page-fan-mid: #d8cbb6;
+  --v3-annotation-font: "Segoe Print", "Bradley Hand", cursive;
+  --v3-annotation-scale: 1;
+  --v3-annotation-ink: #59401d;
   width: min(86rem, calc(100% - clamp(1rem, 4vw, 3rem)));
   margin: 0 auto;
 }
@@ -874,6 +877,115 @@
   line-height: var(--v3-line-height);
 }
 
+.v3-marginalia-layer {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  bottom: 0;
+  width: clamp(1rem, 7cqw, 2.8rem);
+  pointer-events: none;
+}
+
+.v3-marginalia-layer-left {
+  left: 0;
+  padding-inline: 0.18rem 0.08rem;
+}
+
+.v3-marginalia-layer-right {
+  right: 0;
+  padding-inline: 0.08rem 0.18rem;
+}
+
+.v3-marginalia-note,
+.v3-marginalia-group,
+.v3-margin-editor {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: var(--v3-annotation-ink);
+  font-family: var(--v3-annotation-font);
+  font-size: calc(clamp(0.55rem, 1.5cqw, 0.74rem) * var(--v3-annotation-scale));
+  line-height: 1.18;
+  pointer-events: auto;
+}
+
+.v3-marginalia-note,
+.v3-marginalia-group {
+  min-width: 0;
+  padding: 0.12rem;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  text-decoration: underline 0.06em rgb(111 78 30 / 35%);
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+button.v3-marginalia-note,
+button.v3-marginalia-group {
+  cursor: pointer;
+}
+
+.v3-marginalia-note {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.v3-marginalia-group {
+  font-family: var(--v3-ui-font);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.v3-reader[data-v3-readable-marginalia="true"] .v3-marginalia-note,
+.v3-reader[data-v3-readable-marginalia="true"] .v3-margin-editor {
+  font-family: var(--v3-ui-font);
+}
+
+.v3-margin-editor {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.2rem;
+  border: 1px solid color-mix(in srgb, var(--v3-annotation-ink) 45%, transparent);
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--v3-page-paper) 94%, white);
+  box-shadow: 0 0.35rem 0.9rem rgb(56 39 16 / 24%);
+}
+
+.v3-margin-editor label {
+  font-family: var(--v3-ui-font);
+  font-size: 0.55rem;
+}
+
+.v3-margin-editor textarea {
+  width: 100%;
+  min-height: 3.6rem;
+  padding: 0.2rem;
+  border: 1px solid rgb(89 64 29 / 40%);
+  background: rgb(255 253 247 / 92%);
+  color: #29251f;
+  font: inherit;
+  resize: vertical;
+}
+
+.v3-margin-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
+.v3-margin-editor button {
+  min-width: 0;
+  padding: 0.15rem;
+  border: 1px solid rgb(89 64 29 / 50%);
+  background: #fffaf0;
+  color: #352714;
+  font: 650 0.52rem/1.2 var(--v3-ui-font);
+}
+
 .v3-sheet-content h1,
 .v3-sheet-content h2,
 .v3-sheet-content h3,
@@ -1505,6 +1617,64 @@
   box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
 }
 
+.v3-annotation-dialog {
+  width: min(28rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 1rem;
+  overflow: auto;
+  border: 1px solid #8c7040;
+  border-radius: 0.45rem;
+  background: #17211f;
+  color: #f0e7d3;
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
+}
+
+.v3-annotation-dialog::backdrop {
+  background: rgb(4 8 8 / 58%);
+}
+
+.v3-annotation-dialog h2 {
+  margin: 0 3rem 0.6rem 0;
+}
+
+.v3-annotation-dialog blockquote {
+  margin: 0 0 0.7rem;
+  color: #d7c7a8;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.v3-annotation-dialog label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.v3-annotation-dialog textarea {
+  width: 100%;
+  padding: 0.55rem;
+  border: 1px solid rgb(211 179 116 / 32%);
+  background: #0d1312;
+  color: #f0e7d3;
+  font: 0.88rem/1.5 var(--v3-ui-font);
+}
+
+.v3-annotation-dialog [data-v3-annotation-dialog-group] button {
+  display: block;
+  width: 100%;
+  margin-block: 0.35rem;
+  text-align: start;
+}
+
+.v3-annotation-dialog [hidden] {
+  display: none !important;
+}
+
+.v3-marginalia-preferences {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin-block: 0.55rem;
+}
+
 .v3-explore-dialog::backdrop {
   background: rgb(4 8 8 / 78%);
 }
@@ -1807,6 +1977,44 @@
     width: 100%;
   }
 
+  .v3-spread-single .v3-marginalia-layer {
+    width: 1.35rem;
+  }
+
+  .v3-spread-single .v3-marginalia-note {
+    height: 1.35rem !important;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--v3-annotation-ink) 45%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--v3-page-paper) 88%, white);
+    color: transparent;
+    font-size: 0;
+    text-decoration: none;
+  }
+
+  .v3-spread-single .v3-marginalia-note::after {
+    color: var(--v3-annotation-ink);
+    content: "✎";
+    font: 700 0.8rem/1 var(--v3-annotation-font);
+  }
+
+  .v3-spread-single .v3-margin-editor {
+    position: fixed;
+    z-index: 20;
+    right: 0.25rem;
+    bottom: max(0.25rem, var(--v3-safe-area-bottom));
+    left: 0.25rem;
+    width: auto;
+    top: auto !important;
+    padding: 0.65rem;
+    font-size: 1rem;
+  }
+
+  .v3-spread-single .v3-margin-editor label,
+  .v3-spread-single .v3-margin-editor button {
+    font-size: 0.82rem;
+  }
+
   .v3-spread-single .v3-sheet-running {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1923,9 +2131,18 @@
 
   .v3-explore-dialog,
   .v3-appearance-dialog,
-  .v3-media-dialog {
+  .v3-media-dialog,
+  .v3-annotation-dialog {
     width: calc(100% - 0.5rem);
     max-height: calc(100dvh - 0.5rem);
+  }
+
+  .v3-annotation-dialog {
+    width: 100%;
+    max-width: none;
+    max-height: min(72dvh, 38rem);
+    margin: auto 0 0;
+    border-radius: 0.8rem 0.8rem 0 0;
   }
 
   .v3-explore-frame {

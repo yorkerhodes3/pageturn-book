@@ -221,13 +221,10 @@ test("supports keyboard entry, roving focus, Escape return, and annotate dispatc
   await page.keyboard.press("Alt+Shift+A");
   await page.keyboard.press("End");
   await page.keyboard.press("Enter");
-  const dialog = page.getByRole("dialog", { name: "Explore this book" });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.locator("[data-v3-selection-preview]")).toContainText(
-    selected,
-  );
+  const editor = page.getByRole("dialog", { name: "Add annotation" });
+  await expect(editor).toBeVisible();
   await expect(
-    dialog.getByRole("textbox", { name: "Note on selected text" }),
+    editor.getByRole("textbox", { name: "Note on selected text" }),
   ).toBeFocused();
   expect(
     await page.evaluate(
@@ -239,7 +236,7 @@ test("supports keyboard entry, roving focus, Escape return, and annotate dispatc
         ).__annotatedSelection,
     ),
   ).toBe(selected);
-  await dialog.getByRole("button", { name: "Close book tools" }).click();
+  await page.keyboard.press("Escape");
   await expect(paragraph).toBeFocused();
 });
 

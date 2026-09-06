@@ -509,6 +509,16 @@ const shellMarkup = `
             </button>
           </div>
         </div>
+        <div class="v3-marginalia-preferences">
+          <label>
+            <input type="checkbox" data-v3-show-marginalia checked>
+            <span>Show marginalia</span>
+          </label>
+          <label>
+            <input type="checkbox" data-v3-readable-marginalia>
+            <span>Use standard font for notes</span>
+          </label>
+        </div>
         <blockquote data-v3-selection-preview hidden></blockquote>
         <label class="v3-annotation-editor">
           <span>Note on selected text</span>
@@ -570,6 +580,37 @@ const shellMarkup = `
         </output>
       </section>
     </div>
+  </dialog>
+
+  <dialog
+    class="v3-annotation-dialog"
+    data-v3-annotation-dialog
+    aria-labelledby="v3-annotation-dialog-title"
+  >
+    <form method="dialog" class="v3-dialog-close">
+      <button type="submit" aria-label="Close annotation">Close</button>
+    </form>
+    <h2 id="v3-annotation-dialog-title" data-v3-annotation-dialog-title>
+      Annotation
+    </h2>
+    <blockquote data-v3-annotation-dialog-quote></blockquote>
+    <div data-v3-annotation-dialog-group hidden></div>
+    <label data-v3-annotation-dialog-editor>
+      <span>Full note</span>
+      <textarea
+        data-v3-annotation-dialog-note
+        rows="6"
+        maxlength="4000"
+      ></textarea>
+    </label>
+    <div class="v3-personal-actions" data-v3-annotation-dialog-actions>
+      <button type="button" data-v3-update-annotation>Save changes</button>
+      <button type="button" data-v3-delete-open-annotation>Delete</button>
+      <button type="button" data-v3-explore-open-annotation>
+        Open in Explore
+      </button>
+    </div>
+    <output data-v3-annotation-dialog-status role="status" aria-live="polite"></output>
   </dialog>
 `;
 

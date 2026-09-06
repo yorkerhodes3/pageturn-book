@@ -6,6 +6,7 @@ import {
 import type {
   PageTurnAppearanceInput,
   PageTurnAppearancePresetId,
+  PageTurnAnnotationAppearance,
   PageTurnBindingAppearance,
   PageTurnPageFanAppearance,
   PageTurnPaperPattern,
@@ -33,6 +34,7 @@ import {
   placePageTurnSelectionActions,
   type PageTurnRect,
 } from "./selection-actions.js";
+import { placePageTurnMarginalia } from "./marginalia.js";
 import {
   PAGE_TURN_ANNOTATION_BACKUP_MEDIA_TYPE,
   annotationMarkdown,
@@ -142,6 +144,7 @@ export type PageTurnBookOptions = Readonly<{
   keyboardScope?: "root" | "document";
   selectionActions?: boolean;
   selectionActionShortcut?: PageTurnSelectionActionShortcut | false;
+  annotationAppearance?: PageTurnAnnotationAppearance;
   urlMode?: "managed" | "none";
   updateDocumentTitle?: boolean;
 }>;
@@ -166,6 +169,8 @@ export type PageTurnBookHandle = Readonly<{
   setAppearance(
     appearance: PageTurnAppearanceInput | PageTurnAppearancePresetId,
   ): void;
+  getAnnotationAppearance(): Required<PageTurnAnnotationAppearance>;
+  setAnnotationAppearance(appearance: PageTurnAnnotationAppearance): void;
   destroy(): void;
 }>;
 
@@ -306,6 +311,16 @@ let currentAppearance = resolvePageTurnAppearance(
   baseAppearance,
   requestedAppearancePreset,
 );
+const defaultAnnotationAppearance: Required<PageTurnAnnotationAppearance> = {
+  fontFamily: '"Segoe Print", "Bradley Hand", cursive',
+  fontScale: 1,
+  inkColor: "#59401d",
+  showMarginalia: true,
+};
+let annotationAppearance: Required<PageTurnAnnotationAppearance> = {
+  ...defaultAnnotationAppearance,
+  ...options.annotationAppearance,
+};
 
 function requiredElement<T extends Element>(
   selector: string,
@@ -1459,6 +1474,45 @@ const saveAnnotation = requiredElement<HTMLButtonElement>(
 const annotationList = requiredElement<HTMLOListElement>(
   "[data-v3-annotation-list]",
 );
+const showMarginalia = requiredElement<HTMLInputElement>(
+  "[data-v3-show-marginalia]",
+);
+const readableMarginalia = requiredElement<HTMLInputElement>(
+  "[data-v3-readable-marginalia]",
+);
+const annotationDialog = requiredElement<HTMLDialogElement>(
+  "[data-v3-annotation-dialog]",
+);
+const annotationDialogTitle = requiredElement<HTMLElement>(
+  "[data-v3-annotation-dialog-title]",
+);
+const annotationDialogQuote = requiredElement<HTMLElement>(
+  "[data-v3-annotation-dialog-quote]",
+);
+const annotationDialogGroup = requiredElement<HTMLElement>(
+  "[data-v3-annotation-dialog-group]",
+);
+const annotationDialogEditor = requiredElement<HTMLElement>(
+  "[data-v3-annotation-dialog-editor]",
+);
+const annotationDialogNote = requiredElement<HTMLTextAreaElement>(
+  "[data-v3-annotation-dialog-note]",
+);
+const annotationDialogActions = requiredElement<HTMLElement>(
+  "[data-v3-annotation-dialog-actions]",
+);
+const updateAnnotation = requiredElement<HTMLButtonElement>(
+  "[data-v3-update-annotation]",
+);
+const deleteOpenAnnotation = requiredElement<HTMLButtonElement>(
+  "[data-v3-delete-open-annotation]",
+);
+const exploreOpenAnnotation = requiredElement<HTMLButtonElement>(
+  "[data-v3-explore-open-annotation]",
+);
+const annotationDialogStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-annotation-dialog-status]",
+);
 const exportAnnotations = requiredElement<HTMLButtonElement>(
   "[data-v3-export-annotations]",
 );
@@ -1546,6 +1600,9 @@ let personalStore: PageTurnPersonalStore | undefined;
 let personalBusy = false;
 let bookmarks: PageTurnBookmarkV1[] = [];
 let annotations: PageTurnAnnotationV2[] = [];
+let activeAnnotationId: string | undefined;
+let annotationReturnFocus: HTMLElement | undefined;
+let activeMarginEditor: HTMLFormElement | undefined;
 let pendingAnnotationImport: PageTurnAnnotationBackupV2 | undefined;
 let pendingSelection: V3Selection | undefined;
 let selectionCaptureVersion = 0;
@@ -1869,6 +1926,446 @@ function annotationLocation(annotation: PageTurnAnnotationV2): {
     : annotation.target.legacy;
 }
 
+function annotationText(annotation: PageTurnAnnotationV2): string {
+  return annotation.body?.value.trim() ?? "";
+}
+
+function marginaliaPreferenceKey(bookId: string): string {
+  return `ethical-tech-book-v3-marginalia:${bookId}`;
+}
+
+function applyAnnotationAppearance(): void {
+  const scale = Number.isFinite(annotationAppearance.fontScale)
+    ? Math.min(2, Math.max(0.75, annotationAppearance.fontScale))
+    : 1;
+  annotationAppearance = {
+    fontFamily:
+      annotationAppearance.fontFamily.trim() ||
+      defaultAnnotationAppearance.fontFamily,
+    fontScale: scale,
+    inkColor:
+      annotationAppearance.inkColor.trim() ||
+      defaultAnnotationAppearance.inkColor,
+    showMarginalia: annotationAppearance.showMarginalia,
+  };
+  reader.style.setProperty(
+    "--v3-annotation-font",
+    annotationAppearance.fontFamily,
+  );
+  reader.style.setProperty("--v3-annotation-scale", String(scale));
+  reader.style.setProperty(
+    "--v3-annotation-ink",
+    annotationAppearance.inkColor,
+  );
+  showMarginalia.checked = annotationAppearance.showMarginalia;
+  reader.dataset.v3ReadableMarginalia = String(readableMarginalia.checked);
+}
+
+function readMarginaliaPreferences(): void {
+  if (!manifest) {
+    return;
+  }
+  try {
+    const value = JSON.parse(
+      globalThis.localStorage.getItem(marginaliaPreferenceKey(manifest.bookId)) ??
+        "{}",
+    ) as { showMarginalia?: unknown; readableFont?: unknown };
+    if (typeof value.showMarginalia === "boolean") {
+      annotationAppearance = {
+        ...annotationAppearance,
+        showMarginalia: value.showMarginalia,
+      };
+    }
+    readableMarginalia.checked = value.readableFont === true;
+  } catch {
+    readableMarginalia.checked = false;
+  }
+  applyAnnotationAppearance();
+}
+
+function writeMarginaliaPreferences(): void {
+  if (!manifest) {
+    return;
+  }
+  try {
+    globalThis.localStorage.setItem(
+      marginaliaPreferenceKey(manifest.bookId),
+      JSON.stringify({
+        showMarginalia: showMarginalia.checked,
+        readableFont: readableMarginalia.checked,
+      }),
+    );
+  } catch {
+    personalStatus.value = "Marginalia preference could not be saved.";
+  }
+}
+
+function setAnnotationAppearance(value: PageTurnAnnotationAppearance): void {
+  annotationAppearance = { ...annotationAppearance, ...value };
+  applyAnnotationAppearance();
+  renderMarginalia();
+}
+
+function marginaliaLayer(
+  sheet: HTMLElement,
+  side: "left" | "right",
+  decorative: boolean,
+): HTMLElement {
+  const layer = createElement(
+    "aside",
+    `v3-marginalia-layer v3-marginalia-layer-${side}`,
+  );
+  layer.dataset.v3Marginalia = side;
+  if (decorative) {
+    layer.setAttribute("aria-hidden", "true");
+    layer.inert = true;
+  } else {
+    layer.setAttribute("aria-label", `${side} outer margin annotations`);
+  }
+  sheet.append(layer);
+  return layer;
+}
+
+function annotationRanges(
+  annotation: PageTurnAnnotationV2,
+  scope: ParentNode,
+): Range[] {
+  return annotation.target.state === "resolved"
+    ? pageTurnTextTargetRanges(
+        annotation.target.selector,
+        textSourceBlocks(annotation.target.selector.chapterId),
+        scope,
+      )
+    : [];
+}
+
+function renderMarginalia(
+  scope: ParentNode = stationary,
+  decorative = false,
+): void {
+  for (const existing of scope.querySelectorAll("[data-v3-marginalia]")) {
+    existing.remove();
+  }
+  if (!annotationAppearance.showMarginalia) {
+    return;
+  }
+  const compact = singlePageMedia.matches;
+  for (const sheet of scope.querySelectorAll<HTMLElement>(".v3-sheet")) {
+    const side = sheet.classList.contains("v3-sheet-left") ? "left" : "right";
+    const sheetBounds = sheet.getBoundingClientRect();
+    const content = sheet.querySelector<HTMLElement>(".v3-sheet-content");
+    const contentBounds = content?.getBoundingClientRect();
+    if (!content || sheetBounds.height <= 0 || !contentBounds) {
+      continue;
+    }
+    const attached = annotations.flatMap((annotation) => {
+      const note = annotationText(annotation);
+      if (
+        annotation.motivation !== "commenting" ||
+        note === "" ||
+        annotation.target.state !== "resolved"
+      ) {
+        return [];
+      }
+      let rectangles = annotationRanges(annotation, sheet)
+        .flatMap((range) => Array.from(range.getClientRects()))
+        .filter(({ width, height }) => width > 0 && height > 0);
+      if (rectangles.length === 0 && decorative) {
+        const anchor = annotation.target.selector.start.anchor;
+        const source = sheet.querySelector<HTMLElement>(
+          `[data-source-anchor="${CSS.escape(anchor)}"]`,
+        );
+        if (source) {
+          rectangles = [source.getBoundingClientRect()];
+        }
+      }
+      const first = rectangles[0];
+      return first
+        ? [
+            {
+              annotation,
+              note,
+              requestedTop: first.top - sheetBounds.top,
+            },
+          ]
+        : [];
+    });
+    if (attached.length === 0) {
+      continue;
+    }
+    const noteHeight = compact ? 22 : Math.max(38, sheetBounds.height * 0.1);
+    const placements = placePageTurnMarginalia(
+      attached.map(({ annotation, requestedTop }) => ({
+        id: annotation.annotationId,
+        requestedTop,
+        height: noteHeight,
+        createdAt: annotation.createdAt,
+      })),
+      {
+        top: Math.max(0, contentBounds.top - sheetBounds.top),
+        bottom: Math.min(
+          sheetBounds.height,
+          contentBounds.bottom - sheetBounds.top,
+        ),
+        gap: compact ? 5 : 8,
+        groupHeight: compact ? 22 : 28,
+      },
+    );
+    const layer = marginaliaLayer(sheet, side, decorative);
+    for (const placement of placements) {
+      if (placement.kind === "group") {
+        const node = createElement(
+          decorative ? "span" : "button",
+          "v3-marginalia-group",
+          `${placement.memberIds.length} notes`,
+        );
+        node.style.top = `${placement.top}px`;
+        node.style.height = `${placement.height}px`;
+        if (node instanceof HTMLButtonElement) {
+          node.type = "button";
+          node.dataset.v3AnnotationGroup = placement.memberIds.join(",");
+          node.setAttribute(
+            "aria-label",
+            `Open ${placement.memberIds.length} grouped annotations`,
+          );
+        }
+        layer.append(node);
+        continue;
+      }
+      const matched = attached.find(
+        ({ annotation }) => annotation.annotationId === placement.id,
+      );
+      if (!matched) {
+        continue;
+      }
+      const node = createElement(
+        decorative ? "span" : "button",
+        "v3-marginalia-note",
+        matched.note,
+      );
+      node.style.top = `${placement.top}px`;
+      node.style.height = `${placement.height}px`;
+      if (node instanceof HTMLButtonElement) {
+        node.type = "button";
+        node.dataset.v3AnnotationOpen = placement.id;
+        node.setAttribute("aria-label", `Open annotation: ${matched.note}`);
+      }
+      layer.append(node);
+    }
+  }
+}
+
+function rememberAnnotationFocus(target: HTMLElement | undefined): void {
+  if (!target?.isConnected) {
+    return;
+  }
+  selectionReturnTarget = target;
+  selectionReturnTargetHadTabindex = target.hasAttribute("tabindex");
+  if (!selectionReturnTargetHadTabindex) {
+    target.tabIndex = -1;
+  }
+  selectionFocusActive = true;
+}
+
+function closeMarginEditor(restoreFocus: boolean): void {
+  activeMarginEditor?.remove();
+  activeMarginEditor = undefined;
+  if (restoreFocus) {
+    dismissSelectionActions(true, true);
+  }
+}
+
+function openMarginEditor(
+  selection: V3Selection & Readonly<{ target: PageTurnTextTargetV1 }>,
+): void {
+  closeMarginEditor(false);
+  const sheet = selection.source?.closest<HTMLElement>(".v3-sheet");
+  if (!sheet) {
+    return;
+  }
+  const side = sheet.classList.contains("v3-sheet-left") ? "left" : "right";
+  const layer =
+    sheet.querySelector<HTMLElement>("[data-v3-marginalia]") ??
+    marginaliaLayer(sheet, side, false);
+  const sheetBounds = sheet.getBoundingClientRect();
+  const targetBounds =
+    selection.range?.getClientRects()[0] ??
+    selection.source?.getBoundingClientRect();
+  const form = createElement("form", "v3-margin-editor");
+  form.dataset.v3MarginEditor = "";
+  form.setAttribute("role", "dialog");
+  form.setAttribute("aria-label", "Add annotation");
+  form.style.top = `${Math.max(0, (targetBounds?.top ?? sheetBounds.top) - sheetBounds.top)}px`;
+  const label = createElement("label");
+  label.append("Note");
+  const note = createElement("textarea");
+  note.name = "note";
+  note.rows = 3;
+  note.maxLength = 4000;
+  note.required = true;
+  note.setAttribute("aria-label", "Note on selected text");
+  label.append(note);
+  const actions = createElement("div", "v3-margin-editor-actions");
+  const save = createElement("button", undefined, "Save");
+  save.type = "submit";
+  const cancel = createElement("button", undefined, "Cancel");
+  cancel.type = "button";
+  actions.append(save, cancel);
+  form.append(label, actions);
+  form.addEventListener(
+    "submit",
+    (event) => {
+      event.preventDefault();
+      void saveCurrentAnnotation(note.value, true);
+    },
+    { signal: lifecycle.signal },
+  );
+  note.addEventListener(
+    "input",
+    () => note.setCustomValidity(""),
+    { signal: lifecycle.signal },
+  );
+  cancel.addEventListener(
+    "click",
+    () => closeMarginEditor(true),
+    { signal: lifecycle.signal },
+  );
+  form.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMarginEditor(true);
+      }
+    },
+    { signal: lifecycle.signal },
+  );
+  layer.append(form);
+  activeMarginEditor = form;
+  requestAnimationFrame(() => note.focus({ preventScroll: true }));
+}
+
+function openAnnotationDetail(
+  annotationId: string,
+  trigger?: HTMLElement,
+): void {
+  const annotation = annotations.find(
+    ({ annotationId: candidate }) => candidate === annotationId,
+  );
+  if (!annotation) {
+    return;
+  }
+  activeAnnotationId = annotationId;
+  annotationReturnFocus = trigger;
+  annotationDialogTitle.textContent = "Annotation";
+  annotationDialogQuote.textContent = annotationLocation(annotation).quote;
+  annotationDialogGroup.hidden = true;
+  annotationDialogGroup.replaceChildren();
+  annotationDialogEditor.hidden = false;
+  annotationDialogActions.hidden = false;
+  annotationDialogNote.value = annotationText(annotation);
+  annotationDialogStatus.value = "";
+  if (!annotationDialog.open) {
+    annotationDialog.showModal();
+  }
+  requestAnimationFrame(() =>
+    annotationDialogNote.focus({ preventScroll: true }),
+  );
+}
+
+function openAnnotationGroup(
+  annotationIds: readonly string[],
+  trigger: HTMLElement,
+): void {
+  const grouped = annotationIds.flatMap((id) => {
+    const annotation = annotations.find(
+      ({ annotationId }) => annotationId === id,
+    );
+    return annotation ? [annotation] : [];
+  });
+  if (grouped.length === 0) {
+    return;
+  }
+  activeAnnotationId = undefined;
+  annotationReturnFocus = trigger;
+  annotationDialogTitle.textContent = `${grouped.length} notes`;
+  annotationDialogQuote.textContent =
+    "Choose a note to read, edit, or delete its complete text.";
+  annotationDialogEditor.hidden = true;
+  annotationDialogActions.hidden = true;
+  annotationDialogGroup.hidden = false;
+  annotationDialogGroup.replaceChildren(
+    ...grouped.map((annotation) => {
+      const button = createElement(
+        "button",
+        undefined,
+        annotationText(annotation),
+      );
+      button.type = "button";
+      button.dataset.v3GroupedAnnotation = annotation.annotationId;
+      return button;
+    }),
+  );
+  annotationDialogStatus.value = "";
+  annotationDialog.showModal();
+}
+
+async function updateCurrentAnnotation(): Promise<void> {
+  const annotation = annotations.find(
+    ({ annotationId }) => annotationId === activeAnnotationId,
+  );
+  const note = annotationDialogNote.value.trim();
+  if (!annotation || !personalStore || note === "") {
+    annotationDialogStatus.value = "Enter a note before saving.";
+    return;
+  }
+  const updated: PageTurnAnnotationV2 = {
+    ...annotation,
+    motivation: "commenting",
+    body: { format: "text/markdown", value: note },
+    updatedAt: new Date().toISOString(),
+  };
+  try {
+    await personalStore.putAnnotation(updated);
+    annotations = annotations.map((candidate) =>
+      candidate.annotationId === updated.annotationId ? updated : candidate,
+    );
+    annotationDialogStatus.value = "Annotation updated in this browser.";
+    renderMarginalia();
+    renderPersonalTextHighlights();
+    renderPersonalTools();
+  } catch (error) {
+    annotationDialogStatus.value =
+      error instanceof Error ? error.message : "Annotation could not be updated.";
+  }
+}
+
+async function deleteAnnotationById(annotationId: string): Promise<boolean> {
+  if (!manifest || !personalStore) {
+    return false;
+  }
+  try {
+    await personalStore.deleteAnnotation(
+      manifest.bookId,
+      manifest.editionId,
+      annotationId,
+    );
+    annotations = annotations.filter(
+      ({ annotationId: candidate }) => candidate !== annotationId,
+    );
+    renderMarginalia();
+    renderPersonalTextHighlights();
+    renderPersonalTools();
+    return true;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Annotation could not be deleted.";
+    annotationDialogStatus.value = message;
+    personalStatus.value = message;
+    return false;
+  }
+}
+
 function renderAnnotations(): void {
   selectionPreview.hidden = pendingSelection === undefined;
   selectionPreview.textContent = pendingSelection?.quote ?? "";
@@ -1882,6 +2379,7 @@ function renderAnnotations(): void {
     ...annotations.map((annotation) => {
       const location = annotationLocation(annotation);
       const item = createElement("li");
+      item.dataset.v3AnnotationItem = annotation.annotationId;
       const quote = createElement(
         "blockquote",
         undefined,
@@ -1906,6 +2404,12 @@ function renderAnnotations(): void {
       }
       if (annotation.body?.value.trim()) {
         item.append(createElement("p", undefined, annotation.body.value));
+        const edit = createElement("button", undefined, "Edit");
+        edit.type = "button";
+        edit.dataset.v3EditAnnotation = annotation.annotationId;
+        edit.disabled = !personalStore || personalBusy;
+        edit.setAttribute("aria-label", "Edit private annotation");
+        item.append(edit);
       }
       const remove = createElement("button", undefined, "Delete");
       remove.type = "button";
@@ -2437,7 +2941,8 @@ function captureSelectionCandidate(selection: V3SelectionCandidate): void {
 function onSelectionChange(): void {
   if (
     (selectionFocusActive &&
-      selectionActions.contains(document.activeElement)) ||
+      (selectionActions.contains(document.activeElement) ||
+        activeMarginEditor?.contains(document.activeElement))) ||
     (exploreDialog.open && pendingSelection?.target !== undefined)
   ) {
     return;
@@ -2703,9 +3208,8 @@ function annotateSelectedText(): void {
   dispatchSelectionAction("annotate", current.detail);
   selectionActions.hidden = true;
   selectionEntry.hidden = true;
-  selectionFocusActive = true;
-  openExploreDialog(true);
-  requestAnimationFrame(() => annotationNote.focus({ preventScroll: true }));
+  rememberAnnotationFocus(current.selection.source);
+  openMarginEditor(current.selection);
 }
 
 function activateSelectionAction(action: string | undefined): void {
@@ -2777,7 +3281,10 @@ async function toggleCurrentBookmark(): Promise<void> {
   );
 }
 
-async function saveCurrentAnnotation(): Promise<void> {
+async function saveCurrentAnnotation(
+  noteValue = annotationNote.value,
+  fromMargin = false,
+): Promise<void> {
   if (!manifest || !pendingSelection?.target || !personalStore) {
     return;
   }
@@ -2786,18 +3293,29 @@ async function saveCurrentAnnotation(): Promise<void> {
   if (!selectionTarget) {
     return;
   }
-  const note = annotationNote.value.trim();
+  const marginNote = fromMargin
+    ? activeMarginEditor?.querySelector<HTMLTextAreaElement>("textarea")
+    : undefined;
+  marginNote?.setCustomValidity("");
+  const note = noteValue.trim();
+  if (note === "") {
+    if (fromMargin) {
+      marginNote?.setCustomValidity("Enter a note before saving.");
+      activeMarginEditor?.reportValidity();
+    } else {
+      personalStatus.value = "Enter a note before saving.";
+    }
+    return;
+  }
   const timestamp = new Date().toISOString();
   const annotation: PageTurnAnnotationV2 = {
     annotationId: crypto.randomUUID(),
     schemaVersion: 2,
     bookId: manifest.bookId,
     editionId: manifest.editionId,
-    motivation: note === "" ? "highlighting" : "commenting",
+    motivation: "commenting",
     target: { state: "resolved", selector: selectionTarget },
-    ...(note === ""
-      ? {}
-      : { body: { format: "text/markdown" as const, value: note } }),
+    body: { format: "text/markdown", value: note },
     style: { color: "yellow", treatment: "highlight" },
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -2812,10 +3330,18 @@ async function saveCurrentAnnotation(): Promise<void> {
       await personalStore.putAnnotation(annotation);
       annotations.push(annotation);
       annotationNote.value = "";
+      activeMarginEditor?.remove();
+      activeMarginEditor = undefined;
       selectionCaptureVersion += 1;
       pendingSelection = undefined;
       document.getSelection()?.removeAllRanges();
-      renderStationary("none");
+      renderMarginalia();
+      renderPersonalTextHighlights();
+      if (selectionReturnTarget?.isConnected && selectionFocusActive) {
+        selectionReturnTarget.focus({ preventScroll: true });
+      }
+      clearSelectionReturnTarget();
+      renderControls();
     },
   );
 }
@@ -3052,20 +3578,18 @@ function onExploreDialogClick(event: MouseEvent): void {
       "Deleting annotation...",
       "Annotation deleted.",
       async () => {
-        if (!manifest || !personalStore) {
-          return;
-        }
-        await personalStore.deleteAnnotation(
-          manifest.bookId,
-          manifest.editionId,
-          annotationRemoval,
-        );
-        annotations = annotations.filter(
-          ({ annotationId }) => annotationId !== annotationRemoval,
-        );
-        renderStationary("none");
+        await deleteAnnotationById(annotationRemoval);
       },
     );
+    return;
+  }
+  const annotationEdit = event.target.closest<HTMLElement>(
+    "[data-v3-edit-annotation]",
+  )?.dataset.v3EditAnnotation;
+  if (annotationEdit) {
+    const trigger = event.target.closest<HTMLElement>("[data-v3-edit-annotation]");
+    exploreDialog.close();
+    openAnnotationDetail(annotationEdit, trigger ?? undefined);
   }
 }
 
@@ -3821,6 +4345,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
           ),
         ]),
   );
+  renderMarginalia();
   renderSharedTextHighlight();
   renderPersonalTextHighlights();
   const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
@@ -4326,6 +4851,8 @@ function beginTurn(
   const curve = createElement("div", "v3-fold-curve");
   curve.setAttribute("aria-hidden", "true");
   turnLayer.replaceChildren(revealed, moving, shadow, curve);
+  renderMarginalia(moving, true);
+  renderMarginalia(revealed, true);
 
   activeTurn = {
     direction,
@@ -5677,6 +6204,7 @@ async function initializePersonalData(): Promise<void> {
   }
   renderPersonalTools();
   renderPersonalTextHighlights();
+  renderMarginalia();
 }
 
 async function initialize(): Promise<void> {
@@ -5690,6 +6218,7 @@ async function initialize(): Promise<void> {
   }
   mediaTreatment = mediaTreatmentFrom(query);
   applyPublicationIdentity(manifest);
+  readMarginaliaPreferences();
   applyFontScale(readBookFontScale(manifest.bookId, 1));
   renderContents();
   chapterStates = manifest.chapters.map((chapter, index) => ({
@@ -5910,6 +6439,30 @@ stationary.addEventListener(
   listenerOptions,
 );
 stationary.addEventListener("click", onStationaryClick, listenerOptions);
+stationary.addEventListener(
+  "click",
+  (event) => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const note = event.target.closest<HTMLElement>(
+      "[data-v3-annotation-open]",
+    );
+    if (note?.dataset.v3AnnotationOpen) {
+      event.preventDefault();
+      openAnnotationDetail(note.dataset.v3AnnotationOpen, note);
+      return;
+    }
+    const group = event.target.closest<HTMLElement>(
+      "[data-v3-annotation-group]",
+    );
+    if (group?.dataset.v3AnnotationGroup) {
+      event.preventDefault();
+      openAnnotationGroup(group.dataset.v3AnnotationGroup.split(","), group);
+    }
+  },
+  listenerOptions,
+);
 previous.addEventListener(
   "click",
   () => void automaticTurn("backward"),
@@ -5990,6 +6543,106 @@ resetAppearance.addEventListener(
 exploreButton.addEventListener("click", () => openExploreDialog(), listenerOptions);
 exploreDialog.addEventListener("click", onExploreDialogClick, listenerOptions);
 exploreDialog.addEventListener("close", onExploreDialogClose, listenerOptions);
+showMarginalia.addEventListener(
+  "change",
+  () => {
+    annotationAppearance = {
+      ...annotationAppearance,
+      showMarginalia: showMarginalia.checked,
+    };
+    applyAnnotationAppearance();
+    writeMarginaliaPreferences();
+    renderMarginalia();
+  },
+  listenerOptions,
+);
+readableMarginalia.addEventListener(
+  "change",
+  () => {
+    applyAnnotationAppearance();
+    writeMarginaliaPreferences();
+  },
+  listenerOptions,
+);
+annotationDialog.addEventListener(
+  "click",
+  (event) => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const grouped = event.target.closest<HTMLElement>(
+      "[data-v3-grouped-annotation]",
+    )?.dataset.v3GroupedAnnotation;
+    if (grouped) {
+      openAnnotationDetail(grouped, annotationReturnFocus);
+    }
+  },
+  listenerOptions,
+);
+annotationDialog.addEventListener(
+  "close",
+  () => {
+    let returnFocus =
+      annotationReturnFocus?.isConnected &&
+      !annotationReturnFocus.closest("dialog:not([open])")
+        ? annotationReturnFocus
+        : undefined;
+    if (!returnFocus && activeAnnotationId) {
+      returnFocus =
+        stationary.querySelector<HTMLElement>(
+          `[data-v3-annotation-open="${CSS.escape(activeAnnotationId)}"]`,
+        ) ?? undefined;
+      returnFocus ??= Array.from(
+        stationary.querySelectorAll<HTMLElement>("[data-v3-annotation-group]"),
+      ).find((candidate) =>
+        candidate.dataset.v3AnnotationGroup
+          ?.split(",")
+          .includes(activeAnnotationId ?? ""),
+      );
+    }
+    if (returnFocus) {
+      returnFocus.focus({ preventScroll: true });
+    }
+    annotationReturnFocus = undefined;
+    activeAnnotationId = undefined;
+  },
+  listenerOptions,
+);
+updateAnnotation.addEventListener(
+  "click",
+  () => void updateCurrentAnnotation(),
+  listenerOptions,
+);
+deleteOpenAnnotation.addEventListener(
+  "click",
+  () => {
+    const id = activeAnnotationId;
+    if (id) {
+      void deleteAnnotationById(id).then((deleted) => {
+        if (deleted) {
+          annotationDialog.close();
+        }
+      });
+    }
+  },
+  listenerOptions,
+);
+exploreOpenAnnotation.addEventListener(
+  "click",
+  () => {
+    const id = activeAnnotationId;
+    annotationDialog.close();
+    openExploreDialog();
+    requestAnimationFrame(() =>
+      annotationList
+        .querySelector<HTMLElement>(
+          `[data-v3-annotation-item="${CSS.escape(id ?? "")}"] button`,
+        )
+        ?.focus({ preventScroll: true }),
+    );
+  },
+  listenerOptions,
+);
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
   void runSearch(searchInput.value).catch((error: unknown) => {
@@ -6284,6 +6937,8 @@ return {
   ready,
   getAppearance: () => currentAppearance,
   setAppearance: setBookAppearance,
+  getAnnotationAppearance: () => ({ ...annotationAppearance }),
+  setAnnotationAppearance,
   destroy,
 };
 }

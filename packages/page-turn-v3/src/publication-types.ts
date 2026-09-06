@@ -40,6 +40,13 @@ export type PageTurnTypographyAppearance = Readonly<{
   dropCap: boolean;
 }>;
 
+export type PageTurnAnnotationAppearance = Readonly<{
+  fontFamily?: string;
+  fontScale?: number;
+  inkColor?: string;
+  showMarginalia?: boolean;
+}>;
+
 export type PageTurnPageFanAppearance = Readonly<{
   edgeStyle: "plain" | "gold" | "red" | "marbled";
   stripeDark: string;

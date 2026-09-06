@@ -81,7 +81,8 @@ examples.
 - Durable book, edition, chapter, and source-anchor locations.
 - Hierarchical contents and demand-loaded search.
 - Local bookmarks, resume restart, accessible contextual selection actions,
-  exact highlights and annotations, selected-text sharing, and Markdown export.
+  exact highlights, collision-managed outer-margin annotations with responsive
+  markers and local preferences, selected-text sharing, and Markdown export.
 - Deferred Off, On-page, and Pop-out publication media treatments.
 - Typed material, paper, typography, binding, and curvature configuration with
   live appearance presets from the Style gear.

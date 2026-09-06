@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Approved and implemented for versioned local storage |
+| Status | Approved and implemented for versioned local storage and marginalia |
 | Accounts | None |
 | Remote annotation service | None |
 | Analytics | None |
@@ -16,6 +16,7 @@ V3 may store the following by publication and edition:
 
 - last semantic chapter and source anchor;
 - typography preference;
+- marginalia visibility and readable-font preferences (no note content);
 - bookmarks containing chapter, anchor, label, and timestamp;
 - version 2 annotations containing a resolved exact selector or quarantined
   unresolved legacy target, optional Markdown note, style, and timestamps.
@@ -47,6 +48,8 @@ reader. V3 does not upload the file or choose a remote destination.
 - Unsupported cross-page selections are rejected.
 - Saved locations use stable source anchors rather than responsive page
   numbers.
+- Marginalia is an absolute visual layer and does not change semantic body
+  pagination. Hiding it does not delete annotations.
 - Notes and bookmarks are edition-scoped, schema-versioned, and validated when
   read or imported.
 - A reader can delete individual bookmarks and annotations.
@@ -73,6 +76,10 @@ reader. V3 does not upload the file or choose a remote destination.
 - Contextual selection controls use an accessible toolbar, do not take focus
   after pointer selection, retain native selection, and provide keyboard entry,
   roving focus, Escape return, touch-safe placement, and a visible Undo action.
+- Only stationary page marginalia is exposed to accessibility APIs. Moving and
+  revealed page copies are inert, `aria-hidden`, have no IDs or controls, and
+  the complete note remains available through a standard-font dialog/sheet and
+  Explore. Grouped collisions expose an explicit note count.
 
 An explicit pre-share preview remains required if sharing moves beyond the
 browser/OS share surface.

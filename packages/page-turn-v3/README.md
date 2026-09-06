@@ -164,6 +164,12 @@ const reader = createPageTurnBook({
   appearanceControls: true,
   appearancePreset: "modern-lab",
   selectionActions: true,
+  annotationAppearance: {
+    fontFamily: '"Segoe Print", "Bradley Hand", cursive',
+    fontScale: 1,
+    inkColor: "#59401d",
+    showMarginalia: true,
+  },
 });
 ```
 
@@ -182,6 +188,15 @@ Share appears only when `urlMode: "managed"` or `locationUrl` provides durable
 links, and Annotate appears after local IndexedDB storage is available.
 Highlights store a resolved `PageTurnAnnotationV2` locally and render the exact
 range.
+
+Annotate opens a compact editor in the selected range's physical outer margin.
+Saved commenting records remain exact-target `PageTurnAnnotationV2` values in
+IndexedDB. Wide stationary pages show collision-managed 2–4 line handwritten
+previews in the left outer margin of left pages and right outer margin of right
+pages. Narrow pages use a marker and bottom sheet without reducing body width.
+The full note is always available to keyboard and assistive technology users,
+with edit, delete, and Explore integration. Page-turn copies are visual-only,
+inert, and `aria-hidden`.
 
 Pointer and touch selection retain the browser's native selection. Keyboard
 selection is announced, and `Alt+Shift+A` (`Option+Shift+A` on macOS) moves
@@ -244,6 +259,13 @@ Available presets are:
 `appearanceControls: true` exposes the same fields through the compact Style
 gear and session-only overlay. Typeface and line-height changes repaginate
 around the current source anchor; paint-only changes apply immediately.
+
+`annotationAppearance` independently configures marginalia. The zero-download
+handwriting fallback is `"Segoe Print", "Bradley Hand", cursive`; Explore also
+provides a persistent readable standard-font preference and **Show marginalia**
+toggle. Hosts can update this surface through
+`reader.setAnnotationAppearance()` and inspect it with
+`reader.getAnnotationAppearance()`.
 
 The appearance object also drives `mountBookshelf()`. A shelf volume can choose
 an optional pose without changing its interaction or action model:
@@ -312,6 +334,8 @@ visual-sharing work packages.
 
 The reader stores versioned bookmarks and annotation records in native
 IndexedDB. Resume and typography settings remain separate in `localStorage`.
+Marginalia visibility and readable-font preferences also use `localStorage`;
+they contain no note text.
 Explore provides Markdown export, version 2 JSON backup/import, and
 current-edition or all-edition research-data deletion.
 

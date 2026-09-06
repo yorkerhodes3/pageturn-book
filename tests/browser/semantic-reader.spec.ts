@@ -1639,17 +1639,11 @@ test("shares selected text and exports local-only annotations", async ({
   await page
     .getByRole("button", { name: "Annotate selected text" })
     .click();
-  const dialog = page.getByRole("dialog", { name: "Explore this book" });
-  await expect(dialog.getByText("Nothing is uploaded")).toBeVisible();
-  await expect(dialog.locator("[data-v3-selection-preview]")).toContainText(
-    selected,
-  );
-  await dialog
+  const marginEditor = page.getByRole("dialog", { name: "Add annotation" });
+  await marginEditor
     .getByRole("textbox", { name: "Note on selected text" })
     .fill("Connect this passage to institutional accountability.");
-  await dialog.getByRole("button", { name: "Save selected text" }).click();
-  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
-  await dialog.getByRole("button", { name: "Close book tools" }).click();
+  await marginEditor.getByRole("button", { name: "Save" }).click();
   await expect
     .poll(() =>
       page.evaluate(
@@ -1664,6 +1658,9 @@ test("shares selected text and exports local-only annotations", async ({
     .toBe(true);
 
   await page.getByRole("button", { name: "Explore" }).click();
+  const dialog = page.getByRole("dialog", { name: "Explore this book" });
+  await expect(dialog.getByText("Nothing is uploaded")).toBeVisible();
+  await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(1);
   const downloadPromise = page.waitForEvent("download");
   await dialog.getByRole("button", { name: "Export Markdown" }).click();
   const download = await downloadPromise;
@@ -1972,15 +1969,27 @@ test("transactionally migrates beta annotations and quarantines unresolved text"
   await expect(dialog.locator("[data-v3-annotation-list] > li")).toHaveCount(2);
   await expect(dialog.getByText(/Unresolved: this note/)).toHaveCount(1);
   await expect(
-    page.locator(
-      `[data-v3-stationary] [data-source-anchor="${legacy.unresolvedAnchor}"].v3-annotated`,
-    ),
+    page.getByRole("button", { name: "Open annotation: Keep this note" }),
   ).toHaveCount(0);
   await expect(
-    page.locator(
-      `[data-v3-stationary] [data-source-anchor="${legacy.anchor}"].v3-annotated`,
-    ).first(),
+    page.getByRole("button", {
+      name: "Open annotation: Resolved beta note",
+    }),
   ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          (
+            CSS as typeof CSS & {
+              highlights?: Readonly<{
+                get(name: string): { size: number } | undefined;
+              }>;
+            }
+          ).highlights?.get("v3-personal-annotations")?.size ?? 0,
+      ),
+    )
+    .toBeGreaterThan(0);
   expect(
     await page.evaluate(() =>
       localStorage.getItem(

@@ -38,6 +38,12 @@ export {
   type ProjectedPageTurn,
 } from "./page-turn-projection.js";
 export {
+  placePageTurnMarginalia,
+  type PageTurnMarginaliaPlacement,
+  type PageTurnMarginaliaPlacementItem,
+  type PageTurnMarginaliaPlacementOptions,
+} from "./marginalia.js";
+export {
   annotationMarkdown,
   createPageTurnAnnotationBackup,
   openPageTurnPersonalStore,
@@ -97,6 +103,7 @@ export {
 export type {
   PageTurnAppearanceInput,
   PageTurnAppearancePresetId,
+  PageTurnAnnotationAppearance,
   PageTurnBindingAppearance,
   PageTurnCoverAppearance,
   PageTurnGeometryAppearance,
@@ -152,6 +159,8 @@ export function createPageTurnBook(
     ready: controller.ready,
     getAppearance: controller.getAppearance,
     setAppearance: controller.setAppearance,
+    getAnnotationAppearance: controller.getAnnotationAppearance,
+    setAnnotationAppearance: controller.setAnnotationAppearance,
     destroy() {
       controller.destroy();
       shell.destroy();
