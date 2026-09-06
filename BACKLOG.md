@@ -2357,11 +2357,19 @@ reference-styling, and back-navigation pass.
 | V3-410 | P2 | Complete | Added hierarchical manifest contents and abortable, bounded-concurrency search that fetches chapter text only after a query. |
 | V3-411 | P2 | Complete | Added edition-scoped local bookmarks and a visible start-from-beginning action on automatic resume. |
 | V3-412 | P3 | Complete (beta) | Added explicit selected-text sharing plus local-only quote/note storage, deletion, navigation, and Markdown export after privacy review. |
-| V3-413 | P2 | Ready | Migrate beta bookmark/annotation arrays to the versioned IndexedDB schemas, add whole-publication deletion/import, and complete assistive-technology review. |
+| V3-413 | P2 | Ready | After V3-418 defines the exact-range target, migrate beta data into the resolved/unresolved version-2 IndexedDB schema; enforce the per-edition data cap; add transactional current-edition/all-edition bookmark-and-annotation deletion plus validated JSON backup/import with previewed merge/replace/conflict behavior; and complete assistive-technology review before V3-419/V3-420 persistence ships. |
 | V3-414 | P0 | Complete | Made the repository root the V3 workspace, extracted `@ethical-tech/pageturn-book` 3.0.0 with mount/destroy and injected manifest configuration, added packed clean-consumer and browser examples, and isolated V2-only packages under `compat/v2/`. |
 | V3-415 | P1 | Complete | Extracted typed material, paper, typography, binding, gutter, edge, and fold configuration; added seven live Style presets and session-only test controls. |
 | V3-416 | P2 | Complete | Added data-driven horizontal shelf stacks and an antique open display volume on a CSS lectern without shipping unlicensed reference images. |
 | V3-417 | P3 | Future | Prototype the optional hybrid Three.js presentation adapter described in [THREEJS-PLAN.md](./THREEJS-PLAN.md): integrate PageTurn books into host-owned Three.js scenes for shelf geometry, bindings, pickup/carry, and presentation while keeping full-book reading semantic and ensuring the lightweight V3 SDK never installs or downloads Three.js. |
+| V3-418 | P1 | Ready | Implement the pure versioned exact-range selector and URL foundation in [READER-INTERACTION-FEATURE-PLAN.md](./READER-INTERACTION-FEATURE-PLAN.md), including Unicode-normalized offsets, quote context, edition/content identity, checksums, deterministic encoding, and restoration. |
+| V3-419 | P1 | Ready | Add the contextual Copy, Share, Highlight, and Annotate action pill with adaptive pointer/touch positioning and accessible toolbar keyboard behavior. |
+| V3-420 | P1 | Ready | Render exact-range annotations as collision-managed handwritten outer-margin notes, with responsive markers, inert page-turn clones, readable-font preference, and Explore/export integration. |
+| V3-421 | P1 | Ready | Add edition-bound exact quote URLs and a share-policy-gated preview composer with deterministic book-style visual clipping, citation, Web Share image enhancement, and capability-checked copy/save fallbacks. |
+| V3-422 | P1 | Ready | Add the specified host resolver contract, canonical identity normalization, deterministic catalog/course-reading resolution, card-first local-edition treatment with kind-specific approved local rights, canonical-source access, provenance, ambiguity handling, and no-fetch external cards. |
+| V3-423 | P2 | Ready | Add explicit allowlisted external-preview provider adapters with sandbox, referrer, host CSP documentation, Permissions Policy, consent, the nonce/origin/source/schema-validated readiness protocol or honest bounded timeout, direct-link fallback, and lifecycle controls. |
+| V3-424 | P1 | Ready | After V3-404/V3-406 rights metadata, separate media placement from visual style and add runtime original, book-toned, monochrome, and gated duotone treatments with independent fail-closed transformation/export permissions and color-semantics safeguards. |
+| V3-425 | P1 | Ready | After V3-405 and the feature packages, complete the plan's numeric privacy, rights, accessibility, browser, static-host, embedded-host, payload, memory, share-render, interaction-latency, and low-end frame gates before promotion. |
 
 These V3 items are independent of V2-232 through V2-238, which still govern
 whether the same geometry path is promoted into the V2 production reader.
@@ -2371,6 +2379,12 @@ an isolated prototype, must integrate with an existing host-owned Three.js
 scene, and must pass the dependency, semantic-reading, accessibility, fallback,
 payload, and performance gates in
 [THREEJS-PLAN.md](./THREEJS-PLAN.md) before any production promotion.
+
+V3-418 through V3-425 are implementation-ready work packages governed by
+[READER-INTERACTION-FEATURE-PLAN.md](./READER-INTERACTION-FEATURE-PLAN.md).
+They share one exact-range selector model and must preserve the lightweight,
+semantic, static-hosted V3 SDK. Execution begins with V3-418, then the V3-413
+storage migration, before persistent contextual highlights or marginalia.
 
 ## 22. Epic E16 - future product capabilities
 

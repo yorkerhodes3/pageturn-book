@@ -1092,17 +1092,55 @@ before production promotion.
 ### 17.1 Annotation model
 
 ```ts
+type PageTurnTextTargetV1 = {
+  version: 1;
+  bookId: string;
+  editionId: string;
+  chapterId: string;
+  chapterContentHash: string;
+  start: {
+    anchor: string;
+    offset: number;
+  };
+  end: {
+    anchor: string;
+    offset: number;
+  };
+  quote: {
+    exact: string;
+    prefix: string;
+    suffix: string;
+  };
+  checksum: string;
+};
+
+type StoredAnnotationTarget =
+  | {
+      state: "resolved";
+      selector: PageTurnTextTargetV1;
+    }
+  | {
+      state: "unresolved";
+      legacy: {
+        chapterId: string;
+        anchor: string;
+        quote: string;
+      };
+      reason:
+        | "edition-mismatch"
+        | "missing-anchor"
+        | "quote-mismatch"
+        | "ambiguous-quote"
+        | "invalid-legacy-record";
+    };
+
 type Annotation = {
   annotationId: string;
-  schemaVersion: 1;
+  schemaVersion: 2;
   bookId: string;
   editionId: string;
   motivation: "highlighting" | "commenting";
-  target: {
-    chapterId: string;
-    anchor: string;
-    selector: TextSelector;
-  };
+  target: StoredAnnotationTarget;
   body?: {
     format: "text/markdown";
     value: string;
@@ -1120,10 +1158,18 @@ The model aligns with the selector concepts in the
 [Web Annotation Data Model](https://www.w3.org/TR/annotation-model/) without
 requiring a remote annotation server.
 
+The exact selector normalization, checksum, and token encoding are specified in
+[READER-INTERACTION-FEATURE-PLAN.md](./READER-INTERACTION-FEATURE-PLAN.md).
 The V3 beta stores chapter, source anchor, exact quote, optional plain-text
-note, and timestamp. Context/position selectors, Markdown rendering, update
-timestamps, style choices, and IndexedDB migration remain V3-413 production
-work.
+note, and timestamp. V3-418 defines the selector implementation; V3-413 owns
+the transactional migration into this version-2 IndexedDB schema. A legacy
+record that cannot be resolved is stored in the `unresolved` branch and never
+silently converted into an approximate target.
+
+Selector resolution returns either a resolved range with the successful
+strategy or an unresolved reason. Source-anchor fallback may navigate a reader
+near an unresolved target, but it does not convert the target to resolved and
+does not paint or persist an exact highlight.
 
 ### 17.2 Creation
 
@@ -1176,10 +1222,18 @@ beyond preference-sized data.
 | ANN-STORE-003 | A failed migration does not delete the existing database. |
 | ANN-STORE-004 | Storage quota or availability errors are visible and do not claim success. |
 | ANN-STORE-005 | No annotation content leaves the device in R1. |
+| ANN-STORE-006 | Serialized annotation data is capped at 16 MiB per book and edition; saves that exceed the cap are rejected visibly before writing. |
+| ANN-STORE-007 | Current-edition deletion atomically removes bookmarks and annotations for one book/edition key range. |
+| ANN-STORE-008 | All-edition publication deletion atomically removes bookmarks and annotations for every edition of one book. |
+
+Resume locations and typography preferences remain separate `localStorage`
+reading state and are removed only by the separately labeled **Reset reading
+state** action. Search indexes are memory-only. The UI does not claim one
+transaction across IndexedDB and `localStorage`.
 
 ## 18. Annotation export
 
-### 18.1 Export format
+### 18.1 Human-readable export format
 
 R1 exports UTF-8 Markdown with YAML front matter or an equivalent documented
 metadata block.
@@ -1217,6 +1271,65 @@ My note in Markdown.
 | EXP-005 | Export escapes untrusted text so it cannot alter metadata structure unexpectedly. |
 | EXP-006 | Export works without a backend. |
 | EXP-007 | An empty export state is explained rather than downloading a misleading success file. |
+
+Markdown is a human-readable, one-way export. It is not accepted as an
+annotation backup/import format because it cannot preserve the complete exact
+target and record identity without ambiguous parsing.
+
+### 18.3 Round-trip backup and import
+
+Round-trip backup uses the media type:
+
+```text
+application/vnd.ethical-tech.pageturn-annotations+json;version=2
+```
+
+Envelope:
+
+```ts
+type AnnotationBackupV2 = {
+  schemaVersion: 2;
+  exportedAt: string;
+  publication: {
+    bookId: string;
+    editionId: string;
+    title: string;
+  };
+  annotations: Annotation[];
+};
+```
+
+Import behavior:
+
+- The user explicitly selects a local file.
+- Maximum accepted file size is 20 MiB. PageTurn-produced backups remain below
+  this limit because stored annotation data is capped at 16 MiB per book and
+  edition.
+- The complete envelope and every record are validated before writing.
+- Unknown versions, malformed records, and book/edition mismatches reject the
+  complete import.
+- A preview reports new records, identical duplicates, ID conflicts, and
+  unresolved records.
+- Merge is the default.
+- An identical record with the same ID is skipped.
+- A different record with the same ID keeps the existing record unless the user
+  explicitly chooses **Import as copy**, which assigns a new UUID.
+- Replace applies only to the same book and edition and requires explicit
+  confirmation.
+- Valid unresolved records remain unresolved and do not render against page
+  text.
+- The selected Merge or Replace operation is one IndexedDB transaction.
+- Validation or transaction failure leaves the existing database unchanged.
+- Import performs no network request.
+
+| ID | Requirement |
+|---|---|
+| IMP-001 | JSON backup round-trips every resolved exact target, unresolved legacy target, note body, style, and timestamp. |
+| IMP-002 | Import validation is fail-closed and produces no partial writes. |
+| IMP-003 | Merge, duplicate, conflict, and replace behavior is deterministic and previewed before commit. |
+| IMP-004 | A different publication or edition is rejected rather than silently remapped. |
+| IMP-005 | Unresolved imported records remain available for review without attaching to uncertain text. |
+| IMP-006 | Import and backup work without a backend. |
 
 ## 19. Legacy facsimile fallback
 
