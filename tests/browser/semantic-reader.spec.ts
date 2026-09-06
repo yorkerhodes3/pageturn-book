@@ -1582,6 +1582,8 @@ test("shares selected text and exports local-only annotations", async ({
     chapterId:
       node.closest<HTMLElement>(".v3-sheet")?.dataset.v3Chapter ?? "",
     anchor: (node as HTMLElement).dataset.sourceAnchor ?? "",
+    sourceStart: Number((node as HTMLElement).dataset.v3SourceStart),
+    sourceEnd: Number((node as HTMLElement).dataset.v3SourceEnd),
   }));
   const selected = await selectLeadingText(page, paragraph);
   expect(selected.length).toBeGreaterThan(10);
@@ -1612,8 +1614,25 @@ test("shares selected text and exports local-only annotations", async ({
   expect(parsedSharedUrl.searchParams.get("chapter")).toBe(
     selectedLocation.chapterId,
   );
-  expect(decodeURIComponent(parsedSharedUrl.hash.slice(1))).toBe(
-    selectedLocation.anchor,
+  expect(parsedSharedUrl.searchParams.get("edition")).toBe("2026-07");
+  const selectionToken = parsedSharedUrl.searchParams.get("selection") ?? "";
+  expect(selectionToken).toMatch(/^v1\./);
+  const tokenPayload = JSON.parse(
+    Buffer.from(selectionToken.slice(3), "base64url").toString("utf8"),
+  ) as {
+    sa: string;
+    so: number;
+    ea: string;
+    eo: number;
+  };
+  expect(tokenPayload).toMatchObject({
+    sa: selectedLocation.anchor,
+    ea: selectedLocation.anchor,
+  });
+  expect(tokenPayload.so).toBeGreaterThanOrEqual(selectedLocation.sourceStart);
+  expect(tokenPayload.eo).toBeLessThanOrEqual(selectedLocation.sourceEnd);
+  expect(decodeURIComponent(parsedSharedUrl.hash.slice(1))).toMatch(
+    new RegExp(`^${selectedLocation.anchor}:~:text=`),
   );
 
   await selectLeadingText(page, paragraph);
@@ -1661,10 +1680,491 @@ test("shares selected text and exports local-only annotations", async ({
     "data-v3-ready",
     "true",
   );
-  await expect(page).toHaveURL(
-    new RegExp(
-      `chapter=${encodeURIComponent(selectedLocation.chapterId)}.*#${selectedLocation.anchor}$`,
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-shared-target",
+    "resolved",
+  );
+  const restoredUrl = new URL(page.url());
+  expect(restoredUrl.searchParams.get("edition")).toBe("2026-07");
+  expect(restoredUrl.searchParams.get("chapter")).toBe(
+    selectedLocation.chapterId,
+  );
+  expect(restoredUrl.searchParams.get("selection")).toMatch(/^v1\./);
+  expect(decodeURIComponent(restoredUrl.hash.slice(1))).toBe(
+    selectedLocation.anchor,
+  );
+  const restoredQuote = await page.evaluate(() => {
+    const registry = (
+      CSS as typeof CSS & {
+        highlights?: Readonly<{
+          get(name: string): Iterable<Range> | undefined;
+        }>;
+      }
+    ).highlights;
+    return Array.from(registry?.get("v3-shared-quote") ?? [])
+      .map((range) => range.toString())
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  });
+  expect(restoredQuote).toBe(selected);
+});
+
+test("keeps reading available when an exact quote token is malformed", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&edition=2026-07" +
+        "&chapter=executive-summary&selection=v1.invalid#executive-summary",
     ),
+  );
+
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-shared-target",
+    "unresolved",
+  );
+  await expect(page.locator("[data-v3-share-status]")).toContainText(
+    "Shared quote unavailable",
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Executive Summary" }),
+  ).toBeVisible();
+});
+
+test("restores an exact quote from a continuation page", async ({ page }) => {
+  await page.route("**/chapters/colab/index.html", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: (data: ShareData) => {
+        (
+          globalThis as typeof globalThis & {
+            __sharedV3Continuation?: ShareData;
+          }
+        ).__sharedV3Continuation = data;
+        return Promise.resolve();
+      },
+    });
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai#responsible-ai",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  const fragments = page.locator(
+    "[data-v3-stationary] [data-source-anchor][data-v3-source-start]",
+  );
+  let fragmentIndex = -1;
+  for (let turn = 0; turn < 8; turn += 1) {
+    fragmentIndex = await fragments.evaluateAll((nodes) =>
+      nodes.findIndex(
+        (node) =>
+          Number((node as HTMLElement).dataset.v3SourceStart) > 0 &&
+          (node.textContent?.trim().length ?? 0) > 24,
+      ),
+    );
+    if (fragmentIndex >= 0) {
+      break;
+    }
+    const next = page.getByRole("button", { name: "Next spread" });
+    if (await next.isDisabled()) {
+      break;
+    }
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  if (fragmentIndex < 0) {
+    throw new Error("Expected a visible continuation source fragment");
+  }
+  const fragment = fragments.nth(fragmentIndex);
+  const fragmentState = await fragment.evaluate((node) => ({
+    anchor: (node as HTMLElement).dataset.sourceAnchor ?? "",
+    start: Number((node as HTMLElement).dataset.v3SourceStart),
+    end: Number((node as HTMLElement).dataset.v3SourceEnd),
+  }));
+  const selected = await selectLeadingText(page, fragment, 38);
+  const shareSelection = page.getByRole("button", {
+    name: "Share selected text and location",
+  });
+  await expect(shareSelection).toBeEnabled();
+  await shareSelection.click();
+  const sharedUrl = await page.evaluate(
+    () =>
+      (
+        globalThis as typeof globalThis & {
+          __sharedV3Continuation?: ShareData;
+        }
+      ).__sharedV3Continuation?.url ?? "",
+  );
+  const shared = new URL(sharedUrl);
+  const token = JSON.parse(
+    Buffer.from(
+      (shared.searchParams.get("selection") ?? "").slice(3),
+      "base64url",
+    ).toString("utf8"),
+  ) as { sa: string; so: number; eo: number };
+  expect(token.sa).toBe(fragmentState.anchor);
+  expect(token.so).toBeGreaterThanOrEqual(fragmentState.start);
+  expect(token.so).toBeLessThan(fragmentState.end);
+
+  await page.goto(sharedUrl);
+  await expect(reader).toHaveAttribute("data-v3-shared-target", "resolved");
+  const highlighted = await page.evaluate(() =>
+    Array.from(
+      (
+        CSS as typeof CSS & {
+          highlights?: Readonly<{
+            get(name: string): Iterable<Range> | undefined;
+          }>;
+        }
+      ).highlights?.get("v3-shared-quote") ?? [],
+    )
+      .map((range) => range.toString())
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
+  expect(highlighted).toBe(selected);
+  const visibleTargetRange = await page
+    .locator(
+      `[data-v3-stationary] [data-source-anchor="${fragmentState.anchor}"]`,
+    )
+    .evaluateAll((nodes, offset) =>
+      nodes.some((node) => {
+        const element = node as HTMLElement;
+        return (
+          Number(element.dataset.v3SourceStart) <= offset &&
+          offset < Number(element.dataset.v3SourceEnd)
+        );
+      }), token.so);
+  expect(visibleTargetRange).toBe(true);
+
+  await page.evaluate(
+    ({ delayedUrl, currentUrl }) => {
+      globalThis.history.pushState({}, "", delayedUrl);
+      globalThis.dispatchEvent(new PopStateEvent("popstate"));
+      globalThis.setTimeout(() => {
+        globalThis.history.pushState({}, "", currentUrl);
+        globalThis.dispatchEvent(new PopStateEvent("popstate"));
+      }, 10);
+    },
+    {
+      delayedUrl: route(
+        "/v3/?book=what-is-ethical-ai&chapter=colab#colab",
+      ),
+      currentUrl: sharedUrl,
+    },
+  );
+  await expect(reader).toHaveAttribute("data-v3-shared-target", "resolved");
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("selection"))
+    .toMatch(/^v1\./);
+  expect(
+    await page.evaluate(
+      () =>
+        Array.from(
+          (
+            CSS as typeof CSS & {
+              highlights?: Readonly<{
+                get(name: string): Iterable<Range> | undefined;
+              }>;
+            }
+          ).highlights?.get("v3-shared-quote") ?? [],
+        ).length,
+    ),
+  ).toBeGreaterThan(0);
+
+  await page.evaluate(() => {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("selection", "v1.invalid");
+    globalThis.history.pushState({}, "", url);
+    globalThis.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await expect(reader).toHaveAttribute("data-v3-shared-target", "unresolved");
+  expect(
+    await page.evaluate(
+      () =>
+        Array.from(
+          (
+            CSS as typeof CSS & {
+              highlights?: Readonly<{
+                get(name: string): Iterable<Range> | undefined;
+              }>;
+            }
+          ).highlights?.get("v3-shared-quote") ?? [],
+        ).length,
+    ),
+  ).toBe(0);
+});
+
+test("keeps split-list source offsets aligned with canonical text", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai#responsible-ai",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  for (let increase = 0; increase < 3; increase += 1) {
+    const version = Number(
+      await reader.getAttribute("data-v3-pagination-version"),
+    );
+    await page.getByRole("button", { name: "Increase book text size" }).click();
+    await expect
+      .poll(() =>
+        reader
+          .getAttribute("data-v3-pagination-version")
+          .then((value) => Number(value)),
+      )
+      .toBeGreaterThan(version);
+  }
+  const sourceLists = await page.evaluate(async () => {
+    const response = await fetch(
+      new URL(
+        "../book/what-is-ethical-ai/2026-07/chapters/responsible-ai/index.html",
+        globalThis.location.href,
+      ),
+    );
+    const parsed = new DOMParser().parseFromString(
+      await response.text(),
+      "text/html",
+    );
+    return Object.fromEntries(
+      Array.from(parsed.querySelectorAll<HTMLElement>("ul[id], ol[id]")).map(
+        (list) => [
+          list.id,
+          (list.textContent ?? "")
+            .normalize("NFC")
+            .replace(/\s+/gu, " ")
+            .trim(),
+        ],
+      ),
+    );
+  });
+  let checked = 0;
+  let continuations = 0;
+  const mismatches: string[] = [];
+  for (let turn = 0; turn < 12; turn += 1) {
+    const visible = await page
+      .locator(
+        "[data-v3-stationary] :is(ul, ol)[data-source-anchor][data-v3-source-start]",
+      )
+      .evaluateAll((lists, canonical) =>
+        lists.map((list) => {
+          const element = list as HTMLElement;
+          const anchor = element.dataset.sourceAnchor ?? "";
+          const start = Number(element.dataset.v3SourceStart);
+          const end = Number(element.dataset.v3SourceEnd);
+          const source = canonical[anchor] ?? "";
+          const expected = Array.from(source).slice(start, end).join("");
+          const actual = (element.textContent ?? "")
+            .normalize("NFC")
+            .replace(/\s+/gu, " ")
+            .trim();
+          return { anchor, start, expected, actual };
+        }), sourceLists);
+    checked += visible.length;
+    continuations += visible.filter(({ start }) => start > 0).length;
+    mismatches.push(
+      ...visible
+        .filter(({ expected, actual }) => expected !== actual)
+        .map(
+          ({ anchor, start, expected, actual }) =>
+            `${anchor}@${start}: ${JSON.stringify(expected)} != ${JSON.stringify(actual)}`,
+        ),
+    );
+    const next = page.getByRole("button", { name: "Next spread" });
+    if (
+      (await next.isDisabled()) ||
+      (await page.locator("[data-v3-chapter-select]").inputValue()) !==
+        "responsible-ai"
+    ) {
+      break;
+    }
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  expect(checked).toBeGreaterThan(0);
+  expect(continuations).toBeGreaterThan(0);
+  expect(mismatches).toEqual([]);
+});
+
+test("shares a selection across both pages of one chapter spread", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "share", {
+      configurable: true,
+      value: (data: ShareData) => {
+        (
+          globalThis as typeof globalThis & {
+            __sharedV3CrossPage?: ShareData;
+          }
+        ).__sharedV3CrossPage = data;
+        return Promise.resolve();
+      },
+    });
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai#responsible-ai",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  for (let increase = 0; increase < 3; increase += 1) {
+    const version = Number(
+      await reader.getAttribute("data-v3-pagination-version"),
+    );
+    await page.getByRole("button", { name: "Increase book text size" }).click();
+    await expect
+      .poll(() =>
+        reader
+          .getAttribute("data-v3-pagination-version")
+          .then((value) => Number(value)),
+      )
+      .toBeGreaterThan(version);
+  }
+  let sharedAnchor = "";
+  for (let turn = 0; turn < 10; turn += 1) {
+    const spreadState = await page.evaluate(() => {
+      const left = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          "[data-v3-stationary] .v3-sheet-left [data-source-anchor]",
+        ),
+      ).at(-1);
+      const right = document.querySelector<HTMLElement>(
+        "[data-v3-stationary] .v3-sheet-right [data-source-anchor]",
+      );
+      return {
+        chapters: Array.from(
+          document.querySelectorAll<HTMLElement>(
+            "[data-v3-stationary] .v3-sheet",
+          ),
+          (sheet) => sheet.dataset.v3Chapter,
+        ),
+        leftAnchor: left?.dataset.sourceAnchor ?? "",
+        rightAnchor: right?.dataset.sourceAnchor ?? "",
+      };
+    });
+    if (
+      spreadState.chapters.length === 2 &&
+      spreadState.chapters.every(
+        (chapter) => chapter === "responsible-ai",
+      ) &&
+      spreadState.leftAnchor !== "" &&
+      spreadState.leftAnchor === spreadState.rightAnchor
+    ) {
+      sharedAnchor = spreadState.leftAnchor;
+      break;
+    }
+    const next = page.getByRole("button", { name: "Next spread" });
+    if (await next.isDisabled()) {
+      break;
+    }
+    const before = await page.locator("[data-v3-counter]").textContent();
+    await next.click();
+    await expect
+      .poll(() => page.locator("[data-v3-counter]").textContent())
+      .not.toBe(before);
+  }
+  if (sharedAnchor === "") {
+    throw new Error("Expected one source block split across both pages");
+  }
+  const selected = await page.evaluate(() => {
+    const left = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "[data-v3-stationary] .v3-sheet-left [data-source-anchor]",
+      ),
+    ).at(-1);
+    const right = document.querySelector<HTMLElement>(
+      "[data-v3-stationary] .v3-sheet-right [data-source-anchor]",
+    );
+    if (
+      !left ||
+      !right ||
+      left.closest<HTMLElement>(".v3-sheet")?.dataset.v3Chapter !==
+        "responsible-ai" ||
+      right.closest<HTMLElement>(".v3-sheet")?.dataset.v3Chapter !==
+        "responsible-ai" ||
+      left.dataset.sourceAnchor !== right.dataset.sourceAnchor
+    ) {
+      throw new Error("Expected a same-anchor two-page responsible-AI spread");
+    }
+    const textNode = (element: HTMLElement, fromEnd: boolean) => {
+      const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+      );
+      const nodes: Text[] = [];
+      for (
+        let node = walker.nextNode();
+        node !== null;
+        node = walker.nextNode()
+      ) {
+        if ((node.textContent?.trim().length ?? 0) > 0) {
+          nodes.push(node as Text);
+        }
+      }
+      const node = fromEnd ? nodes.at(-1) : nodes[0];
+      if (!node) {
+        throw new Error("Expected selectable spread text");
+      }
+      return node;
+    };
+    const startText = textNode(left, true);
+    const endText = textNode(right, false);
+    const range = document.createRange();
+    range.setStart(startText, Math.max(0, startText.length - 16));
+    range.setEnd(endText, Math.min(18, endText.length));
+    const selection = document.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    document.dispatchEvent(new Event("selectionchange"));
+    return selection?.toString().replace(/\s+/g, " ").trim() ?? "";
+  });
+  expect(selected.length).toBeGreaterThan(10);
+  const shareSelection = page.getByRole("button", {
+    name: "Share selected text and location",
+  });
+  await expect(shareSelection).toBeEnabled();
+  await shareSelection.click();
+  const share = await page.evaluate(
+    () =>
+      (
+        globalThis as typeof globalThis & {
+          __sharedV3CrossPage?: ShareData;
+        }
+      ).__sharedV3CrossPage,
+  );
+  const sharedText = share?.text?.replace(/\s+/g, " ").trim() ?? "";
+  expect(sharedText.length).toBeGreaterThan(10);
+  expect(sharedText).not.toContain("Chapter page");
+  expect(sharedText).not.toContain("RESPONSIBLE AI");
+  expect(new URL(share?.url ?? "").searchParams.get("selection")).toMatch(
+    /^v1\./,
   );
 });
 

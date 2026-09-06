@@ -102,4 +102,5 @@ export type PageTurnSemanticChapter = Readonly<{
   title: string;
   href: string;
   firstAnchor: string;
+  contentHash: string;
 }>;

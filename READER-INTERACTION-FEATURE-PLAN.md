@@ -1311,7 +1311,7 @@ Benchmark protocol:
 
 **Priority:** P1
 
-**Status:** Ready
+**Status:** Complete
 
 **Depends on:** Existing source anchors
 

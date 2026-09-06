@@ -259,6 +259,36 @@ import { solvePageTurn } from "@ethical-tech/pageturn-book/geometry";
 import { projectPageTurn } from "@ethical-tech/pageturn-book/projection";
 ```
 
+### Exact text targets
+
+V3 also exports its versioned exact-range foundation for hosts that need stable
+quote links or annotation targets:
+
+```ts
+import {
+  capturePageTurnTextTarget,
+  createPageTurnTextTarget,
+  decodePageTurnTextTarget,
+  encodePageTurnTextTarget,
+  pageTurnTextTargetRanges,
+  pageTurnTextTargetUrl,
+  resolvePageTurnTextTarget,
+  resolvePageTurnTextTargetToken,
+} from "@ethical-tech/pageturn-book";
+```
+
+Targets bind Unicode-normalized source-block offsets and quote context to a
+book, immutable edition, chapter content hash, and deterministic checksum. The
+compact URL token is capped at 512 bytes. V3 selected-text sharing now adds the
+edition, token, source-anchor fallback, and standard Text Fragment to its
+outgoing URL; opening that URL restores a temporary exact highlight after the
+chapter loads.
+
+See
+[`READER-INTERACTION-FEATURE-PLAN.md`](../../READER-INTERACTION-FEATURE-PLAN.md)
+for the selector contract and the dependent contextual-action, marginalia, and
+visual-sharing work packages.
+
 ## Runtime behavior
 
 - Semantic HTML remains canonical and selectable.

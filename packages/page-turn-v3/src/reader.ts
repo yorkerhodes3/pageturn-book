@@ -38,10 +38,25 @@ import {
   type V3Annotation,
   type V3Bookmark,
 } from "./personal.js";
+import {
+  capturePageTurnTextTarget,
+  normalizePageTurnText,
+  pageTurnTextOffsetAt,
+  pageTurnTextSegmentRange,
+  pageTurnTextTargetRanges,
+  pageTurnTextTargetUrl,
+  resolvePageTurnTextTargetToken,
+  type PageTurnTextSourceBlock,
+  type PageTurnDomTextTargetInput,
+  type PageTurnTextTargetV1,
+} from "./text-target.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
   anchor: string;
+  sourceText: string;
+  sourceStart: number;
+  sourceEnd: number;
   chapterTitle: string;
   chapterLabel: string;
   chapterStart: boolean;
@@ -49,7 +64,7 @@ type SemanticBlock = Readonly<{
 
 type V3Chapter = Pick<
   PageTurnSemanticChapter,
-  "chapterId" | "title" | "href" | "firstAnchor"
+  "chapterId" | "title" | "href" | "firstAnchor" | "contentHash"
 >;
 
 type V3TocEntry = Readonly<{
@@ -140,6 +155,14 @@ type V3Selection = Readonly<{
   chapterId: string;
   anchor: string;
   quote: string;
+  target?: PageTurnTextTargetV1;
+}>;
+
+type V3SelectionCandidate = Readonly<{
+  chapterId: string;
+  anchor: string;
+  quote: string;
+  input: PageTurnDomTextTargetInput;
 }>;
 
 type PrototypePage = Readonly<{
@@ -201,6 +224,8 @@ const query = managesUrl
   : new URLSearchParams();
 const requestedBookId = options.bookId;
 const requestedChapterId = options.chapterId ?? query.get("chapter");
+const requestedEditionId = managesUrl ? query.get("edition") : null;
+const requestedSelectionToken = managesUrl ? query.get("selection") : null;
 const mediaConfig = options.media;
 const fetcher = options.fetch ?? globalThis.fetch;
 const requestController = new AbortController();
@@ -384,10 +409,17 @@ function mediaFigureBlock(
     open.setAttribute("aria-label", `Open ${figure.caption}`);
     node.append(open);
   }
-  node.append(createElement("figcaption", undefined, figure.caption));
+  const caption = createElement("figcaption", undefined, figure.caption);
+  const sourceText = normalizePageTurnText(figure.caption);
+  caption.dataset.sourceAnchor = anchor;
+  applySourceRange(caption, 0, Array.from(sourceText).length);
+  node.append(caption);
   return {
     node,
     anchor,
+    sourceText,
+    sourceStart: 0,
+    sourceEnd: Array.from(sourceText).length,
     chapterTitle: chapterState.chapter.title,
     chapterLabel: chapterLabelForChapter(chapterState.chapter),
     chapterStart: false,
@@ -634,6 +666,10 @@ function parseV3Manifest(value: unknown): PageTurnBookManifest {
         parsed.firstAnchor,
         `renditions.semantic.chapters[${index}].firstAnchor`,
       ),
+      contentHash: stringValue(
+        parsed.contentHash,
+        `renditions.semantic.chapters[${index}].contentHash`,
+      ),
     };
   });
   const tocValue = root.tableOfContents;
@@ -797,6 +833,15 @@ function markLocalChapterLinks(node: HTMLElement): void {
   }
 }
 
+function applySourceRange(
+  node: HTMLElement,
+  sourceStart: number,
+  sourceEnd: number,
+): void {
+  node.dataset.v3SourceStart = String(sourceStart);
+  node.dataset.v3SourceEnd = String(sourceEnd);
+}
+
 function semanticBlocks(
   article: HTMLElement,
   chapter: V3Chapter,
@@ -828,19 +873,27 @@ function semanticBlocks(
     )?.[1];
     const chapterLabel = chapterLabelForChapter(chapter, headingText);
     if (child.matches("p") && (child.textContent?.length ?? 0) > 680) {
-      sentenceRanges(child.textContent ?? "").forEach((range, index) => {
+      const rawText = child.textContent ?? "";
+      const sourceText = normalizePageTurnText(rawText);
+      sentenceRanges(rawText).forEach((range, index) => {
         const paragraph = cloneTextRange(
           child,
           range.start,
           range.end,
           index === 0,
         );
+        const sourceStart = pageTurnTextOffsetAt(rawText, range.start);
+        const sourceEnd = pageTurnTextOffsetAt(rawText, range.end);
         paragraph.dataset.sourceAnchor = anchor;
+        applySourceRange(paragraph, sourceStart, sourceEnd);
         markLeadingReferenceMarker(paragraph);
         markLocalChapterLinks(paragraph);
         blocks.push({
           node: paragraph,
           anchor,
+          sourceText,
+          sourceStart,
+          sourceEnd,
           chapterTitle: chapter.title,
           chapterLabel,
           chapterStart: false,
@@ -856,12 +909,17 @@ function semanticBlocks(
         "",
       );
     }
+    const sourceText = normalizePageTurnText(clone.textContent ?? "");
     clone.dataset.sourceAnchor = anchor;
+    applySourceRange(clone, 0, Array.from(sourceText).length);
     markLeadingReferenceMarker(clone);
     markLocalChapterLinks(clone);
     blocks.push({
       node: clone,
       anchor,
+      sourceText,
+      sourceStart: 0,
+      sourceEnd: Array.from(sourceText).length,
       chapterTitle: chapter.title,
       chapterLabel,
       chapterStart:
@@ -1356,12 +1414,15 @@ let preferredAnchor:
   | Readonly<{ chapterId: string; anchor: string }>
   | undefined;
 let locationNavigationVersion = 0;
+let historyRestoreVersion = 0;
 let failureReported = false;
 let pendingTurn = false;
 let mediaReturnFocus: HTMLElement | undefined;
 let bookmarks: V3Bookmark[] = [];
 let annotations: V3Annotation[] = [];
 let pendingSelection: V3Selection | undefined;
+let selectionCaptureVersion = 0;
+let sharedTextTarget: PageTurnTextTargetV1 | undefined;
 let searchRecordsPromise: Promise<readonly V3SearchRecord[]> | undefined;
 let searchController: AbortController | undefined;
 let resumedFromStorage = false;
@@ -1648,8 +1709,8 @@ function renderBookmarks(): void {
 function renderAnnotations(): void {
   selectionPreview.hidden = pendingSelection === undefined;
   selectionPreview.textContent = pendingSelection?.quote ?? "";
-  annotationNote.disabled = pendingSelection === undefined;
-  saveAnnotation.disabled = pendingSelection === undefined;
+  annotationNote.disabled = pendingSelection?.target === undefined;
+  saveAnnotation.disabled = pendingSelection?.target === undefined;
   exportAnnotations.disabled =
     annotations.length === 0 || !canCreateDurableLinks;
   annotationList.replaceChildren(
@@ -1692,9 +1753,131 @@ function selectionElement(node: Node | null): Element | undefined {
     : node?.parentElement ?? undefined;
 }
 
-function currentTextSelection(): V3Selection | undefined {
+function textSourceBlocks(chapterId: string): PageTurnTextSourceBlock[] {
+  const chapterState = chapterStates.find(
+    ({ chapter }) => String(chapter.chapterId) === chapterId,
+  );
+  if (!chapterState) {
+    return [];
+  }
+  const result: PageTurnTextSourceBlock[] = [];
+  const byAnchor = new Map<string, string>();
+  for (const block of chapterState.blocks ?? []) {
+    const existing = byAnchor.get(block.anchor);
+    if (existing !== undefined && existing !== block.sourceText) {
+      throw new Error(
+        `V3 source anchor has inconsistent text: ${block.anchor}`,
+      );
+    }
+    if (existing === undefined) {
+      result.push({ anchor: block.anchor, text: block.sourceText });
+      byAnchor.set(block.anchor, block.sourceText);
+    }
+  }
+  for (const figure of mediaConfig?.figures.filter(
+    ({ chapterId: candidate }) => candidate === chapterId,
+  ) ?? []) {
+    const source = {
+      anchor: `v3-media-${figure.id}`,
+      text: normalizePageTurnText(figure.caption),
+    };
+    const replacementAnchors = figure.replaceAnchors ?? [];
+    if (replacementAnchors.length > 0) {
+      const index = result.findIndex(({ anchor }) =>
+        replacementAnchors.includes(anchor),
+      );
+      if (index < 0) {
+        throw new Error(
+          `V3 figure ${figure.id} has no selector replacement anchor`,
+        );
+      }
+      result.splice(index, 0, source);
+      continue;
+    }
+    if (!figure.afterAnchor) {
+      throw new Error(`V3 figure ${figure.id} has no selector insertion anchor`);
+    }
+    let index = result.length - 1;
+    while (index >= 0 && result[index]?.anchor !== figure.afterAnchor) {
+      index -= 1;
+    }
+    if (index < 0) {
+      throw new Error(
+        `V3 figure ${figure.id} has no selector anchor ${figure.afterAnchor}`,
+      );
+    }
+    result.splice(index + 1, 0, source);
+  }
+  return result;
+}
+
+type HighlightRegistryLike = Readonly<{
+  set(name: string, highlight: unknown): void;
+  delete(name: string): boolean;
+}>;
+
+type HighlightConstructorLike = new (...ranges: Range[]) => unknown;
+
+function clearSharedTextHighlight(): void {
+  const css = globalThis.CSS as typeof CSS & {
+    highlights?: HighlightRegistryLike;
+  };
+  css.highlights?.delete("v3-shared-quote");
+  for (const element of stationary.querySelectorAll<HTMLElement>(
+    "[data-v3-shared-range]",
+  )) {
+    element.replaceWith(...Array.from(element.childNodes));
+  }
+}
+
+function clearSharedTextTarget(): void {
+  sharedTextTarget = undefined;
+  delete reader.dataset.v3SharedTarget;
+  clearSharedTextHighlight();
+}
+
+function renderSharedTextHighlight():
+  | "highlighted"
+  | "unavailable"
+  | "unsupported" {
+  clearSharedTextHighlight();
+  if (!sharedTextTarget) {
+    return "unavailable";
+  }
+  const ranges = pageTurnTextTargetRanges(
+    sharedTextTarget,
+    textSourceBlocks(sharedTextTarget.chapterId),
+    stationary,
+  );
+  if (ranges.length === 0) {
+    return "unavailable";
+  }
+  const css = globalThis.CSS as typeof CSS & {
+    highlights?: HighlightRegistryLike;
+  };
+  const HighlightConstructor = (
+    globalThis as typeof globalThis & {
+      Highlight?: HighlightConstructorLike;
+    }
+  ).Highlight;
+  if (css.highlights && HighlightConstructor) {
+    css.highlights.set(
+      "v3-shared-quote",
+      new HighlightConstructor(...ranges),
+    );
+    return "highlighted";
+  }
+  return "unsupported";
+}
+
+function currentTextSelection(): V3SelectionCandidate | undefined {
   const selection = document.getSelection();
-  if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+  if (
+    !manifest ||
+    !selection ||
+    selection.isCollapsed ||
+    selection.rangeCount === 0
+  ) {
     return undefined;
   }
   const range = selection.getRangeAt(0);
@@ -1706,23 +1889,83 @@ function currentTextSelection(): V3Selection | undefined {
   const endSheet = end?.closest<HTMLElement>(
     "[data-v3-stationary] .v3-sheet",
   );
-  if (!startSheet || startSheet !== endSheet) {
+  if (
+    !startSheet ||
+    !endSheet ||
+    startSheet.dataset.v3Chapter === undefined ||
+    startSheet.dataset.v3Chapter !== endSheet.dataset.v3Chapter
+  ) {
     return undefined;
   }
-  const quote = selection.toString().replace(/\s+/g, " ").trim();
-  if (quote.length < 2 || quote.length > 2_000) {
+  const quote = normalizePageTurnText(selection.toString());
+  const quoteLength = Array.from(quote).length;
+  if (quoteLength < 2 || quoteLength > 2_000) {
     return undefined;
   }
   const source = start?.closest<HTMLElement>("[data-source-anchor]");
   const anchor = source?.dataset.sourceAnchor ?? startSheet.dataset.v3Anchor;
   const chapterId = startSheet.dataset.v3Chapter;
-  return anchor && chapterId ? { chapterId, anchor, quote } : undefined;
+  const chapter = manifest.chapters.find(
+    ({ chapterId: candidate }) => String(candidate) === chapterId,
+  );
+  const blocks = chapterId ? textSourceBlocks(chapterId) : [];
+  return anchor && chapterId && chapter && blocks.length > 0
+    ? {
+        chapterId,
+        anchor,
+        quote,
+        input: {
+          bookId: manifest.bookId,
+          editionId: manifest.editionId,
+          chapterId,
+          chapterContentHash: chapter.contentHash,
+          blocks,
+          range: range.cloneRange(),
+          scope: stationary,
+        },
+      }
+    : undefined;
 }
 
 function onSelectionChange(): void {
   const selection = currentTextSelection();
   if (selection) {
-    pendingSelection = selection;
+    const version = ++selectionCaptureVersion;
+    pendingSelection = {
+      chapterId: selection.chapterId,
+      anchor: selection.anchor,
+      quote: selection.quote,
+    };
+    void capturePageTurnTextTarget(selection.input)
+      .then((target) => {
+        if (destroyed || version !== selectionCaptureVersion) {
+          return;
+        }
+        pendingSelection = {
+          chapterId: selection.chapterId,
+          anchor: target.start.anchor,
+          quote: target.quote.exact,
+          target,
+        };
+        renderControls();
+        if (exploreDialog.open) {
+          renderAnnotations();
+        }
+      })
+      .catch((error: unknown) => {
+        if (destroyed || version !== selectionCaptureVersion) {
+          return;
+        }
+        pendingSelection = undefined;
+        shareStatus.value =
+          error instanceof Error
+            ? `Selection unavailable: ${error.message}`
+            : "Selection unavailable";
+        renderControls();
+        if (exploreDialog.open) {
+          renderAnnotations();
+        }
+      });
   }
   renderSelectionControls();
   if (exploreDialog.open) {
@@ -1773,6 +2016,7 @@ function saveCurrentAnnotation(): void {
   });
   writeAnnotations(manifest.bookId, manifest.editionId, annotations);
   annotationNote.value = "";
+  selectionCaptureVersion += 1;
   pendingSelection = undefined;
   document.getSelection()?.removeAllRanges();
   renderAnnotations();
@@ -1984,7 +2228,10 @@ function loadedChapterCount(): number {
 }
 
 function decodeLocationHash(hash = globalThis.location.hash): string | undefined {
-  const encoded = hash.startsWith("#") ? hash.slice(1) : hash;
+  const [encoded = ""] = (hash.startsWith("#") ? hash.slice(1) : hash).split(
+    ":~:",
+    1,
+  );
   if (encoded === "") {
     return undefined;
   }
@@ -2080,21 +2327,27 @@ function currentReadingLocation(): PageTurnBookLocation | undefined {
 function readingLocationUrl(
   location: PageTurnBookLocation | undefined,
   preserveContext: boolean,
+  selection?: V3Selection,
 ): URL {
   if (!manifest) {
     throw new Error("V3 cannot create a location before loading a publication");
   }
   if (!managesUrl && location && options.locationUrl) {
-    return new URL(
+    const url = new URL(
       options.locationUrl(location).toString(),
       globalThis.location.href,
     );
+    return selection?.target
+      ? pageTurnTextTargetUrl(url, selection.target)
+      : url;
   }
   const url = new URL(globalThis.location.href);
   if (!preserveContext) {
     url.search = "";
   }
   url.searchParams.set("book", manifest.bookId);
+  url.searchParams.delete("edition");
+  url.searchParams.delete("selection");
   if (location) {
     url.searchParams.set("chapter", location.chapterId);
     url.hash = location.anchor;
@@ -2102,7 +2355,9 @@ function readingLocationUrl(
     url.searchParams.delete("chapter");
     url.hash = "";
   }
-  return url;
+  return selection?.target
+    ? pageTurnTextTargetUrl(url, selection.target)
+    : url;
 }
 
 function syncCurrentLocation(update: LocationUpdate): void {
@@ -2115,8 +2370,22 @@ function syncCurrentLocation(update: LocationUpdate): void {
     return;
   }
   const location = currentReadingLocation();
+  const sharedSelection =
+    sharedTextTarget &&
+    location?.chapterId === sharedTextTarget.chapterId &&
+    location.anchor === sharedTextTarget.start.anchor
+      ? {
+          chapterId: sharedTextTarget.chapterId,
+          anchor: sharedTextTarget.start.anchor,
+          quote: sharedTextTarget.quote.exact,
+          target: sharedTextTarget,
+        }
+      : undefined;
+  if (sharedTextTarget && !sharedSelection) {
+    clearSharedTextTarget();
+  }
   if (managesUrl) {
-    const url = readingLocationUrl(location, true);
+    const url = readingLocationUrl(location, true, sharedSelection);
     if (url.href !== globalThis.location.href) {
       if (update === "push") {
         globalThis.history.pushState({ v3Location: true }, "", url);
@@ -2141,10 +2410,21 @@ function renderFontControls(): void {
 }
 
 function renderSelectionControls(): void {
-  shareButton.textContent = pendingSelection ? "Share selection" : "Share";
+  const selectionPending =
+    pendingSelection !== undefined && pendingSelection.target === undefined;
+  shareButton.textContent =
+    selectionPending
+      ? "Preparing selection"
+      : pendingSelection
+        ? "Share selection"
+        : "Share";
   shareButton.setAttribute(
     "aria-label",
-    pendingSelection ? "Share selected text and location" : "Share location",
+    selectionPending
+      ? "Preparing selected text"
+      : pendingSelection
+        ? "Share selected text and location"
+        : "Share location",
   );
 }
 
@@ -2517,7 +2797,8 @@ function renderControls(): void {
     pendingTurn ||
     activeTurn !== undefined ||
     sharing ||
-    manifest === undefined;
+    manifest === undefined ||
+    (pendingSelection !== undefined && pendingSelection.target === undefined);
   renderFontControls();
   renderSelectionControls();
 }
@@ -2538,6 +2819,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
           ),
         ]),
   );
+  renderSharedTextHighlight();
   const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
   const focusedPage =
     visiblePages.filter((page) => page?.kind === "content").at(-1) ??
@@ -2600,6 +2882,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
       `[data-source-anchor="${CSS.escape(pendingSelection.anchor)}"]`,
     ) === null
   ) {
+    selectionCaptureVersion += 1;
     pendingSelection = undefined;
   }
   if (exploreDialog.open) {
@@ -2718,6 +3001,12 @@ async function shareCurrentLocation(): Promise<void> {
   shareStatus.value = "Preparing reading link";
   renderControls();
   const selectedText = pendingSelection;
+  if (selectedText && !selectedText.target) {
+    sharing = false;
+    shareStatus.value = "Selected text is still being prepared";
+    renderControls();
+    return;
+  }
   const currentLocation = currentReadingLocation();
   const location =
     selectedText && currentLocation
@@ -2735,13 +3024,14 @@ async function shareCurrentLocation(): Promise<void> {
   const title = chapter
     ? `${manifest.title}: ${chapter.title}`
     : manifest.title;
-  const url = readingLocationUrl(location, false);
+  const url = readingLocationUrl(location, false, selectedText);
   shareStatus.value = await shareReadingLocation(
     title,
     url.href,
     selectedText?.quote,
   );
   if (selectedText) {
+    selectionCaptureVersion += 1;
     pendingSelection = undefined;
     document.getSelection()?.removeAllRanges();
   }
@@ -3428,10 +3718,18 @@ function paragraphFragment(
   first: boolean,
 ): SemanticBlock {
   const paragraph = cloneTextRange(block.node, start, end, first);
+  const rawText = block.node.textContent ?? "";
+  const sourceStart =
+    block.sourceStart + pageTurnTextOffsetAt(rawText, start);
+  const sourceEnd = block.sourceStart + pageTurnTextOffsetAt(rawText, end);
   paragraph.dataset.sourceAnchor = block.anchor;
+  applySourceRange(paragraph, sourceStart, sourceEnd);
   return {
     node: paragraph,
     anchor: block.anchor,
+    sourceText: block.sourceText,
+    sourceStart,
+    sourceEnd,
     chapterTitle: block.chapterTitle,
     chapterLabel: block.chapterLabel,
     chapterStart: false,
@@ -3467,9 +3765,26 @@ function listFragment(
     list.start =
       (Number.isFinite(originalStart) ? originalStart : 1) + itemOffset;
   }
-  list.append(...items.map((item) => item.cloneNode(true)));
+  list.append(
+    ...items.flatMap((item, index) => [
+      ...(index === 0 ? [] : [document.createTextNode(" ")]),
+      item.cloneNode(true),
+    ]),
+  );
   list.dataset.sourceAnchor = block.anchor;
-  return { ...block, node: list };
+  const allItems = Array.from(block.node.children).filter((child) =>
+    child.matches("li"),
+  );
+  const range = pageTurnTextSegmentRange(
+    block.sourceText,
+    allItems.map((item) => item.textContent ?? ""),
+    itemOffset,
+    items.length,
+  );
+  const sourceStart = block.sourceStart + range.start;
+  const sourceEnd = block.sourceStart + range.end;
+  applySourceRange(list, sourceStart, sourceEnd);
+  return { ...block, node: list, sourceStart, sourceEnd };
 }
 
 function fitListBlock(block: SemanticBlock): SemanticBlock[] {
@@ -4076,11 +4391,170 @@ function initialReadingLocation(
   return resumed ? { source: "resume", location: resumed } : undefined;
 }
 
+function nodeIntersectsTextTarget(
+  node: HTMLElement,
+  target: PageTurnTextTargetV1,
+  blocks: readonly PageTurnTextSourceBlock[],
+): boolean {
+  const blockIndices = new Map(
+    blocks.map(({ anchor }, index) => [anchor, index]),
+  );
+  const startIndex = blockIndices.get(target.start.anchor);
+  const endIndex = blockIndices.get(target.end.anchor);
+  if (startIndex === undefined || endIndex === undefined) {
+    return false;
+  }
+  const candidates = [
+    ...(node.matches("[data-source-anchor]") ? [node] : []),
+    ...node.querySelectorAll<HTMLElement>("[data-source-anchor]"),
+  ];
+  return candidates.some((candidate) => {
+    const anchor = candidate.dataset.sourceAnchor;
+    const blockIndex = anchor ? blockIndices.get(anchor) : undefined;
+    if (
+      blockIndex === undefined ||
+      blockIndex < startIndex ||
+      blockIndex > endIndex
+    ) {
+      return false;
+    }
+    const start = Number(candidate.dataset.v3SourceStart);
+    const end = Number(candidate.dataset.v3SourceEnd);
+    const sourceBlock = blocks[blockIndex];
+    if (!sourceBlock) {
+      return false;
+    }
+    const requestedStart =
+      blockIndex === startIndex ? target.start.offset : 0;
+    const requestedEnd =
+      blockIndex === endIndex
+        ? target.end.offset
+        : Array.from(sourceBlock.text).length;
+    return (
+      Number.isSafeInteger(start) &&
+      Number.isSafeInteger(end) &&
+      Math.max(start, requestedStart) < Math.min(end, requestedEnd)
+    );
+  });
+}
+
+function positionAtTextTarget(
+  target: PageTurnTextTargetV1,
+): "highlighted" | "unavailable" | "unsupported" {
+  const blocks = textSourceBlocks(target.chapterId);
+  const pageIndex = pages.findIndex(
+    (page) =>
+      page.chapterId === target.chapterId &&
+      page.nodes.some((node) =>
+        nodeIntersectsTextTarget(node, target, blocks),
+      ),
+  );
+  if (pageIndex < 0) {
+    return "unavailable";
+  }
+  preferredAnchor = {
+    chapterId: target.chapterId,
+    anchor: target.start.anchor,
+  };
+  sharedTextTarget = target;
+  spreadStart = Math.floor(pageIndex / pageStep()) * pageStep();
+  renderStationary("none");
+  return renderSharedTextHighlight();
+}
+
+async function restoreTextTargetFromUrl(
+  selectionToken: string | null,
+  editionId: string | null,
+  chapterId: string | null,
+  isCurrent: () => boolean = () => true,
+): Promise<void> {
+  clearSharedTextTarget();
+  if (!selectionToken || !manifest) {
+    return;
+  }
+  const chapterState = chapterStates.find(
+    ({ chapter }) => String(chapter.chapterId) === chapterId,
+  );
+  if (
+    !editionId ||
+    editionId !== manifest.editionId ||
+    !chapterId ||
+    !chapterState ||
+    !chapterState.blocks
+  ) {
+    reader.dataset.v3SharedTarget = "unresolved";
+    shareStatus.value =
+      "Shared quote could not be matched to this publication edition";
+    console.warn("V3 shared quote has no matching publication edition");
+    return;
+  }
+  try {
+    const resolution = await resolvePageTurnTextTargetToken(
+      selectionToken,
+      {
+        bookId: manifest.bookId,
+        editionId: manifest.editionId,
+        chapterId,
+        chapterContentHash: chapterState.chapter.contentHash,
+        blocks: textSourceBlocks(chapterId),
+      },
+    );
+    if (!isCurrent()) {
+      return;
+    }
+    if (resolution.state === "unresolved") {
+      reader.dataset.v3SharedTarget = "unresolved";
+      shareStatus.value =
+        "Shared quote could not be matched exactly; showing its source passage";
+      console.warn(
+        `V3 shared quote could not be restored: ${resolution.reason}`,
+      );
+      return;
+    }
+    const highlightState = positionAtTextTarget(resolution.target);
+    if (highlightState === "unavailable") {
+      clearSharedTextTarget();
+      reader.dataset.v3SharedTarget = "unresolved";
+      shareStatus.value =
+        "Shared quote could not be placed exactly; showing its source passage";
+      console.warn("V3 shared quote has no composed target range");
+      return;
+    }
+    reader.dataset.v3SharedTarget =
+      highlightState === "highlighted" ? "resolved" : "unsupported";
+    shareStatus.value =
+      highlightState === "highlighted"
+        ? "Shared quote highlighted"
+        : "Shared quote located; exact highlighting is unsupported";
+    if (managesUrl) {
+      const location = currentReadingLocation();
+      if (location) {
+        const url = pageTurnTextTargetUrl(
+          readingLocationUrl(location, false),
+          resolution.target,
+        );
+        globalThis.history.replaceState({ v3Location: true }, "", url);
+      }
+    }
+  } catch (error: unknown) {
+    if (!isCurrent()) {
+      return;
+    }
+    reader.dataset.v3SharedTarget = "unresolved";
+    shareStatus.value =
+      error instanceof Error
+        ? `Shared quote unavailable: ${error.message}`
+        : "Shared quote unavailable";
+    console.warn("V3 shared quote could not be restored", error);
+  }
+}
+
 async function restoreHistoryLocation(): Promise<void> {
   if (!manifest) {
     return;
   }
   const params = new URLSearchParams(globalThis.location.search);
+  const version = ++historyRestoreVersion;
   const historyBookId = params.get("book") ?? requestedBookId;
   if (historyBookId !== manifest.bookId) {
     globalThis.location.reload();
@@ -4100,12 +4574,26 @@ async function restoreHistoryLocation(): Promise<void> {
       setMediaTreatment(restoredMediaTreatment);
     }
     await goToLocation(chapterId ?? "", anchor, "none");
+    if (version !== historyRestoreVersion) {
+      return;
+    }
+    await restoreTextTargetFromUrl(
+      params.get("selection"),
+      params.get("edition"),
+      chapterId,
+      () => version === historyRestoreVersion,
+    );
+    if (version !== historyRestoreVersion) {
+      return;
+    }
     const restored = currentReadingLocation();
     if (restored) {
       writeResumeLocation(restored);
     }
   } finally {
-    applyingHistory = false;
+    if (version === historyRestoreVersion) {
+      applyingHistory = false;
+    }
   }
 }
 
@@ -4208,6 +4696,11 @@ async function initialize(): Promise<void> {
   }
   locationTrackingReady = true;
   syncCurrentLocation("replace");
+  await restoreTextTargetFromUrl(
+    requestedSelectionToken,
+    requestedEditionId,
+    requestedChapterId,
+  );
   reportReady();
   startOpening();
   queueChapterWindow(initialWindowCenter);
@@ -4410,6 +4903,7 @@ function destroy(): void {
   requestController.abort();
   observer.disconnect();
   searchController?.abort();
+  clearSharedTextHighlight();
   mediaDialogImage.removeAttribute("src");
   chapterSelect.replaceChildren();
   if (resizeTimer !== undefined) {
