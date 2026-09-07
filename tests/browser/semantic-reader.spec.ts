@@ -1590,6 +1590,11 @@ test("shares selected text and exports local-only annotations", async ({
   await page
     .getByRole("button", { name: "Share selected text and location" })
     .click();
+  const sharePreview = page.getByRole("dialog", { name: "Share preview" });
+  await expect(
+    sharePreview.getByRole("button", { name: "Share…" }),
+  ).toBeEnabled();
+  await sharePreview.getByRole("button", { name: "Share…" }).click();
   await expect
     .poll(() =>
       page.evaluate(
@@ -1601,7 +1606,7 @@ test("shares selected text and exports local-only annotations", async ({
           ).__sharedV3Selection?.text,
       ),
     )
-    .toBe(selected);
+    .toContain(selected);
   const sharedUrl = await page.evaluate(
     () =>
       (
@@ -1634,6 +1639,9 @@ test("shares selected text and exports local-only annotations", async ({
   expect(decodeURIComponent(parsedSharedUrl.hash.slice(1))).toMatch(
     new RegExp(`^${selectedLocation.anchor}:~:text=`),
   );
+  await sharePreview
+    .getByRole("button", { name: "Close share preview" })
+    .click();
 
   await selectLeadingText(page, paragraph);
   await page
@@ -2145,6 +2153,11 @@ test("restores an exact quote from a continuation page", async ({ page }) => {
   });
   await expect(shareSelection).toBeEnabled();
   await shareSelection.click();
+  const sharePreview = page.getByRole("dialog", { name: "Share preview" });
+  await expect(
+    sharePreview.getByRole("button", { name: "Share…" }),
+  ).toBeEnabled();
+  await sharePreview.getByRole("button", { name: "Share…" }).click();
   const sharedUrl = await page.evaluate(
     () =>
       (
@@ -2493,6 +2506,11 @@ test("shares a selection across both pages of one chapter spread", async ({
   });
   await expect(shareSelection).toBeEnabled();
   await shareSelection.click();
+  const sharePreview = page.getByRole("dialog", { name: "Share preview" });
+  await expect(
+    sharePreview.getByRole("button", { name: "Share…" }),
+  ).toBeEnabled();
+  await sharePreview.getByRole("button", { name: "Share…" }).click();
   const share = await page.evaluate(
     () =>
       (
@@ -3064,8 +3082,13 @@ test("shares a canonical V3 chapter and source anchor", async ({ page }) => {
   }
   const url = new URL(shared);
   expect(url.pathname).toMatch(/\/v3\/$/);
-  expect(Array.from(url.searchParams.keys())).toEqual(["book", "chapter"]);
+  expect(Array.from(url.searchParams.keys())).toEqual([
+    "book",
+    "edition",
+    "chapter",
+  ]);
   expect(url.searchParams.get("book")).toBe("plurality");
+  expect(url.searchParams.get("edition")).toBe("2026-07");
   expect(url.searchParams.get("chapter")).toBe("6-4");
   expect(decodeURIComponent(url.hash.slice(1))).toBe(anchor);
 });

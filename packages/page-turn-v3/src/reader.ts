@@ -29,7 +29,16 @@ import {
   readBookFontScale,
   writeBookFontScale,
 } from "./font-scale.js";
-import { shareReadingLocation } from "./share.js";
+import {
+  createPageTurnSharePayload,
+  pageTurnShareCapabilities,
+  pageTurnShareContext,
+  pageTurnShareTargetEnd,
+  resolvePageTurnSharePolicy,
+  shareReadingLocation,
+  type PageTurnSharePayload,
+  type PageTurnSharePolicy,
+} from "./share.js";
 import {
   placePageTurnSelectionActions,
   type PageTurnRect,
@@ -144,6 +153,9 @@ export type PageTurnBookOptions = Readonly<{
   keyboardScope?: "root" | "document";
   selectionActions?: boolean;
   selectionActionShortcut?: PageTurnSelectionActionShortcut | false;
+  shareComposer?: boolean;
+  sharePolicy?: PageTurnSharePolicy;
+  allowShareImageDownload?: boolean;
   annotationAppearance?: PageTurnAnnotationAppearance;
   urlMode?: "managed" | "none";
   updateDocumentTitle?: boolean;
@@ -162,6 +174,18 @@ export type PageTurnSelectionActionDetail = Readonly<{
   target: PageTurnTextTargetV1;
   location: PageTurnBookLocation;
 }>;
+
+export type PageTurnShareSelectionActionDetail =
+  | Readonly<{
+      kind: "quote";
+      text: string;
+      target: PageTurnTextTargetV1;
+      location: PageTurnBookLocation;
+    }>
+  | Readonly<{
+      kind: "location";
+      location: PageTurnBookLocation;
+    }>;
 
 export type PageTurnBookHandle = Readonly<{
   ready: Promise<void>;
@@ -197,6 +221,14 @@ type V3SelectionCandidate = Readonly<{
   quote: string;
   input: PageTurnDomTextTargetInput;
 }>;
+
+type V3ValidatedSelection = Readonly<{
+  selection: V3Selection & Readonly<{ target: PageTurnTextTargetV1 }>;
+  detail: PageTurnSelectionActionDetail;
+}>;
+
+type V3PermittedShareSelection = V3Selection &
+  Readonly<{ target: PageTurnTextTargetV1 }>;
 
 type PrototypePage = Readonly<{
   label: string;
@@ -300,6 +332,9 @@ const maximumSegmentCharacters = 540;
 const chaptersStartOnRight = options.chaptersStartOnRight ?? true;
 const canCreateDurableLinks =
   managesUrl || options.locationUrl !== undefined;
+const resolvedSharePolicy = resolvePageTurnSharePolicy(options.sharePolicy);
+const shareCapabilities = pageTurnShareCapabilities(resolvedSharePolicy);
+const shareComposerEnabled = options.shareComposer ?? false;
 const originalDocumentTitle = document.title;
 const managesDocumentTitle = options.updateDocumentTitle ?? managesUrl;
 let assignedDocumentTitle: string | undefined;
@@ -1316,6 +1351,43 @@ const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
 const shareStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-share-status]",
 );
+const shareDialog = requiredElement<HTMLDialogElement>("[data-v3-share-dialog]");
+const sharePolicyMessage = requiredElement<HTMLElement>(
+  "[data-v3-share-policy]",
+);
+const shareQuote = requiredElement<HTMLElement>("[data-v3-share-quote]");
+const shareBook = requiredElement<HTMLElement>("[data-v3-share-book]");
+const shareAuthors = requiredElement<HTMLElement>("[data-v3-share-authors]");
+const shareChapter = requiredElement<HTMLElement>("[data-v3-share-chapter]");
+const shareEdition = requiredElement<HTMLElement>("[data-v3-share-edition]");
+const shareCitation = requiredElement<HTMLElement>("[data-v3-share-citation]");
+const sharePreviewUrl = requiredElement<HTMLAnchorElement>(
+  "[data-v3-share-preview-url]",
+);
+const shareVisual = requiredElement<HTMLElement>("[data-v3-share-visual]");
+const shareImage = requiredElement<HTMLImageElement>("[data-v3-share-image]");
+const shareDisclosure = requiredElement<HTMLElement>(
+  "[data-v3-share-disclosure]",
+);
+const shareEmbedNote = requiredElement<HTMLElement>(
+  "[data-v3-share-embed-note]",
+);
+const shareFinal = requiredElement<HTMLButtonElement>("[data-v3-share-final]");
+const shareCopyText = requiredElement<HTMLButtonElement>(
+  "[data-v3-share-copy-text]",
+);
+const shareCopyImage = requiredElement<HTMLButtonElement>(
+  "[data-v3-share-copy-image]",
+);
+const shareDownload = requiredElement<HTMLButtonElement>(
+  "[data-v3-share-download]",
+);
+const shareOpenImage = requiredElement<HTMLButtonElement>(
+  "[data-v3-share-open-image]",
+);
+const shareComposerStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-share-composer-status]",
+);
 const selectionEntry = requiredElement<HTMLButtonElement>(
   "[data-v3-selection-entry]",
 );
@@ -1553,6 +1625,9 @@ const corners = Array.from(
   root.querySelectorAll<HTMLButtonElement>("[data-v3-direction]"),
 );
 shareButton.hidden = !canCreateDurableLinks;
+shareButton.title = resolvedSharePolicy.message;
+shareStatus.value = resolvedSharePolicy.message;
+shareEmbedNote.hidden = options.embedded !== true;
 appearanceButton.hidden = !(options.appearanceControls ?? managesUrl);
 const singlePageMedia = globalThis.matchMedia("(max-width: 48rem)");
 const reducedMotion = globalThis.matchMedia(
@@ -1588,6 +1663,16 @@ let mediaTreatment: PageTurnBookMediaTreatment =
 let locationTrackingReady = false;
 let applyingHistory = false;
 let sharing = false;
+let shareOperationVersion = 0;
+let sharePreparationVersion = 0;
+let shareComposerVersion = 0;
+let shareComposerController: AbortController | undefined;
+let shareComposerObjectUrl: string | undefined;
+let shareComposerPayload: PageTurnSharePayload | undefined;
+let shareComposerImage: Blob | undefined;
+let shareComposerFile: File | undefined;
+let shareComposerReturnFocus: HTMLElement | undefined;
+let shareComposerReturnFocusHadTabindex = false;
 let preferredAnchor:
   | Readonly<{ chapterId: string; anchor: string }>
   | undefined;
@@ -2773,8 +2858,14 @@ function updateSelectionActionCapabilities(): void {
     '[data-v3-selection-action="annotate"]',
   );
   if (share) {
-    share.hidden = !canCreateDurableLinks;
+    share.hidden = !canCreateDurableLinks || !shareCapabilities.location;
     share.disabled = sharing;
+    share.title = resolvedSharePolicy.message;
+    const label = shareCapabilities.quote
+      ? "Share selected text"
+      : "Share passage location";
+    share.setAttribute("aria-label", label);
+    share.dataset.tooltip = shareCapabilities.quote ? "Share" : "Share location";
   }
   if (highlight) {
     highlight.disabled = personalStore === undefined || personalBusy;
@@ -2943,7 +3034,8 @@ function onSelectionChange(): void {
     (selectionFocusActive &&
       (selectionActions.contains(document.activeElement) ||
         activeMarginEditor?.contains(document.activeElement))) ||
-    (exploreDialog.open && pendingSelection?.target !== undefined)
+    ((exploreDialog.open || shareDialog.open) &&
+      pendingSelection?.target !== undefined)
   ) {
     return;
   }
@@ -3002,12 +3094,7 @@ async function runPersonalAction(
   }
 }
 
-function currentSelectionAction():
-  | Readonly<{
-      selection: V3Selection & Readonly<{ target: PageTurnTextTargetV1 }>;
-      detail: PageTurnSelectionActionDetail;
-    }>
-  | undefined {
+function currentSelectionAction(): V3ValidatedSelection | undefined {
   const selection = pendingSelection;
   const target = selection?.target;
   if (!manifest || !selection || !target) {
@@ -3044,13 +3131,40 @@ function currentSelectionAction():
   };
 }
 
-function dispatchSelectionAction(
-  action: "share" | "annotate",
+function dispatchAnnotationSelectionAction(
   detail: PageTurnSelectionActionDetail,
 ): void {
   reader.dispatchEvent(
     new CustomEvent<PageTurnSelectionActionDetail>(
-      `pageturn:${action}-selection`,
+      "pageturn:annotate-selection",
+      { bubbles: true, detail },
+    ),
+  );
+}
+
+function dispatchShareSelectionAction(
+  selected: V3Selection,
+  permitted: V3PermittedShareSelection | undefined,
+): void {
+  const location = selectedShareLocation(selected);
+  if (!location) {
+    return;
+  }
+  const detail: PageTurnShareSelectionActionDetail = permitted
+    ? {
+        kind: "quote",
+        text: permitted.quote,
+        target: permitted.target,
+        location: {
+          ...location,
+          chapterId: permitted.target.chapterId,
+          anchor: permitted.target.start.anchor,
+        },
+      }
+    : { kind: "location", location };
+  reader.dispatchEvent(
+    new CustomEvent<PageTurnShareSelectionActionDetail>(
+      "pageturn:share-selection",
       { bubbles: true, detail },
     ),
   );
@@ -3192,12 +3306,14 @@ async function undoSelectionHighlight(): Promise<void> {
 
 async function shareSelectedText(): Promise<void> {
   const current = currentSelectionAction();
-  if (!current || !canCreateDurableLinks) {
+  if (
+    !current ||
+    !canCreateDurableLinks ||
+    !shareCapabilities.location
+  ) {
     return;
   }
-  dispatchSelectionAction("share", current.detail);
-  await shareCurrentLocation();
-  dismissSelectionActions(true, selectionFocusActive);
+  await shareValidatedSelection(current);
 }
 
 function annotateSelectedText(): void {
@@ -3205,7 +3321,7 @@ function annotateSelectedText(): void {
   if (!current || !personalStore) {
     return;
   }
-  dispatchSelectionAction("annotate", current.detail);
+  dispatchAnnotationSelectionAction(current.detail);
   selectionActions.hidden = true;
   selectionEntry.hidden = true;
   rememberAnnotationFocus(current.selection.source);
@@ -3850,6 +3966,7 @@ function readingLocationUrl(
   location: PageTurnBookLocation | undefined,
   preserveContext: boolean,
   selection?: V3Selection,
+  includeEdition = false,
 ): URL {
   if (!manifest) {
     throw new Error("V3 cannot create a location before loading a publication");
@@ -3859,6 +3976,9 @@ function readingLocationUrl(
       options.locationUrl(location).toString(),
       globalThis.location.href,
     );
+    if (includeEdition) {
+      url.searchParams.set("edition", manifest.editionId);
+    }
     return selection?.target
       ? pageTurnTextTargetUrl(url, selection.target)
       : url;
@@ -3868,7 +3988,11 @@ function readingLocationUrl(
     url.search = "";
   }
   url.searchParams.set("book", manifest.bookId);
-  url.searchParams.delete("edition");
+  if (includeEdition) {
+    url.searchParams.set("edition", manifest.editionId);
+  } else if (!preserveContext) {
+    url.searchParams.delete("edition");
+  }
   url.searchParams.delete("selection");
   if (location) {
     url.searchParams.set("chapter", location.chapterId);
@@ -3936,16 +4060,24 @@ function renderSelectionControls(): void {
     pendingSelection !== undefined && pendingSelection.target === undefined;
   shareButton.textContent =
     selectionPending
-      ? "Preparing selection"
+      ? shareCapabilities.quote
+        ? "Preparing selection"
+        : "Preparing passage"
       : pendingSelection
-        ? "Share selection"
+        ? shareCapabilities.quote
+          ? "Share selection"
+          : "Share passage"
         : "Share";
   shareButton.setAttribute(
     "aria-label",
     selectionPending
-      ? "Preparing selected text"
+      ? shareCapabilities.quote
+        ? "Preparing selected text"
+        : "Preparing passage location"
       : pendingSelection
-        ? "Share selected text and location"
+        ? shareCapabilities.quote
+          ? "Share selected text and location"
+          : "Share passage location"
         : "Share location",
   );
   updateSelectionActionCapabilities();
@@ -4318,6 +4450,7 @@ function renderControls(): void {
   }
   shareButton.disabled =
     !canCreateDurableLinks ||
+    !shareCapabilities.location ||
     opening ||
     pendingTurn ||
     activeTurn !== undefined ||
@@ -4329,6 +4462,11 @@ function renderControls(): void {
 }
 
 function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
+  if (shareDialog.open) {
+    closeShareComposer(false);
+  } else {
+    cancelShareComposerWork();
+  }
   dismissSelectionActions();
   const singlePage = singlePageMedia.matches;
   spread.classList.toggle("v3-spread-single", singlePage);
@@ -4524,54 +4662,647 @@ function onMediaDialogClose(): void {
   mediaReturnFocus = undefined;
 }
 
-async function shareCurrentLocation(): Promise<void> {
-  if (!manifest || sharing || !canCreateDurableLinks) {
-    return;
+async function permittedShareSelection(
+  selected: V3Selection | undefined,
+): Promise<V3PermittedShareSelection | undefined> {
+  if (!selected?.target || !shareCapabilities.quote) {
+    return undefined;
   }
-  sharing = true;
-  shareStatus.value = "Preparing reading link";
-  renderControls();
-  const selectedText = pendingSelection;
-  if (selectedText && !selectedText.target) {
-    sharing = false;
-    shareStatus.value = "Selected text is still being prepared";
-    renderControls();
-    return;
+  const maximum = resolvedSharePolicy.policy.quote.maximumCharacters;
+  if (Array.from(selected.target.quote.exact).length <= maximum) {
+    return selected as V3PermittedShareSelection;
   }
-  if (selectedText?.target && !currentSelectionAction()) {
-    sharing = false;
-    renderControls();
-    return;
+  const blocks = textSourceBlocks(selected.target.chapterId);
+  const end = pageTurnShareTargetEnd(selected.target, blocks, maximum);
+  if (!end) {
+    return undefined;
   }
-  const currentLocation = currentReadingLocation();
-  const location =
-    selectedText && currentLocation
-      ? {
-          ...currentLocation,
-          chapterId: selectedText.chapterId,
-          anchor: selectedText.anchor,
-        }
-      : currentLocation;
-  const chapter = location
-    ? manifest.chapters.find(
+  const target = await createPageTurnTextTarget({
+    bookId: selected.target.bookId,
+    editionId: selected.target.editionId,
+    chapterId: selected.target.chapterId,
+    chapterContentHash: selected.target.chapterContentHash,
+    blocks,
+    start: selected.target.start,
+    end,
+  });
+  return {
+    ...selected,
+    anchor: target.start.anchor,
+    quote: target.quote.exact,
+    target,
+  };
+}
+
+function selectedShareLocation(
+  selected: V3Selection | undefined,
+): PageTurnBookLocation | undefined {
+  const current = currentReadingLocation();
+  return selected && manifest
+    ? {
+        bookId: manifest.bookId,
+        editionId: manifest.editionId,
+        chapterId: selected.chapterId,
+        anchor: selected.anchor,
+      }
+    : current;
+}
+
+function shareChapterFor(
+  location: PageTurnBookLocation | undefined,
+): V3Chapter | undefined {
+  return location
+    ? manifest?.chapters.find(
         ({ chapterId }) => String(chapterId) === location.chapterId,
       )
     : undefined;
-  const title = chapter
-    ? `${manifest.title}: ${chapter.title}`
-    : manifest.title;
-  const url = readingLocationUrl(location, false, selectedText);
-  shareStatus.value = await shareReadingLocation(
-    title,
-    url.href,
-    selectedText?.quote,
-  );
-  if (selectedText) {
-    selectionCaptureVersion += 1;
-    pendingSelection = undefined;
+}
+
+function shareCitationText(chapter: V3Chapter | undefined): string {
+  if (!manifest) {
+    return "PageTurn publication";
   }
+  return [
+    manifest.title,
+    chapter?.title,
+    `edition ${manifest.editionId}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function revokeShareComposerUrl(): void {
+  if (shareComposerObjectUrl) {
+    URL.revokeObjectURL(shareComposerObjectUrl);
+    shareComposerObjectUrl = undefined;
+  }
+  shareImage.removeAttribute("src");
+}
+
+function cancelShareComposerWork(): void {
+  sharePreparationVersion += 1;
+  shareComposerVersion += 1;
+  shareOperationVersion += 1;
+  shareComposerController?.abort();
+  shareComposerController = undefined;
+  revokeShareComposerUrl();
+  shareComposerPayload = undefined;
+  shareComposerImage = undefined;
+  shareComposerFile = undefined;
   sharing = false;
+}
+
+function restoreShareComposerFocus(): void {
+  const target = shareComposerReturnFocus;
+  const hadTabindex = shareComposerReturnFocusHadTabindex;
+  shareComposerReturnFocus = undefined;
+  shareComposerReturnFocusHadTabindex = false;
+  if (!target?.isConnected || destroyed) {
+    return;
+  }
+  if (!hadTabindex) {
+    target.tabIndex = -1;
+    target.addEventListener(
+      "blur",
+      () => target.removeAttribute("tabindex"),
+      { once: true },
+    );
+  }
+  target.focus({ preventScroll: true });
+}
+
+let restoreFocusAfterShareClose = true;
+
+function closeShareComposer(restoreFocus: boolean): void {
+  restoreFocusAfterShareClose = restoreFocus;
+  cancelShareComposerWork();
+  if (!restoreFocus) {
+    shareComposerReturnFocus = undefined;
+    shareComposerReturnFocusHadTabindex = false;
+  }
+  if (shareDialog.open) {
+    shareDialog.close();
+  } else {
+    if (restoreFocus) {
+      restoreShareComposerFocus();
+    }
+  }
+}
+
+function resetShareComposerControls(): void {
+  shareQuote.hidden = true;
+  shareQuote.textContent = "";
+  shareVisual.hidden = true;
+  shareFinal.disabled = true;
+  shareFinal.title =
+    typeof navigator.share === "function"
+      ? "Open system sharing"
+      : "System sharing is unavailable in this browser or embedding policy";
+  shareCopyText.disabled = true;
+  shareCopyText.textContent = "Copy quote + link";
+  shareCopyImage.hidden = true;
+  shareCopyImage.disabled = true;
+  shareDownload.hidden = true;
+  shareDownload.disabled = true;
+  shareOpenImage.hidden = true;
+  shareOpenImage.disabled = true;
+}
+
+function downloadAllowedByHost(): boolean {
+  const anchor = document.createElement("a");
+  if (!("download" in anchor)) {
+    return false;
+  }
+  try {
+    const framed = globalThis.top !== globalThis.self;
+    if (options.embedded === true || framed) {
+      if (options.allowShareImageDownload !== true) {
+        return false;
+      }
+      const frame = globalThis.frameElement;
+      return (
+        frame instanceof HTMLIFrameElement &&
+        !(
+          frame.hasAttribute("sandbox") &&
+          !frame.sandbox.contains("allow-downloads")
+        )
+      );
+    }
+    return options.allowShareImageDownload !== false;
+  } catch {
+    return false;
+  }
+}
+
+function openShareImage(): void {
+  if (!shareComposerObjectUrl) {
+    shareComposerStatus.value = "The generated image is unavailable.";
+    return;
+  }
+  globalThis.open(shareComposerObjectUrl, "_blank", "noopener,noreferrer");
+  shareComposerStatus.value =
+    "The image was opened in a new tab. Use the browser save command or long-press the image to save it. If no tab opened, allow pop-ups and use the preview.";
+}
+
+async function copyShareText(): Promise<void> {
+  const payload = shareComposerPayload;
+  if (!payload) {
+    return;
+  }
+  const version = ++shareOperationVersion;
+  if (!navigator.clipboard?.writeText) {
+    shareComposerStatus.value =
+      "Clipboard text writing is unavailable. Select the preview text and copy it manually.";
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(payload.clipboardText);
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value = payload.quote
+      ? "Quote and exact link copied."
+      : "Public anchor link and citation copied.";
+  } catch {
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value =
+      "Clipboard access was not permitted. Select the preview text and copy it manually.";
+  }
+}
+
+async function copyShareImage(): Promise<void> {
+  const image = shareComposerImage;
+  const ClipboardItemConstructor = globalThis.ClipboardItem;
+  if (
+    !image ||
+    typeof ClipboardItemConstructor !== "function" ||
+    typeof navigator.clipboard?.write !== "function"
+  ) {
+    shareComposerStatus.value =
+      "PNG clipboard writing is unavailable. Download or open the image instead.";
+    return;
+  }
+  const version = ++shareOperationVersion;
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItemConstructor({ "image/png": image }),
+    ]);
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value = "Generated PNG copied.";
+  } catch {
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value =
+      "PNG clipboard access was not permitted. Download or open the image instead.";
+  }
+}
+
+function downloadShareImage(): void {
+  const payloadUrl = shareComposerObjectUrl;
+  if (!payloadUrl) {
+    shareComposerStatus.value = "The generated image is unavailable.";
+    return;
+  }
+  if (!downloadAllowedByHost()) {
+    openShareImage();
+    return;
+  }
+  const anchor = document.createElement("a");
+  anchor.href = payloadUrl;
+  anchor.download = shareComposerFile?.name ?? "pageturn-quote.png";
+  anchor.rel = "noopener";
+  anchor.hidden = true;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  shareComposerStatus.value = "Generated PNG download started.";
+}
+
+async function finalShare(): Promise<void> {
+  const payload = shareComposerPayload;
+  if (!payload || sharing || !shareDialog.open) {
+    return;
+  }
+  const version = ++shareOperationVersion;
+  sharing = true;
+  shareFinal.disabled = true;
+  shareComposerStatus.value = "Opening system sharing.";
+  const textAndUrl: ShareData = {
+    title: payload.title,
+    text: payload.text,
+    url: payload.url,
+  };
+  try {
+    if (typeof navigator.share !== "function") {
+      shareComposerStatus.value =
+        "System sharing is unavailable. Use the copy, image, or download actions.";
+      return;
+    }
+    const filePayload: ShareData | undefined = shareComposerFile
+      ? { ...textAndUrl, files: [shareComposerFile] }
+      : undefined;
+    let includesFile = false;
+    if (filePayload && typeof navigator.canShare === "function") {
+      try {
+        includesFile = navigator.canShare(filePayload);
+      } catch {
+        includesFile = false;
+      }
+    }
+    await navigator.share(includesFile && filePayload ? filePayload : textAndUrl);
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value =
+      shareComposerFile && !includesFile
+        ? "Quote and link shared. This share target did not support the generated image."
+        : payload.quote
+          ? "Quote and link shared."
+          : "Public anchor link shared.";
+  } catch (error) {
+    if (
+      destroyed ||
+      version !== shareOperationVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerStatus.value =
+      error instanceof DOMException && error.name === "AbortError"
+        ? "Sharing cancelled."
+        : error instanceof Error
+          ? `Sharing failed: ${error.message}`
+          : "Sharing failed.";
+  } finally {
+    if (
+      !destroyed &&
+      version === shareOperationVersion &&
+      shareDialog.open
+    ) {
+      sharing = false;
+      shareFinal.disabled = false;
+    }
+  }
+}
+
+async function openShareComposer(
+  current: V3ValidatedSelection,
+  allowedSelection: V3PermittedShareSelection | undefined,
+): Promise<void> {
+  if (
+    !manifest ||
+    !canCreateDurableLinks ||
+    !shareCapabilities.location
+  ) {
+    return;
+  }
+  closeShareComposer(false);
+  const controller = new AbortController();
+  shareComposerController = controller;
+  const version = ++shareComposerVersion;
+  restoreFocusAfterShareClose = true;
+  shareComposerReturnFocus = current.selection.source;
+  shareComposerReturnFocusHadTabindex =
+    current.selection.source?.hasAttribute("tabindex") ?? false;
+  resetShareComposerControls();
+  sharePolicyMessage.textContent = resolvedSharePolicy.message;
+  shareBook.textContent = manifest.title;
+  shareAuthors.textContent =
+    manifest.authors.map(({ name }) => name).join(", ") || "Unknown";
+  const location = selectedShareLocation(current.selection);
+  const chapter = shareChapterFor(location);
+  shareChapter.textContent = chapter?.title ?? "Current passage";
+  shareEdition.textContent = manifest.editionId;
+  shareCitation.textContent = shareCitationText(chapter);
+  sharePreviewUrl.textContent = "Preparing public link";
+  sharePreviewUrl.removeAttribute("href");
+  shareDisclosure.textContent =
+    "Preparing the policy-approved public payload. No private notes or stored highlights are read.";
+  shareComposerStatus.value = "Preparing share preview.";
+  hideSelectionActionSurface();
+  shareDialog.showModal();
+
+  try {
+    if (
+      destroyed ||
+      controller.signal.aborted ||
+      version !== shareComposerVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    const url = readingLocationUrl(
+      location,
+      false,
+      allowedSelection,
+      true,
+    );
+    const payload = createPageTurnSharePayload({
+      title: manifest.title,
+      authors: manifest.authors.map(({ name }) => name),
+      chapterTitle: chapter?.title ?? "Current passage",
+      editionId: manifest.editionId,
+      sourceUrl: url.href,
+      citation: shareCitationText(chapter),
+      ...(allowedSelection ? { quote: allowedSelection.quote } : {}),
+    });
+    shareComposerPayload = payload;
+    sharePreviewUrl.href = payload.url;
+    sharePreviewUrl.textContent = payload.url;
+    shareDisclosure.textContent = payload.disclosure;
+    shareCopyText.disabled = false;
+    if (allowedSelection) {
+      shareQuote.hidden = false;
+      shareQuote.textContent = allowedSelection.quote;
+    } else {
+      shareCopyText.textContent = "Copy link";
+    }
+
+    if (!allowedSelection || !shareCapabilities.visual) {
+      shareFinal.disabled = typeof navigator.share !== "function";
+      shareComposerStatus.value = allowedSelection
+        ? "Quote-and-link preview ready. This publication does not permit visual export." +
+          (shareFinal.disabled ? " System sharing is unavailable; use Copy." : "")
+        : "Anchor-only preview ready. Selected text, exact selectors, Text Fragments, highlights, and images are excluded." +
+          (shareFinal.disabled ? " System sharing is unavailable; use Copy." : "");
+      return;
+    }
+
+    shareVisual.hidden = false;
+    shareComposerStatus.value = "Generating a bounded local PNG preview.";
+    const blocks = textSourceBlocks(allowedSelection.chapterId);
+    const context = pageTurnShareContext(
+      allowedSelection.target,
+      blocks,
+      resolvedSharePolicy.policy.visual.maximumContextCharacters,
+    );
+    const renderer = await import("./share-renderer.js");
+    if (
+      destroyed ||
+      controller.signal.aborted ||
+      version !== shareComposerVersion
+    ) {
+      return;
+    }
+    const rendered = await renderer.renderPageTurnShareImage(
+      {
+        quote: allowedSelection.quote,
+        contextBefore: context.before,
+        contextAfter: context.after,
+        title: manifest.title,
+        authors: manifest.authors.map(({ name }) => name),
+        chapterTitle: chapter?.title ?? "Current passage",
+        runningTitle: chapter?.title ?? manifest.title,
+        editionId: manifest.editionId,
+        source: payload.url,
+        citation: shareCitationText(chapter),
+        appearance: currentAppearance,
+      },
+      controller.signal,
+    );
+    if (
+      destroyed ||
+      controller.signal.aborted ||
+      version !== shareComposerVersion ||
+      !shareDialog.open
+    ) {
+      return;
+    }
+    shareComposerImage = rendered.blob;
+    try {
+      shareComposerFile = new File([rendered.blob], rendered.fileName, {
+        type: "image/png",
+        lastModified: 0,
+      });
+    } catch {
+      shareComposerFile = undefined;
+    }
+    shareComposerObjectUrl = URL.createObjectURL(rendered.blob);
+    shareImage.src = shareComposerObjectUrl;
+    const canCopyImage =
+      typeof globalThis.ClipboardItem === "function" &&
+      typeof navigator.clipboard?.write === "function";
+    shareCopyImage.hidden = false;
+    shareCopyImage.disabled = !canCopyImage;
+    shareCopyImage.title = canCopyImage
+      ? "Copy the generated PNG"
+      : "PNG clipboard writing is unavailable in this browser or embedding policy";
+    const canDownload = downloadAllowedByHost();
+    shareDownload.hidden = !canDownload;
+    shareDownload.disabled = !canDownload;
+    shareOpenImage.hidden = false;
+    shareOpenImage.disabled = false;
+    shareFinal.disabled = typeof navigator.share !== "function";
+    const capabilityMessage =
+      (canCopyImage ? "" : " PNG clipboard writing is unavailable.") +
+      (canDownload
+        ? ""
+        : " Direct download is unavailable; use Open image in new tab.") +
+      (shareFinal.disabled
+        ? " System sharing is unavailable; use the independent copy or save actions."
+        : "");
+    shareComposerStatus.value = (shareComposerFile
+      ? "Visual share preview ready. The PNG was generated locally."
+      : "Visual preview ready, but this browser cannot create a shareable File. Text, copy, and image save actions remain available.") +
+      capabilityMessage;
+  } catch (error) {
+    if (
+      controller.signal.aborted ||
+      version !== shareComposerVersion ||
+      destroyed
+    ) {
+      return;
+    }
+    shareVisual.hidden = true;
+    shareFinal.disabled = typeof navigator.share !== "function";
+    shareComposerStatus.value =
+      error instanceof Error
+        ? `Visual preview failed: ${error.message}. Quote and link sharing remain available.`
+        : "Visual preview failed. Quote and link sharing remain available.";
+    if (shareFinal.disabled) {
+      shareComposerStatus.value +=
+        " System sharing is unavailable; use Copy.";
+    }
+  }
+}
+
+async function shareCurrentLocation(
+  requestedSelection: V3Selection | undefined = pendingSelection,
+  preparedSelection?: Readonly<{
+    value: V3PermittedShareSelection | undefined;
+  }>,
+): Promise<void> {
+  if (
+    !manifest ||
+    sharing ||
+    !canCreateDurableLinks ||
+    !shareCapabilities.location
+  ) {
+    return;
+  }
+  sharing = true;
+  const version = ++shareOperationVersion;
+  shareStatus.value = "Preparing reading link";
   renderControls();
+  try {
+    if (requestedSelection && !requestedSelection.target) {
+      shareStatus.value = "Selected text is still being prepared";
+      return;
+    }
+    const selectedText =
+      preparedSelection === undefined
+        ? await permittedShareSelection(requestedSelection)
+        : preparedSelection.value;
+    if (destroyed || version !== shareOperationVersion) {
+      return;
+    }
+    const location = selectedShareLocation(requestedSelection);
+    const chapter = shareChapterFor(location);
+    const title = chapter
+      ? `${manifest.title}: ${chapter.title}`
+      : manifest.title;
+    const url = readingLocationUrl(location, false, selectedText, true);
+    shareStatus.value = await shareReadingLocation(
+      title,
+      url.href,
+      selectedText?.quote,
+    );
+    if (destroyed || version !== shareOperationVersion) {
+      return;
+    }
+    if (requestedSelection) {
+      selectionCaptureVersion += 1;
+      pendingSelection = undefined;
+    }
+  } catch (error) {
+    if (!destroyed && version === shareOperationVersion) {
+      shareStatus.value =
+        error instanceof Error
+          ? `Sharing failed: ${error.message}`
+          : "Sharing failed";
+    }
+  } finally {
+    if (!destroyed && version === shareOperationVersion) {
+      sharing = false;
+      renderControls();
+    }
+  }
+}
+
+async function shareValidatedSelection(
+  current: V3ValidatedSelection,
+): Promise<void> {
+  const preparationVersion = ++sharePreparationVersion;
+  const selectionVersion = selectionCaptureVersion;
+  try {
+    const allowedSelection = await permittedShareSelection(current.selection);
+    if (
+      destroyed ||
+      preparationVersion !== sharePreparationVersion ||
+      selectionVersion !== selectionCaptureVersion ||
+      pendingSelection !== current.selection
+    ) {
+      return;
+    }
+    dispatchShareSelectionAction(current.selection, allowedSelection);
+    if (shareComposerEnabled) {
+      await openShareComposer(current, allowedSelection);
+    } else {
+      await shareCurrentLocation(current.selection, {
+        value: allowedSelection,
+      });
+      dismissSelectionActions(true, selectionFocusActive);
+    }
+  } catch (error) {
+    if (
+      !destroyed &&
+      preparationVersion === sharePreparationVersion &&
+      selectionVersion === selectionCaptureVersion
+    ) {
+      showSelectionFeedback(
+        error instanceof Error
+          ? `Sharing failed: ${error.message}`
+          : "Sharing failed",
+        0,
+      );
+    }
+  }
+}
+
+async function shareFromPrimaryControl(): Promise<void> {
+  const current = pendingSelection?.target
+    ? currentSelectionAction()
+    : undefined;
+  if (current) {
+    await shareValidatedSelection(current);
+    return;
+  }
+  await shareCurrentLocation(undefined);
 }
 
 function pageContainsAnchor(page: PrototypePage, anchor: string): boolean {
@@ -6009,7 +6740,21 @@ async function restoreTextTargetFromUrl(
   isCurrent: () => boolean = () => true,
 ): Promise<void> {
   clearSharedTextTarget();
-  if (!selectionToken || !manifest) {
+  delete reader.dataset.v3SharedEdition;
+  if (!manifest) {
+    return;
+  }
+  if (editionId) {
+    const matchesEdition = editionId === manifest.editionId;
+    reader.dataset.v3SharedEdition = matchesEdition ? "resolved" : "unresolved";
+    if (!matchesEdition) {
+      shareStatus.value =
+        "Shared passage belongs to a different publication edition";
+      console.warn("V3 shared passage has no matching publication edition");
+      return;
+    }
+  }
+  if (!selectionToken) {
     return;
   }
   const chapterState = chapterStates.find(
@@ -6138,6 +6883,7 @@ async function restoreHistoryLocation(): Promise<void> {
 }
 
 function onPopState(): void {
+  closeShareComposer(false);
   void restoreHistoryLocation().catch((error: unknown) => {
     reportFailure("V3 could not restore the browser location", error);
   });
@@ -6485,9 +7231,38 @@ increaseFont.addEventListener(
 );
 shareButton.addEventListener(
   "click",
-  () => void shareCurrentLocation(),
+  () => void shareFromPrimaryControl(),
   listenerOptions,
 );
+shareDialog.addEventListener(
+  "close",
+  () => {
+    const restoreFocus = restoreFocusAfterShareClose;
+    restoreFocusAfterShareClose = true;
+    cancelShareComposerWork();
+    dismissSelectionActions();
+    if (restoreFocus) {
+      restoreShareComposerFocus();
+    } else {
+      shareComposerReturnFocus = undefined;
+      shareComposerReturnFocusHadTabindex = false;
+    }
+  },
+  listenerOptions,
+);
+shareFinal.addEventListener("click", () => void finalShare(), listenerOptions);
+shareCopyText.addEventListener(
+  "click",
+  () => void copyShareText(),
+  listenerOptions,
+);
+shareCopyImage.addEventListener(
+  "click",
+  () => void copyShareImage(),
+  listenerOptions,
+);
+shareDownload.addEventListener("click", downloadShareImage, listenerOptions);
+shareOpenImage.addEventListener("click", openShareImage, listenerOptions);
 appearanceButton.addEventListener(
   "click",
   openAppearanceDialog,
@@ -6782,6 +7557,7 @@ const onKeyDown = (event: KeyboardEvent) => {
     mediaDialog.open ||
     appearanceDialog.open ||
     exploreDialog.open ||
+    shareDialog.open ||
     event.altKey ||
     event.ctrlKey ||
     event.metaKey ||
@@ -6872,6 +7648,7 @@ function destroy(): void {
     return;
   }
   destroyed = true;
+  closeShareComposer(false);
   lifecycle.abort();
   requestController.abort();
   observer.disconnect();

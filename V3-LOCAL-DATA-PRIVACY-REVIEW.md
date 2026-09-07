@@ -2,13 +2,13 @@
 
 | Field | Decision |
 |---|---|
-| Status | Approved and implemented for versioned local storage and marginalia |
+| Status | Approved and implemented for versioned local storage, marginalia, and policy-gated visual sharing |
 | Accounts | None |
 | Remote annotation service | None |
 | Analytics | None |
 | Storage | Same-origin IndexedDB; resume/typography remain in `localStorage` |
 | Export | Explicit local Markdown or version 2 JSON download |
-| Sharing | Explicit contextual Copy or Share action |
+| Sharing | Explicit contextual Copy or pre-share composer action |
 
 ## Data handled
 
@@ -31,11 +31,19 @@ send no personal data to an application service. Search fetches static
 publication chapters from the same deployment and retains a text index only in
 memory.
 
-Selected text leaves the reader only after the reader activates **Copy** or
-**Share selection**. Copy writes only the normalized selected text after the
-explicit action and truthfully instructs manual browser copying when clipboard
-access is unavailable. Share hands the exact selector and edition-bound
-location to the existing explicit share flow.
+Selected text leaves the reader only after the reader activates **Copy** or a
+final action in **Share selection**. The pre-share composer displays the exact
+policy-approved quote, publication identity, citation, URL, disclosure, and
+optional generated PNG before the system share, clipboard, or save action.
+Copy writes only the displayed normalized quote and link. Missing policy emits
+only a public anchor and citation; invalid policy disables sharing.
+
+Visual output is rendered locally from supplied public semantic text and
+resolved appearance values. It is not a DOM screenshot, does not read
+cross-origin pixels, and never reads or uploads private notes, annotations,
+stored highlights, toolbars, or arbitrary live DOM. The selected public quote
+is the only highlight represented. Equivalent quote and citation text remains
+outside the image.
 
 Annotation export creates a local Markdown or version 2 JSON `Blob` after an
 explicit export/backup action. Import reads only the local file selected by the
@@ -44,6 +52,15 @@ reader. V3 does not upload the file or choose a remote destination.
 ## Controls and limits
 
 - Selection is capped at 2,000 characters.
+- Publication quote limits are capped at 2,000 characters; hosted publications
+  use 800. Visual context defaults to and is capped at 240 characters.
+- Visual output is one PNG with longest edge at most 1,600 px, area at most
+  2.1 MP, encoded size at most 4 MB, and estimated canvas bytes at most 32 MB.
+- Canvas rendering is dynamically imported after Share and cancelled or
+  generation-guarded on close, navigation, repagination, and destroy.
+- `navigator.canShare()` receives the exact File payload before image sharing.
+  Clipboard image writing requires both `ClipboardItem` and `clipboard.write`;
+  download and new-tab save controls report unsupported embedding capabilities.
 - Annotation notes are capped at 4,000 characters.
 - Unsupported cross-page selections are rejected.
 - Saved locations use stable source anchors rather than responsive page
@@ -80,6 +97,6 @@ reader. V3 does not upload the file or choose a remote destination.
   revealed page copies are inert, `aria-hidden`, have no IDs or controls, and
   the complete note remains available through a standard-font dialog/sheet and
   Explore. Grouped collisions expose an explicit note count.
-
-An explicit pre-share preview remains required if sharing moves beyond the
-browser/OS share surface.
+- The share composer is a labeled modal with an exact textual equivalent,
+  policy-reduced controls, live operation status, OS-cancellation messaging,
+  and focus return to the invoking control or source passage.

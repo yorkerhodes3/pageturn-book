@@ -38,6 +38,8 @@ const reader: PageTurnBookHandle = createPageTurnBook({
   libraryUrl: new URL("../shelf/", globalThis.location.href),
   appearanceControls: true,
   selectionActions: true,
+  shareComposer: true,
+  sharePolicy: book.sharePolicy,
   embedded: query.get("embed") === "1",
   keyboardScope: "document",
   urlMode: "managed",

@@ -125,13 +125,29 @@ export {
   type PageTurnBookMediaTreatment,
   type PageTurnBookOptions,
   type PageTurnSelectionActionDetail,
+  type PageTurnShareSelectionActionDetail,
   type PageTurnSelectionActionShortcut,
 } from "./reader.js";
 export {
   mountPageTurnBookShell,
   type PageTurnBookShell,
 } from "./shell.js";
-export { shareReadingLocation } from "./share.js";
+export {
+  PAGE_TURN_SHARE_CONTEXT_DEFAULT_CHARACTERS,
+  PAGE_TURN_SHARE_CONTEXT_MAX_CHARACTERS,
+  PAGE_TURN_SHARE_QUOTE_MAX_CHARACTERS,
+  createPageTurnSharePayload,
+  pageTurnShareCapabilities,
+  pageTurnShareContext,
+  pageTurnShareTargetEnd,
+  resolvePageTurnSharePolicy,
+  shareReadingLocation,
+  type PageTurnResolvedSharePolicy,
+  type PageTurnShareCapabilities,
+  type PageTurnShareContext,
+  type PageTurnSharePayload,
+  type PageTurnSharePolicy,
+} from "./share.js";
 
 import {
   attachPageTurnBook,

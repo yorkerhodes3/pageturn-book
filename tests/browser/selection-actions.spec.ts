@@ -155,6 +155,9 @@ test("shows pointer actions without stealing focus and copies exact text", async
         ).__sharedSelection,
     ),
   ).toBe(selected);
+  await page
+    .getByRole("button", { name: "Close share preview" })
+    .click();
 
   await page.evaluate(() => {
     Object.defineProperty(navigator, "clipboard", {

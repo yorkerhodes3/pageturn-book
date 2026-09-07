@@ -43,6 +43,11 @@ SDK mounts ignore the host page's query parameters and do not rewrite browser
 history by default. Set `urlMode: "managed"` only when PageTurn owns the
 book/chapter/hash URL, as it does in the hosted reference reader.
 
+Selected quote and visual sharing are disabled unless the host supplies an
+explicit `sharePolicy`; missing policy permits only a host-provided public
+anchor link. `shareComposer` is also opt-in for SDK consumers. See the SDK guide
+for the fail-closed policy matrix, limits, embedding permissions, and fallbacks.
+
 In unmanaged mode, provide `libraryUrl` to show the Library control and
 `locationUrl` to enable durable sharing and annotation-export links. Controls
 that cannot be correct for the host application remain hidden or disabled.
@@ -82,7 +87,8 @@ examples.
 - Hierarchical contents and demand-loaded search.
 - Local bookmarks, resume restart, accessible contextual selection actions,
   exact highlights, collision-managed outer-margin annotations with responsive
-  markers and local preferences, selected-text sharing, and Markdown export.
+  markers and local preferences, policy-gated exact quote sharing with a local
+  book-style PNG preview, and Markdown export.
 - Deferred Off, On-page, and Pop-out publication media treatments.
 - Typed material, paper, typography, binding, and curvature configuration with
   live appearance presets from the Style gear.

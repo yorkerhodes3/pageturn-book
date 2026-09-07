@@ -3,6 +3,8 @@ export type PageTurnBookShell = Readonly<{
   destroy(): void;
 }>;
 
+let nextShellInstanceId = 0;
+
 const shellMarkup = `
   <main class="v3-main">
     <section
@@ -583,6 +585,87 @@ const shellMarkup = `
   </dialog>
 
   <dialog
+    class="v3-share-dialog"
+    data-v3-share-dialog
+  >
+    <div class="v3-share-frame">
+      <form method="dialog" class="v3-dialog-close">
+        <button type="submit" aria-label="Close share preview">Close</button>
+      </form>
+      <h2 data-v3-share-dialog-title>Share preview</h2>
+      <p data-v3-share-policy></p>
+      <blockquote data-v3-share-quote hidden></blockquote>
+      <dl class="v3-share-metadata">
+        <div>
+          <dt>Book</dt>
+          <dd data-v3-share-book></dd>
+        </div>
+        <div>
+          <dt>Authors</dt>
+          <dd data-v3-share-authors></dd>
+        </div>
+        <div>
+          <dt>Chapter</dt>
+          <dd data-v3-share-chapter></dd>
+        </div>
+        <div>
+          <dt>Edition</dt>
+          <dd data-v3-share-edition></dd>
+        </div>
+        <div>
+          <dt>Source and citation</dt>
+          <dd data-v3-share-citation></dd>
+        </div>
+        <div>
+          <dt>Public link</dt>
+          <dd>
+            <a
+              data-v3-share-preview-url
+              target="_blank"
+              rel="noopener"
+              referrerpolicy="no-referrer"
+            ></a>
+            <span class="v3-visually-hidden"> Opens in a new tab.</span>
+          </dd>
+        </div>
+      </dl>
+      <figure data-v3-share-visual hidden>
+        <img
+          data-v3-share-image
+          alt="Book-style visual preview of the selected public quote"
+        >
+        <figcaption data-v3-share-image-caption>
+          Generated locally from public semantic publication text. The quote and
+          citation remain available as text outside this image.
+        </figcaption>
+      </figure>
+      <p data-v3-share-disclosure></p>
+      <p class="v3-share-embed-note" data-v3-share-embed-note hidden>
+        Embedded sharing requires host permission for Web Share and clipboard
+        access. Image downloads require sandboxed hosts to allow downloads.
+      </p>
+      <div class="v3-share-actions">
+        <button type="button" data-v3-share-final disabled>Share…</button>
+        <button type="button" data-v3-share-copy-text disabled>
+          Copy quote + link
+        </button>
+        <button type="button" data-v3-share-copy-image hidden disabled>
+          Copy image
+        </button>
+        <button type="button" data-v3-share-download hidden disabled>
+          Download image
+        </button>
+        <button type="button" data-v3-share-open-image hidden disabled>
+          Open image in new tab
+        </button>
+      </div>
+      <output data-v3-share-composer-status role="status" aria-live="polite">
+        Preparing share preview.
+      </output>
+    </div>
+  </dialog>
+
+  <dialog
     class="v3-annotation-dialog"
     data-v3-annotation-dialog
     aria-labelledby="v3-annotation-dialog-title"
@@ -619,6 +702,30 @@ export function mountPageTurnBookShell(host: HTMLElement): PageTurnBookShell {
   template.innerHTML = shellMarkup;
   host.classList.add("pageturn-book", "v3-page");
   host.replaceChildren(template.content.cloneNode(true));
+  const shareDialog = host.querySelector<HTMLElement>("[data-v3-share-dialog]");
+  const shareTitle = host.querySelector<HTMLElement>(
+    "[data-v3-share-dialog-title]",
+  );
+  const shareDisclosure = host.querySelector<HTMLElement>(
+    "[data-v3-share-disclosure]",
+  );
+  if (!shareDialog || !shareTitle || !shareDisclosure) {
+    throw new Error("PageTurn share shell is incomplete");
+  }
+  let shareTitleId: string;
+  let shareDisclosureId: string;
+  do {
+    const instanceId = ++nextShellInstanceId;
+    shareTitleId = `v3-share-dialog-title-${instanceId}`;
+    shareDisclosureId = `v3-share-disclosure-${instanceId}`;
+  } while (
+    host.ownerDocument.getElementById(shareTitleId) ||
+    host.ownerDocument.getElementById(shareDisclosureId)
+  );
+  shareTitle.id = shareTitleId;
+  shareDisclosure.id = shareDisclosureId;
+  shareDialog.setAttribute("aria-labelledby", shareTitleId);
+  shareDialog.setAttribute("aria-describedby", shareDisclosureId);
 
   let destroyed = false;
   return {

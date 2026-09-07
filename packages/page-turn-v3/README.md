@@ -164,6 +164,19 @@ const reader = createPageTurnBook({
   appearanceControls: true,
   appearancePreset: "modern-lab",
   selectionActions: true,
+  shareComposer: true,
+  sharePolicy: {
+    location: "public",
+    quote: { permitted: true, maximumCharacters: 800 },
+    visual: {
+      permitted: true,
+      maximumContextCharacters: 240,
+      sourceImages: "none",
+    },
+  },
+  // Required for image downloads when the reader is embedded. The host must
+  // also grant any applicable iframe sandbox/CSP download permission.
+  allowShareImageDownload: true,
   annotationAppearance: {
     fontFamily: '"Segoe Print", "Bradley Hand", cursive',
     fontScale: 1,
@@ -203,9 +216,48 @@ selection is announced, and `Alt+Shift+A` (`Option+Shift+A` on macOS) moves
 focus into the toolbar. Override the command with
 `selectionActionShortcut: { key, altKey, ctrlKey, metaKey, shiftKey }`, or set
 it to `false`. The reader emits `pageturn:share-selection` and
-`pageturn:annotate-selection`; each event's `detail` is a
+`pageturn:annotate-selection`. Annotation detail is a
 `PageTurnSelectionActionDetail` containing normalized text, the exact
-`PageTurnTextTargetV1`, and its edition-scoped location.
+`PageTurnTextTargetV1`, and its edition-scoped location. Share detail is a
+`PageTurnShareSelectionActionDetail` discriminated by `kind`: `"quote"`
+contains only the policy-bounded text and target, while `"location"` contains
+only the edition-scoped public location.
+
+### Share policy and composer
+
+Excerpt and visual sharing are host opt-ins. Set both `shareComposer: true` and
+an explicit `PageTurnSharePolicy` to show the pre-share preview for selected
+text. The preview shows the exact public quote, book/authors/chapter/immutable
+edition, citation, URL, disclosure, and—only when permitted—a deterministic
+locally generated book-style PNG.
+
+`maximumCharacters` must be 2–2,000 when quotes are permitted.
+`maximumContextCharacters` must be 0–240; 240 is the recommended default.
+`visual.permitted: true` is invalid when quote sharing is false. Invalid policy
+disables sharing. When policy is omitted, PageTurn allows only a host-provided
+public anchor location: it does not emit selected text, an exact selector, Text
+Fragment, shared highlight, or image. The hosted catalog uses 800 quote
+characters, 240 visual context characters, and `sourceImages: "none"`.
+
+The renderer is imported only after Share activation. It receives public
+semantic text and resolved appearance values rather than inspecting or
+screenshotting the reader DOM. It does not upload, sample cross-origin pixels,
+or include toolbars, annotations, private highlights, or notes. PNG output is
+bounded to a 1,600 px longest edge, 2.1 MP, 4 MB encoded, and 32 MB estimated
+canvas memory. It waits briefly for all configured font families, caches that
+decision for repeatable rendering, and uses stable generic fallbacks when they
+are unavailable. Quotes adapt down to a readable minimum; if complete text
+cannot fit without distortion, visual generation declines while quote/link
+sharing remains available.
+
+The final **Share…** action checks `navigator.canShare()` with the exact File
+payload. Unsupported file targets receive equivalent quote/citation text and
+the URL without an image claim. Copy-image is enabled only with
+`ClipboardItem` plus `clipboard.write`; download and new-tab save fallbacks are
+capability-labeled. Embedded hosts must allow `web-share` and clipboard access
+through Permissions Policy. Top-level image downloads are enabled by default.
+Embedded image downloads require `allowShareImageDownload: true` plus the
+applicable iframe sandbox and CSP permissions; PageTurn otherwise fails closed.
 
 ### Appearance configuration
 

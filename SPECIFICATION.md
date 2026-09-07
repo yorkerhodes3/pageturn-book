@@ -1650,12 +1650,36 @@ R1 may ship without a service worker. If offline support is enabled:
 | PRIV-006 | Diagnostic events exclude selected text and note bodies. |
 | PRIV-007 | Share actions show what content will leave the device. |
 | PRIV-008 | Future synchronization, collaboration, and AI require separate privacy review. |
+| PRIV-009 | Quote selectors, Text Fragments, and visual output require a valid explicit publication share policy; absent policy permits only a public anchor. |
+| PRIV-010 | Visual sharing renders supplied public semantic content locally and excludes private annotations, stored highlights, arbitrary DOM capture, cross-origin pixels, and uploads. |
 
 The V3 beta decision is recorded in
 [V3-LOCAL-DATA-PRIVACY-REVIEW.md](./V3-LOCAL-DATA-PRIVACY-REVIEW.md).
 It permits edition-scoped local bookmarks/annotations, explicit selected-text
 sharing, and local Markdown export. It does not permit synchronization,
 collaboration, identity, remote backup, analytics, or AI processing.
+
+The public V3 share contract is:
+
+```ts
+type PageTurnSharePolicy = Readonly<{
+  location: "public" | "disabled";
+  quote: Readonly<{ permitted: boolean; maximumCharacters: number }>;
+  visual: Readonly<{
+    permitted: boolean;
+    maximumContextCharacters: number;
+    sourceImages: "none" | "same-origin-approved";
+  }>;
+}>;
+```
+
+Quote limits are SDK-capped at 2,000 characters and visual context at 240
+characters. Visual permission with quote permission disabled
+is invalid, and invalid policy disables sharing. `PageTurnBookOptions` exposes
+optional `sharePolicy` and `shareComposer`; both remain lightweight opt-ins.
+Generated-image downloads are enabled by default only for top-level readers.
+Embedded readers require `allowShareImageDownload: true` after the host grants
+the applicable iframe sandbox and CSP permissions.
 
 ## 28. Security
 

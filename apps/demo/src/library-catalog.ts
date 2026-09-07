@@ -4,6 +4,7 @@ import type {
   BookshelfVolume,
   PageTurnAppearancePresetId,
   PageTurnPublicationAppearance,
+  PageTurnSharePolicy,
 } from "@ethical-tech/pageturn-book";
 
 export const PRODUCTION_REVISION =
@@ -16,6 +17,7 @@ export type CatalogBook = {
   collection: string;
   pageCount: number;
   appearance: PageTurnPublicationAppearance;
+  sharePolicy: PageTurnSharePolicy;
   subtitle?: string;
   semanticHref?: string;
   geometryHref?: string;
@@ -25,6 +27,16 @@ export type CatalogBook = {
   extentLabel?: string;
   chaptersStartOnRight?: false;
   placement?: BookshelfVolume["placement"];
+};
+
+export const HOSTED_PUBLICATION_SHARE_POLICY: PageTurnSharePolicy = {
+  location: "public",
+  quote: { permitted: true, maximumCharacters: 800 },
+  visual: {
+    permitted: true,
+    maximumContextCharacters: 240,
+    sourceImages: "none",
+  },
 };
 
 const palettes = [
@@ -273,6 +285,7 @@ export const LIBRARY_BOOKS: CatalogBook[] = catalogSource.map(
       collection,
       pageCount,
       appearance: appearance(id, index, pageCount, shelfLabel),
+      sharePolicy: HOSTED_PUBLICATION_SHARE_POLICY,
       semanticEdition: id === "what-is-ethical-ai" ? "2026-07" : "2026-08",
       facsimile: true,
       ...(subtitle ? { subtitle } : {}),
@@ -318,6 +331,7 @@ LIBRARY_BOOKS.push({
       shelfLabel: "PLURALITY",
     },
   },
+  sharePolicy: HOSTED_PUBLICATION_SHARE_POLICY,
 });
 
 export const LINKED_SOURCE_BOOKS: CatalogBook[] = [
@@ -350,6 +364,7 @@ export const LINKED_SOURCE_BOOKS: CatalogBook[] = [
         shelfLabel: "THE HUMAN CHOICE",
       },
     },
+    sharePolicy: HOSTED_PUBLICATION_SHARE_POLICY,
   },
 ];
 

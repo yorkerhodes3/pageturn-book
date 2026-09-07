@@ -229,6 +229,10 @@
   opacity: 0.48;
 }
 
+.v3-selection-actions button[hidden] {
+  display: none;
+}
+
 .v3-selection-actions svg {
   width: 1.15rem;
   height: 1.15rem;
@@ -1617,6 +1621,142 @@ button.v3-marginalia-group {
   box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
 }
 
+.v3-share-dialog {
+  width: min(66rem, calc(100% - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #a7864c;
+  background: #111817;
+  color: #ede5d5;
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
+}
+
+.v3-share-dialog::backdrop {
+  background: rgb(4 8 8 / 78%);
+}
+
+.v3-share-frame {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.9fr) minmax(18rem, 1.1fr);
+  gap: 0.8rem 1.2rem;
+  padding: 1rem;
+}
+
+.v3-share-frame > .v3-dialog-close,
+.v3-share-frame > h2,
+.v3-share-frame > [data-v3-share-policy],
+.v3-share-frame > [data-v3-share-quote],
+.v3-share-frame > [data-v3-share-disclosure],
+.v3-share-frame > .v3-share-embed-note,
+.v3-share-frame > .v3-share-actions,
+.v3-share-frame > output {
+  grid-column: 1 / -1;
+}
+
+.v3-share-frame h2,
+.v3-share-frame p,
+.v3-share-frame blockquote,
+.v3-share-frame figure,
+.v3-share-frame dl {
+  margin-block: 0;
+}
+
+.v3-share-frame h2 {
+  font: 500 clamp(1.25rem, 3vw, 2rem) / 1.1 Georgia, "Times New Roman", serif;
+}
+
+.v3-share-frame [data-v3-share-policy],
+.v3-share-frame [data-v3-share-disclosure],
+.v3-share-embed-note {
+  color: #c9c0af;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.v3-share-frame blockquote {
+  padding: 0.75rem 1rem;
+  border-inline-start: 0.25rem solid #c6a45f;
+  background: rgb(255 248 222 / 5%);
+  color: #f0e4ca;
+  font: 1rem/1.55 Georgia, "Times New Roman", serif;
+  white-space: pre-line;
+}
+
+.v3-share-metadata {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.v3-share-metadata div {
+  min-width: 0;
+}
+
+.v3-share-metadata dt {
+  color: #d9bc80;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.v3-share-metadata dd {
+  min-width: 0;
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.v3-share-metadata a {
+  color: #b9ddd6;
+}
+
+.v3-share-frame figure {
+  min-width: 0;
+}
+
+.v3-share-frame figure img {
+  display: block;
+  width: 100%;
+  max-height: min(48dvh, 34rem);
+  object-fit: contain;
+  background: #fff;
+}
+
+.v3-share-frame figcaption {
+  margin-top: 0.4rem;
+  color: #c9c0af;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.v3-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.v3-share-frame button {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #a7864c;
+  background: #17211f;
+  color: #ead9b7;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.v3-share-frame button:disabled {
+  border-color: #4c4a43;
+  color: #77736b;
+  cursor: not-allowed;
+}
+
+.v3-share-frame [hidden] {
+  display: none !important;
+}
+
 .v3-annotation-dialog {
   width: min(28rem, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
@@ -2132,6 +2272,7 @@ button.v3-marginalia-group {
   .v3-explore-dialog,
   .v3-appearance-dialog,
   .v3-media-dialog,
+  .v3-share-dialog,
   .v3-annotation-dialog {
     width: calc(100% - 0.5rem);
     max-height: calc(100dvh - 0.5rem);
@@ -2151,6 +2292,14 @@ button.v3-marginalia-group {
 
   .v3-appearance-frame {
     grid-template-columns: 1fr;
+  }
+
+  .v3-share-frame {
+    grid-template-columns: 1fr;
+  }
+
+  .v3-share-frame > * {
+    grid-column: 1;
   }
 
   .v3-appearance-frame > * {
@@ -2230,7 +2379,8 @@ button.v3-marginalia-group {
 
 @media (forced-colors: active) {
   .v3-selection-actions,
-  .v3-selection-feedback {
+  .v3-selection-feedback,
+  .v3-share-dialog {
     border: 2px solid ButtonText;
     background: Canvas;
     color: CanvasText;
