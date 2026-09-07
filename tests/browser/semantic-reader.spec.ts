@@ -3208,7 +3208,7 @@ test("recovers when the initial V3 chapter request fails", async ({ page }) => {
   await expect(page).toHaveURL(/chapter=6-4.*#6-4$/);
 });
 
-test("cancels an active turn before a chapter window rebuild", async ({
+test("defers a chapter window rebuild until the active turn ends", async ({
   page,
 }) => {
   let releaseNeighbor: (() => void) | undefined;
@@ -3233,6 +3233,9 @@ test("cancels an active turn before a chapter window rebuild", async ({
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-opening", "false");
   await neighborRequested;
+  const startingPageIndex = Number(
+    await reader.getAttribute("data-v3-page-index"),
+  );
 
   const spread = page.locator("[data-v3-spread]");
   const bounds = await spread.boundingBox();
@@ -3249,19 +3252,41 @@ test("cancels an active turn before a chapter window rebuild", async ({
   );
   await page.mouse.down();
   await page.mouse.move(
-    bounds.x + bounds.width * 0.62,
+    bounds.x + bounds.width * 0.15,
     bounds.y + bounds.height * 0.2,
     { steps: 4 },
   );
   await expect(reader).toHaveAttribute("data-v3-turning", "true");
+  const paginationVersion = Number(
+    await reader.getAttribute("data-v3-pagination-version"),
+  );
   releaseNeighbor?.();
 
   await expect(reader).toHaveAttribute(
     "data-v3-loaded-chapter-ids",
     "1,2-0,2-1",
   );
-  await expect(reader).toHaveAttribute("data-v3-turning", "false");
+  await expect(reader).toHaveAttribute("data-v3-turning", "true");
+  await expect(reader).toHaveAttribute(
+    "data-v3-pagination-version",
+    String(paginationVersion),
+  );
   await page.mouse.up();
+  await expect(reader).toHaveAttribute("data-v3-turning", "false");
+  await expect
+    .poll(() =>
+      reader
+        .getAttribute("data-v3-pagination-version")
+        .then((value) => Number(value)),
+    )
+    .toBeGreaterThan(paginationVersion);
+  await expect
+    .poll(() =>
+      reader
+        .getAttribute("data-v3-page-index")
+        .then((value) => Number(value)),
+    )
+    .toBeGreaterThan(startingPageIndex);
   const indices = await reader.evaluate((node) => ({
     index: Number(node.getAttribute("data-v3-page-index")),
     count: Number(node.getAttribute("data-v3-page-count")),

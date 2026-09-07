@@ -7749,13 +7749,16 @@ async function ensureChapterSet(
   requestedIndices: readonly number[],
   preservation: ReturnType<typeof currentPreservation>,
   locationUpdate: LocationUpdate = "replace",
+  refreshPreservationAfterTurn = false,
 ): Promise<boolean> {
   const desired = [...new Set(requestedIndices)]
     .filter((index) => index >= 0 && index < chapterStates.length)
     .sort((left, right) => left - right);
   const windowIsReady =
     desired.every(
-      (index) => chapterStates[index]?.status === "ready",
+      (index) =>
+        chapterStates[index]?.status === "ready" &&
+        chapterStates[index]?.pages !== undefined,
     ) &&
     chapterStates.every(
       ({ index, status }) => desired.includes(index) || status === "idle",
@@ -7765,6 +7768,20 @@ async function ensureChapterSet(
     return true;
   }
   const version = ++chapterWindowVersion;
+  let deferredForTurn = false;
+  const waitForActiveTurn = async (): Promise<boolean> => {
+    while (!destroyed && version === chapterWindowVersion && activeTurn) {
+      deferredForTurn = true;
+      await new Promise<void>((resolveIdle) =>
+        requestAnimationFrame(() => resolveIdle()),
+      );
+    }
+    return !destroyed && version === chapterWindowVersion;
+  };
+  const rebuildPreservation = () =>
+    refreshPreservationAfterTurn && deferredForTurn
+      ? currentPreservation()
+      : preservation;
   retainedChapterIndices = desired;
   status.textContent = `Loading chapter window · ${desired.length} chapters`;
   try {
@@ -7775,7 +7792,11 @@ async function ensureChapterSet(
       console.warn("V3 ignored a failure from an obsolete chapter window", error);
       return false;
     }
-    rebuildChapterSet(desired, preservation, locationUpdate);
+    if (!(await waitForActiveTurn())) {
+      releaseChaptersOutside(retainedChapterIndices);
+      return false;
+    }
+    rebuildChapterSet(desired, rebuildPreservation(), locationUpdate);
     throw error;
   }
   if (version !== chapterWindowVersion) {
@@ -7783,7 +7804,11 @@ async function ensureChapterSet(
     return false;
   }
 
-  rebuildChapterSet(desired, preservation, locationUpdate);
+  if (!(await waitForActiveTurn())) {
+    releaseChaptersOutside(retainedChapterIndices);
+    return false;
+  }
+  rebuildChapterSet(desired, rebuildPreservation(), locationUpdate);
   if (!opening) {
     reportReady();
   } else {
@@ -7796,6 +7821,7 @@ async function ensureChapterWindow(
   centerIndex: number,
   preservation = currentPreservation(),
   locationUpdate: LocationUpdate = "replace",
+  refreshPreservationAfterTurn = false,
 ): Promise<boolean> {
   const boundedCenter = Math.min(
     chapterStates.length - 1,
@@ -7805,11 +7831,17 @@ async function ensureChapterWindow(
     [boundedCenter - 1, boundedCenter, boundedCenter + 1],
     preservation,
     locationUpdate,
+    refreshPreservationAfterTurn,
   );
 }
 
 function queueChapterWindow(centerIndex = activeChapterIndex()): void {
-  void ensureChapterWindow(centerIndex).catch((error: unknown) => {
+  void ensureChapterWindow(
+    centerIndex,
+    currentPreservation(),
+    "replace",
+    true,
+  ).catch((error: unknown) => {
     reportFailure("V3 could not load the chapter window", error);
   });
 }
