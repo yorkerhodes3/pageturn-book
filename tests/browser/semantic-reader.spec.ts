@@ -134,6 +134,11 @@ test("documents implemented and planned capabilities on the dashboard", async ({
   await expect(
     page.getByRole("row", { name: /Local comments and annotations V3 beta/ }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("row", {
+      name: /Reviewed external source cards V3 implemented/,
+    }),
+  ).toBeVisible();
   await expect(page.getByText("~99.6%")).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Read What Is Ethical AI/ }),

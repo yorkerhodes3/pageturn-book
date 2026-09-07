@@ -405,6 +405,7 @@ type PageTurnSourceRecord = Readonly<{
       scope: "full-edition" | "excerpt" | "source-guide";
       basis: string;
       reviewedAt: string;
+      expiresAt?: string;
     }>;
   }>;
   courseReadingIds?: readonly string[];
@@ -456,7 +457,7 @@ type PageTurnSourceResolver = (
 
 Resolve in this order:
 
-1. exact pinned URL or repository revision;
+1. exact declared canonical or generated pinned URL/repository revision;
 2. normalized canonical URL or declared alias;
 3. normalized DOI;
 4. normalized ISBN;
@@ -478,7 +479,8 @@ Normalization rules:
   canonical-source action;
 - normalize DOI by removing a `doi:` or `https://doi.org/` prefix and
   lowercasing it;
-- normalize ISBN to digits plus a possible final `X` and validate its checksum;
+- normalize ISBN to digits plus a possible final `X`, require 978/979 for
+  ISBN-13, and validate its checksum;
 - require an exact declared repository URL and revision when a record pins a
   revision.
 
@@ -511,6 +513,8 @@ The public SDK remains backward compatible:
 
 - `sourceLinkMode: "direct"` is the default when no resolver is supplied;
 - `sourceLinkMode: "card"` requires a resolver and uses the card-first flow;
+- `"card"` renders `direct-external` as a no-fetch card, retaining differing
+  resolver/reviewed and authored destinations;
 - a host may explicitly configure `"direct-local"` after accepting the
   provenance tradeoff.
 
@@ -1439,7 +1443,7 @@ Acceptance:
 
 **Priority:** P1
 
-**Status:** Ready
+**Status:** Complete
 
 **Depends on:** None
 

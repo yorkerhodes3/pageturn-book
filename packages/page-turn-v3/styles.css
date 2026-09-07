@@ -1633,6 +1633,142 @@ button.v3-marginalia-group {
   box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
 }
 
+.v3-source-dialog {
+  width: min(44rem, calc(100% - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #a7864c;
+  background:
+    linear-gradient(rgb(19 28 27 / 97%), rgb(12 19 18 / 98%)),
+    repeating-linear-gradient(45deg, #111918 0 2px, #131c1b 2px 4px);
+  color: #ede5d5;
+  box-shadow: 0 2rem 5rem rgb(0 0 0 / 72%);
+}
+
+.v3-source-dialog::backdrop {
+  background: rgb(4 8 8 / 78%);
+}
+
+.v3-source-frame {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.v3-source-frame h2,
+.v3-source-frame h3,
+.v3-source-frame p,
+.v3-source-frame blockquote {
+  margin: 0;
+}
+
+.v3-source-frame h2 {
+  color: #fff4da;
+  font: 500 clamp(1.35rem, 3vw, 2rem) / 1.1 Georgia, "Times New Roman", serif;
+}
+
+.v3-source-availability {
+  color: #79d5c6;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.v3-source-frame blockquote {
+  padding: 0.7rem 0.85rem;
+  border-inline-start: 0.25rem solid #b99a5e;
+  background: rgb(255 248 222 / 5%);
+  color: #e0d4be;
+  font: 0.95rem/1.5 Georgia, "Times New Roman", serif;
+}
+
+.v3-source-metadata {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.v3-source-metadata div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.35fr) minmax(0, 1fr);
+  gap: 0.6rem;
+  padding-block: 0.26rem;
+  border-bottom: 1px solid rgb(211 179 116 / 14%);
+}
+
+.v3-source-metadata dt {
+  color: #bfb39c;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.v3-source-metadata dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+}
+
+.v3-source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.v3-source-actions a,
+.v3-source-actions button,
+.v3-source-frame [data-v3-source-candidates] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #a7864c;
+  background: #17211f;
+  color: #ead9b7;
+  cursor: pointer;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.v3-source-actions .v3-source-primary {
+  border-color: #79d5c6;
+  background: #286b61;
+  color: #fff;
+  order: -1;
+}
+
+.v3-source-actions :focus-visible,
+.v3-source-frame [data-v3-source-candidates] a:focus-visible,
+.v3-source-frame .v3-dialog-close button:focus-visible {
+  outline: 3px solid #f5ca69;
+  outline-offset: 2px;
+}
+
+.v3-source-frame [data-v3-source-candidates] {
+  padding: 0.75rem;
+  border: 1px solid rgb(211 179 116 / 28%);
+  background: rgb(8 13 12 / 52%);
+}
+
+.v3-source-frame [data-v3-source-candidate-list] {
+  display: grid;
+  gap: 0.6rem;
+  padding-inline-start: 1.3rem;
+}
+
+.v3-source-frame [data-v3-source-candidate-list] li > * {
+  margin-inline-end: 0.35rem;
+}
+
+.v3-source-frame [data-v3-source-status] {
+  min-height: 1.3rem;
+  color: #c9c0af;
+  font-size: 0.75rem;
+}
+
 .v3-share-dialog::backdrop {
   background: rgb(4 8 8 / 78%);
 }
@@ -2272,6 +2408,7 @@ button.v3-marginalia-group {
   .v3-explore-dialog,
   .v3-appearance-dialog,
   .v3-media-dialog,
+  .v3-source-dialog,
   .v3-share-dialog,
   .v3-annotation-dialog {
     width: calc(100% - 0.5rem);
@@ -2380,6 +2517,7 @@ button.v3-marginalia-group {
 @media (forced-colors: active) {
   .v3-selection-actions,
   .v3-selection-feedback,
+  .v3-source-dialog,
   .v3-share-dialog {
     border: 2px solid ButtonText;
     background: Canvas;

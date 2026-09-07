@@ -2,13 +2,14 @@
 
 | Field | Decision |
 |---|---|
-| Status | Approved and implemented for versioned local storage, marginalia, and policy-gated visual sharing |
+| Status | Approved and implemented for versioned local storage, marginalia, policy-gated visual sharing, and no-fetch source cards |
 | Accounts | None |
 | Remote annotation service | None |
 | Analytics | None |
 | Storage | Same-origin IndexedDB; resume/typography remain in `localStorage` |
 | Export | Explicit local Markdown or version 2 JSON download |
 | Sharing | Explicit contextual Copy or pre-share composer action |
+| External sources | Host-reviewed local registry; no card-open metadata fetch |
 
 ## Data handled
 
@@ -48,6 +49,21 @@ outside the image.
 Annotation export creates a local Markdown or version 2 JSON `Blob` after an
 explicit export/backup action. Import reads only the local file selected by the
 reader. V3 does not upload the file or choose a remote destination.
+
+Opening an enabled source card sends no third-party request. The card is built
+only from authored citation text/URL and optional host-supplied reviewed
+records. It never renders remote HTML. External navigation occurs only after
+the reader activates an explicitly labeled new-tab action, with `noopener` and
+`no-referrer`; Copy writes only the displayed authored URL. Resolver rejection
+is announced and retains that authored action. The default SDK mode remains
+direct authored navigation, while the hosted reader opts into card mode.
+
+Local-reading actions require an exact immutable edition and kind-matched,
+approved local rights. Full editions and excerpts additionally require approved
+top-level source rights. Link-only/unknown records can authorize only a
+separately approved original source guide. Malformed, missing, mismatched,
+expired runtime rights, unsafe URLs, and ambiguous matches expose no automatic
+local action. The demo registry is host code and is not imported by the SDK.
 
 ## Controls and limits
 
@@ -100,3 +116,8 @@ reader. V3 does not upload the file or choose a remote destination.
 - The share composer is a labeled modal with an exact textual equivalent,
   policy-reduced controls, live operation status, OS-cancellation messaging,
   and focus return to the invoking control or source passage.
+- Source cards use a labeled native modal, initially focus the local primary
+  action when one is approved, expose source type/domain/provenance/rights in
+  text, announce external/new-tab behavior and failures, and return focus to
+  the authored citation. Resolver work is aborted and generation-guarded on
+  close, reader navigation, and destroy.

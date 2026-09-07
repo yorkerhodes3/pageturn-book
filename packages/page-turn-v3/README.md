@@ -193,6 +193,71 @@ project-reviewed rights. The available treatments are `off`, `on`, and
 also set `keyboardScope: "document"` for full-page arrow-key navigation;
 embedded readers leave keyboard events outside their root untouched.
 
+### Reviewed source cards
+
+External links remain ordinary authored navigation by default. A host can pass
+reviewed records to the SDK's deterministic helper and opt into local,
+no-fetch cards:
+
+```ts
+import {
+  createPageTurnSourceResolver,
+  type PageTurnSourceRecord,
+} from "@ethical-tech/pageturn-book";
+
+const records: readonly PageTurnSourceRecord[] = [{
+  id: "approved-reading",
+  canonicalUrl: "https://example.org/book",
+  title: "Reviewed book",
+  sourceType: "book",
+  reviewedAt: "2026-09-01",
+  rights: { status: "approved", license: "CC BY 4.0" },
+  localReading: {
+    kind: "full-edition",
+    bookId: "reviewed-book",
+    editionId: "2026-09",
+    rights: {
+      status: "approved",
+      scope: "full-edition",
+      basis: "Publisher grant",
+      reviewedAt: "2026-09-01",
+      expiresAt: "2027-09-01",
+    },
+  },
+}];
+
+createPageTurnBook({
+  root,
+  bookId: "course",
+  manifestUrl: "/books/course/2026-09/manifest.json",
+  sourceResolver: createPageTurnSourceResolver(records),
+  sourceLinkMode: "card",
+  courseReadingIds: ["course-week-1"],
+  locationUrl: ({ bookId, editionId, chapterId, anchor }) =>
+    `/reader/?book=${bookId}&edition=${editionId}&chapter=${chapterId}#${anchor}`,
+});
+```
+
+`PageTurnSourceResolver` receives the authored `URL`, exact book/edition/
+chapter/anchor course context, and an `AbortSignal`. Results distinguish local
+publication, external card, ambiguity, and direct external navigation. The
+helper matches only pinned URL/repository revisions, normalized reviewed URLs
+and aliases, DOI, checksum-valid 978/979 ISBN, and explicit course IDs, in that order.
+It never performs fuzzy matching or network metadata lookup.
+
+In `"card"` mode every resolver result, including `direct-external`, remains a
+no-fetch card. Differing reviewed or resolver destinations are shown alongside
+the authored source, and Copy link retains the authored URL.
+
+`"card"` requires a resolver. `"direct-local"` is an explicit host opt-in and
+navigates only for a validated approved local target; otherwise it retains the
+authored external destination. Local full editions require approved
+`full-edition` source and local rights, excerpts require approved source plus
+`excerpt`/`full-edition` local rights, and independently authored source guides
+require `source-guide` local rights. Invalid or mismatched rights fail closed.
+The SDK contains no demo catalog; applications own records and immutable local
+URL construction.
+
 ### Contextual selection actions
 
 Set `selectionActions: true` to enable the accessible Copy, Share, Highlight,

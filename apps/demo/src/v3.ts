@@ -6,6 +6,10 @@ import "@ethical-tech/pageturn-book/styles.css";
 import "./v3-demo-host.css";
 import { catalogBook } from "./library-catalog.js";
 import { publicationMedia } from "./v3-media.js";
+import {
+  hostedReadingUrl,
+  hostedSourceResolver,
+} from "./source-registry.js";
 
 const query = new URLSearchParams(globalThis.location.search);
 const bookId = query.get("book") ?? "what-is-ethical-ai";
@@ -36,6 +40,10 @@ const reader: PageTurnBookHandle = createPageTurnBook({
   appearance: book.appearance,
   ...(media ? { media } : {}),
   libraryUrl: new URL("../shelf/", globalThis.location.href),
+  locationUrl: hostedReadingUrl,
+  sourceResolver: hostedSourceResolver,
+  sourceLinkMode: "card",
+  courseReadingIds: query.getAll("courseReading"),
   appearanceControls: true,
   selectionActions: true,
   shareComposer: true,

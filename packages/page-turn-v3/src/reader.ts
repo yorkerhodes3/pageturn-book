@@ -70,6 +70,16 @@ import {
   type PageTurnDomTextTargetInput,
   type PageTurnTextTargetV1,
 } from "./text-target.js";
+import type {
+  PageTurnSourceContext,
+  PageTurnSourceRecord,
+  PageTurnSourceResolution,
+  PageTurnSourceResolver,
+} from "./source.js";
+import type {
+  PageTurnSourceCardElements,
+  PageTurnSourceCardInput,
+} from "./source-card.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
@@ -157,6 +167,9 @@ export type PageTurnBookOptions = Readonly<{
   sharePolicy?: PageTurnSharePolicy;
   allowShareImageDownload?: boolean;
   annotationAppearance?: PageTurnAnnotationAppearance;
+  sourceResolver?: PageTurnSourceResolver;
+  sourceLinkMode?: "direct" | "card" | "direct-local";
+  courseReadingIds?: readonly string[];
   urlMode?: "managed" | "none";
   updateDocumentTitle?: boolean;
 }>;
@@ -328,6 +341,18 @@ const requestedSelectionToken = managesUrl ? query.get("selection") : null;
 const mediaConfig = options.media;
 const fetcher = options.fetch ?? globalThis.fetch;
 const requestController = new AbortController();
+const sourceLinkMode = options.sourceLinkMode ?? "direct";
+if (!["direct", "card", "direct-local"].includes(sourceLinkMode)) {
+  throw new Error(`PageTurn sourceLinkMode is invalid: ${sourceLinkMode}`);
+}
+if (
+  (sourceLinkMode === "card" || sourceLinkMode === "direct-local") &&
+  !options.sourceResolver
+) {
+  throw new Error(
+    `PageTurn sourceLinkMode "${sourceLinkMode}" requires a sourceResolver`,
+  );
+}
 const maximumSegmentCharacters = 540;
 const chaptersStartOnRight = options.chaptersStartOnRight ?? true;
 const canCreateDurableLinks =
@@ -926,6 +951,14 @@ function markLocalChapterLinks(node: HTMLElement): void {
   }
   for (const link of node.querySelectorAll<HTMLAnchorElement>("a[href]")) {
     const href = link.getAttribute("href");
+    if (
+      sourceLinkMode === "card" &&
+      options.sourceResolver &&
+      href &&
+      /^(?:https?:)?\/\//i.test(href)
+    ) {
+      link.setAttribute("aria-haspopup", "dialog");
+    }
     const match = href
       ? /^\.\.\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?(?:#([^?]+))?$/.exec(href)
       : null;
@@ -1326,6 +1359,41 @@ const measureContent = requiredElement<HTMLElement>(
   "[data-v3-measure-content]",
 );
 const status = requiredElement<HTMLElement>("[data-v3-status]");
+const sourceDialog = requiredElement<HTMLDialogElement>(
+  "[data-v3-source-dialog]",
+);
+const sourceAvailability = requiredElement<HTMLElement>(
+  "[data-v3-source-availability]",
+);
+const sourceTitle = requiredElement<HTMLElement>("[data-v3-source-title]");
+const sourceCitation = requiredElement<HTMLElement>(
+  "[data-v3-source-citation]",
+);
+const sourceMetadata = requiredElement<HTMLDListElement>(
+  "[data-v3-source-metadata]",
+);
+const sourceCandidates = requiredElement<HTMLElement>(
+  "[data-v3-source-candidates]",
+);
+const sourceCandidateList = requiredElement<HTMLOListElement>(
+  "[data-v3-source-candidate-list]",
+);
+const sourceActions = requiredElement<HTMLElement>(
+  "[data-v3-source-actions]",
+);
+const sourceStatus = requiredElement<HTMLOutputElement>(
+  "[data-v3-source-status]",
+);
+const sourceCardElements: PageTurnSourceCardElements = {
+  availability: sourceAvailability,
+  title: sourceTitle,
+  citation: sourceCitation,
+  metadata: sourceMetadata,
+  candidates: sourceCandidates,
+  candidateList: sourceCandidateList,
+  actions: sourceActions,
+  status: sourceStatus,
+};
 const chapterSelect = requiredElement<HTMLSelectElement>(
   "[data-v3-chapter-select]",
 );
@@ -1707,6 +1775,12 @@ let lastSelectionModality: NonNullable<V3Selection["modality"]> = "keyboard";
 let sharedTextTarget: PageTurnTextTargetV1 | undefined;
 let searchRecordsPromise: Promise<readonly V3SearchRecord[]> | undefined;
 let searchController: AbortController | undefined;
+let sourceController: AbortController | undefined;
+let sourceResolutionVersion = 0;
+let sourceReturnFocus: HTMLAnchorElement | undefined;
+let sourceCardModulePromise:
+  | Promise<typeof import("./source-card.js")>
+  | undefined;
 const legacyChapterSources = new Map<
   string,
   Promise<readonly PageTurnTextSourceBlock[]>
@@ -4462,6 +4536,7 @@ function renderControls(): void {
 }
 
 function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
+  closeSourceCard(false);
   if (shareDialog.open) {
     closeShareComposer(false);
   } else {
@@ -5305,6 +5380,301 @@ async function shareFromPrimaryControl(): Promise<void> {
   await shareCurrentLocation(undefined);
 }
 
+function sourceLocalUrl(
+  target: NonNullable<PageTurnSourceRecord["localReading"]>,
+): URL | undefined {
+  const location: PageTurnBookLocation = {
+    bookId: target.bookId,
+    editionId: target.editionId,
+    chapterId: target.chapterId ?? "",
+    anchor: target.anchor ?? "",
+  };
+  if (options.locationUrl) {
+    const url = new URL(
+      options.locationUrl(location).toString(),
+      globalThis.location.href,
+    );
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return undefined;
+    }
+    return url;
+  }
+  if (!managesUrl) {
+    return undefined;
+  }
+  const url = new URL(globalThis.location.href);
+  url.searchParams.set("book", target.bookId);
+  url.searchParams.set("edition", target.editionId);
+  url.searchParams.delete("selection");
+  if (target.chapterId) {
+    url.searchParams.set("chapter", target.chapterId);
+  } else {
+    url.searchParams.delete("chapter");
+  }
+  url.hash = target.anchor ?? "";
+  return url;
+}
+
+function sourceContext(link: HTMLAnchorElement): PageTurnSourceContext {
+  const location = currentReadingLocation();
+  const block = link.closest<HTMLElement>(
+    "[data-source-anchor], [data-v3-source-start], [id]",
+  );
+  const anchor =
+    block?.dataset.sourceAnchor ??
+    block?.id ??
+    location?.anchor ??
+    activePage()?.anchor ??
+    "";
+  return {
+    bookId: manifest?.bookId ?? requestedBookId,
+    editionId: manifest?.editionId ?? "",
+    chapterId:
+      link.closest<HTMLElement>("[data-v3-chapter]")?.dataset.v3Chapter ??
+      location?.chapterId ??
+      "",
+    anchor,
+    courseReadingIds: options.courseReadingIds ?? [],
+  };
+}
+
+function authoredCitation(link: HTMLAnchorElement): string {
+  const container = link.closest("p, li, blockquote, figcaption, td, th");
+  return (
+    container?.textContent?.replace(/\s+/g, " ").trim().slice(0, 2_000) ||
+    link.textContent?.replace(/\s+/g, " ").trim() ||
+    link.href
+  );
+}
+
+function sourceFailure(error: unknown): string {
+  const message =
+    error instanceof Error ? error.message : "Unknown source resolver error";
+  status.textContent = `V3 could not resolve the external source: ${message}`;
+  sourceStatus.value = `Source resolution failed: ${message}. The authored link remains available.`;
+  console.error(error);
+  return sourceStatus.value;
+}
+
+function closeSourceCard(restoreFocus: boolean): void {
+  sourceResolutionVersion += 1;
+  sourceController?.abort();
+  sourceController = undefined;
+  if (sourceDialog.open) {
+    if (!restoreFocus) {
+      sourceReturnFocus = undefined;
+    }
+    sourceDialog.close();
+  } else if (restoreFocus && sourceReturnFocus?.isConnected) {
+    sourceReturnFocus.focus({ preventScroll: true });
+    sourceReturnFocus = undefined;
+  }
+}
+
+function loadSourceCardModule(): Promise<typeof import("./source-card.js")> {
+  sourceCardModulePromise ??= import("./source-card.js");
+  return sourceCardModulePromise;
+}
+
+function showSourceCard(
+  link: HTMLAnchorElement,
+  input: PageTurnSourceCardInput,
+  version: number,
+): void {
+  sourceReturnFocus = link;
+  void loadSourceCardModule().then(
+    ({ renderPageTurnSourceCard }) => {
+      if (destroyed || version !== sourceResolutionVersion) {
+        return;
+      }
+      let primary: HTMLElement | undefined;
+      try {
+        primary = renderPageTurnSourceCard(
+          document,
+          sourceCardElements,
+          input,
+          sourceLocalUrl,
+        );
+      } catch (error) {
+        const message = sourceFailure(error);
+        primary = renderPageTurnSourceCard(
+          document,
+          sourceCardElements,
+          {
+            authoredUrl: input.authoredUrl,
+            citation: input.citation,
+            error: message,
+          },
+          () => undefined,
+        );
+      }
+      if (!sourceDialog.open) {
+        sourceDialog.showModal();
+      }
+      requestAnimationFrame(() => {
+        if (!destroyed && version === sourceResolutionVersion) {
+          primary?.focus({ preventScroll: true });
+        }
+      });
+    },
+    (error: unknown) => {
+      if (!destroyed && version === sourceResolutionVersion) {
+        sourceFailure(error);
+        followAuthoredSource(link, input.authoredUrl);
+      }
+    },
+  );
+}
+
+function followAuthoredSource(link: HTMLAnchorElement, url: URL): void {
+  if (link.target && link.target !== "_self") {
+    globalThis.open(url.href, link.target, "noopener,noreferrer");
+  } else {
+    globalThis.location.assign(url.href);
+  }
+}
+
+function followLocalSource(url: URL): void {
+  closeSourceCard(false);
+  globalThis.location.assign(url.href);
+}
+
+function handleSourceResolutionError(
+  error: unknown,
+  link: HTMLAnchorElement,
+  authoredUrl: URL,
+  citation: string,
+  version: number,
+): void {
+  if (
+    destroyed ||
+    version !== sourceResolutionVersion ||
+    sourceController?.signal.aborted
+  ) {
+    return;
+  }
+  const message = sourceFailure(error);
+  if (sourceLinkMode === "card") {
+    showSourceCard(
+      link,
+      { authoredUrl, citation, error: message },
+      version,
+    );
+  } else {
+    followAuthoredSource(link, authoredUrl);
+  }
+}
+
+function applyResolvedSource(
+  result: PageTurnSourceResolution,
+  link: HTMLAnchorElement,
+  authoredUrl: URL,
+  citation: string,
+  version: number,
+): void {
+  void loadSourceCardModule().then(
+    ({ approvedPageTurnLocalReading, validatePageTurnSourceResolution }) => {
+      if (
+        destroyed ||
+        version !== sourceResolutionVersion ||
+        sourceController?.signal.aborted
+      ) {
+        return;
+      }
+      try {
+        const resolution = validatePageTurnSourceResolution(result, authoredUrl);
+        if (sourceLinkMode === "direct-local") {
+          if (resolution.kind === "local-publication") {
+            const target = approvedPageTurnLocalReading(resolution.record);
+            const localUrl = target ? sourceLocalUrl(target) : undefined;
+            if (localUrl) {
+              followLocalSource(localUrl);
+              return;
+            }
+          }
+          followAuthoredSource(link, authoredUrl);
+          return;
+        }
+        showSourceCard(
+          link,
+          { authoredUrl, citation, resolution },
+          version,
+        );
+      } catch (error) {
+        handleSourceResolutionError(
+          error,
+          link,
+          authoredUrl,
+          citation,
+          version,
+        );
+      }
+    },
+    (error: unknown) => {
+      if (!destroyed && version === sourceResolutionVersion) {
+        sourceFailure(error);
+        followAuthoredSource(link, authoredUrl);
+      }
+    },
+  );
+}
+
+function activateExternalSource(
+  link: HTMLAnchorElement,
+  authoredUrl: URL,
+): void {
+  const resolver = options.sourceResolver;
+  if (!resolver || sourceLinkMode === "direct") {
+    return;
+  }
+  sourceController?.abort();
+  const controller = new AbortController();
+  sourceController = controller;
+  const version = ++sourceResolutionVersion;
+  const citation = authoredCitation(link);
+  if (sourceLinkMode === "card") {
+    showSourceCard(link, { authoredUrl, citation, pending: true }, version);
+  }
+  let resolution: PageTurnSourceResolution | Promise<PageTurnSourceResolution>;
+  try {
+    resolution = resolver(
+      authoredUrl,
+      sourceContext(link),
+      controller.signal,
+    );
+  } catch (error) {
+    handleSourceResolutionError(
+      error,
+      link,
+      authoredUrl,
+      citation,
+      version,
+    );
+    return;
+  }
+  if (
+    resolution instanceof Promise ||
+    typeof (
+      resolution as unknown as Readonly<{ then?: unknown }>
+    ).then === "function"
+  ) {
+    void Promise.resolve(resolution).then(
+      (result) =>
+        applyResolvedSource(result, link, authoredUrl, citation, version),
+      (error: unknown) =>
+        handleSourceResolutionError(
+          error,
+          link,
+          authoredUrl,
+          citation,
+          version,
+        ),
+    );
+  } else {
+    applyResolvedSource(resolution, link, authoredUrl, citation, version);
+  }
+}
+
 function pageContainsAnchor(page: PrototypePage, anchor: string): boolean {
   return page.nodes.some(
     (node) =>
@@ -5364,6 +5734,33 @@ function onStationaryClick(event: MouseEvent): void {
     void goToChapter(retryChapterId, "replace").catch((error: unknown) => {
       reportFailure("V3 could not retry the requested chapter", error);
     });
+    return;
+  }
+  const externalLink = event.target.closest<HTMLAnchorElement>("a[href]");
+  const authoredHref = externalLink?.getAttribute("href");
+  if (
+    externalLink &&
+    authoredHref &&
+    /^(?:https?:)?\/\//i.test(authoredHref) &&
+    sourceLinkMode !== "direct" &&
+    options.sourceResolver
+  ) {
+    try {
+      const authoredUrl = new URL(authoredHref, globalThis.location.href);
+      if (
+        (authoredUrl.protocol !== "http:" &&
+          authoredUrl.protocol !== "https:") ||
+        authoredUrl.username !== "" ||
+        authoredUrl.password !== ""
+      ) {
+        throw new Error("PageTurn source URL must be a safe HTTP(S) URL");
+      }
+      event.preventDefault();
+      activateExternalSource(externalLink, authoredUrl);
+    } catch (error) {
+      event.preventDefault();
+      sourceFailure(error);
+    }
     return;
   }
   const link = event.target.closest<HTMLAnchorElement>('a[href^="#"]');
@@ -5445,6 +5842,7 @@ async function goToLocation(
   anchor: string | undefined,
   locationUpdate: LocationUpdate,
 ): Promise<void> {
+  closeSourceCard(false);
   dismissSelectionActions();
   const navigationVersion = ++locationNavigationVersion;
   if (!manifest || chapterId === "") {
@@ -5541,6 +5939,7 @@ function beginTurn(
   if (activeTurn || !canTurn(direction)) {
     return undefined;
   }
+  closeSourceCard(false);
   const target = targetSpread(direction);
   const selected = turnPages(direction);
   if (
@@ -6954,7 +7353,10 @@ async function initializePersonalData(): Promise<void> {
 }
 
 async function initialize(): Promise<void> {
+  const sourceCardReady =
+    sourceLinkMode === "direct" ? undefined : loadSourceCardModule();
   const loaded = await fetchManifest();
+  await sourceCardReady;
   manifest = loaded.manifest;
   manifestUrl = loaded.url;
   if (manifest.bookId !== requestedBookId) {
@@ -7246,6 +7648,46 @@ shareDialog.addEventListener(
     } else {
       shareComposerReturnFocus = undefined;
       shareComposerReturnFocusHadTabindex = false;
+    }
+  },
+  listenerOptions,
+);
+sourceDialog.addEventListener(
+  "click",
+  (event) => {
+    const copy =
+      event.target instanceof Element
+        ? event.target.closest<HTMLButtonElement>("[data-v3-source-copy]")
+        : null;
+    if (copy?.dataset.v3SourceCopy) {
+      const version = sourceResolutionVersion;
+      void loadSourceCardModule().then(
+        ({ copyPageTurnSourceLink }) =>
+          copyPageTurnSourceLink(
+            document,
+            copy.dataset.v3SourceCopy ?? "",
+            sourceStatus,
+            () =>
+              !destroyed &&
+              version === sourceResolutionVersion &&
+              sourceDialog.open,
+          ),
+        (error: unknown) => sourceFailure(error),
+      );
+    }
+  },
+  listenerOptions,
+);
+sourceDialog.addEventListener(
+  "close",
+  () => {
+    sourceResolutionVersion += 1;
+    sourceController?.abort();
+    sourceController = undefined;
+    const returnFocus = sourceReturnFocus;
+    sourceReturnFocus = undefined;
+    if (returnFocus?.isConnected) {
+      returnFocus.focus({ preventScroll: true });
     }
   },
   listenerOptions,
@@ -7555,6 +7997,7 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
   if (
     mediaDialog.open ||
+    sourceDialog.open ||
     appearanceDialog.open ||
     exploreDialog.open ||
     shareDialog.open ||
@@ -7648,6 +8091,7 @@ function destroy(): void {
     return;
   }
   destroyed = true;
+  closeSourceCard(false);
   closeShareComposer(false);
   lifecycle.abort();
   requestController.abort();

@@ -1018,6 +1018,102 @@ Modal mode must:
 
 Embedded and routed modes must not lock body scrolling automatically.
 
+### 14.6 External source resolution
+
+The reusable SDK accepts only host-owned source data. It does not import the
+reference application's catalog or fetch metadata. Its public record and
+resolver contracts are:
+
+```ts
+type PageTurnSourceRecord = Readonly<{
+  id: string;
+  canonicalUrl: string;
+  aliases?: readonly string[];
+  doi?: string;
+  isbn?: readonly string[];
+  repository?: Readonly<{ url: string; revision?: string }>;
+  title: string;
+  publisher?: string;
+  publicationDate?: string;
+  sourceType:
+    | "article" | "book" | "chapter" | "dataset" | "document"
+    | "repository" | "video" | "website";
+  localReading?: Readonly<{
+    kind: "full-edition" | "excerpt" | "source-guide";
+    bookId: string;
+    editionId: string;
+    chapterId?: string;
+    anchor?: string;
+    shelfHref?: string;
+    rights: Readonly<{
+      status: "approved";
+      scope: "full-edition" | "excerpt" | "source-guide";
+      basis: string;
+      reviewedAt: string;
+      expiresAt?: string;
+    }>;
+  }>;
+  courseReadingIds?: readonly string[];
+  relation?: "sameAs" | "isVersionOf" | "isPartOf";
+  rights?: Readonly<{
+    status: "approved" | "link-only" | "unknown";
+    license?: string;
+    attribution?: string;
+  }>;
+  reviewedAt: string;
+}>;
+
+type PageTurnSourceContext = Readonly<{
+  bookId: string;
+  editionId: string;
+  chapterId: string;
+  anchor: string;
+  courseReadingIds: readonly string[];
+}>;
+
+type PageTurnSourceResolution =
+  | Readonly<{
+      kind: "local-publication";
+      record: PageTurnSourceRecord;
+      target: NonNullable<PageTurnSourceRecord["localReading"]>;
+    }>
+  | Readonly<{
+      kind: "external-card";
+      record?: PageTurnSourceRecord;
+      url: string;
+    }>
+  | Readonly<{
+      kind: "ambiguous";
+      candidates: readonly PageTurnSourceRecord[];
+      url: string;
+    }>
+  | Readonly<{ kind: "direct-external"; url: string }>;
+
+type PageTurnSourceResolver = (
+  url: URL,
+  context: PageTurnSourceContext,
+  signal: AbortSignal,
+) => PageTurnSourceResolution | Promise<PageTurnSourceResolution>;
+```
+
+`PageTurnBookOptions` adds `sourceResolver?: PageTurnSourceResolver`,
+`sourceLinkMode?: "direct" | "card" | "direct-local"`, and
+`courseReadingIds?: readonly string[]`. Direct authored navigation remains the
+SDK default. Card and direct-local modes require a resolver.
+
+| ID | Requirement |
+|---|---|
+| SRC-001 | Matching order is exact declared canonical or generated pinned URL/repository revision, normalized reviewed URL/alias, DOI, checksum-valid 978/979 ISBN, explicit course ID, then no match. |
+| SRC-002 | Matching never uses fuzzy title, author, publisher, or citation text. |
+| SRC-003 | Work matching accepts only HTTP(S), normalizes scheme/ASCII host/default port/dot segments/unreserved encoding, preserves path case/query, and ignores fragments while retaining the authored action URL. |
+| SRC-004 | An ambiguous match never chooses or automatically navigates. |
+| SRC-005 | Card open performs no third-party request and renders no untrusted HTML. |
+| SRC-006 | Approved local actions target the exact immutable edition and optional chapter/anchor; kind and rights scope must match or the action fails closed. |
+| SRC-007 | Full-edition/excerpt text also requires approved source rights; link-only/unknown may authorize only an independently approved source guide. |
+| SRC-008 | Local is the initially focused primary card action; original source remains available with explicit external/new-tab behavior and no referrer. |
+| SRC-009 | Resolver failures are announced and retain the authored link. Resolver work is aborted and generation-guarded on close, navigation, and destroy. |
+| SRC-010 | Card mode renders every valid resolver result, including `direct-external`, as a no-fetch card; it never navigates directly. A differing reviewed/resolved destination and the authored source remain actionable. |
+
 ## 15. Preferences and resume
 
 ### 15.1 Preference model

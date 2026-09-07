@@ -133,6 +133,21 @@ export {
   type PageTurnBookShell,
 } from "./shell.js";
 export {
+  approvedPageTurnLocalReading,
+  createPageTurnSourceResolver,
+  normalizePageTurnDoi,
+  normalizePageTurnIsbn,
+  normalizePageTurnSourceUrl,
+  pageTurnSourceDisplayDomain,
+  validatePageTurnSourceRecord,
+  type PageTurnSourceContext,
+  type PageTurnSourceRecord,
+  type PageTurnSourceRegistryOptions,
+  type PageTurnSourceResolution,
+  type PageTurnSourceResolver,
+  type PageTurnSourceType,
+} from "./source.js";
+export {
   PAGE_TURN_SHARE_CONTEXT_DEFAULT_CHARACTERS,
   PAGE_TURN_SHARE_CONTEXT_MAX_CHARACTERS,
   PAGE_TURN_SHARE_QUOTE_MAX_CHARACTERS,

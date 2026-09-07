@@ -84,6 +84,9 @@ examples.
 - Opaque paper occlusion, physical binding, page fans, and four corner gestures.
 - Right-hand chapter openings by default, with publication-level override.
 - Durable book, edition, chapter, and source-anchor locations.
+- Optional host-owned deterministic source resolution with reviewed,
+  local-edition-first cards, explicit course mappings, ambiguity handling, and
+  no client-side metadata fetch.
 - Hierarchical contents and demand-loaded search.
 - Local bookmarks, resume restart, accessible contextual selection actions,
   exact highlights, collision-managed outer-margin annotations with responsive

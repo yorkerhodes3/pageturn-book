@@ -584,6 +584,28 @@ const shellMarkup = `
     </div>
   </dialog>
 
+  <dialog class="v3-source-dialog" data-v3-source-dialog>
+    <div class="v3-source-frame">
+      <form method="dialog" class="v3-dialog-close">
+        <button type="submit" aria-label="Close source card">Close</button>
+      </form>
+      <p class="v3-source-availability" data-v3-source-availability></p>
+      <h2 data-v3-source-title>External source</h2>
+      <blockquote data-v3-source-citation></blockquote>
+      <dl class="v3-source-metadata" data-v3-source-metadata></dl>
+      <section data-v3-source-candidates hidden>
+        <h3 data-v3-source-candidates-title>Reviewed candidates</h3>
+        <p>
+          More than one reviewed record matches. PageTurn will not choose one
+          automatically.
+        </p>
+        <ol data-v3-source-candidate-list></ol>
+      </section>
+      <div class="v3-source-actions" data-v3-source-actions></div>
+      <output data-v3-source-status role="status" aria-live="polite"></output>
+    </div>
+  </dialog>
+
   <dialog
     class="v3-share-dialog"
     data-v3-share-dialog
@@ -709,23 +731,62 @@ export function mountPageTurnBookShell(host: HTMLElement): PageTurnBookShell {
   const shareDisclosure = host.querySelector<HTMLElement>(
     "[data-v3-share-disclosure]",
   );
-  if (!shareDialog || !shareTitle || !shareDisclosure) {
-    throw new Error("PageTurn share shell is incomplete");
+  const sourceDialog = host.querySelector<HTMLElement>(
+    "[data-v3-source-dialog]",
+  );
+  const sourceTitle = host.querySelector<HTMLElement>("[data-v3-source-title]");
+  const sourceCitation = host.querySelector<HTMLElement>(
+    "[data-v3-source-citation]",
+  );
+  const sourceCandidates = host.querySelector<HTMLElement>(
+    "[data-v3-source-candidates]",
+  );
+  const sourceCandidatesTitle = host.querySelector<HTMLElement>(
+    "[data-v3-source-candidates-title]",
+  );
+  if (
+    !shareDialog ||
+    !shareTitle ||
+    !shareDisclosure ||
+    !sourceDialog ||
+    !sourceTitle ||
+    !sourceCitation ||
+    !sourceCandidates ||
+    !sourceCandidatesTitle
+  ) {
+    throw new Error("PageTurn dialog shell is incomplete");
   }
+  let instanceId: number;
   let shareTitleId: string;
   let shareDisclosureId: string;
+  let sourceTitleId: string;
+  let sourceCitationId: string;
+  let sourceCandidatesTitleId: string;
   do {
-    const instanceId = ++nextShellInstanceId;
+    instanceId = ++nextShellInstanceId;
     shareTitleId = `v3-share-dialog-title-${instanceId}`;
     shareDisclosureId = `v3-share-disclosure-${instanceId}`;
+    sourceTitleId = `v3-source-dialog-title-${instanceId}`;
+    sourceCitationId = `v3-source-citation-${instanceId}`;
+    sourceCandidatesTitleId = `v3-source-candidates-title-${instanceId}`;
   } while (
     host.ownerDocument.getElementById(shareTitleId) ||
-    host.ownerDocument.getElementById(shareDisclosureId)
+    host.ownerDocument.getElementById(shareDisclosureId) ||
+    host.ownerDocument.getElementById(sourceTitleId) ||
+    host.ownerDocument.getElementById(sourceCitationId) ||
+    host.ownerDocument.getElementById(sourceCandidatesTitleId)
   );
   shareTitle.id = shareTitleId;
   shareDisclosure.id = shareDisclosureId;
   shareDialog.setAttribute("aria-labelledby", shareTitleId);
   shareDialog.setAttribute("aria-describedby", shareDisclosureId);
+  sourceTitle.id = sourceTitleId;
+  sourceCitation.id = sourceCitationId;
+  sourceCandidatesTitle.id = sourceCandidatesTitleId;
+  sourceDialog.setAttribute("aria-labelledby", sourceTitleId);
+  sourceDialog.setAttribute("aria-describedby", sourceCitationId);
+  sourceCandidates.setAttribute("aria-labelledby", sourceCandidatesTitleId);
+  host.dataset.v3Instance = String(instanceId);
 
   let destroyed = false;
   return {
