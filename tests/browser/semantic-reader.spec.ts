@@ -255,6 +255,51 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   const startY = cornerBounds.y + cornerBounds.height * 0.25;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
+  const initializedTurnStyles = await page
+    .locator("[data-v3-turn-layer]")
+    .evaluate((layer) => {
+      const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
+      const revealed = layer.querySelector<HTMLElement>(".v3-revealed-page");
+      const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
+      const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
+      if (!moving || !revealed || !shadow || !curve) {
+        throw new Error("Expected initialized V3 turn geometry");
+      }
+      return {
+        movingWidth: moving.style.width,
+        movingHeight: moving.style.height,
+        sheenDirection: moving.style.getPropertyValue(
+          "--v3-fold-sheen-direction",
+        ),
+        revealedWidth: revealed.style.width,
+        revealedHeight: revealed.style.height,
+        revealedTransform: revealed.style.transform,
+        shadowWidth: shadow.style.width,
+        shadowHeight: shadow.style.height,
+        shadowBackground: shadow.style.background,
+        curveWidth: curve.style.width,
+        curveHeight: curve.style.height,
+        curveDirection: curve.style.getPropertyValue(
+          "--v3-fold-curve-direction",
+        ),
+      };
+    });
+  expect(initializedTurnStyles).toMatchObject({
+    sheenDirection: "90deg",
+    curveDirection: "90deg",
+  });
+  for (const dimension of [
+    initializedTurnStyles.movingWidth,
+    initializedTurnStyles.movingHeight,
+    initializedTurnStyles.revealedWidth,
+    initializedTurnStyles.revealedHeight,
+    initializedTurnStyles.shadowWidth,
+    initializedTurnStyles.shadowHeight,
+    initializedTurnStyles.curveWidth,
+    initializedTurnStyles.curveHeight,
+  ]) {
+    expect(Number.parseFloat(dimension)).toBeGreaterThan(0);
+  }
   await page.mouse.move(
   bounds.x + bounds.width * 0.27,
   bounds.y + bounds.height * 0.18,
@@ -269,10 +314,41 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await expect(revealed).toContainText("Executive Summary");
   await expect(moving).toHaveAttribute("aria-hidden", "true");
   await expect(revealed).toHaveAttribute("aria-hidden", "true");
+  expect(
+    await page.locator("[data-v3-turn-layer]").evaluate((layer) => {
+      const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
+      const revealed = layer.querySelector<HTMLElement>(".v3-revealed-page");
+      const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
+      const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
+      if (!moving || !revealed || !shadow || !curve) {
+        throw new Error("Expected active V3 turn geometry");
+      }
+      return {
+        movingWidth: moving.style.width,
+        movingHeight: moving.style.height,
+        sheenDirection: moving.style.getPropertyValue(
+          "--v3-fold-sheen-direction",
+        ),
+        revealedWidth: revealed.style.width,
+        revealedHeight: revealed.style.height,
+        revealedTransform: revealed.style.transform,
+        shadowWidth: shadow.style.width,
+        shadowHeight: shadow.style.height,
+        shadowBackground: shadow.style.background,
+        curveWidth: curve.style.width,
+        curveHeight: curve.style.height,
+        curveDirection: curve.style.getPropertyValue(
+          "--v3-fold-curve-direction",
+        ),
+      };
+    }),
+  ).toEqual(initializedTurnStyles);
   const opaqueTurn = await moving.evaluate((node) => {
     const sheet = node.querySelector(".v3-sheet");
     const backing = node.querySelector(".v3-paper-occluder");
-    const surface = getComputedStyle(node);
+    const clip = node.querySelector(".v3-turn-surface-clip");
+    const surface = getComputedStyle(clip ?? node);
+    const layer = getComputedStyle(node);
     const backingStyle = backing ? getComputedStyle(backing) : undefined;
     const paper = sheet ? getComputedStyle(sheet) : undefined;
     const restingEdge = sheet
@@ -291,7 +367,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       paperOpacity: paper?.opacity,
       restingEdgeDisplay: restingEdge?.display,
       restingGutterDisplay: restingGutter?.display,
-      surfaceZIndex: surface.zIndex,
+      surfaceZIndex: layer.zIndex,
     };
   });
   expect(opaqueTurn).toMatchObject({
@@ -314,7 +390,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       const shadow = layer.querySelector<HTMLElement>(".v3-fold-shadow");
       const curve = layer.querySelector<HTMLElement>(".v3-fold-curve");
       const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
-      if (!spread || !shadow || !curve || !moving) {
+      const movingClip =
+        layer.querySelector<HTMLElement>(".v3-turn-surface-clip");
+      if (!spread || !shadow || !curve || !moving || !movingClip) {
         throw new Error("Expected complete V3 fold layers");
       }
       const layerBounds = layer.getBoundingClientRect();
@@ -322,10 +400,12 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
       const layerStyle = getComputedStyle(layer);
       const shadowStyle = getComputedStyle(shadow);
       const curveStyle = getComputedStyle(curve);
-      const clipPath = getComputedStyle(moving).clipPath;
+      const shadowTransform = new DOMMatrix(shadowStyle.transform);
+      const curveTransform = new DOMMatrix(curveStyle.transform);
+      const clipPath = getComputedStyle(movingClip).clipPath;
       const transform = new DOMMatrix(getComputedStyle(moving).transform);
       const paintedPoints = [...clipPath.matchAll(
-        /(-?\d+(?:\.\d+)?)px (-?\d+(?:\.\d+)?)px/g,
+        /(-?\d+(?:\.\d+)?)(?:px)?[ ,]+(-?\d+(?:\.\d+)?)(?:px)?/g,
       )].map((match) =>
         new DOMPoint(Number(match[1]), Number(match[2])).matrixTransform(
           transform,
@@ -348,15 +428,23 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
         overflow: layerStyle.overflow,
         layerZIndex: layerStyle.zIndex,
         shadowZIndex: shadowStyle.zIndex,
-        shadowWidth: Number.parseFloat(shadowStyle.width),
-        shadowHeight: Number.parseFloat(shadowStyle.height),
+        shadowWidth:
+          Number.parseFloat(shadowStyle.width) *
+          Math.hypot(shadowTransform.a, shadowTransform.b),
+        shadowHeight:
+          Number.parseFloat(shadowStyle.height) *
+          Math.hypot(shadowTransform.c, shadowTransform.d),
         shadowRadius: shadowStyle.borderRadius,
         curveZIndex: curveStyle.zIndex,
-        curveWidth: Number.parseFloat(curveStyle.width),
-        curveHeight: Number.parseFloat(curveStyle.height),
+        curveWidth:
+          Number.parseFloat(curveStyle.width) *
+          Math.hypot(curveTransform.a, curveTransform.b),
+        curveHeight:
+          Number.parseFloat(curveStyle.height) *
+          Math.hypot(curveTransform.c, curveTransform.d),
         curveRadius: curveStyle.borderRadius,
         curveBackground: curveStyle.backgroundImage,
-        clipVertices: clipPath.split(",").length,
+        clipVertices: paintedPoints.length,
         pageWidth: spreadBounds.width / 2,
         pageDiagonal: Math.hypot(spreadBounds.width / 2, spreadBounds.height),
       };
@@ -385,11 +473,15 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   expect(foldGeometry.curveBackground).toContain("linear-gradient");
   expect(foldGeometry.clipVertices).toBeGreaterThan(4);
   expect(
-  await moving.evaluate((node) => getComputedStyle(node).clipPath),
-  ).toMatch(/^polygon\(/);
+  await moving
+    .locator(".v3-turn-surface-clip")
+    .evaluate((node) => getComputedStyle(node).clipPath),
+  ).toMatch(/^path\(/);
   expect(
-  await revealed.evaluate((node) => getComputedStyle(node).clipPath),
-  ).toMatch(/^polygon\(/);
+  await revealed
+    .locator(".v3-revealed-page-clip")
+    .evaluate((node) => getComputedStyle(node).clipPath),
+  ).toBe("none");
   await expect(page.locator(".v3-turn-layer [id]")).toHaveCount(0);
 
   await page.mouse.up();
@@ -557,7 +649,12 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     }
     const layerBounds = layer.getBoundingClientRect();
     const spreadBounds = spread.getBoundingClientRect();
-    const clipPath = getComputedStyle(moving).clipPath;
+    const movingClip =
+      moving.querySelector<HTMLElement>(".v3-turn-surface-clip");
+    if (!movingClip) {
+      throw new Error("Expected clipped bottom-corner surface");
+    }
+    const clipPath = getComputedStyle(movingClip).clipPath;
     return {
       sameBounds:
         Math.abs(layerBounds.left - spreadBounds.left) <= 1 &&
@@ -568,7 +665,7 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
       readerOverflowY: getComputedStyle(readerRoot).overflowY,
       readerScrollTop: readerRoot.scrollTop,
       readerWidth: readerRoot.clientWidth,
-      movingPaper: getComputedStyle(moving).backgroundColor,
+      movingPaper: getComputedStyle(movingClip).backgroundColor,
       backingPaper: getComputedStyle(backing).backgroundColor,
       movingBottomRightRadius:
         getComputedStyle(movingSheet).borderBottomRightRadius,
@@ -576,7 +673,9 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
         getComputedStyle(restingLeft).borderBottomRightRadius,
       spreadLeft: spreadBounds.left,
       spreadWidth: spreadBounds.width,
-      vertices: clipPath.split(",").length,
+      vertices: [...clipPath.matchAll(
+        /(-?\d+(?:\.\d+)?)(?:px)?[ ,]+(-?\d+(?:\.\d+)?)(?:px)?/g,
+      )].length,
       shadowHeight: Number.parseFloat(getComputedStyle(shadow).height),
       curveHeight: Number.parseFloat(getComputedStyle(curve).height),
       pageDiagonal: Math.hypot(
@@ -1129,11 +1228,101 @@ test("turns backward with distinct current and destination phone faces", async (
     "Publication record",
   );
   const progress = await page
-    .locator(".v3-turn-surface")
+    .locator(".v3-turn-surface-clip")
     .evaluate((node) => getComputedStyle(node).clipPath);
-  expect(progress).toMatch(/^polygon\(/);
+  expect(progress).toMatch(/^path\(/);
   await page.mouse.up();
   await expect(page.locator("[data-v3-counter]")).toHaveText(/Page 1 of/);
+});
+
+test("keeps mobile turn semantics exposed and drops stale resize visuals", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=power&media=off#power",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-opening", "false");
+  const corner = page.getByRole("button", {
+    name: "Turn the next page from its top corner",
+  });
+  const startTurn = async () => {
+    const bounds = await corner.boundingBox();
+    if (!bounds) {
+      throw new Error("Expected mobile forward corner bounds");
+    }
+    await page.mouse.move(
+      bounds.x + bounds.width * 0.75,
+      bounds.y + bounds.height * 0.25,
+    );
+    await page.mouse.down();
+  };
+  await startTurn();
+  await expect(reader).toHaveAttribute("data-v3-turning", "true");
+  const activeSemantics = await page
+    .locator("[data-v3-reader]")
+    .evaluate((root) => {
+      const stationary = root.querySelector<HTMLElement>("[data-v3-stationary]");
+      const proxy = root.querySelector<HTMLElement>(
+        "[data-v3-turn-accessibility-proxy]",
+      );
+      if (!stationary || !proxy) {
+        throw new Error("Expected mobile turn semantic layers");
+      }
+      return {
+        stationaryVisibility: getComputedStyle(stationary).visibility,
+        proxyHidden: proxy.hidden,
+        proxyAriaHidden: proxy.getAttribute("aria-hidden"),
+        proxyInert: proxy.inert,
+        proxyHasHeading: proxy.querySelector("h1, h2, h3") !== null,
+      };
+    });
+  expect(activeSemantics).toEqual({
+    stationaryVisibility: "hidden",
+    proxyHidden: false,
+    proxyAriaHidden: null,
+    proxyInert: false,
+    proxyHasHeading: true,
+  });
+  await expect(
+    page.getByRole("region", { name: "Current page during page turn" }),
+  ).toHaveCount(1);
+  await page.mouse.up();
+  await expect(reader).toHaveAttribute("data-v3-turning", "false");
+  await expect(
+    page.locator("[data-v3-turn-accessibility-proxy]"),
+  ).toBeHidden();
+  await expect(page.locator("[data-v3-turn-layer]")).toHaveAttribute(
+    "data-v3-prepared",
+    "true",
+  );
+
+  await page.setViewportSize({ width: 430, height: 844 });
+  await expect
+    .poll(() =>
+      page
+        .locator("[data-v3-turn-layer]")
+        .getAttribute("data-v3-prepared"),
+    )
+    .toBeNull();
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await startTurn();
+  const resized = await page
+    .locator("[data-v3-turn-layer]")
+    .evaluate((layer) => {
+      const moving = layer.querySelector<HTMLElement>(".v3-turn-surface");
+      const spread = document.querySelector<HTMLElement>("[data-v3-spread]");
+      return {
+        movingWidth: Number.parseFloat(moving?.style.width ?? ""),
+        spreadWidth: spread?.getBoundingClientRect().width ?? 0,
+      };
+    });
+  expect(resized.movingWidth).toBeCloseTo(resized.spreadWidth, 1);
+  await page.mouse.up();
 });
 
 test("traverses every page in the complete V3 Ethical AI edition", async ({

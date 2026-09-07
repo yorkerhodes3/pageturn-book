@@ -130,4 +130,27 @@ describe("projectPageTurn", () => {
       "polygon(0.000px 1.235px, 20.000px 30.000px, -4.200px 8.000px)",
     );
   });
+
+  it("uses an analytic curved path for the active runtime projection", () => {
+    const result = solvePageTurn({
+      page,
+      direction: "forward",
+      corner: "top",
+      pointer: { x: 260, y: 120 },
+    });
+    if (result.status !== "ok") {
+      throw new Error(`Expected solved frame, received ${result.reason}`);
+    }
+
+    const projection = projectPageTurn(result.frame, {
+      foldCurvature: 0.72,
+      includeClipPoints: false,
+      includeRevealedClip: false,
+    });
+
+    expect(projection.moving.clip).toEqual([]);
+    expect(projection.moving.path).toMatch(/^path\("M.*Q.*Z"\)$/);
+    expect(projection.revealed.clip).toEqual([]);
+    expect(projection.revealed.path).toBe("");
+  });
 });

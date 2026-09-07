@@ -1313,6 +1313,15 @@ Benchmark protocol:
   process metrics otherwise;
 - retain machine-readable results with the promotion record.
 
+V3-405 preliminary evidence (2026-09-07): the reproducible Plurality `3-2`
+active-turn profile now uses 20 exact-range comments and visible book-toned
+media. Three pre-review tuning runs passed at 21.9, 22.0, and 21.2 ms p95. A
+review-hardened dirty-tree run that verifies all visible note IDs, media digest,
+resize cache safety, and semantic turn exposure passed at 21.8 ms p95 with no
+long tasks. Three retained clean-commit runs are still required. See
+[V3-MOBILE-PERFORMANCE.md](./V3-MOBILE-PERFORMANCE.md) for protocol, clean-HEAD
+baseline, raw-sample definition, environment, and residual variability.
+
 ## 18. Work packages
 
 ### V3-418 - exact-range target foundation

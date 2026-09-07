@@ -237,6 +237,12 @@ const shellMarkup = `
           </article>
         </div>
       </div>
+      <section
+        class="v3-turn-accessibility-proxy"
+        data-v3-turn-accessibility-proxy
+        aria-label="Current page during page turn"
+        hidden
+      ></section>
 
       <nav class="v3-controls" aria-label="Page navigation">
         <button type="button" data-v3-previous aria-label="Previous spread">

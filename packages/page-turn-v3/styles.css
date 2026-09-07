@@ -1397,13 +1397,22 @@ button.v3-marginalia-group {
   left: 0;
   width: 50%;
   height: 100%;
-  overflow: hidden;
-  background-color: var(--v3-page-paper, #fffdf8);
+  overflow: visible;
+  background-color: transparent;
   opacity: 1;
   transform-origin: 0 0;
   isolation: isolate;
+  contain: layout style;
+  backface-visibility: hidden;
   pointer-events: none;
   user-select: none;
+}
+
+.v3-turn-clip {
+  position: absolute;
+  inset: 0;
+  background-color: var(--v3-page-paper, #fffdf8);
+  contain: strict;
 }
 
 .v3-turn-layer {
@@ -1413,6 +1422,21 @@ button.v3-marginalia-group {
   overflow: visible;
   border-radius: inherit;
   pointer-events: none;
+}
+
+.v3-reader[data-v3-turning="true"] .v3-spread-single .v3-stationary {
+  content-visibility: hidden;
+  visibility: hidden;
+}
+
+.v3-turn-accessibility-proxy:not([hidden]) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: normal;
 }
 
 .v3-paper-occluder {
@@ -1432,11 +1456,23 @@ button.v3-marginalia-group {
 
 .v3-turn-surface {
   z-index: 6;
-  will-change: transform, clip-path;
   filter: drop-shadow(0.08rem 0.12rem 0.12rem rgb(0 0 0 / 18%));
 }
 
-.v3-turn-surface::after {
+.v3-turn-layer:not([data-v3-prepared]) .v3-turn-clip,
+.v3-turn-layer[data-v3-warm] .v3-turn-clip {
+  transform: translateZ(0);
+  will-change: clip-path;
+}
+
+.v3-turn-layer:not([data-v3-prepared]) .v3-revealed-page,
+.v3-turn-layer:not([data-v3-prepared]) .v3-turn-surface,
+.v3-turn-layer[data-v3-warm] .v3-revealed-page,
+.v3-turn-layer[data-v3-warm] .v3-turn-surface {
+  will-change: transform;
+}
+
+.v3-turn-surface-clip::after {
   position: absolute;
   z-index: 4;
   inset: 0;
@@ -1488,7 +1524,6 @@ button.v3-marginalia-group {
   transform-origin: 0 0;
   filter: blur(0.055rem);
   pointer-events: none;
-  will-change: transform, opacity;
 }
 
 .v3-fold-curve {
@@ -1511,9 +1546,14 @@ button.v3-marginalia-group {
   transform-origin: 0 0;
   filter: blur(0.035rem);
   pointer-events: none;
-  will-change: transform, opacity;
 }
 
+.v3-turn-layer:not([data-v3-prepared]) .v3-fold-shadow,
+.v3-turn-layer:not([data-v3-prepared]) .v3-fold-curve,
+.v3-turn-layer[data-v3-warm] .v3-fold-shadow,
+.v3-turn-layer[data-v3-warm] .v3-fold-curve {
+  will-change: transform, opacity;
+}
 .v3-turn-layer:empty {
   display: none;
 }

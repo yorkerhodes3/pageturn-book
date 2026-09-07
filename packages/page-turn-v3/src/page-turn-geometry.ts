@@ -130,17 +130,12 @@ function samePoint(first: PageTurnPoint, second: PageTurnPoint): boolean {
 function rotatePoint(
   point: PageTurnPoint,
   origin: PageTurnPoint,
-  angleRadians: number,
+  cosine: number,
+  sine: number,
 ): PageTurnPoint {
   return {
-    x:
-      point.x * Math.cos(angleRadians) +
-      point.y * Math.sin(angleRadians) +
-      origin.x,
-    y:
-      point.y * Math.cos(angleRadians) -
-      point.x * Math.sin(angleRadians) +
-      origin.y,
+    x: point.x * cosine + point.y * sine + origin.x,
+    y: point.y * cosine - point.x * sine + origin.y,
   };
 }
 
@@ -260,11 +255,34 @@ function compactPolygon(
 class FoldCalculation {
   private angleRadians = 0;
   private pageRect: PageTurnRect | undefined;
+  private readonly bounds: Bounds;
+  private readonly topEdge: Segment;
+  private readonly sideEdge: Segment;
+  private readonly bottomEdge: Segment;
 
   constructor(
     private readonly page: PageTurnSize,
     private readonly corner: PageTurnCorner,
-  ) {}
+  ) {
+    this.bounds = {
+      left: -INTERSECTION_MARGIN,
+      top: -INTERSECTION_MARGIN,
+      width: page.width + INTERSECTION_MARGIN * 2,
+      height: page.height + INTERSECTION_MARGIN * 2,
+    };
+    this.topEdge = [
+      { x: 0, y: 0 },
+      { x: page.width, y: 0 },
+    ];
+    this.sideEdge = [
+      { x: page.width, y: 0 },
+      { x: page.width, y: page.height },
+    ];
+    this.bottomEdge = [
+      { x: 0, y: page.height },
+      { x: page.width, y: page.height },
+    ];
+  }
 
   calculate(pointer: PageTurnPoint): CalculationState | undefined {
     let constrainedPointer = { x: pointer.x, y: pointer.y };
@@ -371,6 +389,8 @@ class FoldCalculation {
     pointer: PageTurnPoint,
     angleRadians: number,
   ): PageTurnRect {
+    const cosine = Math.cos(angleRadians);
+    const sine = Math.sin(angleRadians);
     const points =
       this.corner === "top"
         ? [
@@ -393,10 +413,10 @@ class FoldCalculation {
       throw new Error("Page rectangle basis is incomplete");
     }
     return {
-      topLeft: rotatePoint(topLeft, pointer, angleRadians),
-      topRight: rotatePoint(topRight, pointer, angleRadians),
-      bottomLeft: rotatePoint(bottomLeft, pointer, angleRadians),
-      bottomRight: rotatePoint(bottomRight, pointer, angleRadians),
+      topLeft: rotatePoint(topLeft, pointer, cosine, sine),
+      topRight: rotatePoint(topRight, pointer, cosine, sine),
+      bottomLeft: rotatePoint(bottomLeft, pointer, cosine, sine),
+      bottomRight: rotatePoint(bottomRight, pointer, cosine, sine),
     };
   }
 
@@ -404,49 +424,34 @@ class FoldCalculation {
     pointer: PageTurnPoint,
     pageRect: PageTurnRect,
   ): Intersections {
-    const bounds: Bounds = {
-      left: -INTERSECTION_MARGIN,
-      top: -INTERSECTION_MARGIN,
-      width: this.page.width + INTERSECTION_MARGIN * 2,
-      height: this.page.height + INTERSECTION_MARGIN * 2,
-    };
-    const topEdge: Segment = [
-      { x: 0, y: 0 },
-      { x: this.page.width, y: 0 },
-    ];
-    const sideEdge: Segment = [
-      { x: this.page.width, y: 0 },
-      { x: this.page.width, y: this.page.height },
-    ];
-    const bottomEdge: Segment = [
-      { x: 0, y: this.page.height },
-      { x: this.page.width, y: this.page.height },
-    ];
-
     const top =
       this.corner === "top"
-        ? intersectWithinBounds(bounds, [pointer, pageRect.topRight], topEdge)
+        ? intersectWithinBounds(
+            this.bounds,
+            [pointer, pageRect.topRight],
+            this.topEdge,
+          )
         : intersectWithinBounds(
-            bounds,
+            this.bounds,
             [pageRect.topLeft, pageRect.topRight],
-            topEdge,
+            this.topEdge,
           );
     const side =
       this.corner === "top"
         ? intersectWithinBounds(
-            bounds,
+            this.bounds,
             [pointer, pageRect.bottomLeft],
-            sideEdge,
+            this.sideEdge,
           )
         : intersectWithinBounds(
-            bounds,
+            this.bounds,
             [pointer, pageRect.topLeft],
-            sideEdge,
+            this.sideEdge,
           );
     const bottom = intersectWithinBounds(
-      bounds,
+      this.bounds,
       [pageRect.bottomLeft, pageRect.bottomRight],
-      bottomEdge,
+      this.bottomEdge,
     );
 
     return {
@@ -533,18 +538,17 @@ function isAtRest(
   return distance(pointer, restingCorner) < REST_EPSILON;
 }
 
-export function solvePageTurn(input: PageTurnInput): PageTurnResult {
-  assertPositiveFinite(input.page.width, "page.width");
-  assertPositiveFinite(input.page.height, "page.height");
+function solvePageTurnWithCalculation(
+  input: PageTurnInput,
+  calculation: FoldCalculation,
+): PageTurnResult {
   assertFinitePoint(input.pointer, "pointer");
 
   if (isAtRest(input.pointer, input.page, input.corner)) {
     return { status: "degenerate", reason: "pointer-at-rest" };
   }
 
-  const state = new FoldCalculation(input.page, input.corner).calculate(
-    input.pointer,
-  );
+  const state = calculation.calculate(input.pointer);
   if (state === undefined) {
     return { status: "degenerate", reason: "unsolved-intersection" };
   }
@@ -578,7 +582,7 @@ export function solvePageTurn(input: PageTurnInput): PageTurnResult {
     frame: {
       direction: input.direction,
       corner: input.corner,
-      page: { ...input.page },
+      page: { width: input.page.width, height: input.page.height },
       pointer: state.pointer,
       progress,
       movingOrigin: forward
@@ -607,4 +611,27 @@ export function solvePageTurn(input: PageTurnInput): PageTurnResult {
       },
     },
   };
+}
+
+export function solvePageTurn(input: PageTurnInput): PageTurnResult {
+  assertPositiveFinite(input.page.width, "page.width");
+  assertPositiveFinite(input.page.height, "page.height");
+  return solvePageTurnWithCalculation(
+    input,
+    new FoldCalculation(input.page, input.corner),
+  );
+}
+
+export function createPageTurnFrameSolver(
+  page: PageTurnSize,
+  corner: PageTurnCorner,
+): (direction: PageTurnDirection, pointer: PageTurnPoint) => PageTurnResult {
+  assertPositiveFinite(page.width, "page.width");
+  assertPositiveFinite(page.height, "page.height");
+  const calculation = new FoldCalculation(page, corner);
+  return (direction, pointer) =>
+    solvePageTurnWithCalculation(
+      { page, corner, direction, pointer },
+      calculation,
+    );
 }

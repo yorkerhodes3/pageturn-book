@@ -14,16 +14,13 @@ import type {
   PageTurnSemanticChapter,
 } from "./publication-types.js";
 import {
-  solvePageTurn,
+  createPageTurnFrameSolver,
   type PageTurnCorner,
   type PageTurnDirection,
   type PageTurnFrame,
   type PageTurnPoint,
 } from "./page-turn-geometry.js";
-import {
-  pageTurnPolygon,
-  projectPageTurn,
-} from "./page-turn-projection.js";
+import { projectPageTurn } from "./page-turn-projection.js";
 import {
   normalizeBookFontScale,
   readBookFontScale,
@@ -283,6 +280,27 @@ type ActiveTurn = {
   direction: PageTurnDirection;
   corner: PageTurnCorner;
   targetSpread: number;
+  singlePage: boolean;
+  paginationVersion: number;
+  page: Readonly<{
+    width: number;
+    height: number;
+    diagonal: number;
+    effectWidth: number;
+  }>;
+  spreadBounds: Readonly<{
+    left: number;
+    right: number;
+    top: number;
+  }>;
+  singlePageOffset: number;
+  foldCurvature: number;
+  shadowScale: number;
+  curveMinimumWidth: number;
+  shadowOpacityScale: number;
+  curveOpacityScale: number;
+  solve: ReturnType<typeof createPageTurnFrameSolver>;
+  restingCounterValue: string;
   pointer: PageTurnPoint;
   progress: number;
   pointerId?: number;
@@ -291,10 +309,31 @@ type ActiveTurn = {
   pointerFrame?: number;
   pendingPointer?: PageTurnPoint;
   moving: HTMLElement;
+  movingClip: HTMLElement;
+  movingSheet: HTMLElement;
   revealed: HTMLElement;
+  revealedClip: HTMLElement;
+  revealedSheet: HTMLElement;
   curve: HTMLElement;
   shadow: HTMLElement;
 };
+
+type TurnVisualCache = Readonly<{
+  spreadStart: number;
+  direction: PageTurnDirection;
+  singlePage: boolean;
+  paginationVersion: number;
+  pageWidth: number;
+  pageHeight: number;
+  moving: HTMLElement;
+  movingClip: HTMLElement;
+  movingSheet: HTMLElement;
+  revealed: HTMLElement;
+  revealedClip: HTMLElement;
+  revealedSheet: HTMLElement;
+  curve: HTMLElement;
+  shadow: HTMLElement;
+}>;
 
 type HighlightRegistryLike = Readonly<{
   set(name: string, highlight: unknown): void;
@@ -547,6 +586,33 @@ function cloneNodes(
     }
     return clone;
   });
+}
+
+function refreshTurnAccessibilityProxy(): void {
+  const clone = stationary.cloneNode(true) as HTMLElement;
+  stripInteractiveIdentity(clone);
+  clone.removeAttribute("data-v3-stationary");
+  for (const image of clone.querySelectorAll("img")) {
+    image.removeAttribute("src");
+    image.removeAttribute("data-v3-media-src");
+  }
+  turnAccessibilityProxy.replaceChildren(...Array.from(clone.childNodes));
+  turnAccessibilityProxy.hidden = true;
+}
+
+function decorativeSheetClone(sheet: HTMLElement): HTMLElement {
+  const clone = sheet.cloneNode(true) as HTMLElement;
+  stripInteractiveIdentity(clone);
+  clone.setAttribute("aria-hidden", "true");
+  clone.inert = true;
+  for (const button of clone.querySelectorAll<HTMLButtonElement>(
+    "[data-v3-marginalia] button",
+  )) {
+    const note = createElement("span", button.className, button.textContent ?? "");
+    note.style.cssText = button.style.cssText;
+    button.replaceWith(note);
+  }
+  return clone;
 }
 
 function chapterOpeningLabel(text: string): HTMLElement {
@@ -1760,6 +1826,9 @@ const spread = requiredElement<HTMLElement>("[data-v3-spread]");
 const spine = requiredElement<HTMLElement>(".v3-spine");
 const stationary = requiredElement<HTMLElement>("[data-v3-stationary]");
 const turnLayer = requiredElement<HTMLElement>("[data-v3-turn-layer]");
+const turnAccessibilityProxy = requiredElement<HTMLElement>(
+  "[data-v3-turn-accessibility-proxy]",
+);
 const entryCover = requiredElement<HTMLElement>("[data-v3-entry-cover]");
 const measure = requiredElement<HTMLElement>("[data-v3-measure]");
 const measureContent = requiredElement<HTMLElement>(
@@ -2149,6 +2218,9 @@ let pages: PrototypePage[] = [];
 let paginationVersion = 0;
 let spreadStart = 0;
 let activeTurn: ActiveTurn | undefined;
+let turnVisualCache: TurnVisualCache | undefined;
+let turnVisualCacheInvalidated = false;
+let turnHintTimer: number | undefined;
 let resizeTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let appearanceTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
 let openingTimer: ReturnType<typeof globalThis.setTimeout> | undefined;
@@ -2626,11 +2698,12 @@ function marginaliaLayer(
 function annotationRanges(
   annotation: PageTurnAnnotationV2,
   scope: ParentNode,
+  sourceBlocks: readonly PageTurnTextSourceBlock[],
 ): Range[] {
   return annotation.target.state === "resolved"
     ? pageTurnTextTargetRanges(
         annotation.target.selector,
-        textSourceBlocks(annotation.target.selector.chapterId),
+        sourceBlocks,
         scope,
       )
     : [];
@@ -2640,6 +2713,9 @@ function renderMarginalia(
   scope: ParentNode = stationary,
   decorative = false,
 ): void {
+  if (scope === stationary) {
+    discardTurnVisualCache();
+  }
   for (const existing of scope.querySelectorAll("[data-v3-marginalia]")) {
     existing.remove();
   }
@@ -2647,6 +2723,7 @@ function renderMarginalia(
     return;
   }
   const compact = singlePageMedia.matches;
+  const sourceBlocks = new Map<string, PageTurnTextSourceBlock[]>();
   for (const sheet of scope.querySelectorAll<HTMLElement>(".v3-sheet")) {
     const side = sheet.classList.contains("v3-sheet-left") ? "left" : "right";
     const sheetBounds = sheet.getBoundingClientRect();
@@ -2655,6 +2732,7 @@ function renderMarginalia(
     if (!content || sheetBounds.height <= 0 || !contentBounds) {
       continue;
     }
+    const targetRectangles = new Map<string, DOMRect[]>();
     const attached = annotations.flatMap((annotation) => {
       const note = annotationText(annotation);
       if (
@@ -2664,9 +2742,20 @@ function renderMarginalia(
       ) {
         return [];
       }
-      let rectangles = annotationRanges(annotation, sheet)
-        .flatMap((range) => Array.from(range.getClientRects()))
-        .filter(({ width, height }) => width > 0 && height > 0);
+      const selector = annotation.target.selector;
+      const selectorKey = JSON.stringify(selector);
+      let rectangles = targetRectangles.get(selectorKey);
+      if (!rectangles) {
+        let blocks = sourceBlocks.get(selector.chapterId);
+        if (!blocks) {
+          blocks = textSourceBlocks(selector.chapterId);
+          sourceBlocks.set(selector.chapterId, blocks);
+        }
+        rectangles = annotationRanges(annotation, sheet, blocks)
+          .flatMap((range) => Array.from(range.getClientRects()))
+          .filter(({ width, height }) => width > 0 && height > 0);
+        targetRectangles.set(selectorKey, rectangles);
+      }
       if (rectangles.length === 0 && decorative) {
         const anchor = annotation.target.selector.start.anchor;
         const source = sheet.querySelector<HTMLElement>(
@@ -3049,6 +3138,9 @@ function textSourceBlocks(chapterId: string): PageTurnTextSourceBlock[] {
   const result: PageTurnTextSourceBlock[] = [];
   const byAnchor = new Map<string, string>();
   for (const block of chapterState.blocks ?? []) {
+    if (block.sourceText === "") {
+      continue;
+    }
     const existing = byAnchor.get(block.anchor);
     if (existing !== undefined && existing !== block.sourceText) {
       throw new Error(
@@ -4982,6 +5074,7 @@ function renderControls(): void {
 }
 
 function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
+  discardTurnVisualCache();
   closeSourceCard(false);
   if (shareDialog.open) {
     closeShareComposer(false);
@@ -5007,6 +5100,7 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
   renderMarginalia();
   renderSharedTextHighlight();
   renderPersonalTextHighlights();
+  refreshTurnAccessibilityProxy();
   const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
   const focusedPage =
     visiblePages.filter((page) => page?.kind === "content").at(-1) ??
@@ -5207,6 +5301,7 @@ function setMediaStyle(value: string, explicitUserSelection = true): void {
       applyMediaFigureStyle(node, figure);
     }
   }
+  discardTurnVisualCache();
   status.textContent = `Image style: ${value}`;
 }
 
@@ -6554,6 +6649,23 @@ function turnPages(direction: PageTurnDirection): {
       };
 }
 
+function discardTurnVisualCache(): void {
+  turnVisualCache = undefined;
+  if (activeTurn) {
+    turnVisualCacheInvalidated = true;
+    return;
+  }
+  if (turnHintTimer !== undefined) {
+    clearTimeout(turnHintTimer);
+    turnHintTimer = undefined;
+  }
+  turnVisualCacheInvalidated = false;
+  turnLayer.replaceChildren();
+  turnLayer.style.opacity = "";
+  delete turnLayer.dataset.v3Prepared;
+  delete turnLayer.dataset.v3Warm;
+}
+
 function beginTurn(
   direction: PageTurnDirection,
   corner: PageTurnCorner,
@@ -6571,54 +6683,172 @@ function beginTurn(
   ) {
     return undefined;
   }
-  const moving = createElement("div", "v3-turn-surface");
-  moving.setAttribute("aria-hidden", "true");
-  moving.inert = true;
-  moving.append(
-    createElement("div", "v3-paper-occluder"),
-    createSheet(
-      selected.moving,
-      singlePageMedia.matches
-        ? "right"
-        : direction === "forward"
-          ? "left"
-          : "right",
-      selected.movingIndex + 1,
-      true,
-    ),
-  );
-  const revealed = createElement("div", "v3-revealed-page");
-  revealed.setAttribute("aria-hidden", "true");
-  revealed.inert = true;
-  revealed.append(
-    createElement("div", "v3-paper-occluder"),
+  const spreadBounds = spread.getBoundingClientRect();
+  if (spreadBounds.width <= 0 || spreadBounds.height <= 0) {
+    throw new Error("V3 book has no measurable page area");
+  }
+  const singlePage = singlePageMedia.matches;
+  const pageWidth = singlePage
+    ? spreadBounds.width
+    : spreadBounds.width / 2;
+  const page = {
+    width: pageWidth,
+    height: spreadBounds.height,
+    diagonal: Math.hypot(pageWidth, spreadBounds.height),
+    effectWidth: pageWidth * 0.26,
+  };
+  const singlePageOffset =
+    singlePage && direction === "forward" ? -page.width : 0;
+  const foldCurvature = currentAppearance.geometry.foldRadius;
+  const foldRadius = currentAppearance.geometry.foldRadius;
+  const foldShadow = currentAppearance.geometry.foldShadow;
+  const shadowScale = 0.55 + foldShadow * 0.75;
+  const curveMinimumWidth = page.width * (0.08 + foldRadius * 0.12);
+  const shadowOpacityScale = 0.28 + foldShadow * 0.42;
+  const curveOpacityScale = 0.25 + foldRadius * 0.28;
+  const solve = createPageTurnFrameSolver(page, corner);
+  const cachedVisual =
+    turnVisualCache?.spreadStart === spreadStart &&
+    turnVisualCache.direction === direction &&
+    turnVisualCache.singlePage === singlePage &&
+    turnVisualCache.paginationVersion === paginationVersion &&
+    turnVisualCache.pageWidth === page.width &&
+    turnVisualCache.pageHeight === page.height
+      ? turnVisualCache
+      : undefined;
+  turnVisualCache = undefined;
+  turnVisualCacheInvalidated = false;
+  if (turnHintTimer !== undefined) {
+    clearTimeout(turnHintTimer);
+    turnHintTimer = undefined;
+  }
+  turnLayer.style.opacity = "1";
+  delete turnLayer.dataset.v3Prepared;
+  delete turnLayer.dataset.v3Warm;
+  const moving =
+    cachedVisual?.moving ?? createElement("div", "v3-turn-surface");
+  const movingClip =
+    cachedVisual?.movingClip ??
+    createElement("div", "v3-turn-clip v3-turn-surface-clip");
+  if (!cachedVisual) {
+    moving.setAttribute("aria-hidden", "true");
+    moving.inert = true;
+    moving.style.width = `${page.width}px`;
+    moving.style.height = `${page.height}px`;
+    moving.style.setProperty(
+      "--v3-fold-sheen-direction",
+      direction === "forward" ? "90deg" : "270deg",
+    );
+  }
+  const stationarySheet = singlePage
+    ? stationary.querySelector<HTMLElement>(".v3-sheet")
+    : undefined;
+  const movingSheet =
+    cachedVisual?.movingSheet ??
+    (stationarySheet
+      ? decorativeSheetClone(stationarySheet)
+      : createSheet(
+          selected.moving,
+          direction === "forward" ? "left" : "right",
+          selected.movingIndex + 1,
+          true,
+        ));
+  if (!cachedVisual) {
+    movingClip.append(
+      createElement("div", "v3-paper-occluder"),
+      movingSheet,
+    );
+    moving.append(movingClip);
+  }
+  const revealed =
+    cachedVisual?.revealed ?? createElement("div", "v3-revealed-page");
+  const revealedClip =
+    cachedVisual?.revealedClip ??
+    createElement("div", "v3-turn-clip v3-revealed-page-clip");
+  if (!cachedVisual) {
+    revealed.setAttribute("aria-hidden", "true");
+    revealed.inert = true;
+    revealed.style.width = `${page.width}px`;
+    revealed.style.height = `${page.height}px`;
+    revealed.style.transform = `translate3d(${
+      direction === "forward" && !singlePageMedia.matches ? page.width : 0
+    }px, 0, 0)`;
+  }
+  const revealedSheet =
+    cachedVisual?.revealedSheet ??
     createSheet(
       selected.revealed,
       selected.revealedSide,
       selected.revealedIndex + 1,
       true,
-    ),
-  );
-  const shadow = createElement("div", "v3-fold-shadow");
-  shadow.setAttribute("aria-hidden", "true");
-  const curve = createElement("div", "v3-fold-curve");
-  curve.setAttribute("aria-hidden", "true");
-  turnLayer.replaceChildren(revealed, moving, shadow, curve);
-  renderMarginalia(moving, true);
-  renderMarginalia(revealed, true);
+    );
+  const shadow =
+    cachedVisual?.shadow ?? createElement("div", "v3-fold-shadow");
+  const curve = cachedVisual?.curve ?? createElement("div", "v3-fold-curve");
+  if (!cachedVisual) {
+    revealedClip.append(
+      createElement("div", "v3-paper-occluder"),
+      revealedSheet,
+    );
+    revealed.append(revealedClip);
+    shadow.setAttribute("aria-hidden", "true");
+    shadow.style.width = `${page.effectWidth}px`;
+    shadow.style.height = `${page.diagonal}px`;
+    shadow.style.background =
+      direction === "forward"
+        ? "linear-gradient(to right, rgb(38 27 16 / 58%), transparent)"
+        : "linear-gradient(to left, rgb(38 27 16 / 58%), transparent)";
+    curve.setAttribute("aria-hidden", "true");
+    curve.style.width = `${page.effectWidth}px`;
+    curve.style.height = `${page.diagonal}px`;
+    curve.style.setProperty(
+      "--v3-fold-curve-direction",
+      direction === "forward" ? "90deg" : "270deg",
+    );
+  }
+  if (!cachedVisual) {
+    turnLayer.replaceChildren(revealed, moving, shadow, curve);
+  }
+  if (!cachedVisual) {
+    if (!stationarySheet) {
+      renderMarginalia(moving, true);
+    }
+    renderMarginalia(revealed, true);
+  }
 
   activeTurn = {
     direction,
     corner,
     targetSpread: target,
+    singlePage,
+    paginationVersion,
+    page,
+    spreadBounds: {
+      left: spreadBounds.left,
+      right: spreadBounds.right,
+      top: spreadBounds.top,
+    },
+    singlePageOffset,
+    foldCurvature,
+    shadowScale,
+    curveMinimumWidth,
+    shadowOpacityScale,
+    curveOpacityScale,
+    solve,
+    restingCounterValue: counter.value,
     pointer,
     progress: 0,
     moving,
+    movingClip,
+    movingSheet,
     revealed,
+    revealedClip,
+    revealedSheet,
     curve,
     shadow,
   };
   reader.dataset.v3Turning = "true";
+  turnAccessibilityProxy.hidden = !singlePage;
   if (pageRoot) {
     pageRoot.dataset.v3Turning = "true";
   }
@@ -6634,94 +6864,56 @@ function applyFrame(frame: PageTurnFrame): void {
     return;
   }
   const projection = projectPageTurn(frame, {
-    foldCurvature: currentAppearance.geometry.foldRadius,
+    foldCurvature: turn.foldCurvature,
+    includeClipPoints: false,
+    includeRevealedClip: false,
   });
-  const singlePageOffset =
-    singlePageMedia.matches && frame.direction === "forward"
-      ? -frame.page.width
-      : 0;
+  const singlePageOffset = turn.singlePageOffset;
   turn.pointer = frame.pointer;
   turn.progress = frame.progress;
-  turn.moving.dataset.v3Progress = frame.progress.toFixed(4);
+  turn.moving.setAttribute("data-v3-progress", frame.progress.toFixed(2));
 
-  turn.moving.style.width = `${frame.page.width}px`;
-  turn.moving.style.height = `${frame.page.height}px`;
-  turn.moving.style.transform = [
-    `translate3d(${projection.moving.translate.x + singlePageOffset}px,`,
-    `${projection.moving.translate.y}px, 0)`,
-    `rotate(${projection.moving.angleRadians}rad)`,
-  ].join(" ");
-  turn.moving.style.clipPath = pageTurnPolygon(projection.moving.clip);
-  turn.moving.style.setProperty(
-    "--v3-fold-sheen-direction",
-    frame.direction === "forward" ? "90deg" : "270deg",
-  );
-
-  turn.revealed.style.width = `${frame.page.width}px`;
-  turn.revealed.style.height = `${frame.page.height}px`;
-  turn.revealed.style.transform = `translate3d(${projection.revealed.translate.x + singlePageOffset}px, ${projection.revealed.translate.y}px, 0)`;
-  turn.revealed.style.clipPath = pageTurnPolygon(projection.revealed.clip);
+  turn.moving.style.transform =
+    `translate3d(${(projection.moving.translate.x + singlePageOffset).toFixed(2)}px, ` +
+    `${projection.moving.translate.y.toFixed(2)}px, 0) ` +
+    `rotate(${projection.moving.angleRadians.toFixed(4)}rad)`;
+  turn.movingClip.style.clipPath = projection.moving.path;
 
   const shadow = projection.foldShadow;
-  const shadowScale =
-    0.55 + currentAppearance.geometry.foldShadow * 0.75;
-  const shadowWidth = Math.max(3, shadow.width * shadowScale);
+  const shadowWidth = Math.max(3, shadow.width * turn.shadowScale);
   const curveWidth = Math.min(
-    frame.page.width * 0.26,
-    Math.max(
-      frame.page.width *
-        (0.08 + currentAppearance.geometry.foldRadius * 0.12),
-      shadow.width * 1.35,
-    ),
+    turn.page.effectWidth,
+    Math.max(turn.curveMinimumWidth, shadow.width * 1.35),
   );
-  const normalX = Math.cos(shadow.angleRadians);
-  const normalY = Math.sin(shadow.angleRadians);
+  const normalX = shadow.normalX;
+  const normalY = shadow.normalY;
   const shadowOffset =
     shadow.gradient === "to-left" ? -shadowWidth : 0;
   const curveOffset =
     shadow.gradient === "to-right" ? -curveWidth : 0;
-  turn.shadow.style.width = `${shadowWidth}px`;
-  turn.shadow.style.height = `${shadow.length}px`;
-  turn.shadow.style.opacity = String(
-    Math.min(
+  turn.shadow.style.opacity = Math.min(
       0.42,
       Math.max(
         0,
-        shadow.opacity *
-          (0.28 + currentAppearance.geometry.foldShadow * 0.42),
+        shadow.opacity * turn.shadowOpacityScale,
       ),
-    ),
-  );
-  turn.shadow.style.background =
-    shadow.gradient === "to-right"
-      ? "linear-gradient(to right, rgb(38 27 16 / 58%), transparent)"
-      : "linear-gradient(to left, rgb(38 27 16 / 58%), transparent)";
-  turn.shadow.style.transformOrigin = "0 0";
-  turn.shadow.style.transform = [
-    `translate3d(${shadow.origin.x + singlePageOffset + normalX * shadowOffset}px,`,
-    `${shadow.origin.y + normalY * shadowOffset}px, 0)`,
-    `rotate(${shadow.angleRadians}rad)`,
-  ].join(" ");
-  turn.curve.style.width = `${curveWidth}px`;
-  turn.curve.style.height = `${shadow.length}px`;
-  turn.curve.style.opacity = String(
-    Math.min(
+    ).toFixed(3);
+  turn.shadow.style.transform =
+    `translate3d(${(shadow.origin.x + singlePageOffset + normalX * shadowOffset).toFixed(2)}px, ` +
+    `${(shadow.origin.y + normalY * shadowOffset).toFixed(2)}px, 0) ` +
+    `rotate(${shadow.angleRadians.toFixed(4)}rad) ` +
+    `scale3d(${(shadowWidth / turn.page.effectWidth).toFixed(3)}, ` +
+    `${(shadow.length / turn.page.diagonal).toFixed(3)}, 1)`;
+  turn.curve.style.opacity = Math.min(
       0.62,
-      0.22 +
-        shadow.opacity *
-          (0.25 + currentAppearance.geometry.foldRadius * 0.28),
-    ),
-  );
-  turn.curve.style.setProperty(
-    "--v3-fold-curve-direction",
-    shadow.gradient === "to-right" ? "90deg" : "270deg",
-  );
-  turn.curve.style.transformOrigin = "0 0";
-  turn.curve.style.transform = [
-    `translate3d(${shadow.origin.x + singlePageOffset + normalX * curveOffset}px,`,
-    `${shadow.origin.y + normalY * curveOffset}px, 0)`,
-    `rotate(${shadow.angleRadians}rad)`,
-  ].join(" ");
+      0.22 + shadow.opacity * turn.curveOpacityScale,
+    ).toFixed(3);
+  turn.curve.style.transform =
+    `translate3d(${(shadow.origin.x + singlePageOffset + normalX * curveOffset).toFixed(2)}px, ` +
+    `${(shadow.origin.y + normalY * curveOffset).toFixed(2)}px, 0) ` +
+    `rotate(${shadow.angleRadians.toFixed(4)}rad) ` +
+    `scale3d(${(curveWidth / turn.page.effectWidth).toFixed(3)}, ` +
+    `${(shadow.length / turn.page.diagonal).toFixed(3)}, 1)`;
 }
 
 function applyTurn(pointer: PageTurnPoint): void {
@@ -6729,12 +6921,7 @@ function applyTurn(pointer: PageTurnPoint): void {
   if (!turn) {
     return;
   }
-  const result = solvePageTurn({
-    page: pageSize(),
-    direction: turn.direction,
-    corner: turn.corner,
-    pointer,
-  });
+  const result = turn.solve(turn.direction, pointer);
   if (result.status === "ok") {
     applyFrame(result.frame);
   }
@@ -6761,11 +6948,47 @@ function finishTurn(commit: boolean): void {
     spreadStart = turn.targetSpread;
   }
   activeTurn = undefined;
-  turnLayer.replaceChildren();
-  renderStationary();
-  if (commit) {
-    queueChapterWindow();
+  turnAccessibilityProxy.hidden = true;
+  if (!commit && !turnVisualCacheInvalidated) {
+    turnVisualCache = {
+      spreadStart,
+      direction: turn.direction,
+      singlePage: turn.singlePage,
+      paginationVersion: turn.paginationVersion,
+      pageWidth: turn.page.width,
+      pageHeight: turn.page.height,
+      moving: turn.moving,
+      movingClip: turn.movingClip,
+      movingSheet: turn.movingSheet,
+      revealed: turn.revealed,
+      revealedClip: turn.revealedClip,
+      revealedSheet: turn.revealedSheet,
+      curve: turn.curve,
+      shadow: turn.shadow,
+    };
   }
+  if (commit || turnVisualCacheInvalidated) {
+    discardTurnVisualCache();
+  } else {
+    turnLayer.style.opacity = "0";
+    turnLayer.dataset.v3Prepared = "true";
+    turnLayer.dataset.v3Warm = "true";
+    turnHintTimer = window.setTimeout(() => {
+      turnHintTimer = undefined;
+      delete turnLayer.dataset.v3Warm;
+    }, 500);
+  }
+  if (!commit) {
+    reader.dataset.v3Turning = "false";
+    if (pageRoot) {
+      pageRoot.dataset.v3Turning = "false";
+    }
+    counter.value = turn.restingCounterValue;
+    renderControls();
+    return;
+  }
+  renderStationary();
+  queueChapterWindow();
 }
 
 function settleTurn(commit: boolean): void {
@@ -6783,7 +7006,7 @@ function settleTurn(commit: boolean): void {
     return;
   }
 
-  const size = pageSize();
+  const size = turn.page;
   const start = turn.pointer;
   const destination = commit
     ? {
@@ -6854,10 +7077,6 @@ function onCornerPointerDown(event: PointerEvent): void {
     throw new Error("V3 corner control has invalid turn metadata");
   }
   dismissSelectionActions();
-  if (resizeTimer !== undefined) {
-    clearTimeout(resizeTimer);
-    resizeTimer = undefined;
-  }
   if (reducedMotion.matches) {
     if (canTurn(direction)) {
       preferredAnchor = undefined;
@@ -6887,7 +7106,17 @@ function onPointerMove(event: PointerEvent): void {
     return;
   }
   event.preventDefault();
-  turn.pendingPointer = pointerForEvent(event, turn.direction);
+  const bounds = turn.spreadBounds;
+  turn.pendingPointer = {
+    x: singlePageMedia.matches
+      ? turn.direction === "forward"
+        ? event.clientX - bounds.left
+        : bounds.right - event.clientX
+      : turn.direction === "forward"
+        ? event.clientX - (bounds.left + turn.page.width)
+        : bounds.left + turn.page.width - event.clientX,
+    y: event.clientY - bounds.top,
+  };
   if (turn.pointerFrame === undefined) {
     turn.pointerFrame = requestAnimationFrame(() => {
       delete turn.pointerFrame;
@@ -8710,6 +8939,7 @@ if (managesUrl) {
 
 const observer = new ResizeObserver(() => {
   dismissSelectionActions();
+  discardTurnVisualCache();
   if (!manifest || pages.length === 0) {
     return;
   }
@@ -8789,6 +9019,10 @@ function destroy(): void {
   if (activeTurn?.pointerFrame !== undefined) {
     cancelAnimationFrame(activeTurn.pointerFrame);
   }
+  activeTurn = undefined;
+  turnAccessibilityProxy.replaceChildren();
+  turnAccessibilityProxy.hidden = true;
+  discardTurnVisualCache();
   if (
     assignedDocumentTitle &&
     document.title === assignedDocumentTitle
