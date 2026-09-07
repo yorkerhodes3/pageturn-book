@@ -1456,7 +1456,6 @@ button.v3-marginalia-group {
 
 .v3-turn-surface {
   z-index: 6;
-  filter: drop-shadow(0.08rem 0.12rem 0.12rem rgb(0 0 0 / 18%));
 }
 
 .v3-turn-layer:not([data-v3-prepared]) .v3-turn-clip,

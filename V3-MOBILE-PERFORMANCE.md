@@ -93,6 +93,11 @@ stationary phone face during the turn, and limits `applyFrame` to progress,
 moving transform/clip, and fold transform/opacity writes. The opaque revealed
 page is a fixed underlay, so it needs no changing clip.
 
+The moving leaf no longer adds a second full-surface CSS `drop-shadow`; the
+bounded analytic fold shadow remains the authoritative physical shadow. This
+removes a redundant large filtered layer without reducing the precise gutter
+and fold treatment.
+
 The curved edge remains analytic: the runtime clip uses a quadratic Bézier
 with the same endpoints and bend parameter as the prior sampled curve.
 Curvature, shadow, styled media, and decorative marginalia remain present.
