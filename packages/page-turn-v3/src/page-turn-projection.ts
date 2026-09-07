@@ -33,6 +33,30 @@ export type PageTurnProjectionOptions = Readonly<{
   includeRevealedClip?: boolean;
 }>;
 
+type MutableProjectedPageTurn = {
+  moving: {
+    translate: { x: number; y: number };
+    angleRadians: number;
+    clip: PageTurnPoint[];
+    path: string;
+  };
+  revealed: {
+    translate: { x: number; y: number };
+    clip: PageTurnPoint[];
+    path: string;
+  };
+  foldShadow: {
+    origin: { x: number; y: number };
+    angleRadians: number;
+    length: number;
+    width: number;
+    opacity: number;
+    gradient: "to-left" | "to-right";
+    normalX: number;
+    normalY: number;
+  };
+};
+
 const FOLD_CURVE_SINE = Array.from({ length: 9 }, (_, index) =>
   Math.sin((Math.PI * index) / 8),
 );
@@ -331,6 +355,171 @@ export function projectPageTurn(
       gradient:
         frame.direction === "forward" ? "to-right" : "to-left",
     },
+  };
+}
+
+/**
+ * Internal animation hot path for the analytic moving-clip projection. The
+ * returned object and all nested values are overwritten by the next call.
+ * Consume it synchronously and never retain it across frames.
+ */
+export function createPageTurnRuntimeProjector(
+  foldCurvature = 0.72,
+): (frame: PageTurnFrame) => ProjectedPageTurn {
+  const movingPointPool = Array.from(
+    { length: 5 },
+    () => ({ x: 0, y: 0 }),
+  );
+  const movingPoints = [...movingPointPool];
+  const movingCurve = Array.from({ length: 3 }, () => ({ x: 0, y: 0 }));
+  const emptyMovingClip: PageTurnPoint[] = [];
+  const emptyRevealedClip: PageTurnPoint[] = [];
+  const projection: MutableProjectedPageTurn = {
+    moving: {
+      translate: { x: 0, y: 0 },
+      angleRadians: 0,
+      clip: emptyMovingClip,
+      path: "",
+    },
+    revealed: {
+      translate: { x: 0, y: 0 },
+      clip: emptyRevealedClip,
+      path: "",
+    },
+    foldShadow: {
+      origin: { x: 0, y: 0 },
+      angleRadians: 0,
+      length: 0,
+      width: 0,
+      opacity: 0,
+      gradient: "to-right",
+      normalX: 0,
+      normalY: 0,
+    },
+  };
+
+  const projectMovingPoint = (
+    frame: PageTurnFrame,
+    source: PageTurnPoint,
+    target: { x: number; y: number },
+    cosine: number,
+    sine: number,
+  ): void => {
+    const relativeX =
+      frame.direction === "forward"
+        ? source.x - frame.movingOrigin.x
+        : -source.x + frame.movingOrigin.x;
+    const relativeY = source.y - frame.movingOrigin.y;
+    target.x = relativeX * cosine + relativeY * sine;
+    target.y = relativeY * cosine - relativeX * sine;
+  };
+
+  return (frame) => {
+    const forward = frame.direction === "forward";
+    projection.moving.translate.x = forward
+      ? frame.page.width + frame.movingOrigin.x
+      : frame.page.width - frame.movingOrigin.x;
+    projection.moving.translate.y = frame.movingOrigin.y;
+    projection.moving.angleRadians = frame.angleRadians;
+    projection.revealed.translate.x = forward
+      ? frame.page.width + frame.underlayPosition.x
+      : frame.page.width - frame.underlayPosition.x;
+    projection.revealed.translate.y = frame.underlayPosition.y;
+
+    const cosine = Math.cos(frame.angleRadians);
+    const sine = Math.sin(frame.angleRadians);
+    movingPoints.length = 0;
+    for (let index = 0; index < frame.movingClip.length; index += 1) {
+      const source = frame.movingClip[index];
+      const target = movingPointPool[index];
+      if (source === undefined || target === undefined) {
+        throw new Error("Page-turn moving clip exceeds runtime capacity");
+      }
+      projectMovingPoint(frame, source, target, cosine, sine);
+      movingPoints[index] = target;
+    }
+
+    const curveStart = movingCurve[0];
+    const curveControl = movingCurve[1];
+    const curveEnd = movingCurve[2];
+    if (
+      curveStart === undefined ||
+      curveControl === undefined ||
+      curveEnd === undefined
+    ) {
+      throw new Error("Page-turn runtime curve is incomplete");
+    }
+    const shadowStart = frame.shadow.start;
+    const shadowEnd = frame.shadow.end;
+    const curveDx = shadowEnd.x - shadowStart.x;
+    const curveDy = shadowEnd.y - shadowStart.y;
+    const curveLength = Math.hypot(curveDx, curveDy);
+    let curveNormalX = curveLength === 0 ? 0 : -curveDy / curveLength;
+    let curveNormalY = curveLength === 0 ? 0 : curveDx / curveLength;
+    if (curveNormalX > 0) {
+      curveNormalX *= -1;
+      curveNormalY *= -1;
+    }
+    const bend =
+      Math.min(
+        frame.page.width *
+          (0.012 + 0.034 * clamp(foldCurvature, 0, 1)),
+        28,
+      ) * Math.sin(Math.PI * frame.progress);
+    projectMovingPoint(
+      frame,
+      shadowStart,
+      curveStart,
+      cosine,
+      sine,
+    );
+    curveControl.x = clamp(
+      shadowStart.x + curveDx / 2 + curveNormalX * bend * 2,
+      0,
+      frame.page.width,
+    );
+    curveControl.y = clamp(
+      shadowStart.y + curveDy / 2 + curveNormalY * bend * 2,
+      0,
+      frame.page.height,
+    );
+    projectMovingPoint(
+      frame,
+      curveControl,
+      curveControl,
+      cosine,
+      sine,
+    );
+    projectMovingPoint(
+      frame,
+      shadowEnd,
+      curveEnd,
+      cosine,
+      sine,
+    );
+    projection.moving.path = curvedPath(movingPoints, movingCurve);
+
+    const shadowOriginX = forward
+      ? frame.page.width + shadowStart.x
+      : frame.page.width - shadowStart.x;
+    const shadowEndX = forward
+      ? frame.page.width + shadowEnd.x
+      : frame.page.width - shadowEnd.x;
+    const shadowDx = shadowEndX - shadowOriginX;
+    const shadowDy = shadowEnd.y - shadowStart.y;
+    const shadowLength = Math.hypot(shadowDx, shadowDy);
+    projection.foldShadow.origin.x = shadowOriginX;
+    projection.foldShadow.origin.y = shadowStart.y;
+    projection.foldShadow.angleRadians =
+      Math.atan2(shadowDy, shadowDx) - Math.PI / 2;
+    projection.foldShadow.length = shadowLength;
+    projection.foldShadow.width =
+      frame.page.width * frame.shadow.widthFactor;
+    projection.foldShadow.opacity = frame.shadow.opacityFactor;
+    projection.foldShadow.normalX = shadowDy / shadowLength;
+    projection.foldShadow.normalY = -shadowDx / shadowLength;
+    projection.foldShadow.gradient = forward ? "to-right" : "to-left";
+    return projection;
   };
 }
 

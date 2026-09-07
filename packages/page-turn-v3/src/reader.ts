@@ -14,13 +14,13 @@ import type {
   PageTurnSemanticChapter,
 } from "./publication-types.js";
 import {
-  createPageTurnFrameSolver,
+  createPageTurnRuntimeFrameSolver,
   type PageTurnCorner,
   type PageTurnDirection,
   type PageTurnFrame,
   type PageTurnPoint,
 } from "./page-turn-geometry.js";
-import { projectPageTurn } from "./page-turn-projection.js";
+import { createPageTurnRuntimeProjector } from "./page-turn-projection.js";
 import {
   normalizeBookFontScale,
   readBookFontScale,
@@ -294,20 +294,21 @@ type ActiveTurn = {
     top: number;
   }>;
   singlePageOffset: number;
-  foldCurvature: number;
   shadowScale: number;
   curveMinimumWidth: number;
   shadowOpacityScale: number;
   curveOpacityScale: number;
-  solve: ReturnType<typeof createPageTurnFrameSolver>;
+  solve: ReturnType<typeof createPageTurnRuntimeFrameSolver>;
+  project: ReturnType<typeof createPageTurnRuntimeProjector>;
   restingCounterValue: string;
-  pointer: PageTurnPoint;
+  pointer: { x: number; y: number };
   progress: number;
   pointerId?: number;
   capture?: HTMLButtonElement;
   animationFrame?: number;
   pointerFrame?: number;
-  pendingPointer?: PageTurnPoint;
+  pendingPointer: { x: number; y: number };
+  hasPendingPointer: boolean;
   moving: HTMLElement;
   movingClip: HTMLElement;
   movingSheet: HTMLElement;
@@ -1806,17 +1807,6 @@ function createSheet(
   }
   sheet.append(running, content, pageFolio);
   return sheet;
-}
-
-function interpolate(
-  start: PageTurnPoint,
-  end: PageTurnPoint,
-  progress: number,
-): PageTurnPoint {
-  return {
-    x: start.x + (end.x - start.x) * progress,
-    y: start.y + (end.y - start.y) * progress,
-  };
 }
 
 const reader = requiredElement<HTMLElement>("[data-v3-reader]");
@@ -6707,9 +6697,10 @@ function beginTurn(
   const curveMinimumWidth = page.width * (0.08 + foldRadius * 0.12);
   const shadowOpacityScale = 0.28 + foldShadow * 0.42;
   const curveOpacityScale = 0.25 + foldRadius * 0.28;
-  const solve = createPageTurnFrameSolver(page, corner, {
+  const solve = createPageTurnRuntimeFrameSolver(page, corner, {
     includeRevealedClip: false,
   });
+  const project = createPageTurnRuntimeProjector(foldCurvature);
   const cachedVisual =
     turnVisualCache?.spreadStart === spreadStart &&
     turnVisualCache.direction === direction &&
@@ -6832,15 +6823,17 @@ function beginTurn(
       top: spreadBounds.top,
     },
     singlePageOffset,
-    foldCurvature,
     shadowScale,
     curveMinimumWidth,
     shadowOpacityScale,
     curveOpacityScale,
     solve,
+    project,
     restingCounterValue: counter.value,
-    pointer,
+    pointer: { x: pointer.x, y: pointer.y },
     progress: 0,
+    pendingPointer: { x: pointer.x, y: pointer.y },
+    hasPendingPointer: false,
     moving,
     movingClip,
     movingSheet,
@@ -6866,13 +6859,10 @@ function applyFrame(frame: PageTurnFrame): void {
   if (!turn) {
     return;
   }
-  const projection = projectPageTurn(frame, {
-    foldCurvature: turn.foldCurvature,
-    includeClipPoints: false,
-    includeRevealedClip: false,
-  });
+  const projection = turn.project(frame);
   const singlePageOffset = turn.singlePageOffset;
-  turn.pointer = frame.pointer;
+  turn.pointer.x = frame.pointer.x;
+  turn.pointer.y = frame.pointer.y;
   turn.progress = frame.progress;
   turn.moving.setAttribute("data-v3-progress", frame.progress.toFixed(2));
 
@@ -7003,23 +6993,24 @@ function settleTurn(commit: boolean): void {
     cancelAnimationFrame(turn.pointerFrame);
     delete turn.pointerFrame;
   }
-  delete turn.pendingPointer;
+  turn.hasPendingPointer = false;
   if (reducedMotion.matches) {
     finishTurn(commit);
     return;
   }
 
   const size = turn.page;
-  const start = turn.pointer;
-  const destination = commit
-    ? {
-        x: -size.width,
-        y: turn.corner === "top" ? 0 : size.height,
-      }
-    : {
-        x: size.width - 2,
-        y: turn.corner === "top" ? 2 : size.height - 2,
-      };
+  const startX = turn.pointer.x;
+  const startY = turn.pointer.y;
+  const destinationX = commit ? -size.width : size.width - 2;
+  const destinationY =
+    turn.corner === "top"
+      ? commit
+        ? 0
+        : 2
+      : commit
+        ? size.height
+        : size.height - 2;
   const duration = commit ? 360 : 260;
   const startedAt = performance.now();
   const animate = (now: number) => {
@@ -7029,7 +7020,11 @@ function settleTurn(commit: boolean): void {
     }
     const elapsed = Math.min(1, (now - startedAt) / duration);
     const eased = 1 - Math.pow(1 - elapsed, 3);
-    applyTurn(interpolate(start, destination, eased));
+    turn.pendingPointer.x =
+      startX + (destinationX - startX) * eased;
+    turn.pendingPointer.y =
+      startY + (destinationY - startY) * eased;
+    applyTurn(turn.pendingPointer);
     if (elapsed < 1) {
       turn.animationFrame = requestAnimationFrame(animate);
     } else {
@@ -7110,25 +7105,29 @@ function onPointerMove(event: PointerEvent): void {
   }
   event.preventDefault();
   const bounds = turn.spreadBounds;
-  turn.pendingPointer = {
-    x: singlePageMedia.matches
-      ? turn.direction === "forward"
-        ? event.clientX - bounds.left
-        : bounds.right - event.clientX
-      : turn.direction === "forward"
-        ? event.clientX - (bounds.left + turn.page.width)
-        : bounds.left + turn.page.width - event.clientX,
-    y: event.clientY - bounds.top,
-  };
+  turn.pendingPointer.x = singlePageMedia.matches
+    ? turn.direction === "forward"
+      ? event.clientX - bounds.left
+      : bounds.right - event.clientX
+    : turn.direction === "forward"
+      ? event.clientX - (bounds.left + turn.page.width)
+      : bounds.left + turn.page.width - event.clientX;
+  turn.pendingPointer.y = event.clientY - bounds.top;
+  turn.hasPendingPointer = true;
   if (turn.pointerFrame === undefined) {
-    turn.pointerFrame = requestAnimationFrame(() => {
-      delete turn.pointerFrame;
-      if (activeTurn === turn && turn.pendingPointer) {
-        const pointer = turn.pendingPointer;
-        delete turn.pendingPointer;
-        applyTurn(pointer);
-      }
-    });
+    turn.pointerFrame = requestAnimationFrame(applyPendingPointerFrame);
+  }
+}
+
+function applyPendingPointerFrame(): void {
+  const turn = activeTurn;
+  if (!turn) {
+    return;
+  }
+  delete turn.pointerFrame;
+  if (turn.hasPendingPointer) {
+    turn.hasPendingPointer = false;
+    applyTurn(turn.pendingPointer);
   }
 }
 
@@ -7142,10 +7141,9 @@ function onPointerEnd(event: PointerEvent): void {
     cancelAnimationFrame(turn.pointerFrame);
     delete turn.pointerFrame;
   }
-  if (turn.pendingPointer) {
-    const pointer = turn.pendingPointer;
-    delete turn.pendingPointer;
-    applyTurn(pointer);
+  if (turn.hasPendingPointer) {
+    turn.hasPendingPointer = false;
+    applyTurn(turn.pendingPointer);
   }
   settleTurn(turn.progress >= 0.34);
 }

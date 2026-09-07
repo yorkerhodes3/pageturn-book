@@ -1311,6 +1311,7 @@ test("keeps mobile turn semantics exposed and drops stale resize visuals", async
     .toBeNull();
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
   await startTurn();
+  await expect(reader).toHaveAttribute("data-v3-turning", "true");
   const resized = await page
     .locator("[data-v3-turn-layer]")
     .evaluate((layer) => {

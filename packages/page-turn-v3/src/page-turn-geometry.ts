@@ -74,8 +74,6 @@ type MutablePoint = {
   y: number;
 };
 
-type Segment = readonly [PageTurnPoint, PageTurnPoint];
-
 type Bounds = Readonly<{
   left: number;
   top: number;
@@ -83,18 +81,52 @@ type Bounds = Readonly<{
   height: number;
 }>;
 
-type Intersections = Readonly<{
-  top?: PageTurnPoint;
-  side?: PageTurnPoint;
-  bottom?: PageTurnPoint;
-}>;
+type MutablePageTurnRect = {
+  topLeft: MutablePoint;
+  topRight: MutablePoint;
+  bottomLeft: MutablePoint;
+  bottomRight: MutablePoint;
+};
 
-type CalculationState = Readonly<{
-  pointer: PageTurnPoint;
+type MutableIntersections = {
+  top: MutablePoint | undefined;
+  side: MutablePoint | undefined;
+  bottom: MutablePoint | undefined;
+};
+
+type MutableCalculationState = {
+  pointer: MutablePoint;
   angleRadians: number;
-  pageRect: PageTurnRect;
-  intersections: Intersections;
-}>;
+  pageRect: MutablePageTurnRect;
+  intersections: MutableIntersections;
+};
+
+type MutablePolygon = {
+  points: MutablePoint[];
+  pool: readonly MutablePoint[];
+};
+
+type MutablePageTurnFrame = {
+  direction: PageTurnDirection;
+  corner: PageTurnCorner;
+  page: { width: number; height: number };
+  pointer: MutablePoint;
+  progress: number;
+  movingOrigin: MutablePoint;
+  angleRadians: number;
+  pageRect: MutablePageTurnRect;
+  movingClip: MutablePoint[];
+  revealedClip: MutablePoint[];
+  underlayPosition: MutablePoint;
+  shadow: {
+    start: MutablePoint;
+    end: MutablePoint;
+    angleRadians: number;
+    progress: number;
+    widthFactor: number;
+    opacityFactor: number;
+  };
+};
 
 const EPSILON = 1e-9;
 const REST_EPSILON = 1;
@@ -112,10 +144,6 @@ function assertFinitePoint(point: PageTurnPoint, name: string): void {
   }
 }
 
-function distance(first: PageTurnPoint, second: PageTurnPoint): number {
-  return Math.hypot(second.x - first.x, second.y - first.y);
-}
-
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
@@ -127,39 +155,32 @@ function samePoint(first: PageTurnPoint, second: PageTurnPoint): boolean {
   );
 }
 
-function rotatePoint(
-  point: PageTurnPoint,
-  origin: PageTurnPoint,
-  cosine: number,
-  sine: number,
-): PageTurnPoint {
-  return {
-    x: point.x * cosine + point.y * sine + origin.x,
-    y: point.y * cosine - point.x * sine + origin.y,
-  };
+function copyPoint(target: MutablePoint, source: PageTurnPoint): void {
+  target.x = source.x;
+  target.y = source.y;
 }
 
 function limitPointToCircle(
-  center: PageTurnPoint,
+  centerX: number,
+  centerY: number,
   radius: number,
-  point: PageTurnPoint,
-): Readonly<{ point: PageTurnPoint; limited: boolean }> {
-  const currentDistance = distance(center, point);
+  point: MutablePoint,
+): boolean {
+  const currentDistance = Math.hypot(
+    point.x - centerX,
+    point.y - centerY,
+  );
   if (currentDistance <= radius || currentDistance <= EPSILON) {
-    return { point, limited: false };
+    return false;
   }
 
   const scale = radius / currentDistance;
-  return {
-    point: {
-      x: center.x + (point.x - center.x) * scale,
-      y: center.y + (point.y - center.y) * scale,
-    },
-    limited: true,
-  };
+  point.x = centerX + (point.x - centerX) * scale;
+  point.y = centerY + (point.y - centerY) * scale;
+  return true;
 }
 
-function pointInBounds(bounds: Bounds, point: PageTurnPoint): boolean {
+function pointInBounds(bounds: Bounds, point: MutablePoint): boolean {
   return (
     point.x >= bounds.left &&
     point.x <= bounds.left + bounds.width &&
@@ -169,11 +190,12 @@ function pointInBounds(bounds: Bounds, point: PageTurnPoint): boolean {
 }
 
 function intersectLines(
-  first: Segment,
-  second: Segment,
-): PageTurnPoint | undefined {
-  const [firstStart, firstEnd] = first;
-  const [secondStart, secondEnd] = second;
+  firstStart: PageTurnPoint,
+  firstEnd: PageTurnPoint,
+  secondStart: PageTurnPoint,
+  secondEnd: PageTurnPoint,
+  target: MutablePoint,
+): boolean {
   const firstA = firstStart.y - firstEnd.y;
   const secondA = secondStart.y - secondEnd.y;
   const firstB = firstEnd.x - firstStart.x;
@@ -185,80 +207,101 @@ function intersectLines(
   const determinant = firstA * secondB - secondA * firstB;
 
   if (Math.abs(determinant) <= EPSILON) {
-    return undefined;
+    return false;
   }
 
-  const point = {
-    x: -((firstC * secondB - secondC * firstB) / determinant),
-    y: -((firstA * secondC - secondA * firstC) / determinant),
-  };
-  return Number.isFinite(point.x) && Number.isFinite(point.y)
-    ? point
-    : undefined;
+  target.x = -((firstC * secondB - secondC * firstB) / determinant);
+  target.y = -((firstA * secondC - secondA * firstC) / determinant);
+  return Number.isFinite(target.x) && Number.isFinite(target.y);
 }
 
 function intersectWithinBounds(
   bounds: Bounds,
-  first: Segment,
-  second: Segment,
-): PageTurnPoint | undefined {
-  const point = intersectLines(first, second);
-  return point !== undefined && pointInBounds(bounds, point)
-    ? point
-    : undefined;
-}
-
-function angleBetween(first: Segment, second: Segment): number | undefined {
-  const firstA = first[0].y - first[1].y;
-  const secondA = second[0].y - second[1].y;
-  const firstB = first[1].x - first[0].x;
-  const secondB = second[1].x - second[0].x;
-  const denominator =
-    Math.hypot(firstA, firstB) * Math.hypot(secondA, secondB);
-  if (denominator <= EPSILON) {
-    return undefined;
-  }
-
-  return Math.acos(
-    clamp(
-      (firstA * secondA + firstB * secondB) / denominator,
-      -1,
-      1,
-    ),
+  firstStart: PageTurnPoint,
+  firstEnd: PageTurnPoint,
+  secondStart: PageTurnPoint,
+  secondEnd: PageTurnPoint,
+  target: MutablePoint,
+): boolean {
+  return (
+    intersectLines(
+      firstStart,
+      firstEnd,
+      secondStart,
+      secondEnd,
+      target,
+    ) && pointInBounds(bounds, target)
   );
 }
 
-function compactPolygon(
-  points: readonly (PageTurnPoint | undefined)[],
-): readonly PageTurnPoint[] {
-  const result: MutablePoint[] = [];
-  for (const point of points) {
-    if (point === undefined) {
-      continue;
-    }
-    const previous = result.at(-1);
-    if (!previous || !samePoint(previous, point)) {
-      result.push({ x: point.x, y: point.y });
-    }
+function createMutablePolygon(capacity: number): MutablePolygon {
+  const pool = Array.from({ length: capacity }, () => ({ x: 0, y: 0 }));
+  return { points: [...pool], pool };
+}
+
+function appendPolygonPoint(
+  polygon: MutablePolygon,
+  count: number,
+  point: PageTurnPoint | undefined,
+): number {
+  if (point === undefined) {
+    return count;
   }
-  if (
-    result.length > 1 &&
-    result[0] !== undefined &&
-    result.at(-1) !== undefined &&
-    samePoint(result[0], result.at(-1) as MutablePoint)
-  ) {
-    result.pop();
+  const previous = polygon.points[count - 1];
+  if (previous !== undefined && samePoint(previous, point)) {
+    return count;
   }
-  return result;
+  const target = polygon.pool[count];
+  if (target === undefined) {
+    throw new Error("Page-turn polygon capacity exceeded");
+  }
+  copyPoint(target, point);
+  polygon.points[count] = target;
+  return count + 1;
+}
+
+function finishPolygon(polygon: MutablePolygon, count: number): void {
+  const first = polygon.points[0];
+  const last = polygon.points[count - 1];
+  polygon.points.length =
+    count > 1 &&
+    first !== undefined &&
+    last !== undefined &&
+    samePoint(first, last)
+      ? count - 1
+      : count;
 }
 
 class FoldCalculation {
   private angleRadians = 0;
-  private pageRect: PageTurnRect | undefined;
+  private readonly constrainedPointer: MutablePoint = { x: 0, y: 0 };
+  private readonly pageRect: MutablePageTurnRect = {
+    topLeft: { x: 0, y: 0 },
+    topRight: { x: 0, y: 0 },
+    bottomLeft: { x: 0, y: 0 },
+    bottomRight: { x: 0, y: 0 },
+  };
+  private readonly intersectionPoints = {
+    top: { x: 0, y: 0 },
+    side: { x: 0, y: 0 },
+    bottom: { x: 0, y: 0 },
+  };
+  private readonly intersections: MutableIntersections = {
+    top: undefined,
+    side: undefined,
+    bottom: undefined,
+  };
+  private readonly state: MutableCalculationState = {
+    pointer: this.constrainedPointer,
+    angleRadians: 0,
+    pageRect: this.pageRect,
+    intersections: this.intersections,
+  };
   private readonly bounds: Bounds;
-  private readonly topEdge: Segment;
-  private readonly sideEdge: Segment;
-  private readonly bottomEdge: Segment;
+  private readonly topLeft = { x: 0, y: 0 };
+  private readonly topRight: MutablePoint;
+  private readonly bottomLeft: MutablePoint;
+  private readonly bottomRight: MutablePoint;
 
   constructor(
     private readonly page: PageTurnSize,
@@ -270,84 +313,56 @@ class FoldCalculation {
       width: page.width + INTERSECTION_MARGIN * 2,
       height: page.height + INTERSECTION_MARGIN * 2,
     };
-    this.topEdge = [
-      { x: 0, y: 0 },
-      { x: page.width, y: 0 },
-    ];
-    this.sideEdge = [
-      { x: page.width, y: 0 },
-      { x: page.width, y: page.height },
-    ];
-    this.bottomEdge = [
-      { x: 0, y: page.height },
-      { x: page.width, y: page.height },
-    ];
+    this.topRight = { x: page.width, y: 0 };
+    this.bottomLeft = { x: 0, y: page.height };
+    this.bottomRight = { x: page.width, y: page.height };
   }
 
-  calculate(pointer: PageTurnPoint): CalculationState | undefined {
-    let constrainedPointer = { x: pointer.x, y: pointer.y };
-    if (!this.update(constrainedPointer)) {
+  calculate(pointer: PageTurnPoint): MutableCalculationState | undefined {
+    copyPoint(this.constrainedPointer, pointer);
+    if (!this.update(this.constrainedPointer)) {
       return undefined;
     }
 
-    const primaryCenter =
-      this.corner === "top"
-        ? { x: 0, y: 0 }
-        : { x: 0, y: this.page.height };
-    const oppositeCenter =
-      this.corner === "top"
-        ? { x: 0, y: this.page.height }
-        : { x: 0, y: 0 };
-
-    const primaryLimit = limitPointToCircle(
-      primaryCenter,
+    const primaryCenterY =
+      this.corner === "top" ? 0 : this.page.height;
+    if (limitPointToCircle(
+      0,
+      primaryCenterY,
       this.page.width,
-      constrainedPointer,
-    );
-    if (primaryLimit.limited) {
-      constrainedPointer = { ...primaryLimit.point };
-      if (!this.update(constrainedPointer)) {
+      this.constrainedPointer,
+    )) {
+      if (!this.update(this.constrainedPointer)) {
         return undefined;
       }
     }
 
-    const currentRect = this.pageRect;
-    if (currentRect === undefined) {
-      return undefined;
-    }
     const checkPoint =
       this.corner === "top"
-        ? currentRect.bottomRight
-        : currentRect.topRight;
+        ? this.pageRect.bottomRight
+        : this.pageRect.topRight;
     const limitSource =
-      this.corner === "top" ? currentRect.topLeft : currentRect.bottomLeft;
+      this.corner === "top"
+        ? this.pageRect.topLeft
+        : this.pageRect.bottomLeft;
 
     if (checkPoint.x <= 0) {
       const diagonal = Math.hypot(this.page.width, this.page.height);
-      const oppositeLimit = limitPointToCircle(
-        oppositeCenter,
+      copyPoint(this.constrainedPointer, limitSource);
+      limitPointToCircle(
+        0,
+        this.corner === "top" ? this.page.height : 0,
         diagonal,
-        limitSource,
+        this.constrainedPointer,
       );
-      constrainedPointer = { ...oppositeLimit.point };
-      if (!this.update(constrainedPointer)) {
+      if (!this.update(this.constrainedPointer)) {
         return undefined;
       }
     }
 
-    if (this.pageRect === undefined) {
-      return undefined;
-    }
-
-    return {
-      pointer: constrainedPointer,
-      angleRadians: this.angleRadians,
-      pageRect: this.pageRect,
-      intersections: this.calculateIntersections(
-        constrainedPointer,
-        this.pageRect,
-      ),
-    };
+    this.calculateIntersections(this.constrainedPointer);
+    this.state.angleRadians = this.angleRadians;
+    return this.state;
   }
 
   private update(pointer: PageTurnPoint): boolean {
@@ -356,7 +371,7 @@ class FoldCalculation {
       return false;
     }
     this.angleRadians = angle;
-    this.pageRect = this.calculatePageRect(pointer, angle);
+    this.calculatePageRect(pointer, angle);
     return true;
   }
 
@@ -388,142 +403,162 @@ class FoldCalculation {
   private calculatePageRect(
     pointer: PageTurnPoint,
     angleRadians: number,
-  ): PageTurnRect {
+  ): void {
     const cosine = Math.cos(angleRadians);
     const sine = Math.sin(angleRadians);
-    const points =
-      this.corner === "top"
-        ? [
-            { x: 0, y: 0 },
-            { x: this.page.width, y: 0 },
-            { x: 0, y: this.page.height },
-            { x: this.page.width, y: this.page.height },
-          ]
-        : [
-            { x: 0, y: -this.page.height },
-            { x: this.page.width, y: -this.page.height },
-            { x: 0, y: 0 },
-            { x: this.page.width, y: 0 },
-          ];
-    const topLeft = points[0];
-    const topRight = points[1];
-    const bottomLeft = points[2];
-    const bottomRight = points[3];
-    if (!topLeft || !topRight || !bottomLeft || !bottomRight) {
-      throw new Error("Page rectangle basis is incomplete");
+    const horizontalX = this.page.width * cosine;
+    const horizontalY = -this.page.width * sine;
+    const verticalX = this.page.height * sine;
+    const verticalY = this.page.height * cosine;
+
+    if (this.corner === "top") {
+      this.pageRect.topLeft.x = pointer.x;
+      this.pageRect.topLeft.y = pointer.y;
+      this.pageRect.topRight.x = pointer.x + horizontalX;
+      this.pageRect.topRight.y = pointer.y + horizontalY;
+      this.pageRect.bottomLeft.x = pointer.x + verticalX;
+      this.pageRect.bottomLeft.y = pointer.y + verticalY;
+      this.pageRect.bottomRight.x =
+        pointer.x + horizontalX + verticalX;
+      this.pageRect.bottomRight.y =
+        pointer.y + horizontalY + verticalY;
+      return;
     }
-    return {
-      topLeft: rotatePoint(topLeft, pointer, cosine, sine),
-      topRight: rotatePoint(topRight, pointer, cosine, sine),
-      bottomLeft: rotatePoint(bottomLeft, pointer, cosine, sine),
-      bottomRight: rotatePoint(bottomRight, pointer, cosine, sine),
-    };
+
+    this.pageRect.topLeft.x = pointer.x - verticalX;
+    this.pageRect.topLeft.y = pointer.y - verticalY;
+    this.pageRect.topRight.x = pointer.x + horizontalX - verticalX;
+    this.pageRect.topRight.y = pointer.y + horizontalY - verticalY;
+    this.pageRect.bottomLeft.x = pointer.x;
+    this.pageRect.bottomLeft.y = pointer.y;
+    this.pageRect.bottomRight.x = pointer.x + horizontalX;
+    this.pageRect.bottomRight.y = pointer.y + horizontalY;
   }
 
-  private calculateIntersections(
-    pointer: PageTurnPoint,
-    pageRect: PageTurnRect,
-  ): Intersections {
-    const top =
-      this.corner === "top"
-        ? intersectWithinBounds(
-            this.bounds,
-            [pointer, pageRect.topRight],
-            this.topEdge,
-          )
-        : intersectWithinBounds(
-            this.bounds,
-            [pageRect.topLeft, pageRect.topRight],
-            this.topEdge,
-          );
-    const side =
-      this.corner === "top"
-        ? intersectWithinBounds(
-            this.bounds,
-            [pointer, pageRect.bottomLeft],
-            this.sideEdge,
-          )
-        : intersectWithinBounds(
-            this.bounds,
-            [pointer, pageRect.topLeft],
-            this.sideEdge,
-          );
-    const bottom = intersectWithinBounds(
+  private calculateIntersections(pointer: PageTurnPoint): void {
+    const topStart =
+      this.corner === "top" ? pointer : this.pageRect.topLeft;
+    const topEnd = this.pageRect.topRight;
+    this.intersections.top = intersectWithinBounds(
       this.bounds,
-      [pageRect.bottomLeft, pageRect.bottomRight],
-      this.bottomEdge,
-    );
+      topStart,
+      topEnd,
+      this.topLeft,
+      this.topRight,
+      this.intersectionPoints.top,
+    )
+      ? this.intersectionPoints.top
+      : undefined;
 
-    return {
-      ...(top === undefined ? {} : { top }),
-      ...(side === undefined ? {} : { side }),
-      ...(bottom === undefined ? {} : { bottom }),
-    };
+    const sideEnd =
+      this.corner === "top"
+        ? this.pageRect.bottomLeft
+        : this.pageRect.topLeft;
+    this.intersections.side = intersectWithinBounds(
+      this.bounds,
+      pointer,
+      sideEnd,
+      this.topRight,
+      this.bottomRight,
+      this.intersectionPoints.side,
+    )
+      ? this.intersectionPoints.side
+      : undefined;
+
+    this.intersections.bottom = intersectWithinBounds(
+      this.bounds,
+      this.pageRect.bottomLeft,
+      this.pageRect.bottomRight,
+      this.bottomLeft,
+      this.bottomRight,
+      this.intersectionPoints.bottom,
+    )
+      ? this.intersectionPoints.bottom
+      : undefined;
   }
 }
 
-function movingClip(
-  state: CalculationState,
+function fillMovingClip(
+  state: MutableCalculationState,
   corner: PageTurnCorner,
-): readonly PageTurnPoint[] {
+  polygon: MutablePolygon,
+): void {
   const { top, side, bottom } = state.intersections;
   const clipBottom = side === undefined;
-  return compactPolygon([
-    state.pageRect.topLeft,
-    top,
-    side,
-    bottom,
+  let count = appendPolygonPoint(polygon, 0, state.pageRect.topLeft);
+  count = appendPolygonPoint(polygon, count, top);
+  count = appendPolygonPoint(polygon, count, side);
+  count = appendPolygonPoint(polygon, count, bottom);
+  count = appendPolygonPoint(
+    polygon,
+    count,
     clipBottom || corner === "bottom"
       ? state.pageRect.bottomLeft
       : undefined,
-  ]);
+  );
+  finishPolygon(polygon, count);
 }
 
-function revealedClip(
-  state: CalculationState,
+function appendPolygonCoordinates(
+  polygon: MutablePolygon,
+  count: number,
+  x: number,
+  y: number,
+): number {
+  const scratch = polygon.pool.at(-1);
+  if (scratch === undefined) {
+    throw new Error("Page-turn polygon has no point capacity");
+  }
+  scratch.x = x;
+  scratch.y = y;
+  return appendPolygonPoint(polygon, count, scratch);
+}
+
+function fillRevealedClip(
+  state: MutableCalculationState,
   page: PageTurnSize,
   corner: PageTurnCorner,
-): readonly PageTurnPoint[] {
+  polygon: MutablePolygon,
+): void {
   const { top, side, bottom } = state.intersections;
-  const points: Array<PageTurnPoint | undefined> = [top];
+  let count = appendPolygonPoint(polygon, 0, top);
 
   if (corner === "top") {
-    points.push({ x: page.width, y: 0 });
+    count = appendPolygonCoordinates(polygon, count, page.width, 0);
   } else {
     if (top !== undefined) {
-      points.push({ x: page.width, y: 0 });
+      count = appendPolygonCoordinates(polygon, count, page.width, 0);
     }
-    points.push({ x: page.width, y: page.height });
+    count = appendPolygonCoordinates(
+      polygon,
+      count,
+      page.width,
+      page.height,
+    );
   }
 
   if (side !== undefined) {
-    points.push(side);
+    count = appendPolygonPoint(polygon, count, side);
   } else if (corner === "top") {
-    points.push({ x: page.width, y: page.height });
+    count = appendPolygonCoordinates(
+      polygon,
+      count,
+      page.width,
+      page.height,
+    );
   }
 
-  points.push(
+  count = appendPolygonPoint(
+    polygon,
+    count,
     corner === "top" && side !== undefined ? undefined : bottom,
+  );
+  count = appendPolygonPoint(
+    polygon,
+    count,
     top,
   );
-  return compactPolygon(points);
-}
-
-function shadowSegment(
-  intersections: Intersections,
-  corner: PageTurnCorner,
-): Segment | undefined {
-  const start =
-    corner === "top"
-      ? intersections.top
-      : (intersections.side ?? intersections.top);
-  const end =
-    corner === "top"
-      ? (intersections.side ?? intersections.bottom)
-      : intersections.bottom;
-  return start !== undefined && end !== undefined && !samePoint(start, end)
-    ? [start, end]
-    : undefined;
+  finishPolygon(polygon, count);
 }
 
 function isAtRest(
@@ -531,102 +566,198 @@ function isAtRest(
   page: PageTurnSize,
   corner: PageTurnCorner,
 ): boolean {
-  const restingCorner = {
-    x: page.width,
-    y: corner === "top" ? 0 : page.height,
-  };
-  return distance(pointer, restingCorner) < REST_EPSILON;
+  return (
+    Math.hypot(
+      pointer.x - page.width,
+      pointer.y - (corner === "top" ? 0 : page.height),
+    ) < REST_EPSILON
+  );
 }
 
-function solvePageTurnWithCalculation(
-  input: PageTurnInput,
-  calculation: FoldCalculation,
-  includeRevealedClip = true,
-): PageTurnResult {
-  assertFinitePoint(input.pointer, "pointer");
+const POINTER_AT_REST_RESULT: PageTurnResult = {
+  status: "degenerate",
+  reason: "pointer-at-rest",
+};
+const UNSOLVED_INTERSECTION_RESULT: PageTurnResult = {
+  status: "degenerate",
+  reason: "unsolved-intersection",
+};
 
-  if (isAtRest(input.pointer, input.page, input.corner)) {
-    return { status: "degenerate", reason: "pointer-at-rest" };
-  }
+function clonePoint(point: PageTurnPoint): PageTurnPoint {
+  return { x: point.x, y: point.y };
+}
 
-  const state = calculation.calculate(input.pointer);
-  if (state === undefined) {
-    return { status: "degenerate", reason: "unsolved-intersection" };
-  }
-
-  const moving = movingClip(state, input.corner);
-  const revealed = includeRevealedClip
-    ? revealedClip(state, input.page, input.corner)
-    : [];
-  const foldSegment = shadowSegment(state.intersections, input.corner);
-  if (
-    moving.length < 3 ||
-    (includeRevealedClip && revealed.length < 3) ||
-    foldSegment === undefined
-  ) {
-    return { status: "degenerate", reason: "unsolved-intersection" };
-  }
-
-  const unsignedShadowAngle = angleBetween(foldSegment, [
-    { x: 0, y: 0 },
-    { x: input.page.width, y: 0 },
-  ]);
-  if (unsignedShadowAngle === undefined) {
-    return { status: "degenerate", reason: "unsolved-intersection" };
-  }
-
-  const progress = clamp(
-    Math.abs(
-      (state.pointer.x - input.page.width) / (2 * input.page.width),
-    ),
-    0,
-    1,
-  );
-  const forward = input.direction === "forward";
-
+function cloneFrame(frame: PageTurnFrame): PageTurnFrame {
   return {
-    status: "ok",
-    frame: {
-      direction: input.direction,
-      corner: input.corner,
-      page: { width: input.page.width, height: input.page.height },
-      pointer: state.pointer,
-      progress,
-      movingOrigin: forward
-        ? state.pageRect.topLeft
-        : state.pageRect.topRight,
-      angleRadians: forward
-        ? -state.angleRadians
-        : state.angleRadians,
-      pageRect: state.pageRect,
-      movingClip: moving,
-      revealedClip: revealed,
-      underlayPosition: forward
-        ? { x: 0, y: 0 }
-        : { x: input.page.width, y: 0 },
-      shadow: {
-        start: foldSegment[0],
-        end: foldSegment[1],
-        angleRadians: forward
-          ? unsignedShadowAngle
-          : Math.PI - unsignedShadowAngle,
-        progress,
-        widthFactor:
-          0.018 + 0.055 * Math.sin(Math.PI * progress),
-        opacityFactor:
-          0.1 + 0.28 * Math.sin(Math.PI * progress),
-      },
+    direction: frame.direction,
+    corner: frame.corner,
+    page: { width: frame.page.width, height: frame.page.height },
+    pointer: clonePoint(frame.pointer),
+    progress: frame.progress,
+    movingOrigin: clonePoint(frame.movingOrigin),
+    angleRadians: frame.angleRadians,
+    pageRect: {
+      topLeft: clonePoint(frame.pageRect.topLeft),
+      topRight: clonePoint(frame.pageRect.topRight),
+      bottomLeft: clonePoint(frame.pageRect.bottomLeft),
+      bottomRight: clonePoint(frame.pageRect.bottomRight),
     },
+    movingClip: frame.movingClip.map(clonePoint),
+    revealedClip: frame.revealedClip.map(clonePoint),
+    underlayPosition: clonePoint(frame.underlayPosition),
+    shadow: {
+      start: clonePoint(frame.shadow.start),
+      end: clonePoint(frame.shadow.end),
+      angleRadians: frame.shadow.angleRadians,
+      progress: frame.shadow.progress,
+      widthFactor: frame.shadow.widthFactor,
+      opacityFactor: frame.shadow.opacityFactor,
+    },
+  };
+}
+
+function cloneResult(result: PageTurnResult): PageTurnResult {
+  return result.status === "ok"
+    ? { status: "ok", frame: cloneFrame(result.frame) }
+    : { status: "degenerate", reason: result.reason };
+}
+
+/**
+ * Internal animation hot path. The successful result, frame, nested points, and
+ * clip arrays are owned by the solver and overwritten by its next call. Consume
+ * them synchronously and never retain them across frames.
+ */
+export function createPageTurnRuntimeFrameSolver(
+  page: PageTurnSize,
+  corner: PageTurnCorner,
+  options: Readonly<{ includeRevealedClip?: boolean }> = {},
+): (direction: PageTurnDirection, pointer: PageTurnPoint) => PageTurnResult {
+  assertPositiveFinite(page.width, "page.width");
+  assertPositiveFinite(page.height, "page.height");
+  const calculation = new FoldCalculation(page, corner);
+  const includeRevealedClip = options.includeRevealedClip ?? true;
+  const movingPolygon = createMutablePolygon(5);
+  const revealedPolygon = createMutablePolygon(6);
+  if (!includeRevealedClip) {
+    revealedPolygon.points.length = 0;
+  }
+  const frame: MutablePageTurnFrame = {
+    direction: "forward",
+    corner,
+    page: { width: page.width, height: page.height },
+    pointer: { x: 0, y: 0 },
+    progress: 0,
+    movingOrigin: { x: 0, y: 0 },
+    angleRadians: 0,
+    pageRect: {
+      topLeft: { x: 0, y: 0 },
+      topRight: { x: 0, y: 0 },
+      bottomLeft: { x: 0, y: 0 },
+      bottomRight: { x: 0, y: 0 },
+    },
+    movingClip: movingPolygon.points,
+    revealedClip: revealedPolygon.points,
+    underlayPosition: { x: 0, y: 0 },
+    shadow: {
+      start: { x: 0, y: 0 },
+      end: { x: 0, y: 0 },
+      angleRadians: 0,
+      progress: 0,
+      widthFactor: 0,
+      opacityFactor: 0,
+    },
+  };
+  const solvedResult: PageTurnResult = { status: "ok", frame };
+
+  return (direction, pointer) => {
+    assertFinitePoint(pointer, "pointer");
+    if (isAtRest(pointer, page, corner)) {
+      return POINTER_AT_REST_RESULT;
+    }
+
+    const state = calculation.calculate(pointer);
+    if (state === undefined) {
+      return UNSOLVED_INTERSECTION_RESULT;
+    }
+
+    fillMovingClip(state, corner, movingPolygon);
+    if (includeRevealedClip) {
+      fillRevealedClip(state, page, corner, revealedPolygon);
+    }
+    const foldStart =
+      corner === "top"
+        ? state.intersections.top
+        : (state.intersections.side ?? state.intersections.top);
+    const foldEnd =
+      corner === "top"
+        ? (state.intersections.side ?? state.intersections.bottom)
+        : state.intersections.bottom;
+    if (
+      movingPolygon.points.length < 3 ||
+      (includeRevealedClip && revealedPolygon.points.length < 3) ||
+      foldStart === undefined ||
+      foldEnd === undefined ||
+      samePoint(foldStart, foldEnd)
+    ) {
+      return UNSOLVED_INTERSECTION_RESULT;
+    }
+
+    const foldDx = foldEnd.x - foldStart.x;
+    const foldDy = foldEnd.y - foldStart.y;
+    const foldLength = Math.hypot(foldDx, foldDy);
+    if (foldLength <= EPSILON) {
+      return UNSOLVED_INTERSECTION_RESULT;
+    }
+    const unsignedShadowAngle = Math.acos(
+      clamp(foldDx / foldLength, -1, 1),
+    );
+    if (!Number.isFinite(unsignedShadowAngle)) {
+      return UNSOLVED_INTERSECTION_RESULT;
+    }
+
+    const progress = clamp(
+      Math.abs((state.pointer.x - page.width) / (2 * page.width)),
+      0,
+      1,
+    );
+    const forward = direction === "forward";
+    frame.direction = direction;
+    copyPoint(frame.pointer, state.pointer);
+    frame.progress = progress;
+    copyPoint(
+      frame.movingOrigin,
+      forward ? state.pageRect.topLeft : state.pageRect.topRight,
+    );
+    frame.angleRadians = forward
+      ? -state.angleRadians
+      : state.angleRadians;
+    copyPoint(frame.pageRect.topLeft, state.pageRect.topLeft);
+    copyPoint(frame.pageRect.topRight, state.pageRect.topRight);
+    copyPoint(frame.pageRect.bottomLeft, state.pageRect.bottomLeft);
+    copyPoint(frame.pageRect.bottomRight, state.pageRect.bottomRight);
+    frame.underlayPosition.x = forward ? 0 : page.width;
+    frame.underlayPosition.y = 0;
+    copyPoint(frame.shadow.start, foldStart);
+    copyPoint(frame.shadow.end, foldEnd);
+    frame.shadow.angleRadians = forward
+      ? unsignedShadowAngle
+      : Math.PI - unsignedShadowAngle;
+    frame.shadow.progress = progress;
+    const foldIntensity = Math.sin(Math.PI * progress);
+    frame.shadow.widthFactor = 0.018 + 0.055 * foldIntensity;
+    frame.shadow.opacityFactor = 0.1 + 0.28 * foldIntensity;
+    return solvedResult;
   };
 }
 
 export function solvePageTurn(input: PageTurnInput): PageTurnResult {
   assertPositiveFinite(input.page.width, "page.width");
   assertPositiveFinite(input.page.height, "page.height");
-  return solvePageTurnWithCalculation(
-    input,
-    new FoldCalculation(input.page, input.corner),
+  const solve = createPageTurnRuntimeFrameSolver(
+    input.page,
+    input.corner,
   );
+  return cloneResult(solve(input.direction, input.pointer));
 }
 
 export function createPageTurnFrameSolver(
@@ -636,11 +767,7 @@ export function createPageTurnFrameSolver(
 ): (direction: PageTurnDirection, pointer: PageTurnPoint) => PageTurnResult {
   assertPositiveFinite(page.width, "page.width");
   assertPositiveFinite(page.height, "page.height");
-  const calculation = new FoldCalculation(page, corner);
+  const solve = createPageTurnRuntimeFrameSolver(page, corner, options);
   return (direction, pointer) =>
-    solvePageTurnWithCalculation(
-      { page, corner, direction, pointer },
-      calculation,
-      options.includeRevealedClip ?? true,
-    );
+    cloneResult(solve(direction, pointer));
 }

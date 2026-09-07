@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createPageTurnFrameSolver,
+  createPageTurnRuntimeFrameSolver,
   solvePageTurn,
   type PageTurnFrame,
   type PageTurnPoint,
@@ -352,5 +353,66 @@ describe("solvePageTurn", () => {
     expect(result.frame.revealedClip).toEqual([]);
     expect(result.frame.movingClip).toEqual(complete.movingClip);
     expect(result.frame.shadow).toEqual(complete.shadow);
+  });
+
+  it("matches reusable runtime frames to public immutable results across the reference grid", () => {
+    const pointers = [
+      { x: 495, y: 3 },
+      { x: 260, y: 120 },
+      { x: 40, y: 350 },
+      { x: -350, y: 80 },
+      { x: page.width, y: 0 },
+    ];
+
+    for (const corner of ["top", "bottom"] as const) {
+      const runtimeSolve = createPageTurnRuntimeFrameSolver(page, corner);
+      for (const direction of ["forward", "backward"] as const) {
+        for (const source of pointers) {
+          const pointer = {
+            x: source.x,
+            y: corner === "top" ? source.y : page.height - source.y,
+          };
+          expect(runtimeSolve(direction, pointer)).toEqual(
+            solvePageTurn({ page, corner, direction, pointer }),
+          );
+        }
+      }
+    }
+  });
+
+  it("fully overwrites reusable frames after degenerate and alternating calls", () => {
+    const runtimeSolve = createPageTurnRuntimeFrameSolver(page, "top");
+    const first = runtimeSolve("forward", { x: 495, y: 3 });
+    if (first.status !== "ok") {
+      throw new Error(`Expected solved frame, received ${first.reason}`);
+    }
+    expect(first.frame.revealedClip).toHaveLength(3);
+
+    expect(runtimeSolve("backward", { x: page.width, y: 0 })).toEqual({
+      status: "degenerate",
+      reason: "pointer-at-rest",
+    });
+
+    const pointer = { x: -300, y: 650 };
+    const alternating = runtimeSolve("backward", pointer);
+    expect(alternating).toBe(first);
+    expect(alternating).toEqual(
+      solvePageTurn({
+        page,
+        corner: "top",
+        direction: "backward",
+        pointer,
+      }),
+    );
+
+    const finalPointer = { x: 430, y: 35 };
+    expect(runtimeSolve("forward", finalPointer)).toEqual(
+      solvePageTurn({
+        page,
+        corner: "top",
+        direction: "forward",
+        pointer: finalPointer,
+      }),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { solvePageTurn } from "./page-turn-geometry.js";
 import {
+  createPageTurnRuntimeProjector,
   pageTurnPolygon,
   projectPageTurn,
 } from "./page-turn-projection.js";
@@ -152,5 +153,34 @@ describe("projectPageTurn", () => {
     expect(projection.moving.path).toMatch(/^path\("M.*Q.*Z"\)$/);
     expect(projection.revealed.clip).toEqual([]);
     expect(projection.revealed.path).toBe("");
+  });
+
+  it("matches reusable runtime projections across the reference grid", () => {
+    const runtimeProject = createPageTurnRuntimeProjector(0.72);
+    const options = {
+      foldCurvature: 0.72,
+      includeClipPoints: false,
+      includeRevealedClip: false,
+    };
+    let firstProjection;
+
+    for (const [direction, corner, pointer] of [
+      ["forward", "top", { x: 495, y: 3 }],
+      ["backward", "bottom", { x: 260, y: 580 }],
+      ["forward", "bottom", { x: -300, y: 80 }],
+      ["backward", "top", { x: 40, y: 350 }],
+      ["forward", "top", { x: -350, y: 80 }],
+    ] as const) {
+      const result = solvePageTurn({ page, direction, corner, pointer });
+      if (result.status !== "ok") {
+        throw new Error(`Expected solved frame, received ${result.reason}`);
+      }
+      const runtimeProjection = runtimeProject(result.frame);
+      firstProjection ??= runtimeProjection;
+      expect(runtimeProjection).toBe(firstProjection);
+      expect(runtimeProjection).toEqual(
+        projectPageTurn(result.frame, options),
+      );
+    }
   });
 });

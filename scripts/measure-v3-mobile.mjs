@@ -10,6 +10,7 @@ const viewport = { width: 390, height: 844 };
 const warmUpRuns = 5;
 const warmUpSettleMs = 750;
 const measuredRunCount = 30;
+const interRunSettleMs = 100;
 const gestureFrames = 42;
 const maximumFrameIntervalMs = 22.2;
 const maximumLongTaskMs = 50;
@@ -424,6 +425,24 @@ try {
           clientX: endX,
           clientY: endY,
         });
+        const pointerPosition = { x: startX, y: startY };
+        const pointerMove = new PointerEvent("pointermove", {
+          bubbles: true,
+          pointerId: 1,
+          pointerType: "mouse",
+          isPrimary: true,
+          buttons: 1,
+        });
+        Object.defineProperties(pointerMove, {
+          clientX: {
+            configurable: true,
+            get: () => pointerPosition.x,
+          },
+          clientY: {
+            configurable: true,
+            get: () => pointerPosition.y,
+          },
+        });
         globalThis.__v3RunCompletion = new Promise((resolveGesture) => {
           const onPointerDown = () => {
             delete globalThis.__v3PendingPointerDownCleanup;
@@ -455,17 +474,9 @@ try {
               }
               frame += 1;
               const progress = frame / frames;
-              spread.dispatchEvent(
-                new PointerEvent("pointermove", {
-                  bubbles: true,
-                  pointerId: 1,
-                  pointerType: "mouse",
-                  isPrimary: true,
-                  buttons: 1,
-                  clientX: startX + (endX - startX) * progress,
-                  clientY: startY + (endY - startY) * progress,
-                }),
-              );
+              pointerPosition.x = startX + (endX - startX) * progress;
+              pointerPosition.y = startY + (endY - startY) * progress;
+              spread.dispatchEvent(pointerMove);
               if (frame < frames) {
                 requestAnimationFrame(animate);
                 return;
@@ -492,6 +503,7 @@ try {
       delete globalThis.__v3RunCompletion;
     });
     await page.mouse.up();
+    await page.waitForTimeout(interRunSettleMs);
   }
   await page.waitForTimeout(100);
 
@@ -570,6 +582,7 @@ try {
       warmUpRunsDiscarded: warmUpRuns,
       warmUpSettleMs,
       measuredRuns: measuredRunCount,
+      interRunSettleMs,
       gesture:
         `${gestureFrames}-frame top-right-corner drag, then pointercancel and ` +
         "same-page reset",

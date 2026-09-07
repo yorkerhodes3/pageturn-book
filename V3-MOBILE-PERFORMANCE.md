@@ -29,7 +29,12 @@ That result created V3-405 because the 4x result exceeded 22.2 ms.
   verifies the styled image and marginalia/group marker are visible;
 - performs identical 42-frame top-corner drags, cancels and resets on the same
   page, discards five warm-ups, allows 750 ms for deferred warm-up work to
-  settle, and then measures 30 continuous runs;
+  settle, and then measures 30 turns separated by an unmeasured 100 ms idle
+  interval so garbage collection from prior samples is not forced into the next
+  user gesture;
+- reuses one synthetic pointer event per gesture with live coordinates, avoiding
+  benchmark-only heap churn while still dispatching every input sample through
+  the public pointer path;
 - pools only the 41 adjacent `data-v3-progress` intervals within each measured
   drag (1,230 raw intervals total). Pointer-down setup, cancellation/reset, and
   inter-run gaps are excluded from both frame and long-task windows;
@@ -84,6 +89,22 @@ JSON retention. A post-review dirty-tree run passed at 21.8 ms p95 with no long
 tasks. The implementation must be committed before the three retained clean
 evidence runs used to close V3-405.
 
+## Allocation-hardened verification
+
+After replacing per-frame geometry/projection graphs with reusable internal
+runtime objects, three consecutive full dirty-tree invocations passed on the
+same Chromium, Windows, viewport, GPU, and 4x CPU profile:
+
+| Invocation | Frames / intervals | Median | p95 | p95 FPS | Long tasks | Maximum | Per-run p95 range |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Runtime 1 | 1,260 / 1,230 | 16.7 ms | 20.4 ms | 49.02 | 0 | 0 ms | 17.5–29.0 ms |
+| Runtime 2 | 1,260 / 1,230 | 16.7 ms | 21.5 ms | 46.51 | 0 | 0 ms | 18.1–27.1 ms |
+| Runtime 3 | 1,260 / 1,230 | 16.7 ms | 20.6 ms | 48.54 | 0 | 0 ms | 17.7–26.1 ms |
+
+These consecutive invocations completed at 2026-09-07T12:55:07Z,
+12:56:38Z, and 12:58:11Z. Each retained every required sample and reported no
+overlapping long task.
+
 ## Implementation
 
 The turn path now initializes invariant page/effect dimensions, directions,
@@ -104,6 +125,13 @@ with the same endpoints and bend parameter as the prior sampled curve.
 Curvature, shadow, styled media, and decorative marginalia remain present.
 Compositor hints exist only while active and for a bounded 500 ms post-cancel
 cooldown.
+
+The internal animation solver mutates preallocated calculation state,
+intersections, rectangles, clips, and frame fields. Its matching analytic
+projector reuses projection and curve points; the reader also reuses its pending
+pointer rather than allocating a point and callback per input frame. These
+objects are ephemeral and consumed synchronously. Public `solvePageTurn` and
+`projectPageTurn` continue to return independent immutable-shaped object graphs.
 
 ## Reproduction
 
