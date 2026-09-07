@@ -4,6 +4,7 @@ import {
   toBookId,
   toChapterId,
   toEditionId,
+  validatePublicationMedia,
   type BookId,
   type ChapterId,
   type EditionId,
@@ -11,6 +12,7 @@ import {
   type PublicationAppearance,
   type PublicationAuthor,
   type PublicationFrontMatter,
+  type PublicationMedia,
 } from "@ethical-tech/book-publication-model";
 import { parse } from "yaml";
 
@@ -32,6 +34,7 @@ export type BookConfig = {
   description?: string;
   frontMatter?: PublicationFrontMatter;
   appearance?: PublicationAppearance;
+  media?: PublicationMedia;
   chapters: ChapterConfig[];
   legacyFacsimile?: LegacyFacsimileRendition;
 };
@@ -301,6 +304,14 @@ export async function readBookConfig(sourceRoot: string): Promise<BookConfig> {
   const frontMatter = parseFrontMatter(book.frontMatter);
   const legacyFacsimile = parseLegacy(book.legacyFacsimile);
   const appearance = parseAppearance(book.appearance);
+  const chapters = parseChapters(book.chapters);
+  const media =
+    book.media === undefined
+      ? undefined
+      : validatePublicationMedia(
+          book.media,
+          chapters.map(({ chapterId }) => chapterId),
+        );
   const language = text(book.language, "book.language");
   try {
     Intl.getCanonicalLocales(language);
@@ -322,7 +333,8 @@ export async function readBookConfig(sourceRoot: string): Promise<BookConfig> {
     ...(description === undefined ? {} : { description }),
     ...(frontMatter === undefined ? {} : { frontMatter }),
     ...(appearance === undefined ? {} : { appearance }),
-    chapters: parseChapters(book.chapters),
+    ...(media === undefined ? {} : { media }),
+    chapters,
     ...(legacyFacsimile === undefined ? {} : { legacyFacsimile }),
   };
 }

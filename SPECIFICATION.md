@@ -1553,14 +1553,22 @@ increase the active content window without an explicit performance review.
 | PAG-P-006 | Pagination is tested across the supported browser matrix. |
 | PAG-P-007 | Reduced motion removes spatial page transitions. |
 | PAG-P-008 | UI calls the value screen progress or screen page, not a durable citation page. |
-| PAG-P-009 | Publication figures may configure `off`, `on`, or `popout` treatment; absent media defaults to `off`. |
-| PAG-P-010 | `off` requests no figure assets; `popout` requests an asset only after activation; `on` requests it only when its semantic page becomes active. |
-| PAG-P-011 | Every configured figure records immutable provenance, intrinsic dimensions, meaningful alternative text, a caption, chapter identity, and a stable insertion anchor. |
+| PAG-P-009 | Publication figures configure display independently as `off`, `on-page`, or `pop-out`; legacy `off`, `on`, and `popout` values normalize without breaking saved links. Absent media defaults to `off`. |
+| PAG-P-010 | `off` requests no figure assets; `pop-out` requests an asset only after activation; `on-page` requests it only when its semantic page becomes active. |
+| PAG-P-011 | Every manifest figure records SHA-256 integrity, complete rights/source/provenance/review metadata, intrinsic bounded dimensions, meaningful alternative text, a caption, chapter identity, and exactly one stable insertion or replacement placement. IDs are publication-unique; placements are unique within a chapter. |
 | PAG-P-012 | Pop-out dialogs trap focus natively, close by keyboard, return focus to their trigger, and release the image source when closed. |
-| PAG-P-013 | Changing figure treatment repaginates only the loaded chapter window and preserves the durable semantic source location. |
-| PAG-P-014 | Book appearance is a typed SDK configuration spanning cover, binding, paper, typography, page geometry, fold radius, and fold shadow rather than demo-only CSS constants. |
-| PAG-P-015 | The hosted reader exposes appearance testing through a compact Style control and modal overlay without changing the primary reader layout. |
-| PAG-P-016 | Presets include default, antique Greek, historical tome, modern lab, lined journal, grid lab, and handwritten notebook treatments; consumers may override individual fields. |
+| PAG-P-013 | Changing display may repaginate only the loaded chapter window and preserves the durable semantic source location. Changing style is paint-only and preserves page count, location, and selection. |
+| PAG-P-014 | Media style is independently `original`, `book-toned`, `monochrome`, or `duotone`; all treatments retain the semantic `<img>`, alt, caption, and one neutral source asset. |
+| PAG-P-015 | A non-original effective style requires `transformPermitted: true` and complete rights, source, provenance, and review metadata. Missing or false metadata forces Original. |
+| PAG-P-016 | Charts, maps, diagrams, facsimiles, and color-essential figures default to Original. An explicit user choice may preview a color-essential transform only when transformation rights are complete. |
+| PAG-P-017 | Pop-out always renders Original and exposes caption, attribution, license, source/provenance, and a safe HTTP(S) View original action. |
+| PAG-P-018 | `exportPermitted` is independent policy data and fails closed. No source-image export control is implemented, and source-image URLs/bytes never enter share payloads or the visual quote renderer, including under `same-origin-approved` host policy. |
+| PAG-P-019 | Manifest media is validated and resolved relative to the manifest URL; host-option media resolves from the document base captured at attach time. Figure order is preserved. Each chapter selector identity hashes semantic HTML plus that chapter's ordered caption/placement metadata rather than claiming to be a raw HTML hash. |
+| PAG-P-020 | Publication canonical and artifact hashes include media metadata and verified local media bytes deterministically. Local media is staged inside its immutable edition; remote media uses syntactically validated integrity and immutable commit URLs. A host-supplied `media` option remains a backward-compatible override. |
+| PAG-P-021 | Runtime treatments derive from active paper, ink, and accent variables with an isolated overlay/vignette/border/caption wrapper; they do not require Canvas sampling or style-specific raster files. |
+| PAG-P-022 | Book appearance is a typed SDK configuration spanning cover, binding, paper, typography, page geometry, fold radius, and fold shadow rather than demo-only CSS constants. |
+| PAG-P-023 | The hosted reader exposes appearance testing through a compact Style control and modal overlay without changing the primary reader layout. |
+| PAG-P-024 | Presets include default, antique Greek, historical tome, modern lab, lined journal, grid lab, and handwritten notebook treatments; consumers may override individual fields. |
 | PAG-P-017 | Typography or line-height changes repaginate around the current semantic location; paint-only appearance changes apply without changing durable location. |
 | PAG-P-018 | Resting pages visually rise from the gutter and float above the rigid cover while moving leaves remain independent of stationary page-fan and cover-edge decoration. |
 | PAG-P-019 | Shelf metadata may render books upright, in horizontal stacks, or open on a stand while preserving one keyboard navigation sequence and one action model. |

@@ -27,4 +27,14 @@ remain ordinary source links until V3-406 is completed.
 
 The V3 reader does not copy these image files into this repository. It loads
 the immutable raw-GitHub URL only when an On-page figure is reached or a
-Pop-out figure is explicitly opened.
+Pop-out figure is explicitly opened. Each mapped URL has measured
+`sha256:<64 lowercase hex>` integrity metadata in edition `2026-09`.
+
+The reviewed records now live in the publication manifest with independent
+transformation and export decisions. Charts, diagrams, facsimiles, and
+color-essential records default to Original. Public-domain/CC portraits and
+photos may use runtime book styling with visible attribution/license. The
+Unsplash campus photo permits a runtime transform but conservatively disables
+standalone export. No decision grants rights to the remaining 26 links.
+`exportPermitted` is policy data only; V3-424 implements no source-image
+download/export control and source image bytes are excluded from share output.

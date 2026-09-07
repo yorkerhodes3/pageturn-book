@@ -85,6 +85,19 @@ import {
   validatePageTurnExternalPreviewProviders,
   type PageTurnExternalPreviewProvider,
 } from "./external-preview.js";
+import {
+  defaultPageTurnBookMediaStyle,
+  legacyPageTurnBookMediaTreatment,
+  normalizePageTurnBookMediaDisplay,
+  resolvePageTurnBookMediaUrl,
+  resolvePageTurnBookMediaStyle,
+  type PageTurnBookMedia,
+  type PageTurnBookMediaDisplay,
+  type PageTurnBookMediaFigure,
+  type PageTurnBookMediaStyle,
+  type PageTurnBookMediaSource,
+  type PageTurnBookMediaTreatment,
+} from "./media.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
@@ -129,25 +142,7 @@ export type PageTurnBookManifest = Readonly<{
   }>;
   chapters: readonly V3Chapter[];
   tableOfContents: readonly V3TocEntry[];
-}>;
-
-export type PageTurnBookMediaTreatment = "off" | "on" | "popout";
-
-export type PageTurnBookMediaFigure = Readonly<{
-  id: string;
-  chapterId: string;
-  afterAnchor?: string;
-  replaceAnchors?: readonly string[];
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-  caption: string;
-}>;
-
-export type PageTurnBookMedia = Readonly<{
-  defaultTreatment: PageTurnBookMediaTreatment;
-  figures: readonly PageTurnBookMediaFigure[];
+  media?: PageTurnBookMedia;
 }>;
 
 export type PageTurnBookOptions = Readonly<{
@@ -160,6 +155,9 @@ export type PageTurnBookOptions = Readonly<{
   appearancePreset?: PageTurnAppearancePresetId;
   appearanceControls?: boolean;
   media?: PageTurnBookMedia;
+  mediaDisplay?: PageTurnBookMediaDisplay;
+  mediaStyle?: PageTurnBookMediaStyle;
+  /** @deprecated Use mediaDisplay. */
   mediaTreatment?: PageTurnBookMediaTreatment;
   fetch?: typeof globalThis.fetch;
   libraryUrl?: string | URL;
@@ -336,6 +334,7 @@ export function attachPageTurnBook(
   options: PageTurnBookOptions,
 ): PageTurnBookHandle {
 const root = options.root;
+const hostDocumentBaseUrl = new URL(document.baseURI);
 const managesUrl = options.urlMode === "managed";
 const query = managesUrl
   ? new URLSearchParams(globalThis.location.search)
@@ -344,7 +343,9 @@ const requestedBookId = options.bookId;
 const requestedChapterId = options.chapterId ?? query.get("chapter");
 const requestedEditionId = managesUrl ? query.get("edition") : null;
 const requestedSelectionToken = managesUrl ? query.get("selection") : null;
-const mediaConfig = options.media;
+let mediaConfig = options.media;
+let mediaConfigSource: PageTurnBookMediaSource =
+  options.media === undefined ? "manifest" : "host";
 const fetcher = options.fetch ?? globalThis.fetch;
 const requestController = new AbortController();
 const sourceLinkMode = options.sourceLinkMode ?? "direct";
@@ -405,19 +406,52 @@ function requiredElement<T extends Element>(
 function mediaTreatmentFrom(
   parameters: URLSearchParams,
 ): PageTurnBookMediaTreatment {
-  const requested = parameters.get("media");
-  if (requested === null) {
-    return options.mediaTreatment ?? mediaConfig?.defaultTreatment ?? "off";
+  const requestedDisplay = parameters.get("mediaDisplay");
+  const legacyRequested = parameters.get("media");
+  const requested =
+    requestedDisplay ??
+    legacyRequested ??
+    options.mediaDisplay ??
+    options.mediaTreatment ??
+    mediaConfig?.defaultDisplay ??
+    mediaConfig?.defaultTreatment ??
+    "off";
+  if (
+    requested !== "off" &&
+    requested !== "on" &&
+    requested !== "popout" &&
+    requested !== "on-page" &&
+    requested !== "pop-out"
+  ) {
+    throw new Error(`V3 image display is unavailable: ${requested}`);
   }
-  if (requested === "off" || requested === "on" || requested === "popout") {
-    if (!mediaConfig && requested !== "off") {
-      throw new Error(
-        `V3 publication has no configured images: ${requestedBookId}`,
-      );
-    }
-    return requested;
+  const display = normalizePageTurnBookMediaDisplay(requested);
+  if (!mediaConfig && display !== "off") {
+    throw new Error(
+      `V3 publication has no configured images: ${requestedBookId}`,
+    );
   }
-  throw new Error(`V3 image treatment is unavailable: ${requested}`);
+  return legacyPageTurnBookMediaTreatment(display);
+}
+
+function mediaStyleFrom(parameters: URLSearchParams): Readonly<{
+  style: PageTurnBookMediaStyle;
+  explicitUserSelection: boolean;
+}> {
+  const requested = parameters.get("mediaStyle");
+  const style = requested ?? options.mediaStyle ?? mediaConfig?.defaultStyle ?? "original";
+  if (
+    style !== "original" &&
+    style !== "book-toned" &&
+    style !== "monochrome" &&
+    style !== "duotone"
+  ) {
+    throw new Error(`V3 image style is unavailable: ${style}`);
+  }
+  return {
+    style,
+    explicitUserSelection: requested !== null,
+  };
 }
 
 function applyPublicationIdentity(publication: PageTurnBookManifest): void {
@@ -458,8 +492,12 @@ function applyPublicationIdentity(publication: PageTurnBookManifest): void {
   mediaPicker.hidden = mediaConfig === undefined;
   mediaSelect.disabled = mediaConfig === undefined;
   mediaSelect.value = mediaTreatment;
+  mediaStyleSelect.disabled = mediaConfig === undefined;
+  mediaStyleSelect.value = mediaStyle;
   reader.classList.toggle("v3-has-media", mediaConfig !== undefined);
   reader.dataset.v3MediaMode = mediaTreatment;
+  reader.dataset.v3MediaDisplay = normalizePageTurnBookMediaDisplay(mediaTreatment);
+  reader.dataset.v3MediaStyle = mediaStyle;
   exploreButton.disabled = false;
   chapterSelect.replaceChildren(
     new Option("Front matter", ""),
@@ -520,6 +558,76 @@ function chapterOpeningLabel(text: string): HTMLElement {
   return label;
 }
 
+function safeMediaHref(value: string): string {
+  return resolvePageTurnBookMediaUrl(
+    value,
+    mediaConfigSource,
+    hostDocumentBaseUrl,
+    manifestUrl ?? new URL(options.manifestUrl.toString(), hostDocumentBaseUrl),
+  );
+}
+
+function effectiveMediaStyle(
+  figure: PageTurnBookMediaFigure,
+): PageTurnBookMediaStyle {
+  if (!mediaConfig) {
+    return "original";
+  }
+  if (mediaStyleUserSelected || options.mediaStyle !== undefined) {
+    return resolvePageTurnBookMediaStyle(
+      figure,
+      mediaStyle,
+      mediaStyleUserSelected,
+    );
+  }
+  return defaultPageTurnBookMediaStyle(figure, mediaConfig);
+}
+
+function applyMediaFigureStyle(
+  node: HTMLElement,
+  figure: PageTurnBookMediaFigure,
+): void {
+  const effective = effectiveMediaStyle(figure);
+  for (const style of [
+    "original",
+    "book-toned",
+    "monochrome",
+    "duotone",
+  ] as const) {
+    node.classList.toggle(`v3-media-style-${style}`, style === effective);
+  }
+  node.dataset.v3MediaStyle = effective;
+  node.dataset.v3MediaRequestedStyle = mediaStyle;
+  for (const kind of [
+    "chart",
+    "diagram",
+    "facsimile",
+    "map",
+    "photo",
+    "portrait",
+  ] as const) {
+    node.classList.toggle(`v3-media-kind-${kind}`, figure.visualKind === kind);
+  }
+}
+
+function mediaProvenanceControl(
+  figure: PageTurnBookMediaFigure,
+): HTMLButtonElement {
+  const button = createElement(
+    "button",
+    "v3-media-provenance-control",
+    "Image provenance",
+  );
+  button.type = "button";
+  button.dataset.v3MediaOpen = figure.id;
+  button.setAttribute("aria-haspopup", "dialog");
+  button.setAttribute(
+    "aria-label",
+    `View image provenance for ${figure.caption}`,
+  );
+  return button;
+}
+
 function mediaFigureBlock(
   figure: PageTurnBookMediaFigure,
   chapterState: ChapterState,
@@ -535,18 +643,18 @@ function mediaFigureBlock(
     "--v3-media-aspect",
     `${figure.width} / ${figure.height}`,
   );
+  applyMediaFigureStyle(node, figure);
   if (mediaTreatment === "on") {
+    const frame = createElement("div", "v3-media-image-frame");
     const image = document.createElement("img");
     image.alt = figure.alt;
     image.width = figure.width;
     image.height = figure.height;
     image.loading = "lazy";
     image.decoding = "async";
-    image.dataset.v3MediaSrc = new URL(
-      figure.src,
-      globalThis.location.href,
-    ).href;
-    node.append(image);
+    image.dataset.v3MediaSrc = safeMediaHref(figure.src);
+    frame.append(image);
+    node.append(frame);
   } else {
     const open = createElement("button", undefined, "Open figure");
     open.type = "button";
@@ -560,6 +668,9 @@ function mediaFigureBlock(
   caption.dataset.sourceAnchor = anchor;
   applySourceRange(caption, 0, Array.from(sourceText).length);
   node.append(caption);
+  if (mediaTreatment === "on") {
+    node.append(mediaProvenanceControl(figure));
+  }
   return {
     node,
     anchor,
@@ -583,14 +694,18 @@ function blocksWithMedia(chapterState: ChapterState): readonly SemanticBlock[] {
   )) {
     const replacementAnchors = figure.replaceAnchors ?? [];
     if (replacementAnchors.length > 0) {
-      const replacementIndex = result.findIndex(({ anchor }) =>
-        replacementAnchors.includes(anchor),
+      const replacementIndices = replacementAnchors.map((anchor) =>
+        result.findIndex((block) => block.anchor === anchor),
       );
-      if (replacementIndex < 0) {
+      const missingAnchors = replacementAnchors.filter(
+        (_anchor, index) => replacementIndices[index] === -1,
+      );
+      if (missingAnchors.length > 0) {
         throw new Error(
-          `V3 figure ${figure.id} cannot find replacement anchors`,
+          `V3 figure ${figure.id} cannot find replacement anchors: ${missingAnchors.join(", ")}`,
         );
       }
+      const replacementIndex = Math.min(...replacementIndices);
       const remaining = result.filter(
         ({ anchor }) => !replacementAnchors.includes(anchor),
       );
@@ -750,6 +865,280 @@ function optionalStringValue(
   return value === undefined ? undefined : stringValue(value, path);
 }
 
+function mediaBooleanValue(
+  value: unknown,
+  path: string,
+): boolean | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (typeof value !== "boolean") {
+    throw new Error(`V3 manifest ${path} must be a boolean`);
+  }
+  return value;
+}
+
+function mediaUrlValue(
+  value: unknown,
+  path: string,
+  manifestUrl: URL,
+  requireImmutableRemote = false,
+): string {
+  const candidate = stringValue(value, path);
+  if (
+    /[\u0000-\u001f\u007f\\]/.test(candidate) ||
+    /^[a-z][a-z0-9+.-]*:/i.test(candidate) &&
+      !/^https?:/i.test(candidate) ||
+    candidate.startsWith("//")
+  ) {
+    throw new Error(
+      `V3 manifest ${path} must be a safe HTTP(S) or manifest-relative URL`,
+    );
+  }
+  if (requireImmutableRemote && /^https?:/i.test(candidate)) {
+    const remote = new URL(candidate);
+    const segments = remote.pathname.split("/").filter(Boolean);
+    if (
+      remote.hostname !== "raw.githubusercontent.com" ||
+      !/^[a-f0-9]{40}$/.test(segments[2] ?? "")
+    ) {
+      throw new Error(
+        `V3 manifest ${path} must identify an immutable remote commit`,
+      );
+    }
+  }
+  let resolved: URL;
+  try {
+    resolved = new URL(candidate, manifestUrl);
+  } catch {
+    throw new Error(
+      `V3 manifest ${path} must be a safe HTTP(S) or manifest-relative URL`,
+    );
+  }
+  if (
+    (resolved.protocol !== "http:" && resolved.protocol !== "https:") ||
+    resolved.username !== "" ||
+    resolved.password !== ""
+  ) {
+    throw new Error(
+      `V3 manifest ${path} must resolve to a safe HTTP(S) URL`,
+    );
+  }
+  return resolved.href;
+}
+
+function parseManifestMedia(
+  value: unknown,
+  manifestUrl: URL,
+  chapterIds: ReadonlySet<string>,
+): PageTurnBookMedia {
+  const parsed = record(value, "media");
+  const defaultDisplay = stringValue(
+    parsed.defaultDisplay,
+    "media.defaultDisplay",
+  );
+  if (
+    defaultDisplay !== "off" &&
+    defaultDisplay !== "on-page" &&
+    defaultDisplay !== "pop-out"
+  ) {
+    throw new Error("V3 manifest media.defaultDisplay is unavailable");
+  }
+  const defaultStyle = optionalStringValue(
+    parsed.defaultStyle,
+    "media.defaultStyle",
+  );
+  if (
+    defaultStyle !== undefined &&
+    defaultStyle !== "original" &&
+    defaultStyle !== "book-toned" &&
+    defaultStyle !== "monochrome" &&
+    defaultStyle !== "duotone"
+  ) {
+    throw new Error("V3 manifest media.defaultStyle is unavailable");
+  }
+  if (!Array.isArray(parsed.figures) || parsed.figures.length === 0) {
+    throw new Error("V3 manifest media.figures must be a non-empty array");
+  }
+  const figureIds = new Set<string>();
+  const placementAnchors = new Set<string>();
+  const figures = parsed.figures.map((value, index): PageTurnBookMediaFigure => {
+    const path = `media.figures[${index}]`;
+    const figure = record(value, path);
+    const id = stringValue(figure.id, `${path}.id`);
+    if (!/^[a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?$/.test(id)) {
+      throw new Error(`V3 manifest ${path}.id is invalid`);
+    }
+    if (figureIds.has(id)) {
+      throw new Error(`V3 manifest ${path}.id duplicates ${id}`);
+    }
+    figureIds.add(id);
+    const chapterId = stringValue(figure.chapterId, `${path}.chapterId`);
+    if (!chapterIds.has(chapterId)) {
+      throw new Error(
+        `V3 manifest ${path}.chapterId references unknown chapter ${chapterId}`,
+      );
+    }
+    const afterAnchor = optionalStringValue(
+      figure.afterAnchor,
+      `${path}.afterAnchor`,
+    );
+    let replaceAnchors: string[] | undefined;
+    if (figure.replaceAnchors !== undefined) {
+      if (!Array.isArray(figure.replaceAnchors)) {
+        throw new Error(`V3 manifest ${path}.replaceAnchors must be an array`);
+      }
+      replaceAnchors = figure.replaceAnchors.map((anchor, anchorIndex) =>
+        stringValue(anchor, `${path}.replaceAnchors[${anchorIndex}]`),
+      );
+    }
+    if (
+      (afterAnchor === undefined) ===
+      (replaceAnchors === undefined || replaceAnchors.length === 0)
+    ) {
+      throw new Error(
+        `V3 manifest ${path} must have afterAnchor or non-empty replaceAnchors`,
+      );
+    }
+    for (const anchor of [
+      ...(afterAnchor ? [afterAnchor] : []),
+      ...(replaceAnchors ?? []),
+    ]) {
+      const placement = `${chapterId}\u0000${anchor}`;
+      if (placementAnchors.has(placement)) {
+        throw new Error(`V3 manifest ${path} duplicates placement ${anchor}`);
+      }
+      placementAnchors.add(placement);
+    }
+    const width = figure.width;
+    const height = figure.height;
+    if (
+      typeof width !== "number" ||
+      !Number.isInteger(width) ||
+      width < 1 ||
+      width > 16_384 ||
+      typeof height !== "number" ||
+      !Number.isInteger(height) ||
+      height < 1 ||
+      height > 16_384
+    ) {
+      throw new Error(
+        `V3 manifest ${path} dimensions must be positive bounded integers`,
+      );
+    }
+    const style = optionalStringValue(figure.style, `${path}.style`);
+    if (
+      style !== undefined &&
+      style !== "original" &&
+      style !== "book-toned" &&
+      style !== "monochrome" &&
+      style !== "duotone"
+    ) {
+      throw new Error(`V3 manifest ${path}.style is unavailable`);
+    }
+    const visualKind = optionalStringValue(
+      figure.visualKind,
+      `${path}.visualKind`,
+    );
+    if (
+      visualKind !== undefined &&
+      visualKind !== "chart" &&
+      visualKind !== "diagram" &&
+      visualKind !== "facsimile" &&
+      visualKind !== "map" &&
+      visualKind !== "photo" &&
+      visualKind !== "portrait"
+    ) {
+      throw new Error(`V3 manifest ${path}.visualKind is unavailable`);
+    }
+    const colorSemantics = optionalStringValue(
+      figure.colorSemantics,
+      `${path}.colorSemantics`,
+    );
+    if (
+      colorSemantics !== undefined &&
+      colorSemantics !== "essential" &&
+      colorSemantics !== "decorative"
+    ) {
+      throw new Error(`V3 manifest ${path}.colorSemantics is unavailable`);
+    }
+    const rightsRecord = record(figure.rights, `${path}.rights`);
+    const rights: NonNullable<PageTurnBookMediaFigure["rights"]> = {
+      license: stringValue(rightsRecord.license, `${path}.rights.license`),
+      attribution: stringValue(
+        rightsRecord.attribution,
+        `${path}.rights.attribution`,
+      ),
+    };
+    const integrity = stringValue(figure.integrity, `${path}.integrity`);
+    if (!/^sha256:[a-f0-9]{64}$/.test(integrity)) {
+      throw new Error(
+        `V3 manifest ${path}.integrity must use sha256:<64 lowercase hex>`,
+      );
+    }
+    const originalSrc =
+      figure.originalSrc === undefined
+        ? undefined
+        : mediaUrlValue(
+            figure.originalSrc,
+            `${path}.originalSrc`,
+            manifestUrl,
+          );
+    const source = stringValue(figure.source, `${path}.source`);
+    const provenance = stringValue(
+      figure.provenance,
+      `${path}.provenance`,
+    );
+    const reviewedAt = stringValue(
+      figure.reviewedAt,
+      `${path}.reviewedAt`,
+    );
+    if (
+      (!/^\d{4}-\d{2}-\d{2}$/.test(reviewedAt) ||
+        Number.isNaN(Date.parse(`${reviewedAt}T00:00:00Z`)) ||
+        new Date(`${reviewedAt}T00:00:00Z`).toISOString().slice(0, 10) !==
+          reviewedAt)
+    ) {
+      throw new Error(`V3 manifest ${path}.reviewedAt must be an ISO date`);
+    }
+    const transformPermitted = mediaBooleanValue(
+      figure.transformPermitted,
+      `${path}.transformPermitted`,
+    );
+    const exportPermitted = mediaBooleanValue(
+      figure.exportPermitted,
+      `${path}.exportPermitted`,
+    );
+    return {
+      id,
+      chapterId,
+      ...(afterAnchor === undefined ? {} : { afterAnchor }),
+      ...(replaceAnchors === undefined ? {} : { replaceAnchors }),
+      src: mediaUrlValue(figure.src, `${path}.src`, manifestUrl, true),
+      integrity,
+      ...(originalSrc === undefined ? {} : { originalSrc }),
+      width,
+      height,
+      alt: stringValue(figure.alt, `${path}.alt`),
+      caption: stringValue(figure.caption, `${path}.caption`),
+      ...(style === undefined ? {} : { style }),
+      ...(visualKind === undefined ? {} : { visualKind }),
+      ...(colorSemantics === undefined ? {} : { colorSemantics }),
+      ...(transformPermitted === undefined ? {} : { transformPermitted }),
+      ...(exportPermitted === undefined ? {} : { exportPermitted }),
+      rights,
+      source,
+      provenance,
+      reviewedAt,
+    };
+  });
+  return {
+    defaultDisplay,
+    ...(defaultStyle === undefined ? {} : { defaultStyle }),
+    figures,
+  };
+}
+
 function parseTocEntry(value: unknown, path: string): V3TocEntry {
   const entry = record(value, path);
   const location = record(entry.location, `${path}.location`);
@@ -770,7 +1159,7 @@ function parseTocEntry(value: unknown, path: string): V3TocEntry {
   };
 }
 
-function parseV3Manifest(value: unknown): PageTurnBookManifest {
+function parseV3Manifest(value: unknown, manifestUrl: URL): PageTurnBookManifest {
   const root = record(value, "root");
   const authorsValue = root.authors;
   if (!Array.isArray(authorsValue) || authorsValue.length === 0) {
@@ -873,6 +1262,14 @@ function parseV3Manifest(value: unknown): PageTurnBookManifest {
     coverRecord?.accent,
     "appearance.cover.accent",
   );
+  const media =
+    root.media === undefined
+      ? undefined
+      : parseManifestMedia(
+          root.media,
+          manifestUrl,
+          new Set(chapters.map(({ chapterId }) => chapterId)),
+        );
 
   return {
     bookId: stringValue(root.bookId, "bookId"),
@@ -881,6 +1278,7 @@ function parseV3Manifest(value: unknown): PageTurnBookManifest {
     authors,
     chapters,
     tableOfContents,
+    ...(media === undefined ? {} : { media }),
     ...(publicationDate === undefined ? {} : { publicationDate }),
     ...(description === undefined ? {} : { description }),
     ...(frontMatterRecord === undefined
@@ -1097,7 +1495,7 @@ async function fetchManifest(): Promise<{
     );
   }
   return {
-    manifest: parseV3Manifest(await response.json()),
+    manifest: parseV3Manifest(await response.json(), url),
     url,
   };
 }
@@ -1497,6 +1895,9 @@ const mediaPicker = requiredElement<HTMLElement>("[data-v3-media-picker]");
 const mediaSelect = requiredElement<HTMLSelectElement>(
   "[data-v3-media-treatment]",
 );
+const mediaStyleSelect = requiredElement<HTMLSelectElement>(
+  "[data-v3-media-style]",
+);
 const mediaDialog = requiredElement<HTMLDialogElement>(
   "[data-v3-media-dialog]",
 );
@@ -1508,6 +1909,24 @@ const mediaDialogImage = requiredElement<HTMLImageElement>(
 );
 const mediaDialogCaption = requiredElement<HTMLElement>(
   "[data-v3-media-dialog-caption]",
+);
+const mediaDialogAttribution = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-attribution]",
+);
+const mediaDialogLicense = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-license]",
+);
+const mediaDialogSource = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-source]",
+);
+const mediaDialogProvenance = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-provenance]",
+);
+const mediaDialogIntegrity = requiredElement<HTMLElement>(
+  "[data-v3-media-dialog-integrity]",
+);
+const mediaDialogOriginal = requiredElement<HTMLAnchorElement>(
+  "[data-v3-media-dialog-original]",
 );
 const exploreButton = requiredElement<HTMLButtonElement>("[data-v3-explore]");
 const appearanceButton = requiredElement<HTMLButtonElement>(
@@ -1737,8 +2156,10 @@ let chapterWindowVersion = 0;
 let retainedChapterIndices: number[] = [];
 let opening = true;
 let fontScale = 1;
-let mediaTreatment: PageTurnBookMediaTreatment =
-  mediaConfig?.defaultTreatment ?? "off";
+let mediaTreatment: PageTurnBookMediaTreatment = "off";
+let mediaStyle: PageTurnBookMediaStyle =
+  options.mediaStyle ?? mediaConfig?.defaultStyle ?? "original";
+let mediaStyleUserSelected = false;
 let locationTrackingReady = false;
 let applyingHistory = false;
 let sharing = false;
@@ -2648,6 +3069,14 @@ function textSourceBlocks(chapterId: string): PageTurnTextSourceBlock[] {
     };
     const replacementAnchors = figure.replaceAnchors ?? [];
     if (replacementAnchors.length > 0) {
+      const missingAnchors = replacementAnchors.filter(
+        (anchor) => !result.some((block) => block.anchor === anchor),
+      );
+      if (missingAnchors.length > 0) {
+        throw new Error(
+          `V3 figure ${figure.id} has no selector replacement anchors: ${missingAnchors.join(", ")}`,
+        );
+      }
       const index = result.findIndex(({ anchor }) =>
         replacementAnchors.includes(anchor),
       );
@@ -4708,9 +5137,14 @@ function setMediaTreatment(value: string): void {
   mediaTreatment = value;
   mediaSelect.value = value;
   reader.dataset.v3MediaMode = value;
+  reader.dataset.v3MediaDisplay = normalizePageTurnBookMediaDisplay(value);
   if (managesUrl && !applyingHistory) {
     const url = new URL(globalThis.location.href);
     url.searchParams.set("media", value);
+    url.searchParams.set(
+      "mediaDisplay",
+      normalizePageTurnBookMediaDisplay(value),
+    );
     globalThis.history.replaceState({ v3Location: true }, "", url);
   }
   reader.setAttribute("aria-busy", "true");
@@ -4728,6 +5162,54 @@ function setMediaTreatment(value: string): void {
   }
 }
 
+function setMediaStyle(value: string, explicitUserSelection = true): void {
+  if (!mediaConfig) {
+    throw new Error("V3 publication has no configured image style");
+  }
+  if (
+    value !== "original" &&
+    value !== "book-toned" &&
+    value !== "monochrome" &&
+    value !== "duotone"
+  ) {
+    throw new Error(`V3 image style is unavailable: ${value}`);
+  }
+  mediaStyle = value;
+  mediaStyleUserSelected = explicitUserSelection;
+  mediaStyleSelect.value = value;
+  reader.dataset.v3MediaStyle = value;
+  if (managesUrl && !applyingHistory) {
+    const url = new URL(globalThis.location.href);
+    url.searchParams.set("mediaStyle", value);
+    globalThis.history.replaceState({ v3Location: true }, "", url);
+  }
+  const mediaNodes = new Set<HTMLElement>(
+    root.querySelectorAll<HTMLElement>("[data-v3-media-id]"),
+  );
+  for (const chapterState of chapterStates) {
+    for (const block of chapterState.blocks ?? []) {
+      if (block.node.dataset.v3MediaId) {
+        mediaNodes.add(block.node);
+      }
+    }
+    for (const page of chapterState.pages ?? []) {
+      for (const pageNode of page.nodes) {
+        if (pageNode.dataset.v3MediaId) {
+          mediaNodes.add(pageNode);
+        }
+      }
+    }
+  }
+  for (const node of mediaNodes) {
+    const id = node.dataset.v3MediaId;
+    const figure = mediaConfig.figures.find((candidate) => candidate.id === id);
+    if (figure) {
+      applyMediaFigureStyle(node, figure);
+    }
+  }
+  status.textContent = `Image style: ${value}`;
+}
+
 function openMediaFigure(id: string, trigger: HTMLElement): void {
   dismissSelectionActions();
   const figure = mediaConfig?.figures.find((candidate) => candidate.id === id);
@@ -4736,17 +5218,41 @@ function openMediaFigure(id: string, trigger: HTMLElement): void {
   }
   mediaReturnFocus = trigger;
   mediaDialogTitle.textContent = figure.caption;
-  mediaDialogCaption.textContent =
-    `${figure.caption} Extracted from the immutable designed publication.`;
+  mediaDialogCaption.textContent = [
+    figure.caption,
+    figure.rights?.attribution
+      ? `Attribution: ${figure.rights.attribution}.`
+      : "Attribution not supplied.",
+    figure.rights?.license
+      ? `License: ${figure.rights.license}.`
+      : "License not supplied.",
+  ].join(" ");
+  mediaDialogAttribution.textContent =
+    figure.rights?.attribution ?? "Not supplied";
+  mediaDialogLicense.textContent = figure.rights?.license ?? "Not supplied";
+  mediaDialogSource.textContent = figure.source ?? "Not supplied";
+  mediaDialogProvenance.textContent = [
+    figure.provenance ?? "Not supplied",
+    figure.exportPermitted === true
+      ? "Export permission is recorded as policy metadata; this reader does not export source images."
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  mediaDialogIntegrity.textContent = figure.integrity ?? "Not supplied";
+  mediaDialogOriginal.href = safeMediaHref(figure.originalSrc ?? figure.src);
   mediaDialogImage.alt = figure.alt;
   mediaDialogImage.width = figure.width;
   mediaDialogImage.height = figure.height;
-  mediaDialogImage.src = new URL(figure.src, globalThis.location.href).href;
+  mediaDialogImage.className = "v3-media-style-original";
+  mediaDialogImage.dataset.v3MediaStyle = "original";
+  mediaDialogImage.src = safeMediaHref(figure.src);
   mediaDialog.showModal();
 }
 
 function onMediaDialogClose(): void {
   mediaDialogImage.removeAttribute("src");
+  mediaDialogOriginal.removeAttribute("href");
   mediaDialogImage.alt = "";
   if (mediaReturnFocus?.isConnected) {
     mediaReturnFocus.focus();
@@ -7364,6 +7870,7 @@ async function restoreHistoryLocation(): Promise<void> {
   const chapterId = params.get("chapter");
   const anchor = decodeLocationHash();
   const restoredMediaTreatment = mediaTreatmentFrom(params);
+  const restoredMediaStyle = mediaStyleFrom(params);
   if (anchor && chapterId === null) {
     throw new Error(
       "V3 source-anchor URLs must include their chapter parameter",
@@ -7373,6 +7880,15 @@ async function restoreHistoryLocation(): Promise<void> {
   try {
     if (restoredMediaTreatment !== mediaTreatment) {
       setMediaTreatment(restoredMediaTreatment);
+    }
+    if (
+      restoredMediaStyle.style !== mediaStyle ||
+      restoredMediaStyle.explicitUserSelection !== mediaStyleUserSelected
+    ) {
+      setMediaStyle(
+        restoredMediaStyle.style,
+        restoredMediaStyle.explicitUserSelection,
+      );
     }
     await goToLocation(chapterId ?? "", anchor, "none");
     if (version !== historyRestoreVersion) {
@@ -7482,7 +7998,12 @@ async function initialize(): Promise<void> {
       `V3 requested ${requestedBookId} but loaded ${manifest.bookId}`,
     );
   }
+  mediaConfig = options.media ?? manifest.media;
+  mediaConfigSource = options.media === undefined ? "manifest" : "host";
   mediaTreatment = mediaTreatmentFrom(query);
+  const initialMediaStyle = mediaStyleFrom(query);
+  mediaStyle = initialMediaStyle.style;
+  mediaStyleUserSelected = initialMediaStyle.explicitUserSelection;
   applyPublicationIdentity(manifest);
   readMarginaliaPreferences();
   applyFontScale(readBookFontScale(manifest.bookId, 1));
@@ -8095,6 +8616,13 @@ mediaSelect.addEventListener("change", () => {
     setMediaTreatment(mediaSelect.value);
   } catch (error: unknown) {
     reportFailure("V3 could not change the image treatment", error);
+  }
+}, listenerOptions);
+mediaStyleSelect.addEventListener("change", () => {
+  try {
+    setMediaStyle(mediaStyleSelect.value);
+  } catch (error: unknown) {
+    reportFailure("V3 could not change the image style", error);
   }
 }, listenerOptions);
 mediaDialog.addEventListener("close", onMediaDialogClose, listenerOptions);

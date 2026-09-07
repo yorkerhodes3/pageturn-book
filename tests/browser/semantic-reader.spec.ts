@@ -7,10 +7,10 @@ const chapterPath = route(
   "/book/demo-book/2026-08/chapters/introduction/",
 );
 const productionChapterPath = route(
-  "/book/what-is-ethical-ai/2026-07/chapters/executive-summary/",
+  "/book/what-is-ethical-ai/2026-09/chapters/executive-summary/",
 );
 const productionReferencesPath = route(
-  "/book/what-is-ethical-ai/2026-07/chapters/references/",
+  "/book/what-is-ethical-ai/2026-09/chapters/references/",
 );
 const flowingChapterBookIds = [
   "agentic-behavior-observatory",
@@ -144,7 +144,7 @@ test("documents implemented and planned capabilities on the dashboard", async ({
     page.getByRole("link", { name: /Read What Is Ethical AI/ }),
   ).toHaveAttribute(
     "href",
-    "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+    "../book/what-is-ethical-ai/2026-09/chapters/executive-summary/?view=book",
   );
   await expect(
   page.getByRole("link", { name: /Read with PageTurn/ }),
@@ -974,7 +974,7 @@ test("shows V1, V2, and V3 in the comparison view", async ({ page }) => {
   ).toHaveAttribute("src", "../legacy/?view=book");
   await expect(page.getByTitle("V2 semantic reader")).toHaveAttribute(
   "src",
-  "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+  "../book/what-is-ethical-ai/2026-09/chapters/executive-summary/?view=book",
   );
   await expect(
   page.getByTitle("V3 supported PageTurn reader"),
@@ -1284,7 +1284,9 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   page.on("response", (response) => {
     if (
       response.ok() &&
-      response.url().includes("/media/what-is-ethical-ai/")
+      response.url().includes(
+        "/book/what-is-ethical-ai/2026-09/media/",
+      )
     ) {
       mediaResponses.push(response.url());
     }
@@ -1300,7 +1302,7 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
   await expect(reader).toHaveAttribute("data-v3-media-mode", "popout");
-  const treatment = page.getByLabel("Image treatment");
+  const treatment = page.getByLabel("Image display");
   await expect(treatment).toHaveValue("popout");
   expect(mediaResponses).toEqual([]);
 
@@ -1331,6 +1333,20 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   await expect
     .poll(() => image.evaluate((node) => (node as HTMLImageElement).naturalWidth))
     .toBe(1656);
+  await expect(image).toHaveAttribute("data-v3-media-style", "original");
+  await expect(
+    dialog.getByRole("link", { name: "View original" }),
+  ).toHaveAttribute(
+    "href",
+    /^https:\/\/raw\.githubusercontent\.com\/Ethical-Tech-CoLab\/website\//,
+  );
+  await expect(dialog).toContainText("Ethical Tech CoLab");
+  await expect(dialog).toContainText(
+    "Copyright; no public redistribution license",
+  );
+  await expect(dialog).toContainText(
+    "sha256:00ac05a2f0ae7b584530de2970e6ade9003a158c87db086c981563e1347ea976",
+  );
   expect(new Set(mediaResponses).size).toBe(1);
   const counterBeforeDialogKey = await page
     .locator("[data-v3-counter]")
@@ -1369,7 +1385,9 @@ test("defers on-page Ethical AI figures until their page is reached", async ({
   page.on("response", (response) => {
     if (
       response.ok() &&
-      response.url().includes("/media/what-is-ethical-ai/")
+      response.url().includes(
+        "/book/what-is-ethical-ai/2026-09/media/",
+      )
     ) {
       mediaResponses.push(response.url());
     }
@@ -1413,6 +1431,223 @@ test("defers on-page Ethical AI figures until their page is reached", async ({
   await expect(
     page.locator("[data-v3-stationary] .v3-media-on figcaption"),
   ).toContainText("Ten landmark resources");
+  await page
+    .getByRole("button", {
+      name: /View image provenance for Figure 4\. Ten landmark resources/,
+    })
+    .click();
+  const provenance = page.getByRole("dialog", {
+    name: "Figure 4. Ten landmark resources for building an AI ethics framework.",
+  });
+  await expect(provenance).toContainText("Ethical Tech CoLab");
+  await expect(provenance).toContainText(
+    "Copyright; no public redistribution license",
+  );
+  await expect(provenance.getByRole("link", { name: "View original" })).toHaveAttribute(
+    "href",
+    /^https:\/\/raw\.githubusercontent\.com\/Ethical-Tech-CoLab\/website\//,
+  );
+  await provenance.getByRole("button", { name: "Close figure" }).click();
+});
+
+test("styles one neutral figure without repagination or raster variants", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const requests: string[] = [];
+  const pinnedImage =
+    "**/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/3-2-georg.jpg";
+  await page.route(pinnedImage, async (route) => {
+    requests.push(route.request().url());
+    await route.fulfill({
+      path: "apps/fixtures/what-is-ethical-ai/media/ai-ethics-frameworks.webp",
+      contentType: "image/webp",
+    });
+  });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=plurality&chapter=3-2&media=on#v3-media-plurality-3-2-b-georg-simmel",
+    ),
+  );
+
+  const reader = page.locator("[data-v3-reader]");
+  const figure = page.locator(
+    '[data-v3-stationary] [data-v3-media-id="plurality-3-2-b-georg-simmel"]',
+  );
+  await expect(figure).toBeVisible();
+  await expect(figure).toHaveClass(/v3-media-style-book-toned/);
+  const initialState = await reader.evaluate((node) => ({
+    pageCount: node.getAttribute("data-v3-page-count"),
+    pageIndex: node.getAttribute("data-v3-page-index"),
+    pagination: node.getAttribute("data-v3-pagination-version"),
+  }));
+  const style = page.getByLabel("Image style");
+  for (const expected of ["original", "monochrome", "duotone", "book-toned"]) {
+    await style.selectOption(expected);
+    await expect(figure).toHaveClass(new RegExp(`v3-media-style-${expected}`));
+    await expect(figure).toHaveAttribute("data-v3-media-style", expected);
+  }
+  expect(
+    await reader.evaluate((node) => ({
+      pageCount: node.getAttribute("data-v3-page-count"),
+      pageIndex: node.getAttribute("data-v3-page-index"),
+      pagination: node.getAttribute("data-v3-pagination-version"),
+    })),
+  ).toEqual(initialState);
+  const frame = figure.locator(".v3-media-image-frame");
+  const beforeAccent = await frame.evaluate(
+    (node) => getComputedStyle(node, "::after").backgroundImage,
+  );
+  await reader.evaluate((node) => {
+    (node as HTMLElement).style.setProperty("--v3-cover-accent", "#00ff00");
+  });
+  await expect
+    .poll(() =>
+      frame.evaluate(
+        (node) => getComputedStyle(node, "::after").backgroundImage,
+      ),
+    )
+    .not.toBe(beforeAccent);
+  expect(requests).toHaveLength(1);
+  expect(requests[0]).toMatch(/\/figs\/3-2-georg\.jpg$/);
+  expect(requests[0]).not.toMatch(/book-toned|monochrome|duotone/);
+});
+
+test("fails closed for media rights while allowing a gated essential preview", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=on&mediaStyle=duotone#v3-media-ai-ethics-frameworks",
+    ),
+  );
+  const unpermitted = page.locator(
+    '[data-v3-stationary] [data-v3-media-id="ai-ethics-frameworks"]',
+  );
+  await expect(unpermitted).toBeVisible();
+  await expect(unpermitted).toHaveAttribute("data-v3-media-style", "original");
+  await expect(
+    page.locator("[data-v3-media-download], [data-v3-media-export]"),
+  ).toHaveCount(0);
+
+  await page.route(
+    "**/pluralitybook/plurality/86158859464aee75633acd854c656928121a7fd8/figs/vtaiwan-polis-ai.png",
+    (route) =>
+      route.fulfill({
+        path: "apps/fixtures/what-is-ethical-ai/media/ai-ethics-frameworks.webp",
+        contentType: "image/webp",
+      }),
+  );
+  await page.goto(
+    route(
+      "/v3/?book=plurality&chapter=2-2&media=on#v3-media-plurality-2-2-b-polis",
+    ),
+  );
+  const essential = page.locator(
+    '[data-v3-stationary] [data-v3-media-id="plurality-2-2-b-polis"]',
+  );
+  await expect(essential).toBeVisible();
+  await expect(essential).toHaveAttribute("data-v3-media-style", "original");
+  await page.getByLabel("Image style").selectOption("duotone");
+  await expect(essential).toHaveAttribute("data-v3-media-style", "duotone");
+  await expect(
+    page.locator("[data-v3-media-download], [data-v3-media-export]"),
+  ).toHaveCount(0);
+  await essential.getByRole("button", { name: /View image provenance/ }).click();
+  const policy = page.getByRole("dialog", {
+    name: /Clusters of consensual opinions/,
+  });
+  await expect(policy).toContainText(
+    "this reader does not export source images",
+  );
+  await policy.getByRole("button", { name: "Close figure" }).click();
+});
+
+test("accepts equal placement anchors in different manifest chapters", async ({
+  page,
+}) => {
+  await page.route(
+    "**/book/what-is-ethical-ai/2026-09/manifest.json",
+    async (route) => {
+      const response = await route.fetch();
+      const manifest = await response.json();
+      const source = manifest.media.figures[0];
+      manifest.media.figures.push({
+        ...source,
+        id: "cross-chapter-placement",
+        chapterId: "colab",
+      });
+      await route.fulfill({ response, json: manifest });
+    },
+  );
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=off#responsible-ai",
+    ),
+  );
+
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+});
+
+test("rejects manifest media without declared integrity", async ({ page }) => {
+  await page.route(
+    "**/book/what-is-ethical-ai/2026-09/manifest.json",
+    async (route) => {
+      const response = await route.fetch();
+      const manifest = await response.json();
+      delete manifest.media.figures[0].integrity;
+      await route.fulfill({ response, json: manifest });
+    },
+  );
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=off#responsible-ai",
+    ),
+  );
+
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "false",
+  );
+  await expect(page.locator("[data-v3-status]")).toContainText(
+    "integrity must be a non-empty string",
+  );
+});
+
+test("rejects mutable remote media in a directly loaded manifest", async ({
+  page,
+}) => {
+  await page.route(
+    "**/book/what-is-ethical-ai/2026-09/manifest.json",
+    async (route) => {
+      const response = await route.fetch();
+      const manifest = await response.json();
+      manifest.media.figures[0].src =
+        "https://example.org/images/latest.webp";
+      await route.fulfill({ response, json: manifest });
+    },
+  );
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=off#responsible-ai",
+    ),
+  );
+
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "false",
+  );
+  await expect(page.locator("[data-v3-status]")).toContainText(
+    "must identify an immutable remote commit",
+  );
 });
 
 test("inserts Ethical AI figures after complete source blocks", async ({
@@ -1624,7 +1859,7 @@ test("shares selected text and exports local-only annotations", async ({
   expect(parsedSharedUrl.searchParams.get("chapter")).toBe(
     selectedLocation.chapterId,
   );
-  expect(parsedSharedUrl.searchParams.get("edition")).toBe("2026-07");
+  expect(parsedSharedUrl.searchParams.get("edition")).toBe("2026-09");
   const selectionToken = parsedSharedUrl.searchParams.get("selection") ?? "";
   expect(selectionToken).toMatch(/^v1\./);
   const tokenPayload = JSON.parse(
@@ -1696,7 +1931,7 @@ test("shares selected text and exports local-only annotations", async ({
   await dialog.getByRole("button", { name: "Backup JSON" }).click();
   const backupDownload = await backupPromise;
   expect(backupDownload.suggestedFilename()).toBe(
-    "what-is-ethical-ai-2026-07-annotations-v2.json",
+    "what-is-ethical-ai-2026-09-annotations-v2.json",
   );
   const backupStream = await backupDownload.createReadStream();
   if (!backupStream) {
@@ -1711,7 +1946,7 @@ test("shares selected text and exports local-only annotations", async ({
     schemaVersion: 2,
     publication: {
       bookId: "what-is-ethical-ai",
-      editionId: "2026-07",
+      editionId: "2026-09",
     },
   });
   await dialog
@@ -1861,7 +2096,7 @@ test("shares selected text and exports local-only annotations", async ({
     "resolved",
   );
   const restoredUrl = new URL(page.url());
-  expect(restoredUrl.searchParams.get("edition")).toBe("2026-07");
+  expect(restoredUrl.searchParams.get("edition")).toBe("2026-09");
   expect(restoredUrl.searchParams.get("chapter")).toBe(
     selectedLocation.chapterId,
   );
@@ -1892,7 +2127,7 @@ test("keeps reading available when an exact quote token is malformed", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(
     route(
-      "/v3/?book=what-is-ethical-ai&edition=2026-07" +
+      "/v3/?book=what-is-ethical-ai&edition=2026-09" +
         "&chapter=executive-summary&selection=v1.invalid#executive-summary",
     ),
   );
@@ -1951,7 +2186,7 @@ test("transactionally migrates beta annotations and quarantines unresolved text"
   });
   await page.evaluate(({ anchor, unresolvedAnchor, quote }) => {
     localStorage.setItem(
-      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-09",
       JSON.stringify([
         {
           id: "legacy-resolved",
@@ -2006,7 +2241,7 @@ test("transactionally migrates beta annotations and quarantines unresolved text"
   expect(
     await page.evaluate(() =>
       localStorage.getItem(
-        "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+        "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-09",
       ),
     ),
   ).toBeNull();
@@ -2030,7 +2265,7 @@ test("does not block the first readable page on beta migration fetches", async (
   });
   await page.addInitScript(() => {
     localStorage.setItem(
-      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-07",
+      "ethical-tech-book-v3-annotations:what-is-ethical-ai:2026-09",
       JSON.stringify([
         {
           id: "remote-legacy-note",
@@ -2299,7 +2534,7 @@ test("keeps split-list source offsets aligned with canonical text", async ({
   const sourceLists = await page.evaluate(async () => {
     const response = await fetch(
       new URL(
-        "../book/what-is-ethical-ai/2026-07/chapters/responsible-ai/index.html",
+        "../book/what-is-ethical-ai/2026-09/chapters/responsible-ai/index.html",
         globalThis.location.href,
       ),
     );
@@ -2656,7 +2891,7 @@ test("loads and releases a bounded Plurality chapter window", async ({
   const chapterResponses: string[] = [];
   page.on("response", (response) => {
     if (
-      response.url().includes("/book/plurality/2026-07/chapters/") &&
+      response.url().includes("/book/plurality/2026-09/chapters/") &&
       response.ok()
     ) {
       chapterResponses.push(response.url());
@@ -2750,7 +2985,7 @@ test("surfaces and retries a failed V3 chapter window", async ({ page }) => {
 test("recovers when the initial V3 chapter request fails", async ({ page }) => {
   let failedOnce = false;
   await page.route(
-    "**/book/plurality/2026-07/chapters/6-4/index.html",
+    "**/book/plurality/2026-09/chapters/6-4/index.html",
     async (route) => {
       if (!failedOnce) {
         failedOnce = true;
@@ -2795,7 +3030,7 @@ test("cancels an active turn before a chapter window rebuild", async ({
     markNeighborRequested = resolve;
   });
   await page.route(
-    "**/book/plurality/2026-07/chapters/2-1/index.html",
+    "**/book/plurality/2026-09/chapters/2-1/index.html",
     async (route) => {
       markNeighborRequested?.();
       await neighborGate;
@@ -2864,7 +3099,7 @@ test("retries an explicit V3 location superseded by incidental prefetch", async 
     markTargetRequested = resolve;
   });
   await page.route(
-    "**/book/plurality/2026-07/chapters/6-4/index.html",
+    "**/book/plurality/2026-09/chapters/6-4/index.html",
     async (route) => {
       if (firstTargetRequest) {
         firstTargetRequest = false;
@@ -2936,7 +3171,7 @@ test("restores durable V3 source locations and browser history", async ({
     )
     .toEqual({
       bookId: "plurality",
-      editionId: "2026-07",
+      editionId: "2026-09",
       chapterId: "6-4",
       anchor,
     });
@@ -3093,7 +3328,7 @@ test("shares a canonical V3 chapter and source anchor", async ({ page }) => {
     "chapter",
   ]);
   expect(url.searchParams.get("book")).toBe("plurality");
-  expect(url.searchParams.get("edition")).toBe("2026-07");
+  expect(url.searchParams.get("edition")).toBe("2026-09");
   expect(url.searchParams.get("chapter")).toBe("6-4");
   expect(decodeURIComponent(url.hash.slice(1))).toBe(anchor);
 });
@@ -3276,7 +3511,7 @@ test("renders the production library as optimized labeled bindings", async ({
     selection.getByRole("link", { name: "Open V2 compatibility reader" }),
   ).toHaveAttribute(
     "href",
-    "../book/what-is-ethical-ai/2026-07/chapters/executive-summary/?view=book",
+    "../book/what-is-ethical-ai/2026-09/chapters/executive-summary/?view=book",
   );
   await expect(
     selection.getByRole("link", { name: "Read with PageTurn V3" }),
@@ -3535,7 +3770,7 @@ test("keeps Plurality chapter links local and maps licensed figures", async ({
 
   await page.goto(
     route(
-      "/book/plurality/2026-07/chapters/2-0/",
+      "/book/plurality/2026-09/chapters/2-0/",
     ),
   );
   const listItemCounts = await page
@@ -3619,7 +3854,7 @@ test("pulls a shelf volume into the semantic reader", async ({ page }) => {
     .click();
 
   await expect(page).toHaveURL(
-    /\/book\/what-is-ethical-ai\/2026-07\/chapters\/executive-summary\/\?view=book$/,
+    /\/book\/what-is-ethical-ai\/2026-09\/chapters\/executive-summary\/\?view=book$/,
   );
   await expect(
     page.getByRole("dialog", { name: "What Is Ethical AI?" }),

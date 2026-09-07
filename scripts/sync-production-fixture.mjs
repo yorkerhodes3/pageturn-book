@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const revision = "b456e8e137a0b6ce9a51799b71c6091f5241b5d7";
@@ -6,6 +6,13 @@ const sourceUrl =
   `https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/${revision}` +
   "/src/content/publications/what-is-ethical-ai.ts";
 const outputRoot = resolve("apps/fixtures/what-is-ethical-ai");
+const currentConfig = await readFile(resolve(outputRoot, "book.yml"), "utf8");
+const reviewedMediaBlock = /^media:\r?\n[\s\S]*?(?=^chapters:)/m.exec(
+  currentConfig,
+)?.[0];
+if (!reviewedMediaBlock) {
+  throw new Error("Reviewed Ethical AI media metadata is missing");
+}
 
 function yamlString(value) {
   return JSON.stringify(value);
@@ -67,7 +74,7 @@ if (!response.ok) {
 }
 const report = await parseReport(await response.text());
 
-await rm(outputRoot, { recursive: true, force: true });
+await rm(resolve(outputRoot, "chapters"), { recursive: true, force: true });
 await mkdir(resolve(outputRoot, "chapters"), { recursive: true });
 
 const chapters = [];
@@ -124,7 +131,7 @@ const config = [
   "# GENERATED from the pinned Ethical Tech CoLab website source.",
   `# Source: ${sourceUrl}`,
   "bookId: what-is-ethical-ai",
-  "editionId: 2026-07",
+  "editionId: 2026-09",
   `title: ${yamlString(report.title)}`,
   `description: ${yamlString(report.subtitle)}`,
   "authors:",
@@ -154,6 +161,7 @@ const config = [
   "    hubs: 5",
   "    pageCount: 46",
   '    shelfLabel: "WHAT IS ETHICAL AI?"',
+  reviewedMediaBlock.trimEnd(),
   "chapters:",
   ...chapters.flatMap((chapter) => [
     `  - id: ${chapter.id}`,

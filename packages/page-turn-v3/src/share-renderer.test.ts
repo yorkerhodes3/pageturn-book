@@ -5,10 +5,20 @@ import {
   PAGE_TURN_SHARE_IMAGE_MAX_EDGE,
   pageTurnShareCanvasPlan,
   pageTurnShareQuoteLayout,
+  type PageTurnShareRenderInput,
 } from "./share-renderer.js";
+
+type SourceImageInputKeys = Extract<
+  keyof PageTurnShareRenderInput,
+  "sourceImage" | "sourceImageUrl" | "sourceImageBytes" | "media"
+>;
+const rendererAcceptsNoSourceImages: SourceImageInputKeys extends never
+  ? true
+  : false = true;
 
 describe("PageTurn visual share renderer budgets", () => {
   it("uses one bounded deterministic canvas plan", () => {
+    expect(rendererAcceptsNoSourceImages).toBe(true);
     const first = pageTurnShareCanvasPlan();
     const second = pageTurnShareCanvasPlan();
     expect(second).toEqual(first);

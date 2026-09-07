@@ -2,7 +2,7 @@
 
 | Field | Decision |
 |---|---|
-| Status | Approved and implemented for versioned local storage, marginalia, policy-gated visual sharing, no-fetch source cards, and consent-gated allowlisted previews |
+| Status | Approved and implemented for versioned local storage, marginalia, policy-gated visual sharing, no-fetch source cards, consent-gated allowlisted previews, and rights-gated publication media |
 | Accounts | None |
 | Remote annotation service | None |
 | Analytics | None |
@@ -10,6 +10,7 @@
 | Export | Explicit local Markdown or version 2 JSON download |
 | Sharing | Explicit contextual Copy or pre-share composer action |
 | External sources | Host-reviewed registry; no card-open metadata or preview fetch; preview requires explicit activation |
+| Publication images | Off makes no request; on-page loads only a reached page; pop-out loads only after activation |
 
 ## Data handled
 
@@ -45,6 +46,16 @@ cross-origin pixels, and never reads or uploads private notes, annotations,
 stored highlights, toolbars, or arbitrary live DOM. The selected public quote
 is the only highlight represented. Equivalent quote and citation text remains
 outside the image.
+
+Publication image styling uses CSS against the semantic image element and does
+not sample pixels, invoke Canvas, generate another raster, or upload image
+bytes. Remote Plurality figures disclose a request to immutable raw-GitHub URLs
+only when the on-page figure is reached or a pop-out is explicitly opened; the
+request exposes ordinary network metadata to that host. Pop-outs show Original
+and link with `noopener` and `no-referrer`. Missing transformation rights force
+Original. No source-image download/share control is exposed, and the hosted
+visual quote policy remains `sourceImages: none`, independently of figure
+export metadata.
 
 Annotation export creates a local Markdown or version 2 JSON `Blob` after an
 explicit export/backup action. Import reads only the local file selected by the

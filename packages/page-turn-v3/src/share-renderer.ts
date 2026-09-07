@@ -6,6 +6,7 @@ export const PAGE_TURN_SHARE_IMAGE_MAX_BYTES = 4 * 1024 * 1024;
 export const PAGE_TURN_SHARE_CANVAS_MAX_BYTES = 32 * 1024 * 1024;
 
 export type PageTurnShareRenderInput = Readonly<{
+  // Intentionally text-only: source image bytes are not accepted by this renderer.
   quote: string;
   contextBefore: string;
   contextAfter: string;

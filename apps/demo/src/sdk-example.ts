@@ -4,6 +4,7 @@ import {
   createPageTurnSourceResolver,
   mountPageTurnBookShell,
   type PageTurnBookHandle,
+  type PageTurnBookMedia,
   type PageTurnExternalPreviewProvider,
   type PageTurnSharePolicy,
   type PageTurnSourceResolver,
@@ -29,6 +30,7 @@ const sourceScenario = sdkQuery.get("source");
 const previewScenario = sourceScenario?.startsWith("preview-") ?? false;
 const shareMode = sdkQuery.get("share");
 const requestedQuoteMaximum = Number(sdkQuery.get("quoteMax"));
+const hostMediaScenario = sdkQuery.get("hostMedia");
 const quoteMaximum =
   Number.isSafeInteger(requestedQuoteMaximum) &&
   requestedQuoteMaximum >= 2 &&
@@ -256,17 +258,52 @@ const sourceFixtureOptions =
 
 const readerOptions = {
   bookId: "demo-book",
+  ...(hostMediaScenario === null ? {} : { chapterId: "introduction" }),
   manifestUrl: new URL(
     "../book/demo-book/2026-08/manifest.json",
     globalThis.location.href,
   ),
   ...shareFixtureOptions,
   ...sourceFixtureOptions,
+  ...(hostMediaScenario === null
+    ? {}
+    : {
+        media: {
+          defaultDisplay: "on-page",
+          figures: [
+            {
+              id: "host-relative-figure",
+              chapterId: "introduction",
+              ...(hostMediaScenario === "partial"
+                ? {
+                    replaceAnchors: [
+                      "introduction",
+                      "missing-host-anchor",
+                    ],
+                  }
+                : { afterAnchor: "introduction" }),
+              src: "../book/what-is-ethical-ai/2026-09/media/ai-ethics-frameworks.webp",
+              width: 1656,
+              height: 1418,
+              alt: "Host-configured relative media",
+              caption: "Host-configured media fixture.",
+              transformPermitted: false,
+              exportPermitted: false,
+            },
+          ],
+        } satisfies PageTurnBookMedia,
+      }),
 };
 const reader: PageTurnBookHandle = createPageTurnBook({
   root,
   ...readerOptions,
 });
+if (hostMediaScenario === "relative") {
+  const changedBase = document.createElement("base");
+  changedBase.href = new URL("../changed-after-attach/", globalThis.location.href)
+    .href;
+  document.head.prepend(changedBase);
+}
 
 const additionalContainer =
   sdkQuery.get("instances") === "2"

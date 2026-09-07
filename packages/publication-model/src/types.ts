@@ -181,6 +181,58 @@ export type PublicationFrontMatter = {
   notesStatus?: string;
 };
 
+export type PublicationMediaDisplay = "off" | "on-page" | "pop-out";
+
+export type PublicationMediaStyle =
+  | "original"
+  | "book-toned"
+  | "monochrome"
+  | "duotone";
+
+export type PublicationMediaVisualKind =
+  | "chart"
+  | "diagram"
+  | "facsimile"
+  | "map"
+  | "photo"
+  | "portrait";
+
+export type PublicationMediaColorSemantics = "essential" | "decorative";
+
+export type PublicationMediaRights = Readonly<{
+  license: string;
+  attribution: string;
+}>;
+
+export type PublicationMediaFigure = Readonly<{
+  id: string;
+  chapterId: ChapterId;
+  afterAnchor?: string;
+  replaceAnchors?: readonly string[];
+  src: string;
+  integrity: string;
+  originalSrc?: string;
+  width: number;
+  height: number;
+  alt: string;
+  caption: string;
+  style?: PublicationMediaStyle;
+  visualKind?: PublicationMediaVisualKind;
+  colorSemantics?: PublicationMediaColorSemantics;
+  transformPermitted?: boolean;
+  exportPermitted?: boolean;
+  rights: PublicationMediaRights;
+  source: string;
+  provenance: string;
+  reviewedAt: string;
+}>;
+
+export type PublicationMedia = Readonly<{
+  defaultDisplay: PublicationMediaDisplay;
+  defaultStyle?: PublicationMediaStyle;
+  figures: readonly PublicationMediaFigure[];
+}>;
+
 export type PublicationManifest = {
   schemaVersion: typeof MANIFEST_SCHEMA_VERSION;
   bookId: BookId;
@@ -198,6 +250,7 @@ export type PublicationManifest = {
     url?: string;
   };
   appearance?: PublicationAppearance;
+  media?: PublicationMedia;
   tableOfContents: TocEntry[];
   renditions: {
     semantic: SemanticRendition;

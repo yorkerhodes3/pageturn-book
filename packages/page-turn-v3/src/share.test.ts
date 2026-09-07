@@ -40,7 +40,7 @@ describe("PageTurn share policy", () => {
     });
   });
 
-  it("accepts the full capability matrix and source-image gate", () => {
+  it("accepts the policy but does not expose unimplemented source-image export", () => {
     const resolved = resolvePageTurnSharePolicy({
       location: "public",
       quote: { permitted: true, maximumCharacters: 800 },
@@ -55,8 +55,9 @@ describe("PageTurn share policy", () => {
       location: true,
       quote: true,
       visual: true,
-      sourceImages: true,
+      sourceImages: false,
     });
+    expect(resolved.message).toContain("Source images are not included");
   });
 
   it.each([

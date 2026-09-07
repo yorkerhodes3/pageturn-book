@@ -22,7 +22,7 @@ describe("hosted source registry", () => {
       kind: "local-publication",
       target: {
         bookId: "what-is-ethical-ai",
-        editionId: "2026-07",
+        editionId: "2026-09",
       },
     });
     expect(
@@ -33,7 +33,7 @@ describe("hosted source registry", () => {
       ),
     ).toMatchObject({
       kind: "local-publication",
-      target: { bookId: "plurality", editionId: "2026-07" },
+      target: { bookId: "plurality", editionId: "2026-09" },
     });
   });
 

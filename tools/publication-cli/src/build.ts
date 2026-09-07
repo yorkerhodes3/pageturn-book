@@ -2,16 +2,26 @@ import { createHash, randomUUID } from "node:crypto";
 import {
   mkdir,
   readFile,
+  realpath,
   rename,
   rm,
   stat,
   writeFile,
 } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
+import {
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import {
   MANIFEST_SCHEMA_VERSION,
   validatePublicationManifest,
   type PublicationManifest,
+  type PublicationMedia,
   type SemanticLocation,
   type TocEntry,
 } from "@ethical-tech/book-publication-model";
@@ -50,6 +60,7 @@ type CompiledChapter = {
 type BuildPlan = {
   config: BookConfig;
   chapters: CompiledChapter[];
+  mediaAssets: BuildMediaAsset[];
   manifest: PublicationManifest;
   sourceMap: {
     schemaVersion: 1;
@@ -59,13 +70,162 @@ type BuildPlan = {
   };
 };
 
+type BuildMediaAsset = {
+  outputPath: string;
+  integrity: string;
+  bytes: Uint8Array;
+};
+
 type BuildMetadata = {
   schemaVersion: 1;
   artifactHash: string;
 };
 
-function sha256(value: string): string {
+function sha256(value: string | Uint8Array): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function isRemoteMediaSource(value: string): URL | undefined {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function assertPinnedRemoteMediaSource(url: URL, figureId: string): void {
+  const path = url.pathname.split("/").filter(Boolean);
+  const revision =
+    url.hostname === "raw.githubusercontent.com" ? path[2] : undefined;
+  if (!revision || !/^[a-f0-9]{40}$/.test(revision)) {
+    throw new Error(
+      `Media figure ${figureId} must use an immutable remote commit URL`,
+    );
+  }
+}
+
+async function preparePublicationMedia(
+  sourceRoot: string,
+  media: PublicationMedia | undefined,
+): Promise<{
+  media: PublicationMedia | undefined;
+  assets: BuildMediaAsset[];
+}> {
+  if (!media) {
+    return { media: undefined, assets: [] };
+  }
+  const assets: BuildMediaAsset[] = [];
+  const figures = [];
+  for (const figure of media.figures) {
+    const remote = isRemoteMediaSource(figure.src);
+    if (remote) {
+      assertPinnedRemoteMediaSource(remote, figure.id);
+      figures.push(figure);
+      continue;
+    }
+    if (/[?#]/.test(figure.src)) {
+      throw new Error(
+        `Local media figure ${figure.id} must use a fixture-relative file path`,
+      );
+    }
+    let relativeSource: string;
+    try {
+      relativeSource = decodeURIComponent(figure.src);
+    } catch {
+      throw new Error(`Local media figure ${figure.id} has an invalid path`);
+    }
+    const sourcePath = resolveSourceFile(sourceRoot, relativeSource);
+    let canonicalSourcePath: string;
+    let bytes: Uint8Array;
+    try {
+      canonicalSourcePath = await realpath(sourcePath);
+      bytes = await readFile(canonicalSourcePath);
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        throw new Error(
+          `Local media figure ${figure.id} is missing ${relativeSource}`,
+        );
+      }
+      throw error;
+    }
+    const canonicalSourceRoot = await realpath(sourceRoot);
+    const fromSourceRoot = relative(canonicalSourceRoot, canonicalSourcePath);
+    if (
+      fromSourceRoot === ".." ||
+      fromSourceRoot.startsWith(`..${sep}`) ||
+      isAbsolute(fromSourceRoot)
+    ) {
+      throw new Error(
+        `Local media figure ${figure.id} escapes the publication source directory`,
+      );
+    }
+    const integrity = `sha256:${sha256(bytes)}`;
+    if (integrity !== figure.integrity) {
+      throw new Error(
+        `Local media figure ${figure.id} integrity mismatch: declared ${figure.integrity}, measured ${integrity}`,
+      );
+    }
+    const extension = extname(relativeSource).toLowerCase();
+    const safeExtension = /^\.[a-z0-9]+$/.test(extension) ? extension : ".bin";
+    const outputPath = `media/${figure.id}${safeExtension}`;
+    assets.push({ outputPath, integrity, bytes });
+    figures.push({ ...figure, src: outputPath });
+  }
+  return {
+    media: { ...media, figures },
+    assets,
+  };
+}
+
+function selectorMediaForChapter(
+  media: PublicationMedia | undefined,
+  chapterId: string,
+): unknown[] {
+  return (
+    media?.figures
+      .filter((figure) => figure.chapterId === chapterId)
+      .map((figure) => ({
+        id: figure.id,
+        caption: figure.caption,
+        ...(figure.afterAnchor === undefined
+          ? {}
+          : { afterAnchor: figure.afterAnchor }),
+        ...(figure.replaceAnchors === undefined
+          ? {}
+          : { replaceAnchors: figure.replaceAnchors }),
+      })) ?? []
+  );
+}
+
+function validateMediaAnchors(
+  config: BookConfig,
+  chapters: readonly CompiledChapter[],
+): void {
+  const byChapter = new Map(
+    chapters.map((chapter) => [chapter.config.chapterId, chapter]),
+  );
+  for (const figure of config.media?.figures ?? []) {
+    const chapter = byChapter.get(figure.chapterId);
+    if (!chapter) {
+      throw new Error(
+        `Media figure ${figure.id} references missing chapter ${figure.chapterId}`,
+      );
+    }
+    const anchors = new Set(chapter.compiled.anchors);
+    for (const anchor of [
+      ...(figure.afterAnchor === undefined ? [] : [figure.afterAnchor]),
+      ...(figure.replaceAnchors ?? []),
+    ]) {
+      if (!anchors.has(anchor)) {
+        throw new Error(
+          `Media figure ${figure.id} anchor ${anchor} does not exist in chapter ${figure.chapterId}`,
+        );
+      }
+    }
+  }
 }
 
 function escapeHtml(value: string): string {
@@ -212,6 +372,15 @@ function artifactHash(
           options,
         ),
       ),
+      ...(plan.mediaAssets.length === 0
+        ? {}
+        : {
+            mediaAssets: plan.mediaAssets.map((asset) => ({
+              outputPath: asset.outputPath,
+              integrity: asset.integrity,
+              bytes: Buffer.from(asset.bytes).toString("base64"),
+            })),
+          }),
     }),
   );
 }
@@ -219,29 +388,49 @@ function artifactHash(
 async function compileSource(sourceRoot: string): Promise<{
   config: BookConfig;
   chapters: CompiledChapter[];
+  mediaAssets: BuildMediaAsset[];
 }> {
-  const config = await readBookConfig(sourceRoot);
+  const parsedConfig = await readBookConfig(sourceRoot);
+  const preparedMedia = await preparePublicationMedia(
+    sourceRoot,
+    parsedConfig.media,
+  );
+  const config: BookConfig = {
+    ...parsedConfig,
+    ...(preparedMedia.media === undefined
+      ? {}
+      : { media: preparedMedia.media }),
+  };
   const chapters: CompiledChapter[] = [];
 
   for (const chapterConfig of config.chapters) {
     const sourcePath = resolveSourceFile(sourceRoot, chapterConfig.source);
     const markdown = await readFile(sourcePath, "utf8");
     const compiled = await compileMarkdown(markdown, chapterConfig.source);
+    const htmlHash = sha256(compiled.html);
+    const mediaSelectors = selectorMediaForChapter(
+      config.media,
+      chapterConfig.chapterId,
+    );
     chapters.push({
       config: chapterConfig,
       compiled,
-      contentHash: sha256(compiled.html),
+      contentHash:
+        mediaSelectors.length === 0
+          ? htmlHash
+          : sha256(JSON.stringify({ htmlHash, mediaSelectors })),
       bodyHtml: compiled.html,
     });
   }
 
-  return { config, chapters };
+  validateMediaAnchors(config, chapters);
+  return { config, chapters, mediaAssets: preparedMedia.assets };
 }
 
 export async function createBuildPlan(
   sourceRoot: string,
 ): Promise<BuildPlan> {
-  const { config, chapters } = await compileSource(sourceRoot);
+  const { config, chapters, mediaAssets } = await compileSource(sourceRoot);
   const canonical = JSON.stringify({
     bookId: config.bookId,
     editionId: config.editionId,
@@ -253,12 +442,22 @@ export async function createBuildPlan(
     description: config.description,
     frontMatter: config.frontMatter,
     appearance: config.appearance,
+    media: config.media,
     chapters: chapters.map((chapter) => ({
       chapterId: chapter.config.chapterId,
       title: chapter.config.title,
       slug: chapter.config.slug,
       html: chapter.bodyHtml,
     })),
+    ...(mediaAssets.length === 0
+      ? {}
+      : {
+          mediaAssets: mediaAssets.map((asset) => ({
+            outputPath: asset.outputPath,
+            integrity: asset.integrity,
+            bytes: Buffer.from(asset.bytes).toString("base64"),
+          })),
+        }),
     legacyFacsimile: config.legacyFacsimile,
   });
   const contentHash = sha256(canonical);
@@ -302,6 +501,7 @@ export async function createBuildPlan(
     ...(config.appearance === undefined
       ? {}
       : { appearance: config.appearance }),
+    ...(config.media === undefined ? {} : { media: config.media }),
     tableOfContents,
     renditions: {
       semantic: {
@@ -329,7 +529,7 @@ export async function createBuildPlan(
     entries: chapters.flatMap((chapter) => chapter.compiled.sourceMap),
   };
 
-  return { config, chapters, manifest, sourceMap };
+  return { config, chapters, mediaAssets, manifest, sourceMap };
 }
 
 async function pathExists(path: string): Promise<boolean> {
@@ -367,6 +567,12 @@ async function writePlan(
     join(stagingPath, "build-metadata.json"),
     `${JSON.stringify(metadata, null, 2)}\n`,
   );
+
+  for (const asset of plan.mediaAssets) {
+    const assetPath = join(stagingPath, ...asset.outputPath.split("/"));
+    await mkdir(dirname(assetPath), { recursive: true });
+    await writeFile(assetPath, asset.bytes);
+  }
 
   for (const [index, chapter] of plan.chapters.entries()) {
     const chapterPath = join(

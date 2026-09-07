@@ -52,6 +52,16 @@ In unmanaged mode, provide `libraryUrl` to show the Library control and
 `locationUrl` to enable durable sharing and annotation-export links. Controls
 that cannot be correct for the host application remain hidden or disabled.
 
+Optional figures now come from validated publication manifests. Hosted readers
+separate image display from Original, book-toned, monochrome, and duotone
+runtime styling while retaining one neutral asset. Transform and export rights
+fail closed independently; pop-outs preserve Original plus attribution,
+license, source, provenance, integrity, and a safe original link. Local media
+bytes are hash-verified and staged inside immutable editions. `exportPermitted`
+is policy data only: V3-424 exposes no source-image export control and never
+adds source-image bytes to share output. The 26 Plurality figures without
+explicit rights remain ordinary links.
+
 The package boundary and tarball are ready for authorized cross-project use,
 but public registry publication is blocked until the project license is
 approved. Build and install a tarball for authorized use until that release:

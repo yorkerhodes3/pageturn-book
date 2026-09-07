@@ -135,7 +135,7 @@ export function resolvePageTurnSharePolicy(
         ? "This publication does not permit public location sharing."
         : value.quote.permitted
           ? value.visual.permitted
-            ? "This publication permits bounded quote and visual sharing."
+            ? "This publication permits bounded quote and text-only visual sharing. Source images are not included or exported."
             : "This publication permits bounded quote sharing without images."
           : "This publication permits public passage links only.",
   };
@@ -151,8 +151,7 @@ export function pageTurnShareCapabilities(
     location,
     quote,
     visual,
-    sourceImages:
-      visual && resolved.policy.visual.sourceImages === "same-origin-approved",
+    sourceImages: false,
   };
 }
 

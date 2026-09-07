@@ -129,13 +129,25 @@ export type {
   PageTurnTypographyAppearance,
 } from "./publication-types.js";
 export {
+  defaultPageTurnBookMediaStyle,
+  legacyPageTurnBookMediaTreatment,
+  normalizePageTurnBookMediaDisplay,
+  resolvePageTurnBookMediaUrl,
+  resolvePageTurnBookMediaStyle,
+  type PageTurnBookMedia,
+  type PageTurnBookMediaColorSemantics,
+  type PageTurnBookMediaDisplay,
+  type PageTurnBookMediaFigure,
+  type PageTurnBookMediaStyle,
+  type PageTurnBookMediaSource,
+  type PageTurnBookMediaTreatment,
+  type PageTurnBookMediaVisualKind,
+} from "./media.js";
+export {
   attachPageTurnBook,
   type PageTurnBookHandle,
   type PageTurnBookLocation,
   type PageTurnBookManifest,
-  type PageTurnBookMedia,
-  type PageTurnBookMediaFigure,
-  type PageTurnBookMediaTreatment,
   type PageTurnBookOptions,
   type PageTurnSelectionActionDetail,
   type PageTurnShareSelectionActionDetail,

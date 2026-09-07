@@ -15,6 +15,12 @@ import {
   type PublicationCoverAppearance,
   type PublicationFrontMatter,
   type PublicationManifest,
+  type PublicationMedia,
+  type PublicationMediaColorSemantics,
+  type PublicationMediaDisplay,
+  type PublicationMediaFigure,
+  type PublicationMediaStyle,
+  type PublicationMediaVisualKind,
   type SemanticChapter,
   type SemanticLocation,
   type SemanticRendition,
@@ -749,6 +755,388 @@ function parseFrontMatter(
   };
 }
 
+const mediaDisplays = new Set<PublicationMediaDisplay>([
+  "off",
+  "on-page",
+  "pop-out",
+]);
+const mediaStyles = new Set<PublicationMediaStyle>([
+  "original",
+  "book-toned",
+  "monochrome",
+  "duotone",
+]);
+const mediaVisualKinds = new Set<PublicationMediaVisualKind>([
+  "chart",
+  "diagram",
+  "facsimile",
+  "map",
+  "photo",
+  "portrait",
+]);
+const mediaColorSemantics = new Set<PublicationMediaColorSemantics>([
+  "essential",
+  "decorative",
+]);
+const mediaIdentifierPattern =
+  /^[a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?$/;
+const maximumMediaDimension = 16_384;
+
+function parseMediaEnum<T extends string>(
+  validator: Validator,
+  value: unknown,
+  path: string,
+  allowed: ReadonlySet<T>,
+  fallback: T,
+): T {
+  const candidate = validator.string(value, path);
+  if (!allowed.has(candidate as T)) {
+    validator.issue(
+      "MEDIA_ENUM_INVALID",
+      path,
+      `${path} must be one of ${Array.from(allowed).join(", ")}`,
+    );
+    return fallback;
+  }
+  return candidate as T;
+}
+
+function parseMediaUrl(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): string {
+  const candidate = validator.string(value, path);
+  if (/[\u0000-\u001f\u007f\\]/.test(candidate)) {
+    validator.issue(
+      "MEDIA_URL_INVALID",
+      path,
+      `${path} must be a safe HTTP(S) or manifest-relative URL`,
+    );
+    return candidate;
+  }
+  try {
+    const absolute = new URL(candidate);
+    if (
+      (absolute.protocol !== "http:" && absolute.protocol !== "https:") ||
+      absolute.username !== "" ||
+      absolute.password !== ""
+    ) {
+      throw new Error("Unsafe absolute URL");
+    }
+    return candidate;
+  } catch {
+    if (
+      /^[a-z][a-z0-9+.-]*:/i.test(candidate) ||
+      candidate.startsWith("//")
+    ) {
+      validator.issue(
+        "MEDIA_URL_INVALID",
+        path,
+        `${path} must be a safe HTTP(S) or manifest-relative URL`,
+      );
+    } else {
+      try {
+        new URL(candidate, "https://publication.invalid/manifest.json");
+      } catch {
+        validator.issue(
+          "MEDIA_URL_INVALID",
+          path,
+          `${path} must be a safe HTTP(S) or manifest-relative URL`,
+        );
+      }
+    }
+
+    return candidate;
+  }
+}
+
+function immutableRemoteMediaSource(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return true;
+  }
+  const path = url.pathname.split("/").filter(Boolean);
+  return (
+    url.hostname === "raw.githubusercontent.com" &&
+    /^[a-f0-9]{40}$/.test(path[2] ?? "")
+  );
+}
+
+function parseMediaFigure(
+  validator: Validator,
+  value: unknown,
+  path: string,
+): PublicationMediaFigure {
+  const record = validator.record(value, path);
+  const id = validator.string(record.id, `${path}.id`);
+  if (!mediaIdentifierPattern.test(id)) {
+    validator.issue(
+      "MEDIA_ID_INVALID",
+      `${path}.id`,
+      "Media figure IDs must use lowercase letters, numbers, and internal hyphens",
+    );
+  }
+  const afterAnchor = validator.optionalString(record, "afterAnchor", path);
+  const replaceAnchors =
+    record.replaceAnchors === undefined
+      ? undefined
+      : validator
+          .array(record.replaceAnchors, `${path}.replaceAnchors`)
+          .map((anchor, index) =>
+            validator.string(anchor, `${path}.replaceAnchors[${index}]`),
+          );
+  if (
+    (afterAnchor === undefined) ===
+    (replaceAnchors === undefined || replaceAnchors.length === 0)
+  ) {
+    validator.issue(
+      "MEDIA_PLACEMENT_INVALID",
+      path,
+      "A media figure must have either afterAnchor or a non-empty replaceAnchors array",
+    );
+  }
+  if (replaceAnchors && new Set(replaceAnchors).size !== replaceAnchors.length) {
+    validator.issue(
+      "MEDIA_ANCHOR_DUPLICATE",
+      `${path}.replaceAnchors`,
+      "A media figure cannot repeat a replacement anchor",
+    );
+  }
+  const width = validator.integer(record.width, `${path}.width`, 1);
+  const height = validator.integer(record.height, `${path}.height`, 1);
+  if (width > maximumMediaDimension || height > maximumMediaDimension) {
+    validator.issue(
+      "MEDIA_DIMENSION_RANGE",
+      path,
+      `Media dimensions must not exceed ${maximumMediaDimension} pixels`,
+    );
+  }
+  const originalSrc =
+    record.originalSrc === undefined
+      ? undefined
+      : parseMediaUrl(validator, record.originalSrc, `${path}.originalSrc`);
+  const integrity = validator.string(record.integrity, `${path}.integrity`);
+  if (!/^sha256:[a-f0-9]{64}$/.test(integrity)) {
+    validator.issue(
+      "MEDIA_INTEGRITY_INVALID",
+      `${path}.integrity`,
+      "Media integrity must use sha256:<64 lowercase hex>",
+    );
+  }
+  const style =
+    record.style === undefined
+      ? undefined
+      : parseMediaEnum(
+          validator,
+          record.style,
+          `${path}.style`,
+          mediaStyles,
+          "original",
+        );
+  const visualKind =
+    record.visualKind === undefined
+      ? undefined
+      : parseMediaEnum(
+          validator,
+          record.visualKind,
+          `${path}.visualKind`,
+          mediaVisualKinds,
+          "diagram",
+        );
+  const colorSemantics =
+    record.colorSemantics === undefined
+      ? undefined
+      : parseMediaEnum(
+          validator,
+          record.colorSemantics,
+          `${path}.colorSemantics`,
+          mediaColorSemantics,
+          "essential",
+        );
+  const transformPermitted =
+    record.transformPermitted === undefined
+      ? undefined
+      : validator.boolean(
+          record.transformPermitted,
+          `${path}.transformPermitted`,
+        );
+  const exportPermitted =
+    record.exportPermitted === undefined
+      ? undefined
+      : validator.boolean(record.exportPermitted, `${path}.exportPermitted`);
+  const rightsRecord = validator.record(record.rights, `${path}.rights`);
+  const rights: PublicationMediaFigure["rights"] = {
+    license: validator.string(
+      rightsRecord.license,
+      `${path}.rights.license`,
+    ),
+    attribution: validator.string(
+      rightsRecord.attribution,
+      `${path}.rights.attribution`,
+    ),
+  };
+  const source = validator.string(record.source, `${path}.source`);
+  const provenance = validator.string(record.provenance, `${path}.provenance`);
+  const reviewedAt = validator.string(record.reviewedAt, `${path}.reviewedAt`);
+  const reviewedAtValid =
+    /^\d{4}-\d{2}-\d{2}$/.test(reviewedAt) &&
+    !Number.isNaN(Date.parse(`${reviewedAt}T00:00:00Z`)) &&
+    new Date(`${reviewedAt}T00:00:00Z`).toISOString().slice(0, 10) ===
+      reviewedAt;
+  if (
+    !reviewedAtValid
+  ) {
+    validator.issue(
+      "MEDIA_REVIEW_DATE_INVALID",
+      `${path}.reviewedAt`,
+      "reviewedAt must be an ISO calendar date",
+    );
+  }
+  if (
+    (transformPermitted === true || exportPermitted === true) &&
+    (rights.license.trim() === "" ||
+      rights.attribution.trim() === "" ||
+      source.trim() === "" ||
+      provenance.trim() === "" ||
+      !reviewedAtValid)
+  ) {
+    validator.issue(
+      "MEDIA_POLICY_METADATA_INCOMPLETE",
+      path,
+      "Media transform/export permission requires complete rights, source, provenance, and review metadata",
+    );
+  }
+  const src = parseMediaUrl(validator, record.src, `${path}.src`);
+  if (!immutableRemoteMediaSource(src)) {
+    validator.issue(
+      "MEDIA_SOURCE_MUTABLE",
+      `${path}.src`,
+      "Remote media src must identify an immutable commit",
+    );
+  }
+  return {
+    id,
+    chapterId: parseIdentifier(
+      validator,
+      record.chapterId,
+      `${path}.chapterId`,
+      toChapterId,
+    ),
+    ...(afterAnchor === undefined ? {} : { afterAnchor }),
+    ...(replaceAnchors === undefined ? {} : { replaceAnchors }),
+    src,
+    integrity,
+    ...(originalSrc === undefined ? {} : { originalSrc }),
+    width,
+    height,
+    alt: validator.string(record.alt, `${path}.alt`),
+    caption: validator.string(record.caption, `${path}.caption`),
+    ...(style === undefined ? {} : { style }),
+    ...(visualKind === undefined ? {} : { visualKind }),
+    ...(colorSemantics === undefined ? {} : { colorSemantics }),
+    ...(transformPermitted === undefined ? {} : { transformPermitted }),
+    ...(exportPermitted === undefined ? {} : { exportPermitted }),
+    rights,
+    source,
+    provenance,
+    reviewedAt,
+  };
+}
+
+function parseMedia(
+  validator: Validator,
+  value: unknown,
+  path: string,
+  chapterIds?: ReadonlySet<string>,
+): PublicationMedia {
+  const record = validator.record(value, path);
+  const defaultDisplay = parseMediaEnum(
+    validator,
+    record.defaultDisplay,
+    `${path}.defaultDisplay`,
+    mediaDisplays,
+    "off",
+  );
+  const defaultStyle =
+    record.defaultStyle === undefined
+      ? undefined
+      : parseMediaEnum(
+          validator,
+          record.defaultStyle,
+          `${path}.defaultStyle`,
+          mediaStyles,
+          "original",
+        );
+  const figures = validator
+    .array(record.figures, `${path}.figures`)
+    .map((figure, index) =>
+      parseMediaFigure(validator, figure, `${path}.figures[${index}]`),
+    );
+  if (figures.length === 0) {
+    validator.issue(
+      "MEDIA_FIGURES_EMPTY",
+      `${path}.figures`,
+      "Publication media must contain at least one figure",
+    );
+  }
+  const ids = new Set<string>();
+  const anchors = new Set<string>();
+  figures.forEach((figure, index) => {
+    const figurePath = `${path}.figures[${index}]`;
+    if (ids.has(figure.id)) {
+      validator.issue(
+        "MEDIA_ID_DUPLICATE",
+        `${figurePath}.id`,
+        `Media figure ID duplicates ${figure.id}`,
+      );
+    }
+    ids.add(figure.id);
+    for (const anchor of [
+      ...(figure.afterAnchor ? [figure.afterAnchor] : []),
+      ...(figure.replaceAnchors ?? []),
+    ]) {
+      const placement = `${figure.chapterId}\u0000${anchor}`;
+      if (anchors.has(placement)) {
+        validator.issue(
+          "MEDIA_ANCHOR_DUPLICATE",
+          figurePath,
+          `Media placement anchor duplicates ${anchor}`,
+        );
+      }
+      anchors.add(placement);
+    }
+    if (chapterIds && !chapterIds.has(figure.chapterId)) {
+      validator.issue(
+        "MEDIA_CHAPTER_UNKNOWN",
+        `${figurePath}.chapterId`,
+        `Media figure references unknown chapter ${figure.chapterId}`,
+      );
+    }
+  });
+  return {
+    defaultDisplay,
+    ...(defaultStyle === undefined ? {} : { defaultStyle }),
+    figures,
+  };
+}
+
+export function validatePublicationMedia(
+  value: unknown,
+  chapterIds?: readonly string[],
+): PublicationMedia {
+  const validator = new Validator();
+  const media = parseMedia(
+    validator,
+    value,
+    "$.media",
+    chapterIds === undefined ? undefined : new Set(chapterIds),
+  );
+  return validator.finish(media);
+}
+
 function parseLanguage(
   validator: Validator,
   value: unknown,
@@ -862,6 +1250,15 @@ export function validatePublicationManifest(
     record.appearance === undefined
       ? undefined
       : parseAppearance(validator, record.appearance, "$.appearance");
+  const media =
+    record.media === undefined
+      ? undefined
+      : parseMedia(
+          validator,
+          record.media,
+          "$.media",
+          new Set(semantic.chapters.map(({ chapterId }) => chapterId)),
+        );
 
   const manifest: PublicationManifest = {
     schemaVersion: MANIFEST_SCHEMA_VERSION,
@@ -882,6 +1279,7 @@ export function validatePublicationManifest(
     ...(frontMatter === undefined ? {} : { frontMatter }),
     ...(license === undefined ? {} : { license }),
     ...(appearance === undefined ? {} : { appearance }),
+    ...(media === undefined ? {} : { media }),
     tableOfContents: validator
       .array(record.tableOfContents, "$.tableOfContents")
       .map((entry, index) =>
@@ -902,13 +1300,17 @@ export function validatePublicationManifest(
   return validator.finish(manifest);
 }
 
-function resolveUrl(value: string, baseUrl: URL): string {
+function resolveUrl(
+  value: string,
+  baseUrl: URL,
+  path = "$.renditions",
+): string {
   const resolved = new URL(value, baseUrl);
   if (!["http:", "https:", "file:"].includes(resolved.protocol)) {
     throw new PublicationValidationError([
       {
         code: "URL_SCHEME_UNSAFE",
-        path: "$.renditions",
+        path,
         message: `Unsupported publication URL scheme: ${resolved.protocol}`,
       },
     ]);
@@ -969,9 +1371,33 @@ export function resolvePublicationManifestUrls(
                 ),
               }),
         };
+  const media =
+    manifest.media === undefined
+      ? undefined
+      : {
+          ...manifest.media,
+          figures: manifest.media.figures.map((figure, index) => ({
+            ...figure,
+            src: resolveUrl(
+              figure.src,
+              manifestUrl,
+              `$.media.figures[${index}].src`,
+            ),
+            ...(figure.originalSrc === undefined
+              ? {}
+              : {
+                  originalSrc: resolveUrl(
+                    figure.originalSrc,
+                    manifestUrl,
+                    `$.media.figures[${index}].originalSrc`,
+                  ),
+                }),
+          })),
+        };
 
   return {
     ...manifest,
+    ...(media === undefined ? {} : { media }),
     renditions: {
       semantic: resolvedSemantic,
       ...(facsimile === undefined ? {} : { facsimile }),

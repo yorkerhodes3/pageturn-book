@@ -5,7 +5,6 @@ import {
 import "@ethical-tech/pageturn-book/styles.css";
 import "./v3-demo-host.css";
 import { catalogBook } from "./library-catalog.js";
-import { publicationMedia } from "./v3-media.js";
 import {
   hostedReadingUrl,
   hostedSourceResolver,
@@ -16,7 +15,6 @@ const bookId = query.get("book") ?? "what-is-ethical-ai";
 const chapterId = query.get("chapter");
 const root = document.querySelector<HTMLElement>("#page-turn-book");
 const book = catalogBook(bookId);
-const media = publicationMedia(bookId);
 
 if (!root) {
   throw new Error("The PageTurn V3 route is missing its SDK mount point");
@@ -38,7 +36,6 @@ const reader: PageTurnBookHandle = createPageTurnBook({
   ...(chapterId ? { chapterId } : {}),
   chaptersStartOnRight: book.chaptersStartOnRight ?? true,
   appearance: book.appearance,
-  ...(media ? { media } : {}),
   libraryUrl: new URL("../shelf/", globalThis.location.href),
   locationUrl: hostedReadingUrl,
   sourceResolver: hostedSourceResolver,

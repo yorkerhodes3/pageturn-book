@@ -1,7 +1,7 @@
 # GENERATED from the pinned Ethical Tech CoLab website source.
 # Source: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/src/content/publications/what-is-ethical-ai.ts
 bookId: what-is-ethical-ai
-editionId: 2026-07
+editionId: 2026-09
 title: "What Is Ethical AI?"
 description: "Ethics, Ethical Technology, and Ethical International Relations for the Age of Intelligent Machines"
 authors:
@@ -31,6 +31,73 @@ appearance:
     hubs: 5
     pageCount: 46
     shelfLabel: "WHAT IS ETHICAL AI?"
+media:
+  defaultDisplay: pop-out
+  defaultStyle: book-toned
+  figures:
+    - id: ai-ethics-frameworks
+      chapterId: responsible-ai
+      afterAnchor: list-ieee-ethically-aligned-design-the-engineering-pr-41441af64f
+      src: media/ai-ethics-frameworks.webp
+      integrity: sha256:00ac05a2f0ae7b584530de2970e6ade9003a158c87db086c981563e1347ea976
+      originalSrc: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/what-is-ethical-ai/report.pdf
+      width: 1656
+      height: 1418
+      alt: "Circular diagram of ten landmark resources for building an AI ethics framework, including IEEE, EU, Montreal, Asilomar, Partnership on AI, OECD, Toronto, AI Now, FAT/ML, and Berkman Klein resources."
+      caption: "Figure 4. Ten landmark resources for building an AI ethics framework."
+      style: original
+      visualKind: diagram
+      colorSemantics: essential
+      transformPermitted: false
+      exportPermitted: false
+      rights:
+        license: "Copyright; no public redistribution license"
+        attribution: "Ethical Tech CoLab"
+      source: "What Is Ethical AI? designed publication, PDF page 17"
+      provenance: "Lossless WebP extracted without resizing from PDF SHA-256 a1c4f2e86912e2a49952b481d9b52e53b71adbb29a14d12572c0e7fde28b4ca2; derivative SHA-256 00ac05a2f0ae7b584530de2970e6ade9003a158c87db086c981563e1347ea976."
+      reviewedAt: 2026-09-06
+    - id: colab-portfolio-maturity
+      chapterId: colab
+      afterAnchor: p-each-project-is-best-understood-through-three-le-e0fb4bfc09
+      src: media/colab-portfolio-maturity.webp
+      integrity: sha256:d330b6dc000b92ecea59b6d9a6769f4d9bdd1f0acf477e4de8b102c59aee91cb
+      originalSrc: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/what-is-ethical-ai/report.pdf
+      width: 1778
+      height: 895
+      alt: "Horizontal bar chart showing the July 2026 maturity of ten Ethical Tech CoLab projects, from proposed through built and validated."
+      caption: "Figure 1. Maturity of the Ethical Tech CoLab portfolio, July 2026."
+      style: original
+      visualKind: chart
+      colorSemantics: essential
+      transformPermitted: false
+      exportPermitted: false
+      rights:
+        license: "Copyright; no public redistribution license"
+        attribution: "Ethical Tech CoLab"
+      source: "What Is Ethical AI? designed publication, PDF page 36"
+      provenance: "Lossless WebP extracted without resizing from PDF SHA-256 a1c4f2e86912e2a49952b481d9b52e53b71adbb29a14d12572c0e7fde28b4ca2; derivative SHA-256 d330b6dc000b92ecea59b6d9a6769f4d9bdd1f0acf477e4de8b102c59aee91cb."
+      reviewedAt: 2026-09-06
+    - id: colab-five-pillars
+      chapterId: colab
+      afterAnchor: list-ethics-before-algorithms-the-colab-treats-the-cu-6e7ce168d6
+      src: media/colab-five-pillars.webp
+      integrity: sha256:f660ec086d72fda9055be0b8823b2ceb9c9960a7e3f9c8df8ed35ce53313bbb8
+      originalSrc: https://raw.githubusercontent.com/Ethical-Tech-CoLab/website/b456e8e137a0b6ce9a51799b71c6091f5241b5d7/public/publications/what-is-ethical-ai/report.pdf
+      width: 1791
+      height: 1008
+      alt: "Diagram of five pillars for legitimate humanitarian AI: humanity and do no harm, data minimization and privacy, real consent or none, transparency and honest uncertainty, and accountability and local governance, resting on international human rights law and humanitarian principles."
+      caption: "Figure 4. The five pillars of ethics of the Ethical Tech CoLab."
+      style: original
+      visualKind: diagram
+      colorSemantics: essential
+      transformPermitted: false
+      exportPermitted: false
+      rights:
+        license: "Copyright; no public redistribution license"
+        attribution: "Ethical Tech CoLab"
+      source: "What Is Ethical AI? designed publication, PDF page 37"
+      provenance: "Lossless WebP extracted without resizing from PDF SHA-256 a1c4f2e86912e2a49952b481d9b52e53b71adbb29a14d12572c0e7fde28b4ca2; derivative SHA-256 f660ec086d72fda9055be0b8823b2ceb9c9960a7e3f9c8df8ed35ce53313bbb8."
+      reviewedAt: 2026-09-06
 chapters:
   - id: executive-summary
     title: "Executive Summary"

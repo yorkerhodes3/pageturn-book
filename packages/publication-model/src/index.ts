@@ -22,6 +22,13 @@ export type {
   PublicationCoverAppearance,
   PublicationFrontMatter,
   PublicationManifest,
+  PublicationMedia,
+  PublicationMediaColorSemantics,
+  PublicationMediaDisplay,
+  PublicationMediaFigure,
+  PublicationMediaRights,
+  PublicationMediaStyle,
+  PublicationMediaVisualKind,
   ReaderLocation,
   SemanticChapter,
   SemanticLocation,
@@ -33,6 +40,7 @@ export type {
 export {
   PublicationValidationError,
   resolvePublicationManifestUrls,
+  validatePublicationMedia,
   validatePublicationManifest,
 } from "./validation.js";
 

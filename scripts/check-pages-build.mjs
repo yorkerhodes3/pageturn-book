@@ -15,13 +15,14 @@ const required = [
   "book/demo-book/2026-08/build-metadata.json",
   "book/demo-book/2026-08/chapters/introduction/index.html",
   "book/demo-book/2026-08/chapters/principles/index.html",
-  "book/what-is-ethical-ai/2026-07/manifest.json",
-  "book/what-is-ethical-ai/2026-07/chapters/executive-summary/index.html",
-  "book/what-is-ethical-ai/2026-07/chapters/conclusion/index.html",
+  "book/what-is-ethical-ai/2026-09/manifest.json",
+  "book/what-is-ethical-ai/2026-09/media/ai-ethics-frameworks.webp",
+  "book/what-is-ethical-ai/2026-09/chapters/executive-summary/index.html",
+  "book/what-is-ethical-ai/2026-09/chapters/conclusion/index.html",
   "book/ai-models-research/2026-08/manifest.json",
   "book/cyber-dictionary/2026-08/manifest.json",
-  "book/plurality/2026-07/manifest.json",
-  "book/plurality/2026-07/chapters/1/index.html",
+  "book/plurality/2026-09/manifest.json",
+  "book/plurality/2026-09/chapters/1/index.html",
 ];
 
 for (const path of required) {

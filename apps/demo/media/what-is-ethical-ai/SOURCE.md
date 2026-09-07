@@ -19,5 +19,10 @@ Tech CoLab publication PDF:
 | `colab-five-pillars.webp` | 37 | 1791 x 1008 | `f660ec086d72fda9055be0b8823b2ceb9c9960a7e3f9c8df8ed35ce53313bbb8` |
 
 The PDF embeds these figures as PNG images. They were decoded and re-encoded
-as lossless WebP without resizing. The V3 reader does not request them when
-media is Off or Pop-out; Pop-out fetches a figure only after activation.
+as lossless WebP without resizing. Each WebP is the single neutral technical
+derivative; runtime styles do not create or request more rasters. The V3 reader
+serves verified copies from the `2026-09` edition's `media/` directory. It does
+not request them when media is Off or Pop-out; Pop-out fetches a figure only
+after activation. Public redistribution, transformation, and standalone
+export permission are not asserted, so all three fail closed to Original and
+no media export.

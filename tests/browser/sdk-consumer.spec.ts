@@ -94,3 +94,42 @@ test("retains an SDK appearance selected before ready", async ({ page }) => {
     /Inter|ui-sans-serif|system-ui/,
   );
 });
+
+test("resolves host media from the document base captured at attach time", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(route("/sdk/?hostMedia=relative"));
+
+  await expect(page.locator("#page-turn-book")).toHaveAttribute(
+    "data-sdk-ready",
+    "true",
+  );
+  const image = page.locator(
+    '[data-v3-media-id="host-relative-figure"] img',
+  ).first();
+  const next = page.getByRole("button", { name: "Next spread" });
+  for (let turn = 0; turn < 3 && (await image.count()) === 0; turn += 1) {
+    await next.click();
+  }
+  await expect(image).toHaveAttribute(
+    "data-v3-media-src",
+    /\/book\/what-is-ethical-ai\/2026-09\/media\/ai-ethics-frameworks\.webp$/,
+  );
+  await expect(image).not.toHaveAttribute(
+    "data-v3-media-src",
+    /changed-after-attach/,
+  );
+});
+
+test("fails when any host replacement anchor is missing", async ({ page }) => {
+  await page.goto(route("/sdk/?hostMedia=partial"));
+
+  await expect(page.locator("#page-turn-book")).toHaveAttribute(
+    "data-sdk-ready",
+    "false",
+  );
+  await expect(page.locator("[data-v3-status]")).toContainText(
+    "missing-host-anchor",
+  );
+});

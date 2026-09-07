@@ -52,14 +52,29 @@ const shellMarkup = `
             aria-label="Increase book text size"
           >A+</button>
         </div>
-        <label class="v3-media-picker" data-v3-media-picker hidden>
-          <span>Images</span>
-          <select data-v3-media-treatment aria-label="Image treatment">
-            <option value="off">Off</option>
-            <option value="on">On page</option>
-            <option value="popout">Pop-out</option>
-          </select>
-        </label>
+        <div class="v3-media-picker" data-v3-media-picker hidden>
+          <label>
+            <span>Display</span>
+            <select
+              data-v3-media-display
+              data-v3-media-treatment
+              aria-label="Image display"
+            >
+              <option value="off">Off</option>
+              <option value="on">On page</option>
+              <option value="popout">Pop-out</option>
+            </select>
+          </label>
+          <label>
+            <span>Style</span>
+            <select data-v3-media-style aria-label="Image style">
+              <option value="original">Original</option>
+              <option value="book-toned">Book-toned</option>
+              <option value="monochrome">Monochrome</option>
+              <option value="duotone">Duotone</option>
+            </select>
+          </label>
+        </div>
         <button
           type="button"
           class="v3-share"
@@ -248,6 +263,34 @@ const shellMarkup = `
         <img data-v3-media-dialog-image alt="">
         <figcaption data-v3-media-dialog-caption></figcaption>
       </figure>
+      <dl class="v3-media-provenance">
+        <div>
+          <dt>Attribution</dt>
+          <dd data-v3-media-dialog-attribution></dd>
+        </div>
+        <div>
+          <dt>License</dt>
+          <dd data-v3-media-dialog-license></dd>
+        </div>
+        <div>
+          <dt>Source</dt>
+          <dd data-v3-media-dialog-source></dd>
+        </div>
+        <div>
+          <dt>Provenance</dt>
+          <dd data-v3-media-dialog-provenance></dd>
+        </div>
+        <div>
+          <dt>Integrity</dt>
+          <dd data-v3-media-dialog-integrity></dd>
+        </div>
+      </dl>
+      <a
+        data-v3-media-dialog-original
+        target="_blank"
+        rel="noopener"
+        referrerpolicy="no-referrer"
+      >View original</a>
     </div>
   </dialog>
 

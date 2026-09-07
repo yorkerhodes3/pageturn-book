@@ -121,6 +121,7 @@ The output is immutable and follows:
 ```text
 {outputRoot}/{bookId}/{editionId}/manifest.json
 {outputRoot}/{bookId}/{editionId}/chapters/{chapterId}/index.html
+{outputRoot}/{bookId}/{editionId}/media/{figureId}.{extension}
 ```
 
 Serve the manifest, chapters, SDK JavaScript, and SDK CSS from the same origin
@@ -143,17 +144,32 @@ const reader = createPageTurnBook({
     },
   },
   media: {
-    defaultTreatment: "popout",
+    defaultDisplay: "pop-out",
+    defaultStyle: "book-toned",
     figures: [
       {
         id: "system-map",
         chapterId: "introduction",
         afterAnchor: "why-this-matters",
         src: "/books/my-book/media/system-map.webp",
+        integrity:
+          "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        originalSrc: "https://example.org/original-system-map.png",
         width: 1600,
         height: 900,
         alt: "System map showing the publication's primary relationships.",
-        caption: "Figure 1. System map. CC BY 4.0.",
+        caption: "Figure 1. System map.",
+        visualKind: "diagram",
+        colorSemantics: "essential",
+        transformPermitted: true,
+        exportPermitted: false,
+        rights: {
+          license: "CC BY 4.0",
+          attribution: "Example Research Group",
+        },
+        source: "Example archive",
+        provenance: "Reviewed source record",
+        reviewedAt: "2026-09-06",
       },
     ],
   },
@@ -186,12 +202,34 @@ const reader = createPageTurnBook({
 });
 ```
 
-Media records require explicit dimensions, alternative text, captions, and
-project-reviewed rights. The available treatments are `off`, `on`, and
-`popout`. A dedicated PageTurn route can set `urlMode: "managed"` instead of
-`locationUrl` when PageTurn owns its book/chapter/hash browser history. It can
-also set `keyboardScope: "document"` for full-page arrow-key navigation;
-embedded readers leave keyboard events outside their root untouched.
+Validated publication manifests are the preferred media source. Explicit
+`PageTurnBookOptions.media` remains a host override. Display (`off`, `on-page`,
+`pop-out`) and runtime style (`original`, `book-toned`, `monochrome`,
+`duotone`) are independent; legacy `off`, `on`, `popout`,
+`defaultTreatment`, and `mediaTreatment` inputs normalize explicitly.
+Non-original styles require both `transformPermitted: true` and complete rights
+metadata. Color-essential figures remain Original unless the user explicitly
+previews a style, and pop-outs always show Original. Styling uses the one
+semantic `<img>` and active paper/ink/accent variables; it creates no
+style-specific raster asset. The reader provides caption, attribution, license,
+provenance, and a safe **View original** action. Source-image export is not
+exposed by the SDK. `exportPermitted` records data policy only: it does not add
+an export/download control and does not put source-image URLs or bytes into
+share payloads or visual quote rendering, even when a host share policy says
+`sourceImages: "same-origin-approved"`.
+
+Manifest media records require explicit dimensions, alternative text, captions,
+placement, `sha256:<64 lowercase hex>` integrity, rights, source, provenance,
+and review date. Local publication builds verify and stage the declared bytes
+inside the edition. Remote figure URLs must be immutable commit URLs. Legacy
+host-option media may omit governance fields, but then transformation remains
+fail-closed and export remains unavailable. Manifest-relative media resolves
+from the manifest URL; explicit host-option media resolves from the document
+base captured when the reader attaches. A dedicated PageTurn route can set
+`urlMode: "managed"` instead of `locationUrl` when PageTurn owns its
+book/chapter/hash browser history. It can also set
+`keyboardScope: "document"` for full-page arrow-key navigation; embedded
+readers leave keyboard events outside their root untouched.
 
 ### Reviewed source cards
 
@@ -368,7 +406,9 @@ characters, 240 visual context characters, and `sourceImages: "none"`.
 The renderer is imported only after Share activation. It receives public
 semantic text and resolved appearance values rather than inspecting or
 screenshotting the reader DOM. It does not upload, sample cross-origin pixels,
-or include toolbars, annotations, private highlights, or notes. PNG output is
+or accept source-image URLs/bytes—even if the policy value is
+`same-origin-approved`. `exportPermitted` does not change that boundary. It
+does not include toolbars, annotations, private highlights, or notes. PNG output is
 bounded to a 1,600 px longest edge, 2.1 MP, 4 MB encoded, and 32 MB estimated
 canvas memory. It waits briefly for all configured font families, caches that
 decision for repeatable rendering, and uses stable generic fallbacks when they

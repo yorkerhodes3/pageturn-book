@@ -20,7 +20,7 @@ export const HOSTED_SOURCE_RECORDS: readonly PageTurnSourceRecord[] = [
     localReading: {
       kind: "full-edition",
       bookId: "what-is-ethical-ai",
-      editionId: "2026-07",
+      editionId: "2026-09",
       chapterId: "executive-summary",
       anchor: "executive-summary",
       shelfHref: "../shelf/",
@@ -54,7 +54,7 @@ export const HOSTED_SOURCE_RECORDS: readonly PageTurnSourceRecord[] = [
     localReading: {
       kind: "full-edition",
       bookId: "plurality",
-      editionId: "2026-07",
+      editionId: "2026-09",
       chapterId: "1",
       anchor: "1",
       shelfHref: "../shelf/",
@@ -90,7 +90,7 @@ export const HOSTED_SOURCE_RECORDS: readonly PageTurnSourceRecord[] = [
     localReading: {
       kind: "full-edition",
       bookId: "plurality",
-      editionId: "2026-07",
+      editionId: "2026-09",
       chapterId: "1",
       anchor: "1",
       shelfHref: "../shelf/",

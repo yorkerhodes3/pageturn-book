@@ -171,17 +171,32 @@ These outputs are substantially smaller and more capable than facsimiles:
 - no implicit per-page image transfer;
 - bounded attached page faces.
 
-The V3 media prototype separately maps three lossless figures extracted from
-the pinned *What Is Ethical AI?* PDF. `off` makes no image request, `popout`
-requests only the activated figure, and `on` defers the image until its semantic
-page is reached. This demo catalog is not yet the production ingest boundary;
-V3-404 moves figure metadata, provenance, dimensions, and responsive variants
-into the validated publication manifest/build pipeline.
+The validated publication manifest now maps three lossless figures extracted
+from the pinned *What Is Ethical AI?* PDF. `off` makes no image request,
+`pop-out` requests only the activated figure, and `on-page` defers the image
+until its semantic page is reached. The CLI validates placement, dimensions,
+rights, provenance, review status, integrity, style policy, and URLs. It
+hash-verifies local bytes, stages them below the immutable edition, and includes
+both digests and bytes in deterministic canonical and artifact identity. The
+former demo-only catalog has been removed.
+
+Each local WebP is one neutral technical derivative: bounded intrinsic
+dimensions, normalized orientation/profile, modern lossless encoding, and a
+recorded source/derivative hash. Original, book-toned, monochrome, and duotone
+are CSS runtime treatments; no artistic raster variants are generated.
+Measurement-driven responsive variants and library-wide figure mapping remain
+open V3-404 work. The media-bearing semantic fixtures use edition `2026-09`.
+Each chapter selector identity hashes its semantic HTML together with that
+chapter's ordered figure IDs, captions, and placement anchors. It is not a raw
+HTML hash: caption or placement drift changes the affected chapter identity,
+while local media bytes and their declared digests participate in publication
+and artifact identity.
 
 Plurality retains all 37 pinned figure links. Eleven whose captions explicitly
 state CC, public-domain, or commercial-use rights are mapped into the same media
-treatments without copying the remote image assets. The other 26 remain links
-until V3-406 supplies adequate rights metadata. The importer also rewrites 99
+treatments without copying the remote image assets; each mapped commit URL has a
+measured SHA-256 declaration. The other 26 remain links until V3-406 supplies
+adequate rights metadata. The importer also rewrites 99
 available chapter links to local semantic routes and emits 585 return targets
 for 586 note callouts.
 

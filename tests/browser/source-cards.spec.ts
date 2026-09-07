@@ -37,12 +37,12 @@ test("hosted known source opens a no-fetch local-first card and exact edition", 
   await expect(dialog).toContainText("Available in the PageTurn Library");
   await expect(dialog).toContainText("plurality.net");
   await expect(dialog).toContainText("Complete local edition");
-  await expect(dialog).toContainText("2026-07");
+  await expect(dialog).toContainText("2026-09");
   const read = dialog.getByRole("link", { name: "Read in PageTurn" });
   await expect(read).toBeFocused();
   await expect(read).toHaveAttribute(
     "href",
-    /\/v3\/\?.*book=plurality.*edition=2026-07.*chapter=1#1$/,
+    /\/v3\/\?.*book=plurality.*edition=2026-09.*chapter=1#1$/,
   );
   await expect(
     dialog.getByRole("link", { name: /Open original source/ }),
@@ -54,7 +54,7 @@ test("hosted known source opens a no-fetch local-first card and exact edition", 
 
   await read.click();
   await expect(page).toHaveURL(/book=plurality/);
-  await expect(page).toHaveURL(/edition=2026-07/);
+  await expect(page).toHaveURL(/edition=2026-09/);
   await expect(page).toHaveURL(/chapter=1#1$/);
 });
 

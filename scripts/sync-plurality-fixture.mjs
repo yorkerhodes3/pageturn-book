@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
 const revision = "86158859464aee75633acd854c656928121a7fd8";
@@ -6,6 +6,13 @@ const repository = "pluralitybook/plurality";
 const sourceRoot =
   `https://raw.githubusercontent.com/${repository}/${revision}`;
 const outputRoot = resolve("apps/fixtures/plurality");
+const currentConfig = await readFile(resolve(outputRoot, "book.yml"), "utf8");
+const reviewedMediaBlock = /^media:\r?\n[\s\S]*?(?=^chapters:)/m.exec(
+  currentConfig,
+)?.[0];
+if (!reviewedMediaBlock) {
+  throw new Error("Reviewed Plurality media metadata is missing");
+}
 const chapterPattern = /^([1-7](?:-\d+)?)-(.*)\.md$/;
 
 function yaml(value) {
@@ -295,7 +302,7 @@ if (chapters.length !== 30) {
   throw new Error(`Expected 30 Plurality chapters, found ${chapters.length}`);
 }
 
-await rm(outputRoot, { recursive: true, force: true });
+await rm(join(outputRoot, "chapters"), { recursive: true, force: true });
 await mkdir(join(outputRoot, "chapters"), { recursive: true });
 let noteLinks = 0;
 let noteDefinitions = 0;
@@ -366,7 +373,7 @@ await writeFile(
   [
     `# Generated from https://github.com/${repository}/tree/${revision}.`,
     "bookId: plurality",
-    "editionId: 2026-07",
+    "editionId: 2026-09",
     'title: "Plurality"',
     'description: "The Future of Collaborative Technology and Democracy"',
     "authors:",
@@ -395,6 +402,7 @@ await writeFile(
     "    hubs: 5",
     "    pageCount: 586",
     '    shelfLabel: "PLURALITY"',
+    reviewedMediaBlock.trimEnd(),
     "chapters:",
     ...chapters.flatMap((chapter) => [
       `  - id: ${yaml(chapter.id)}`,

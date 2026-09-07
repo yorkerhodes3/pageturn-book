@@ -1044,6 +1044,7 @@ Publication defaults and per-figure overrides are supported:
 type PageTurnBookMediaFigure = Readonly<{
   // Existing fields omitted
   originalSrc?: string;
+  integrity?: string;
   style?: PageTurnBookMediaStyle;
   visualKind?:
     | "chart"
@@ -1103,15 +1104,18 @@ No style-specific raster variants are generated.
   `transformPermitted: true` forces Original.
 - Transformation and export permissions are independent:
   - styling requires `transformPermitted: true`;
-  - sharing or downloading the unchanged original requires
-    `exportPermitted: true`;
+  - `exportPermitted` records whether a future export could be authorized, but
+    the V3-424 reader implements no source-image export/download control;
   - cropping, recoloring, or including an image in a book clipping requires
     both values to be `true`, same-origin bytes, and a share policy that permits
-    source images.
+    source images; this remains unimplemented.
 - Pop-out defaults to Original even when the on-page version is styled.
 - Provide **View original** and preserve alt text, caption, attribution, source,
   and license.
 - Styling never replaces the semantic `<img>` or its text alternative.
+- Current share payloads and visual quote canvases are text-only and never
+  receive source-image URLs or bytes, even if a host configures
+  `sourceImages: "same-origin-approved"`.
 
 ### 13.4 Canvas boundary
 
@@ -1497,9 +1501,10 @@ Acceptance:
 
 **Priority:** P1
 
-**Status:** Ready
+**Status:** Complete for the 14 rights-reviewed figures
 
-**Depends on:** Existing media treatment, V3-404, V3-406
+**Depends on:** Existing media treatment; validated-manifest portion of V3-404;
+V3-406 remains blocked for the other 26 Plurality links
 
 Deliver:
 
