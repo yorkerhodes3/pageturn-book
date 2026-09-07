@@ -2750,6 +2750,28 @@ test("restores an exact quote from a continuation page", async ({ page }) => {
 test("keeps split-list source offsets aligned with canonical text", async ({
   page,
 }) => {
+  await page.route("**/chapters/responsible-ai/index.html", async (route) => {
+    const response = await route.fetch();
+    const source = await response.text();
+    const listId =
+      'id="list-ieee-ethically-aligned-design-the-engineering-pr-41441af64f"';
+    const listStart = source.indexOf(listId);
+    const listEnd = source.indexOf("</ul>", listStart);
+    if (listStart < 0 || listEnd < 0) {
+      throw new Error("Expected the Responsible AI reference list");
+    }
+    const fixtureItems = Array.from(
+      { length: 16 },
+      (_, index) =>
+        `<li>Deterministic pagination item ${index + 1}: ` +
+        "a deliberately extended reference description that verifies Unicode " +
+        "source offsets after a semantic list continues onto another page.</li>",
+    ).join("\n");
+    await route.fulfill({
+      response,
+      body: source.slice(0, listEnd) + fixtureItems + source.slice(listEnd),
+    });
+  });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(
     route(
