@@ -1114,6 +1114,26 @@ SDK default. Card and direct-local modes require a resolver.
 | SRC-009 | Resolver failures are announced and retain the authored link. Resolver work is aborted and generation-guarded on close, navigation, and destroy. |
 | SRC-010 | Card mode renders every valid resolver result, including `direct-external`, as a no-fetch card; it never navigates directly. A differing reviewed/resolved destination and the authored source remain actionable. |
 
+### 14.7 Allowlisted external previews
+
+`PageTurnBookOptions` may add
+`externalPreviewProviders?: readonly PageTurnExternalPreviewProvider[]` using
+the contract in
+[READER-INTERACTION-FEATURE-PLAN.md §7.5](./READER-INTERACTION-FEATURE-PLAN.md).
+The option does not change direct-link or no-provider defaults.
+
+| ID | Requirement |
+|---|---|
+| PREVIEW-001 | Setup rejects duplicate or unsafe IDs, wildcard/non-HTTP(S) origins, origins containing credentials/path/query/fragment, non-normalized or wildcard path prefixes, unknown/dangerous sandbox or permission tokens, invalid readiness origins/message types, and timeout values outside 250–15,000 ms. |
+| PREVIEW-002 | A preview is offered only when exactly one validated provider matches the exact origin and a pathname boundary. |
+| PREVIEW-003 | Card display creates no iframe, preview runtime request, or provider request. Activation is an explicit disclosed action and the direct source link remains visible. |
+| PREVIEW-004 | The iframe uses the validated sandbox and minimal `allow`, `referrerpolicy="no-referrer"`, an accessible title, and an allowlisted URL. |
+| PREVIEW-005 | Message readiness uses a fresh cryptographic 128-bit unpadded base64url nonce and accepts only the exact configured origin, iframe source window, and plain `{ type, version: 1, nonce }` payload before timeout. |
+| PREVIEW-006 | Timeout readiness says only that readiness could not be confirmed; it does not infer CSP or `X-Frame-Options` failure and never claims positive readiness. |
+| PREVIEW-007 | Success, timeout, close, source/book/history navigation, replacement, and destroy remove protocol listeners, nonce, and timer. Close additionally removes the iframe. Explicit retry creates a clean lifecycle and fresh nonce. |
+| PREVIEW-008 | The host documents and configures the necessary CSP `frame-src` and Permissions Policy response headers. PageTurn does not relax host headers. |
+| PREVIEW-009 | Message readiness requires `allow-scripts` plus `allow-same-origin`, and that combination must use a dedicated origin distinct from the embedding reader. |
+
 ## 15. Preferences and resume
 
 ### 15.1 Preference model

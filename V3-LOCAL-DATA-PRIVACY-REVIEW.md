@@ -2,14 +2,14 @@
 
 | Field | Decision |
 |---|---|
-| Status | Approved and implemented for versioned local storage, marginalia, policy-gated visual sharing, and no-fetch source cards |
+| Status | Approved and implemented for versioned local storage, marginalia, policy-gated visual sharing, no-fetch source cards, and consent-gated allowlisted previews |
 | Accounts | None |
 | Remote annotation service | None |
 | Analytics | None |
 | Storage | Same-origin IndexedDB; resume/typography remain in `localStorage` |
 | Export | Explicit local Markdown or version 2 JSON download |
 | Sharing | Explicit contextual Copy or pre-share composer action |
-| External sources | Host-reviewed local registry; no card-open metadata fetch |
+| External sources | Host-reviewed registry; no card-open metadata or preview fetch; preview requires explicit activation |
 
 ## Data handled
 
@@ -64,6 +64,25 @@ top-level source rights. Link-only/unknown records can authorize only a
 separately approved original source guide. Malformed, missing, mismatched,
 expired runtime rights, unsafe URLs, and ambiguous matches expose no automatic
 local action. The demo registry is host code and is not imported by the SDK.
+
+Optional preview providers do not alter that card-open boundary. The complete
+provider list is validated at SDK setup, and a control appears only for one exact
+origin/path-boundary match. On explicit activation, the provider receives a
+normal iframe request (including network-layer address information and any
+provider cookies allowed by browser policy). Message-mode URLs additionally
+carry only the embedding origin and a fresh random nonce; PageTurn does not add
+the citation text. Authored query and fragment data remain part of the host-
+approved URL.
+
+Preview frames use validated sandbox tokens, `no-referrer`, and a minimal
+validated `allow` list. Wildcards, unknown tokens, top navigation, sandbox-
+escaping popups, and unactivated downloads are rejected. Cooperative readiness
+is accepted only from the exact provider origin and iframe window with the exact
+version-1 type/nonce schema. Non-cooperative providers time out without claiming
+that CSP or framing policy caused the result. Direct navigation remains visible,
+and close, navigation, replacement, or destroy tears down the frame and protocol
+state. Hosts remain responsible for CSP `frame-src`, Permissions Policy, provider
+framing consent, and reviewing any provider privacy terms.
 
 ## Controls and limits
 

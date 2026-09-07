@@ -1473,7 +1473,7 @@ Acceptance:
 
 **Priority:** P2
 
-**Status:** Ready
+**Status:** Complete
 
 **Depends on:** V3-422; privacy/security review before promotion
 

@@ -87,6 +87,8 @@ examples.
 - Optional host-owned deterministic source resolution with reviewed,
   local-edition-first cards, explicit course mappings, ambiguity handling, and
   no client-side metadata fetch.
+- Optional strictly allowlisted external-preview adapters that load only after
+  explicit consent and retain the direct source fallback.
 - Hierarchical contents and demand-loaded search.
 - Local bookmarks, resume restart, accessible contextual selection actions,
   exact highlights, collision-managed outer-margin annotations with responsive

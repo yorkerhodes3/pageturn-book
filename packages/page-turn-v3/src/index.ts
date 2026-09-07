@@ -20,6 +20,19 @@ export type {
   BookshelfVolume,
 } from "./bookshelf.js";
 export {
+  PAGE_TURN_EXTERNAL_PREVIEW_MAX_TIMEOUT_MS,
+  PAGE_TURN_EXTERNAL_PREVIEW_MIN_TIMEOUT_MS,
+  createPageTurnExternalPreviewNonce,
+  isPageTurnExternalPreviewReadyMessage,
+  matchPageTurnExternalPreviewProvider,
+  pageTurnExternalPreviewProviderMatches,
+  pageTurnExternalPreviewUrl,
+  serializePageTurnExternalPreviewPermissions,
+  serializePageTurnExternalPreviewSandbox,
+  validatePageTurnExternalPreviewProviders,
+  type PageTurnExternalPreviewProvider,
+} from "./external-preview.js";
+export {
   normalizeBookFontScale,
   readBookFontScale,
   writeBookFontScale,

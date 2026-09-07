@@ -48,6 +48,7 @@ export default defineConfig(() => {
     resolve(root, "dashboard", "index.html"),
     resolve(root, "sdk", "index.html"),
     resolve(root, "v3", "index.html"),
+    ...collectHtml(resolve(root, "external-preview")),
     ...collectHtml(publicationRoot),
   ];
   const input = Object.fromEntries(

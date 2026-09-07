@@ -6,6 +6,10 @@ import {
   type PageTurnSourceRecord,
   type PageTurnSourceResolution,
 } from "./source.js";
+import {
+  matchPageTurnExternalPreviewProvider,
+  type PageTurnExternalPreviewProvider,
+} from "./external-preview.js";
 
 export { approvedPageTurnLocalReading };
 
@@ -25,6 +29,7 @@ export type PageTurnSourceCardElements = Readonly<{
   candidates: HTMLElement;
   candidateList: HTMLOListElement;
   actions: HTMLElement;
+  preview: HTMLElement;
   status: HTMLOutputElement;
 }>;
 
@@ -277,6 +282,7 @@ export function renderPageTurnSourceCard(
   elements: PageTurnSourceCardElements,
   input: PageTurnSourceCardInput,
   localUrl: PageTurnSourceLocalUrl,
+  externalPreviewProviders: readonly PageTurnExternalPreviewProvider[] = [],
 ): HTMLElement | undefined {
   const { authoredUrl, citation, resolution } = input;
   const record =
@@ -404,6 +410,55 @@ export function renderPageTurnSourceCard(
     actions.push(copy);
   }
   elements.actions.replaceChildren(...actions);
+  elements.preview.hidden = true;
+  elements.preview.replaceChildren();
+  const previewUrl =
+    !input.pending && !input.error && resolution?.kind !== "ambiguous"
+      ? resolution?.kind === "direct-external"
+        ? resolution.url
+        : authoredUrl.href
+      : undefined;
+  const previewProvider = previewUrl
+    ? matchPageTurnExternalPreviewProvider(
+        externalPreviewProviders,
+        previewUrl,
+      )
+    : undefined;
+  if (previewProvider && previewUrl) {
+    const previewDomain = pageTurnSourceDisplayDomain(previewUrl);
+    const disclosure = element(
+      document,
+      "p",
+      "v3-source-preview-disclosure",
+      `External preview provider “${previewProvider.id}” at ${previewDomain} will receive a request only after you choose to load it.`,
+    );
+    const load = element(
+      document,
+      "button",
+      "v3-source-preview-load",
+      "Load external preview",
+    );
+    load.type = "button";
+    load.dataset.v3SourcePreviewLoad = previewProvider.id;
+    load.dataset.v3SourcePreviewUrl = previewUrl;
+    const previewStatus = element(
+      document,
+      "output",
+      "v3-source-preview-status",
+    );
+    previewStatus.dataset.v3SourcePreviewStatus = "";
+    previewStatus.setAttribute("role", "status");
+    previewStatus.setAttribute("aria-live", "polite");
+    const previewHost = element(document, "div", "v3-source-preview-host");
+    previewHost.dataset.v3SourcePreviewHost = "";
+    elements.preview.replaceChildren(
+      disclosure,
+      load,
+      previewStatus,
+      previewHost,
+    );
+    elements.preview.hidden = false;
+  }
   elements.status.value = input.error
     ? input.error
     : input.pending

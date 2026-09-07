@@ -1720,6 +1720,7 @@ button.v3-marginalia-group {
 
 .v3-source-actions a,
 .v3-source-actions button,
+.v3-source-preview button,
 .v3-source-frame [data-v3-source-candidates] a {
   display: inline-flex;
   align-items: center;
@@ -1741,6 +1742,7 @@ button.v3-marginalia-group {
 }
 
 .v3-source-actions :focus-visible,
+.v3-source-preview :focus-visible,
 .v3-source-frame [data-v3-source-candidates] a:focus-visible,
 .v3-source-frame .v3-dialog-close button:focus-visible {
   outline: 3px solid #f5ca69;
@@ -1767,6 +1769,36 @@ button.v3-marginalia-group {
   min-height: 1.3rem;
   color: #c9c0af;
   font-size: 0.75rem;
+}
+
+.v3-source-preview {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid rgb(121 213 198 / 35%);
+  background: rgb(8 13 12 / 52%);
+}
+
+.v3-source-preview[hidden] {
+  display: none;
+}
+
+.v3-source-preview-host {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.v3-source-preview-frame {
+  width: 100%;
+  min-height: min(24rem, 52dvh);
+  border: 1px solid #a7864c;
+  background: #fff;
+}
+
+.v3-source-preview-status {
+  min-height: 1.3rem;
+  color: #c9c0af;
+  font-size: 0.8rem;
 }
 
 .v3-share-dialog::backdrop {

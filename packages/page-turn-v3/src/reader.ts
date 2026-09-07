@@ -80,6 +80,11 @@ import type {
   PageTurnSourceCardElements,
   PageTurnSourceCardInput,
 } from "./source-card.js";
+import {
+  matchPageTurnExternalPreviewProvider,
+  validatePageTurnExternalPreviewProviders,
+  type PageTurnExternalPreviewProvider,
+} from "./external-preview.js";
 
 type SemanticBlock = Readonly<{
   node: HTMLElement;
@@ -170,6 +175,7 @@ export type PageTurnBookOptions = Readonly<{
   sourceResolver?: PageTurnSourceResolver;
   sourceLinkMode?: "direct" | "card" | "direct-local";
   courseReadingIds?: readonly string[];
+  externalPreviewProviders?: readonly PageTurnExternalPreviewProvider[];
   urlMode?: "managed" | "none";
   updateDocumentTitle?: boolean;
 }>;
@@ -342,6 +348,9 @@ const mediaConfig = options.media;
 const fetcher = options.fetch ?? globalThis.fetch;
 const requestController = new AbortController();
 const sourceLinkMode = options.sourceLinkMode ?? "direct";
+const externalPreviewProviders = validatePageTurnExternalPreviewProviders(
+  options.externalPreviewProviders,
+);
 if (!["direct", "card", "direct-local"].includes(sourceLinkMode)) {
   throw new Error(`PageTurn sourceLinkMode is invalid: ${sourceLinkMode}`);
 }
@@ -1381,6 +1390,7 @@ const sourceCandidateList = requiredElement<HTMLOListElement>(
 const sourceActions = requiredElement<HTMLElement>(
   "[data-v3-source-actions]",
 );
+const sourcePreview = requiredElement<HTMLElement>("[data-v3-source-preview]");
 const sourceStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-source-status]",
 );
@@ -1392,6 +1402,7 @@ const sourceCardElements: PageTurnSourceCardElements = {
   candidates: sourceCandidates,
   candidateList: sourceCandidateList,
   actions: sourceActions,
+  preview: sourcePreview,
   status: sourceStatus,
 };
 const chapterSelect = requiredElement<HTMLSelectElement>(
@@ -1780,6 +1791,12 @@ let sourceResolutionVersion = 0;
 let sourceReturnFocus: HTMLAnchorElement | undefined;
 let sourceCardModulePromise:
   | Promise<typeof import("./source-card.js")>
+  | undefined;
+let sourcePreviewModulePromise:
+  | Promise<typeof import("./external-preview-runtime.js")>
+  | undefined;
+let sourcePreviewHandle:
+  | import("./external-preview-runtime.js").PageTurnExternalPreviewRuntimeHandle
   | undefined;
 const legacyChapterSources = new Map<
   string,
@@ -5456,7 +5473,13 @@ function sourceFailure(error: unknown): string {
   return sourceStatus.value;
 }
 
+function closeExternalPreview(restoreFocus = false): void {
+  sourcePreviewHandle?.close(restoreFocus);
+  sourcePreviewHandle = undefined;
+}
+
 function closeSourceCard(restoreFocus: boolean): void {
+  closeExternalPreview();
   sourceResolutionVersion += 1;
   sourceController?.abort();
   sourceController = undefined;
@@ -5476,6 +5499,97 @@ function loadSourceCardModule(): Promise<typeof import("./source-card.js")> {
   return sourceCardModulePromise;
 }
 
+function loadSourcePreviewModule(): Promise<
+  typeof import("./external-preview-runtime.js")
+> {
+  sourcePreviewModulePromise ??= import("./external-preview-runtime.js");
+  return sourcePreviewModulePromise;
+}
+
+async function activateSourcePreview(
+  button: HTMLButtonElement,
+): Promise<void> {
+  if (button.disabled) {
+    return;
+  }
+  const providerId = button.dataset.v3SourcePreviewLoad;
+  const previewUrl = button.dataset.v3SourcePreviewUrl;
+  const version = sourceResolutionVersion;
+  const previewSection = button.closest<HTMLElement>(
+    "[data-v3-source-preview]",
+  );
+  const previewStatus =
+    previewSection?.querySelector<HTMLOutputElement>(
+      "[data-v3-source-preview-status]",
+    );
+  const previewHost = previewSection?.querySelector<HTMLElement>(
+    "[data-v3-source-preview-host]",
+  );
+  const provider = previewUrl
+    ? matchPageTurnExternalPreviewProvider(
+        externalPreviewProviders,
+        previewUrl,
+      )
+    : undefined;
+  if (
+    !providerId ||
+    !previewUrl ||
+    !provider ||
+    provider.id !== providerId ||
+    !previewStatus ||
+    !previewHost
+  ) {
+    if (previewStatus) {
+      previewStatus.value =
+        "External preview is unavailable because its provider configuration did not match.";
+    }
+    return;
+  }
+  closeExternalPreview();
+  button.disabled = true;
+  previewStatus.value = "Preparing external preview…";
+  try {
+    const { mountPageTurnExternalPreview } = await loadSourcePreviewModule();
+    if (
+      destroyed ||
+      version !== sourceResolutionVersion ||
+      !sourceDialog.open ||
+      !button.isConnected
+    ) {
+      return;
+    }
+    sourcePreviewHandle = mountPageTurnExternalPreview({
+      window: globalThis.window,
+      document,
+      host: previewHost,
+      status: previewStatus,
+      loadButton: button,
+      provider,
+      url: previewUrl,
+      parentOrigin: globalThis.location.origin,
+      isCurrent: () =>
+        !destroyed &&
+        version === sourceResolutionVersion &&
+        sourceDialog.open &&
+        button.isConnected,
+    });
+  } catch (error) {
+    if (
+      !destroyed &&
+      version === sourceResolutionVersion &&
+      button.isConnected
+    ) {
+      const message =
+        error instanceof Error ? error.message : "Unknown preview error";
+      previewStatus.value = `External preview could not load: ${message}. Use the direct source link.`;
+      button.hidden = false;
+      button.disabled = false;
+      button.textContent = "Retry external preview";
+      console.error(error);
+    }
+  }
+}
+
 function showSourceCard(
   link: HTMLAnchorElement,
   input: PageTurnSourceCardInput,
@@ -5489,11 +5603,13 @@ function showSourceCard(
       }
       let primary: HTMLElement | undefined;
       try {
+        closeExternalPreview();
         primary = renderPageTurnSourceCard(
           document,
           sourceCardElements,
           input,
           sourceLocalUrl,
+          externalPreviewProviders,
         );
       } catch (error) {
         const message = sourceFailure(error);
@@ -5506,6 +5622,7 @@ function showSourceCard(
             error: message,
           },
           () => undefined,
+          externalPreviewProviders,
         );
       }
       if (!sourceDialog.open) {
@@ -7282,6 +7399,7 @@ async function restoreHistoryLocation(): Promise<void> {
 }
 
 function onPopState(): void {
+  closeSourceCard(false);
   closeShareComposer(false);
   void restoreHistoryLocation().catch((error: unknown) => {
     reportFailure("V3 could not restore the browser location", error);
@@ -7655,6 +7773,23 @@ shareDialog.addEventListener(
 sourceDialog.addEventListener(
   "click",
   (event) => {
+    const loadPreview =
+      event.target instanceof Element
+        ? event.target.closest<HTMLButtonElement>(
+            "[data-v3-source-preview-load]",
+          )
+        : null;
+    if (loadPreview) {
+      void activateSourcePreview(loadPreview);
+      return;
+    }
+    const sourceNavigation =
+      event.target instanceof Element
+        ? event.target.closest<HTMLAnchorElement>("a[href]")
+        : null;
+    if (sourceNavigation) {
+      closeExternalPreview();
+    }
     const copy =
       event.target instanceof Element
         ? event.target.closest<HTMLButtonElement>("[data-v3-source-copy]")
@@ -7681,6 +7816,7 @@ sourceDialog.addEventListener(
 sourceDialog.addEventListener(
   "close",
   () => {
+    closeExternalPreview();
     sourceResolutionVersion += 1;
     sourceController?.abort();
     sourceController = undefined;

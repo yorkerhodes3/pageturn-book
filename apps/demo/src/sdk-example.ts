@@ -4,6 +4,7 @@ import {
   createPageTurnSourceResolver,
   mountPageTurnBookShell,
   type PageTurnBookHandle,
+  type PageTurnExternalPreviewProvider,
   type PageTurnSharePolicy,
   type PageTurnSourceResolver,
 } from "@ethical-tech/pageturn-book";
@@ -25,6 +26,7 @@ if (new URLSearchParams(globalThis.location.search).get("hidden") === "1") {
 
 const sdkQuery = new URLSearchParams(globalThis.location.search);
 const sourceScenario = sdkQuery.get("source");
+const previewScenario = sourceScenario?.startsWith("preview-") ?? false;
 const shareMode = sdkQuery.get("share");
 const requestedQuoteMaximum = Number(sdkQuery.get("quoteMax"));
 const quoteMaximum =
@@ -153,8 +155,60 @@ const delayedLocalResolver: PageTurnSourceResolver = (_url, _context, signal) =>
       { once: true },
     );
   });
+const controlledPreviewUrl = new URL(
+  "../external-preview/",
+  globalThis.location.href,
+);
+if (sourceScenario !== "preview-same-origin") {
+  controlledPreviewUrl.hostname =
+    controlledPreviewUrl.hostname === "localhost" ? "127.0.0.1" : "localhost";
+}
+const previewMode = sourceScenario?.replace(/^preview-/, "") ?? "message";
+controlledPreviewUrl.searchParams.set(
+  "mode",
+  previewMode === "message" || previewMode === "timeout" ? "valid" : previewMode,
+);
+controlledPreviewUrl.searchParams.set("authored", "preserved");
+controlledPreviewUrl.searchParams.set("pageturn_nonce", "authored-replaced");
+controlledPreviewUrl.hash = "controlled-fragment";
+const controlledPathPrefix = controlledPreviewUrl.pathname.replace(/\/$/, "");
+const messagePreviewProvider: PageTurnExternalPreviewProvider = {
+  id: "controlled-local-preview",
+  origins: [controlledPreviewUrl.origin],
+  pathPrefixes: [
+    sourceScenario === "preview-unapproved"
+      ? `${controlledPathPrefix}/approved`
+      : controlledPathPrefix,
+  ],
+  sandbox: ["allow-scripts", "allow-same-origin"],
+  permissions: [],
+  readiness: {
+    kind: "message",
+    origin: controlledPreviewUrl.origin,
+    messageType: "pageturn-preview-ready",
+    timeoutMs: 1_500,
+  },
+};
+const timeoutPreviewProvider: PageTurnExternalPreviewProvider = {
+  ...messagePreviewProvider,
+  id: "controlled-local-timeout",
+  readiness: { kind: "timeout", timeoutMs: 400 },
+};
+const externalPreviewProviders: readonly PageTurnExternalPreviewProvider[] =
+  !previewScenario
+    ? []
+    : sourceScenario === "preview-timeout"
+      ? [timeoutPreviewProvider]
+      : sourceScenario === "preview-ambiguous"
+        ? [
+            messagePreviewProvider,
+            { ...messagePreviewProvider, id: "controlled-local-preview-two" },
+          ]
+        : [messagePreviewProvider];
 const sourceResolver: PageTurnSourceResolver | undefined =
-  sourceScenario === "reject"
+  previewScenario
+    ? (url) => ({ kind: "external-card", url: url.href })
+    : sourceScenario === "reject"
     ? () => Promise.reject(new Error("Test resolver rejected the source"))
     : sourceScenario === "delayed" ||
         sourceScenario === "direct-local-delayed"
@@ -176,6 +230,7 @@ const sourceFixtureOptions =
     ? {}
     : {
         sourceResolver,
+        ...(previewScenario ? { externalPreviewProviders } : {}),
         sourceLinkMode: sourceScenario.startsWith("direct-local")
           ? ("direct-local" as const)
           : ("card" as const),
@@ -199,8 +254,7 @@ const sourceFixtureOptions =
         },
       };
 
-const reader: PageTurnBookHandle = createPageTurnBook({
-  root,
+const readerOptions = {
   bookId: "demo-book",
   manifestUrl: new URL(
     "../book/demo-book/2026-08/manifest.json",
@@ -208,15 +262,30 @@ const reader: PageTurnBookHandle = createPageTurnBook({
   ),
   ...shareFixtureOptions,
   ...sourceFixtureOptions,
+};
+const reader: PageTurnBookHandle = createPageTurnBook({
+  root,
+  ...readerOptions,
 });
 
-const additionalShell =
+const additionalContainer =
   sdkQuery.get("instances") === "2"
-    ? mountPageTurnBookShell(document.body.appendChild(document.createElement("div")))
+    ? document.body.appendChild(document.createElement("div"))
     : undefined;
-if (additionalShell) {
-  additionalShell.root.setAttribute("data-sdk-additional-shell", "true");
+const additionalShell =
+  additionalContainer && !previewScenario
+    ? mountPageTurnBookShell(additionalContainer)
+    : undefined;
+const additionalRoot = previewScenario
+  ? additionalContainer
+  : additionalShell?.root;
+if (additionalRoot) {
+  additionalRoot.setAttribute("data-sdk-additional-shell", "true");
 }
+const additionalReader = additionalRoot
+  && previewScenario
+  ? createPageTurnBook({ root: additionalRoot, ...readerOptions })
+  : undefined;
 
 const requestedAppearance = sdkQuery.get("appearance");
 const appearancePreset = PAGE_TURN_APPEARANCE_PRESETS.find(
@@ -234,36 +303,41 @@ if (requestedInk && /^#[0-9a-f]{6}$/i.test(requestedInk)) {
   reader.setAppearance({ paper: { inkColor: requestedInk } });
 }
 
+function addSourceFixture(targetRoot: HTMLElement): void {
+  const add = () => {
+    const readerElement =
+      targetRoot.querySelector<HTMLElement>("[data-v3-reader]");
+    const target = targetRoot.querySelector<HTMLElement>(
+      "[data-v3-stationary] .v3-sheet-content",
+    );
+    if (readerElement?.dataset.v3Opening !== "false" || !target) {
+      requestAnimationFrame(add);
+      return;
+    }
+    const citation = document.createElement("p");
+    const link = document.createElement("a");
+    link.dataset.sdkSourceLink = "true";
+    link.href = previewScenario
+      ? controlledPreviewUrl.href
+      : sourceScenario === "direct-local-unknown" ||
+          sourceScenario === "direct"
+        ? new URL("../source-fixture-unknown/", globalThis.location.href).href
+        : sourceScenario === "canonical-alias"
+          ? linkOnlyFixtureRecord.aliases[0]!
+          : sourceFixtureRecord.canonicalUrl;
+    link.textContent = "SDK authored source citation";
+    citation.append(link);
+    target.append(citation);
+    targetRoot.dataset.sdkSourceReady = "true";
+  };
+  add();
+}
+
 void reader.ready
   .then(() => {
     root.dataset.sdkReady = "true";
     if (sourceScenario !== null) {
-      const addSourceFixture = () => {
-        const readerElement =
-          root.querySelector<HTMLElement>("[data-v3-reader]");
-        const target = root.querySelector<HTMLElement>(
-          "[data-v3-stationary] .v3-sheet-content",
-        );
-        if (readerElement?.dataset.v3Opening !== "false" || !target) {
-          requestAnimationFrame(addSourceFixture);
-          return;
-        }
-        const citation = document.createElement("p");
-        const link = document.createElement("a");
-        link.dataset.sdkSourceLink = "true";
-        link.href =
-          sourceScenario === "direct-local-unknown" ||
-          sourceScenario === "direct"
-            ? new URL("../source-fixture-unknown/", globalThis.location.href).href
-            : sourceScenario === "canonical-alias"
-              ? linkOnlyFixtureRecord.aliases[0]!
-            : sourceFixtureRecord.canonicalUrl;
-        link.textContent = "SDK authored source citation";
-        citation.append(link);
-        target.append(citation);
-        root.dataset.sdkSourceReady = "true";
-      };
-      addSourceFixture();
+      addSourceFixture(root);
     }
   })
   .catch((error: unknown) => {
@@ -271,10 +345,18 @@ void reader.ready
     console.error("The PageTurn SDK example could not initialize", error);
   });
 
+void additionalReader?.ready.then(() => {
+  if (sourceScenario !== null && additionalRoot) {
+    addSourceFixture(additionalRoot);
+  }
+});
+
 destroyButton.addEventListener(
   "click",
   () => {
     reader.destroy();
+    additionalReader?.destroy();
+    additionalShell?.destroy();
     root.dataset.sdkDestroyed = "true";
   },
   { once: true },
@@ -284,6 +366,7 @@ globalThis.addEventListener(
   "pagehide",
   () => {
     reader.destroy();
+    additionalReader?.destroy();
     additionalShell?.destroy();
   },
   { once: true },

@@ -602,6 +602,7 @@ const shellMarkup = `
         <ol data-v3-source-candidate-list></ol>
       </section>
       <div class="v3-source-actions" data-v3-source-actions></div>
+      <section class="v3-source-preview" data-v3-source-preview hidden></section>
       <output data-v3-source-status role="status" aria-live="polite"></output>
     </div>
   </dialog>

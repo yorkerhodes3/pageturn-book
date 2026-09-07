@@ -258,6 +258,67 @@ require `source-guide` local rights. Invalid or mismatched rights fail closed.
 The SDK contains no demo catalog; applications own records and immutable local
 URL construction.
 
+### Allowlisted external previews
+
+Source cards remain no-fetch by default. A host may opt a reviewed URL space into
+an explicit preview button with `externalPreviewProviders`. The SDK validates the
+whole list during setup and rejects duplicate/unsafe IDs, wildcard or non-origin
+URLs, non-normalized path prefixes, unknown or dangerous sandbox/Permissions
+Policy tokens, and timeouts outside **250–15,000 ms**.
+
+```ts
+import type { PageTurnExternalPreviewProvider } from "@ethical-tech/pageturn-book";
+
+const providers: readonly PageTurnExternalPreviewProvider[] = [{
+  id: "publisher-preview",
+  origins: ["https://preview.publisher.example"],
+  pathPrefixes: ["/embed/books"],
+  sandbox: ["allow-scripts", "allow-same-origin"],
+  permissions: ["fullscreen"],
+  readiness: {
+    kind: "message",
+    origin: "https://preview.publisher.example",
+    messageType: "pageturn-preview-ready",
+    timeoutMs: 5_000,
+  },
+}];
+
+createPageTurnBook({
+  root,
+  bookId: "course",
+  manifestUrl: "/books/course/2026-09/manifest.json",
+  sourceResolver,
+  sourceLinkMode: "card",
+  externalPreviewProviders: providers,
+});
+```
+
+Exactly one provider must match the action URL's exact origin and a pathname
+boundary. The iframe and optional runtime chunk do not exist before **Load
+external preview** is activated. Each message-mode activation adds a fresh
+128-bit base64url `pageturn_nonce` and the exact `pageturn_parent_origin`.
+Message readiness requires `allow-scripts` plus `allow-same-origin`, so those
+providers must run on a dedicated origin different from the embedding reader.
+Readiness is accepted only from the configured origin and iframe window with
+exactly `{ type, version: 1, nonce }`. Timeout mode never reports positive
+readiness. Close, source/book navigation, history navigation, replacement, and
+`destroy()` remove the frame, listener, nonce, and timer; retry is explicit and
+uses a fresh nonce. The direct source link remains available throughout.
+
+The embedding application must permit every configured provider in its response
+headers; the SDK cannot relax them. For example:
+
+```http
+Content-Security-Policy: frame-src 'self' https://preview.publisher.example
+Permissions-Policy: fullscreen=(self "https://preview.publisher.example")
+```
+
+Grant only features listed in that provider's `permissions`; omit the header
+entry and provider token when no feature is needed. The provider must also allow
+framing and, for message readiness, read the two protocol parameters and call
+`parent.postMessage({ type: "pageturn-preview-ready", version: 1, nonce },
+parentOrigin)`. Do not configure arbitrary user-authored origins or broad paths.
+
 ### Contextual selection actions
 
 Set `selectionActions: true` to enable the accessible Copy, Share, Highlight,
