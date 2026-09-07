@@ -662,7 +662,11 @@ const shellMarkup = `
   >
     <div class="v3-share-frame">
       <form method="dialog" class="v3-dialog-close">
-        <button type="submit" aria-label="Close share preview">Close</button>
+        <button
+          type="submit"
+          data-v3-close-share
+          aria-label="Close share preview"
+        >Close</button>
       </form>
       <h2 data-v3-share-dialog-title>Share preview</h2>
       <p data-v3-share-policy></p>

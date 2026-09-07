@@ -359,6 +359,19 @@ parentOrigin)`. Do not configure arbitrary user-authored origins or broad paths.
 
 ### Contextual selection actions
 
+These interaction capabilities remain beta/host-opt-in. The 2026-09-07 review
+tranche now measures marginalia through an actual mounted 20-annotation reader
+and proves the cold share renderer has zero resource entries before activation
+and exactly one new entry afterward. A clean detached `c1cf0f8` baseline passed
+provenance validation; 14 of 15 numeric gates pass, including the 4x selection
+gate at 61.1 ms p95. Broad promotion remains withheld because the initial V3
+route is 34,010 B gzip over baseline against a 5 KiB budget, and native/embedder
+cleanup, clean low-end turn evidence, cross-browser, and manual
+assistive-technology gates remain incomplete. Repository consumers can
+reproduce the numeric profile with
+`npm run measure:v3-interactions`; see the root
+`V3-READER-INTERACTION-PROMOTION.md`.
+
 Set `selectionActions: true` to enable the accessible Copy, Share, Highlight,
 and Annotate toolbar. The hosted reader enables it; SDK consumers opt in.
 Share appears only when `urlMode: "managed"` or `locationUrl` provides durable

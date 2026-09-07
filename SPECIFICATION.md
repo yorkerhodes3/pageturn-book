@@ -1199,9 +1199,12 @@ type Bookmark = {
 | BM-007 | Duplicate bookmark behavior is deterministic and documented. |
 | BM-008 | Deleting a bookmark requires an explicit action but not a disruptive confirmation when undo is available. |
 
-The V3 beta stores its small edition-scoped bookmark array in `localStorage`.
-V3-413 remains responsible for migration to the versioned IndexedDB model above
-before production promotion.
+The V3 beta stores bookmarks and annotations in its validated, edition-scoped
+version-2 IndexedDB model. Automated V3-425 validation is recorded in
+[V3-READER-INTERACTION-PROMOTION.md](./V3-READER-INTERACTION-PROMOTION.md);
+broad promotion remains withheld while the validated initial-route payload,
+clean low-end frame, native-memory, cross-browser, and manual
+assistive-technology gates are incomplete.
 
 ## 17. Highlights and notes
 

@@ -2072,6 +2072,11 @@ const accentColor = requiredElement<HTMLInputElement>(
 const resetAppearance = requiredElement<HTMLButtonElement>(
   "[data-v3-reset-appearance]",
 );
+const appearanceMutationControls = Array.from(
+  appearanceForm.querySelectorAll<
+    HTMLButtonElement | HTMLInputElement | HTMLSelectElement
+  >("button, input, select"),
+).filter((control) => control !== closeAppearance);
 const appearanceStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-appearance-status]",
 );
@@ -3451,6 +3456,7 @@ function selectionActionButtonsAvailable(): HTMLButtonElement[] {
 }
 
 function updateSelectionActionCapabilities(): void {
+  const targetReady = pendingSelection?.target !== undefined;
   const share = selectionActions.querySelector<HTMLButtonElement>(
     '[data-v3-selection-action="share"]',
   );
@@ -3462,7 +3468,7 @@ function updateSelectionActionCapabilities(): void {
   );
   if (share) {
     share.hidden = !canCreateDurableLinks || !shareCapabilities.location;
-    share.disabled = sharing;
+    share.disabled = sharing || !targetReady;
     share.title = resolvedSharePolicy.message;
     const label = shareCapabilities.quote
       ? "Share selected text"
@@ -3471,12 +3477,14 @@ function updateSelectionActionCapabilities(): void {
     share.dataset.tooltip = shareCapabilities.quote ? "Share" : "Share location";
   }
   if (highlight) {
-    highlight.disabled = personalStore === undefined || personalBusy;
+    highlight.disabled =
+      personalStore === undefined || personalBusy || !targetReady;
   }
   if (annotate) {
     annotate.hidden = personalStore === undefined;
-    annotate.disabled = personalBusy;
+    annotate.disabled = personalBusy || !targetReady;
   }
+  selectionActions.setAttribute("aria-busy", String(!targetReady));
   const available = selectionActionButtonsAvailable();
   for (const [index, button] of available.entries()) {
     button.tabIndex = index === 0 ? 0 : -1;
@@ -3500,7 +3508,7 @@ function selectionViewportRect(): PageTurnRect {
 }
 
 function showPermanentSelectionActions(): void {
-  if (!pendingSelection?.target) {
+  if (!pendingSelection?.range) {
     return;
   }
   updateSelectionActionCapabilities();
@@ -3516,7 +3524,7 @@ function showPermanentSelectionActions(): void {
 function positionSelectionActions(): void {
   selectionPlacementFrame = undefined;
   const selection = pendingSelection;
-  if (!selectionActionsEnabled || !selection?.target || !selection.range) {
+  if (!selectionActionsEnabled || !selection?.range) {
     selectionActions.hidden = true;
     return;
   }
@@ -3589,47 +3597,61 @@ function captureSelectionCandidate(selection: V3SelectionCandidate): void {
     modality: lastSelectionModality,
   };
   renderSelectionControls();
-  void capturePageTurnTextTarget(selection.input)
-    .then((target) => {
+  queueSelectionActionPlacement();
+  requestAnimationFrame(() => {
+    if (destroyed || version !== selectionCaptureVersion) {
+      return;
+    }
+    globalThis.setTimeout(() => {
      if (destroyed || version !== selectionCaptureVersion) {
        return;
      }
-     pendingSelection = {
-       chapterId: selection.chapterId,
-       anchor: target.start.anchor,
-       quote: target.quote.exact,
-       target,
-       range,
-       ...(source ? { source } : {}),
-       modality: lastSelectionModality,
-     };
-     renderControls();
-     queueSelectionActionPlacement();
-     if (lastSelectionModality === "keyboard" && selectionActionsEnabled) {
-       selectionLive.textContent = "";
-       requestAnimationFrame(() => {
-         selectionLive.textContent =
-           `Selection actions available. ${selectionShortcutText()}`;
+     void capturePageTurnTextTarget(selection.input)
+       .then((target) => {
+         if (destroyed || version !== selectionCaptureVersion) {
+           return;
+         }
+         pendingSelection = {
+           chapterId: selection.chapterId,
+           anchor: target.start.anchor,
+           quote: target.quote.exact,
+           target,
+           range,
+           ...(source ? { source } : {}),
+           modality: lastSelectionModality,
+         };
+         renderControls();
+         queueSelectionActionPlacement();
+         if (
+           lastSelectionModality === "keyboard" &&
+           selectionActionsEnabled
+         ) {
+           selectionLive.textContent = "";
+           requestAnimationFrame(() => {
+             selectionLive.textContent =
+               `Selection actions available. ${selectionShortcutText()}`;
+           });
+         }
+         if (exploreDialog.open) {
+           renderAnnotations();
+         }
+       })
+       .catch((error: unknown) => {
+         if (destroyed || version !== selectionCaptureVersion) {
+           return;
+         }
+         dismissSelectionActions();
+         shareStatus.value =
+           error instanceof Error
+             ? `Selection unavailable: ${error.message}`
+             : "Selection unavailable";
+         renderControls();
+         if (exploreDialog.open) {
+           renderAnnotations();
+         }
        });
-     }
-     if (exploreDialog.open) {
-       renderAnnotations();
-     }
-    })
-    .catch((error: unknown) => {
-     if (destroyed || version !== selectionCaptureVersion) {
-       return;
-     }
-     dismissSelectionActions();
-     shareStatus.value =
-       error instanceof Error
-         ? `Selection unavailable: ${error.message}`
-         : "Selection unavailable";
-     renderControls();
-     if (exploreDialog.open) {
-       renderAnnotations();
-     }
-    });
+    }, 0);
+  });
 }
 
 function onSelectionChange(): void {
@@ -3791,8 +3813,20 @@ function showSelectionFeedback(message: string, timeout = 4_000): void {
 }
 
 async function copySelectedText(): Promise<void> {
-  const current = currentSelectionAction();
-  if (!current) {
+  const selection = pendingSelection;
+  if (!selection) {
+    return;
+  }
+  const text = selection.target
+    ? currentSelectionAction()?.detail.text
+    : normalizePageTurnText(document.getSelection()?.toString() ?? "") ===
+        selection.quote
+      ? selection.quote
+      : undefined;
+  if (!text) {
+    selectionStatus.value = "The selection changed. Select the text again.";
+    selectionFeedback.hidden = false;
+    dismissSelectionActions();
     return;
   }
   if (!navigator.clipboard?.writeText) {
@@ -3803,7 +3837,7 @@ async function copySelectedText(): Promise<void> {
     return;
   }
   try {
-    await navigator.clipboard.writeText(current.detail.text);
+    await navigator.clipboard.writeText(text);
     showSelectionFeedback("Selected text copied.");
     dismissSelectionActions(true, selectionFocusActive);
   } catch {
@@ -4653,9 +4687,17 @@ function renderFontControls(): void {
   fontStatus.value = `${percent}%`;
   reader.dataset.v3FontSize = String(percent);
   increaseFont.disabled =
-    opening || pendingTurn || activeTurn !== undefined || fontScale >= 1.3;
+    opening ||
+    pendingTurn ||
+    resizeTimer !== undefined ||
+    activeTurn !== undefined ||
+    fontScale >= 1.3;
   decreaseFont.disabled =
-    opening || pendingTurn || activeTurn !== undefined || fontScale <= 0.8;
+    opening ||
+    pendingTurn ||
+    resizeTimer !== undefined ||
+    activeTurn !== undefined ||
+    fontScale <= 0.8;
 }
 
 function renderSelectionControls(): void {
@@ -5031,14 +5073,25 @@ function openAppearanceDialog(): void {
 }
 
 function renderControls(): void {
+  const resizing = resizeTimer !== undefined;
+  chapterSelect.disabled = opening || pendingTurn || resizing;
+  appearanceButton.disabled = opening || pendingTurn || resizing;
+  for (const control of appearanceMutationControls) {
+    control.disabled = resizing;
+  }
+  mediaSelect.disabled = mediaConfig === undefined || resizing;
+  mediaStyleSelect.disabled = mediaConfig === undefined || resizing;
+  startOver.disabled = opening || pendingTurn || resizing;
   previous.disabled =
     opening ||
     pendingTurn ||
+    resizing ||
     !canTurn("backward") ||
     activeTurn !== undefined;
   next.disabled =
     opening ||
     pendingTurn ||
+    resizing ||
     !canTurn("forward") ||
     activeTurn !== undefined;
   for (const corner of corners) {
@@ -5046,6 +5099,7 @@ function renderControls(): void {
     corner.disabled =
       opening ||
       pendingTurn ||
+      resizing ||
       activeTurn !== undefined ||
       (direction !== "forward" && direction !== "backward") ||
       !canTurn(direction) ||
@@ -5056,6 +5110,7 @@ function renderControls(): void {
     !shareCapabilities.location ||
     opening ||
     pendingTurn ||
+    resizing ||
     activeTurn !== undefined ||
     sharing ||
     manifest === undefined ||
@@ -7851,6 +7906,12 @@ function prototypeErrorMessage(error: unknown): string {
 }
 
 function reportReady(): void {
+  if (resizeTimer !== undefined) {
+    reader.dataset.v3Ready = "false";
+    reader.setAttribute("aria-busy", "true");
+    status.textContent = "Repaginating the resized book";
+    return;
+  }
   failureReported = false;
   reader.dataset.v3Ready = "true";
   reader.setAttribute("aria-busy", "false");
@@ -8401,7 +8462,7 @@ function matchesSelectionShortcut(event: KeyboardEvent): boolean {
 
 function focusSelectionActions(): void {
   const selection = pendingSelection;
-  if (!selectionActionsEnabled || !selection?.target) {
+  if (!selectionActionsEnabled || !selection?.range) {
     return;
   }
   if (selectionActions.hidden) {
@@ -8912,7 +8973,7 @@ const onKeyDown = (event: KeyboardEvent) => {
     return;
   }
   if (matchesSelectionShortcut(event)) {
-    if (pendingSelection?.target && selectionActionsEnabled) {
+    if (pendingSelection?.range && selectionActionsEnabled) {
       event.preventDefault();
       focusSelectionActions();
     }
@@ -8982,6 +9043,9 @@ const observer = new ResizeObserver(() => {
   if (appearanceTimer !== undefined) {
     clearTimeout(appearanceTimer);
   }
+  reader.dataset.v3Ready = "false";
+  reader.setAttribute("aria-busy", "true");
+  status.textContent = "Repaginating the resized book";
   resizeTimer = globalThis.setTimeout(() => {
     resizeTimer = undefined;
     const preservation = currentPreservation();
@@ -9000,6 +9064,7 @@ const observer = new ResizeObserver(() => {
       reportFailure("V3 could not repaginate", error);
     }
   }, 120);
+  renderControls();
 });
 observer.observe(spread);
 globalThis.visualViewport?.addEventListener(

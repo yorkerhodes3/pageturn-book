@@ -1251,6 +1251,7 @@ test("keeps mobile turn semantics exposed and drops stale resize visuals", async
     name: "Turn the next page from its top corner",
   });
   const startTurn = async () => {
+    await expect(corner).toBeEnabled();
     const bounds = await corner.boundingBox();
     if (!bounds) {
       throw new Error("Expected mobile forward corner bounds");
@@ -1301,7 +1302,56 @@ test("keeps mobile turn semantics exposed and drops stale resize visuals", async
     "true",
   );
 
+  await page.getByRole("button", { name: "Book appearance settings" }).click();
+  const appearanceDialog = page.getByRole("dialog", {
+    name: "Book appearance",
+  });
+  await expect(appearanceDialog).toBeVisible();
+  const resizeLock = page.evaluate(
+    () =>
+      new Promise<{ presetDisabled: boolean; closeDisabled: boolean }>(
+        (resolveLock, rejectLock) => {
+          const preset = document.querySelector("[data-v3-appearance-preset]");
+          const close = document.querySelector("[data-v3-close-appearance]");
+          if (
+            !(preset instanceof HTMLSelectElement) ||
+            !(close instanceof HTMLButtonElement)
+          ) {
+            rejectLock(new Error("Expected appearance resize controls"));
+            return;
+          }
+          const timeout = setTimeout(() => {
+            observer.disconnect();
+            rejectLock(new Error("Appearance controls did not enter resize lock"));
+          }, 2_000);
+          const inspect = () => {
+            if (!preset.disabled) {
+              return;
+            }
+            clearTimeout(timeout);
+            observer.disconnect();
+            resolveLock({
+              presetDisabled: preset.disabled,
+              closeDisabled: close.disabled,
+            });
+          };
+          const observer = new MutationObserver(inspect);
+          observer.observe(preset, {
+            attributes: true,
+            attributeFilter: ["disabled"],
+          });
+          inspect();
+        },
+      ),
+  );
   await page.setViewportSize({ width: 430, height: 844 });
+  expect(await resizeLock).toEqual({
+    presetDisabled: true,
+    closeDisabled: false,
+  });
+  await appearanceDialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   await expect
     .poll(() =>
       page
@@ -3861,14 +3911,15 @@ test("preserves representative rich structures in V3", async ({ page }) => {
     "/30 chapters loaded",
   );
   const chapterSelect = page.getByRole("combobox", { name: "Chapter" });
+  const stationary = page.locator("[data-v3-stationary]");
   await expect(chapterSelect.locator("option")).toHaveCount(31);
   await chapterSelect.selectOption("6-4");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Environment" }),
+    stationary.getByRole("heading", { level: 1, name: "Environment" }),
   ).toBeVisible();
-  await expect(page.locator(".v3-chapter-opening-label")).toHaveText(
-    "Chapter 6-4",
-  );
+  await expect(
+    stationary.locator(".v3-chapter-opening-label"),
+  ).toHaveText("Chapter 6-4");
   expect(
     Number(
       await page
@@ -3878,7 +3929,7 @@ test("preserves representative rich structures in V3", async ({ page }) => {
   ).toBeGreaterThan(0);
   await chapterSelect.selectOption("2-2");
   await expect(
-    page.getByRole("heading", {
+    stationary.getByRole("heading", {
       level: 1,
       name: "The Life of a Digital Democracy",
     }),
@@ -3892,7 +3943,7 @@ test("preserves representative rich structures in V3", async ({ page }) => {
   ).toBeGreaterThan(0);
   await chapterSelect.selectOption("2-0");
   await expect(
-    page.getByRole("heading", {
+    stationary.getByRole("heading", {
       level: 1,
       name: "Information Technology and Democracy: a Widening Gulf",
     }),
@@ -3905,29 +3956,29 @@ test("preserves representative rich structures in V3", async ({ page }) => {
     ),
   ).toBeGreaterThan(0);
   await chapterSelect.selectOption("1");
-  await expect(page.locator(".v3-chapter-opening-label")).toHaveText(
-    "Chapter 1",
-  );
   await expect(
-    page.locator(".v3-sheet-chapter-opening h1"),
-  ).toHaveText("Seeing Plural");
-  const dropCap = await page
+    stationary.locator(".v3-chapter-opening-label"),
+  ).toHaveText("Chapter 1");
+  await expect(stationary.locator(".v3-sheet-chapter-opening h1")).toHaveText(
+    "Seeing Plural",
+  );
+  const dropCap = await stationary
     .locator(".v3-sheet-chapter-opening hr + p")
     .evaluate((paragraph) =>
       getComputedStyle(paragraph, "::first-letter").float,
     );
   expect(dropCap).toBe("left");
-  await page.getByRole("link", { name: "1", exact: true }).click();
+  await stationary.getByRole("link", { name: "1", exact: true }).click();
   await expect(
-    page.getByRole("heading", { level: 3, name: "Note 1" }),
+    stationary.getByRole("heading", { level: 3, name: "Note 1" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 3, name: "Note 1" }),
+    stationary.getByRole("heading", { level: 3, name: "Note 1" }),
   ).toBeFocused();
-  const backToText = page.getByRole("link", { name: "Back to text" });
+  const backToText = stationary.getByRole("link", { name: "Back to text" });
   await expect(backToText).toBeVisible();
   await backToText.click();
-  await expect(page.locator("#note-ref-1-1")).toBeFocused();
+  await expect(stationary.locator("#note-ref-1-1")).toBeFocused();
 });
 
 test("keeps Plurality chapter links local and maps licensed figures", async ({

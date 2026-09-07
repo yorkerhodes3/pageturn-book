@@ -12,6 +12,18 @@
 | External sources | Host-reviewed registry; no card-open metadata or preview fetch; preview requires explicit activation |
 | Publication images | Off makes no request; on-page loads only a reached page; pop-out loads only after activation |
 
+## V3-425 validation status
+
+Chromium automation revalidated the no-fetch local source card, disabled SDK
+route, public-text-only share renderer, source-image export exclusion, embedded
+Permissions Policy fallback, and teardown boundaries. It observed zero
+third-party local-card requests and zero renderer, preview-runtime,
+provider, or capture requests on the disabled route. Broad promotion remains
+withheld: Firefox, Safari, iOS, Android and manual NVDA, VoiceOver, and TalkBack
+were not executed, and performance/open-rights blockers remain. Exact evidence
+is in
+[V3-READER-INTERACTION-PROMOTION.md](./V3-READER-INTERACTION-PROMOTION.md).
+
 ## Data handled
 
 V3 may store the following by publication and edition:

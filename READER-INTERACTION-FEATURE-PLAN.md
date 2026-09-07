@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Ready for implementation |
+| Status | Automated V3-425 tranche complete; broad promotion withheld |
 | Decision date | 2026-09-06 |
 | Backlog | [BACKLOG.md](./BACKLOG.md), V3-418 through V3-425 |
 | Primary intent | Keep readers inside the book when useful, make selected-text actions immediate and physical, and support exact, visual scholarly sharing |
@@ -1322,6 +1322,11 @@ long tasks. Three retained clean-commit runs are still required. See
 [V3-MOBILE-PERFORMANCE.md](./V3-MOBILE-PERFORMANCE.md) for protocol, clean-HEAD
 baseline, raw-sample definition, environment, and residual variability.
 
+V3-425 follow-up evidence: a clean `b6e923e` rerun retained 1,230 intervals but
+failed under host contention at 31.3 ms p95 with 10 long tasks (maximum 140 ms).
+Three clean passing runs were therefore not obtained and V3-405 remains open.
+See [the promotion decision](./V3-READER-INTERACTION-PROMOTION.md).
+
 ## 18. Work packages
 
 ### V3-418 - exact-range target foundation
@@ -1540,7 +1545,7 @@ Acceptance:
 
 **Priority:** P1
 
-**Status:** Ready
+**Status:** Automated validation complete; broad promotion withheld
 
 **Depends on:** V3-405, V3-413, and V3-418 through V3-424
 
@@ -1554,6 +1559,17 @@ Deliver:
 - mobile and low-end tuning;
 - SDK documentation;
 - promotion decision record.
+
+Evidence: `npm run measure:v3-interactions`,
+`tests/browser/interaction-accessibility.spec.ts`, the retained clean V3-405
+attempt under `validation/`, and
+[V3-READER-INTERACTION-PROMOTION.md](./V3-READER-INTERACTION-PROMOTION.md).
+The available Chromium automation is complete. A provenance-validated detached
+baseline leaves 14 of 15 numeric gates passing, including selection at 61.1 ms
+p95. Both full Chromium matrices pass 143/143. The disabled-core payload budget,
+V3-405 clean evidence, native/embedder cleanup evidence, cross-browser, and
+manual assistive-technology gates block promotion. V3-426 tracks the required
+lazy interaction-subsystem extraction.
 
 Acceptance:
 

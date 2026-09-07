@@ -143,3 +143,14 @@ npm run measure:v3-mobile
 ```
 
 The command writes the complete machine-readable raw sample set to stdout.
+
+## V3-425 clean rerun
+
+A detached clean build of
+`b6e923e917fbe5e2aefe49a3db081eb63d2841b9` reran the final protocol on
+2026-09-07. It retained 1,260 frames and 1,230 intervals, but the host was
+contended: median 16.9 ms, p95 31.3 ms, 10 measured-window long tasks, and a
+140 ms maximum. The raw result is
+[`validation/v3-405-clean-attempt-2026-09-07.json`](./validation/v3-405-clean-attempt-2026-09-07.json).
+This is failure evidence, not one of the three clean passes required to close
+V3-405. V3-405 remains in progress.

@@ -215,6 +215,7 @@ demo controller or depend on the repository's built-in catalog.
 - [Semantic page-turn geometry plan](./SEMANTIC-PAGE-TURN-GEOMETRY-PLAN.md)
 - [V3 library review](./V3-LIBRARY-REVIEW.md)
 - [V3 mobile performance](./V3-MOBILE-PERFORMANCE.md)
+- [V3 reader interaction promotion decision](./V3-READER-INTERACTION-PROMOTION.md)
 - [V3 local-data privacy review](./V3-LOCAL-DATA-PRIVACY-REVIEW.md)
 - [Plurality source record](./apps/fixtures/plurality/SOURCE.md)
 - [Human Choice source record](./apps/fixtures/human-choice-source-guide/SOURCE.md)
