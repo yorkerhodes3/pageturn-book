@@ -541,6 +541,7 @@ function isAtRest(
 function solvePageTurnWithCalculation(
   input: PageTurnInput,
   calculation: FoldCalculation,
+  includeRevealedClip = true,
 ): PageTurnResult {
   assertFinitePoint(input.pointer, "pointer");
 
@@ -554,9 +555,15 @@ function solvePageTurnWithCalculation(
   }
 
   const moving = movingClip(state, input.corner);
-  const revealed = revealedClip(state, input.page, input.corner);
+  const revealed = includeRevealedClip
+    ? revealedClip(state, input.page, input.corner)
+    : [];
   const foldSegment = shadowSegment(state.intersections, input.corner);
-  if (moving.length < 3 || revealed.length < 3 || foldSegment === undefined) {
+  if (
+    moving.length < 3 ||
+    (includeRevealedClip && revealed.length < 3) ||
+    foldSegment === undefined
+  ) {
     return { status: "degenerate", reason: "unsolved-intersection" };
   }
 
@@ -625,6 +632,7 @@ export function solvePageTurn(input: PageTurnInput): PageTurnResult {
 export function createPageTurnFrameSolver(
   page: PageTurnSize,
   corner: PageTurnCorner,
+  options: Readonly<{ includeRevealedClip?: boolean }> = {},
 ): (direction: PageTurnDirection, pointer: PageTurnPoint) => PageTurnResult {
   assertPositiveFinite(page.width, "page.width");
   assertPositiveFinite(page.height, "page.height");
@@ -633,5 +641,6 @@ export function createPageTurnFrameSolver(
     solvePageTurnWithCalculation(
       { page, corner, direction, pointer },
       calculation,
+      options.includeRevealedClip ?? true,
     );
 }

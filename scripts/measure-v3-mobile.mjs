@@ -8,6 +8,7 @@ import { preview } from "vite";
 
 const viewport = { width: 390, height: 844 };
 const warmUpRuns = 5;
+const warmUpSettleMs = 750;
 const measuredRunCount = 30;
 const gestureFrames = 42;
 const maximumFrameIntervalMs = 22.2;
@@ -381,6 +382,9 @@ try {
 
   for (let index = 0; index < warmUpRuns + measuredRunCount; index += 1) {
     const measured = index >= warmUpRuns;
+    if (index === warmUpRuns) {
+      await page.waitForTimeout(warmUpSettleMs);
+    }
     await page.mouse.move(gesture.startX, gesture.startY);
     await page.evaluate(
       ({
@@ -411,18 +415,6 @@ try {
         if (!corner || !spread) {
           throw new Error("V3 benchmark gesture controls are unavailable");
         }
-        const pointerMoves = Array.from({ length: frames }, (_, index) => {
-          const progress = (index + 1) / frames;
-          return new PointerEvent("pointermove", {
-            bubbles: true,
-            pointerId: 1,
-            pointerType: "mouse",
-            isPrimary: true,
-            buttons: 1,
-            clientX: startX + (endX - startX) * progress,
-            clientY: startY + (endY - startY) * progress,
-          });
-        });
         const pointerCancel = new PointerEvent("pointercancel", {
           bubbles: true,
           pointerId: 1,
@@ -462,11 +454,18 @@ try {
                 metrics.activeRun = run;
               }
               frame += 1;
-              const pointerMove = pointerMoves[frame - 1];
-              if (!pointerMove) {
-                throw new Error("V3 benchmark pointer sample is unavailable");
-              }
-              spread.dispatchEvent(pointerMove);
+              const progress = frame / frames;
+              spread.dispatchEvent(
+                new PointerEvent("pointermove", {
+                  bubbles: true,
+                  pointerId: 1,
+                  pointerType: "mouse",
+                  isPrimary: true,
+                  buttons: 1,
+                  clientX: startX + (endX - startX) * progress,
+                  clientY: startY + (endY - startY) * progress,
+                }),
+              );
               if (frame < frames) {
                 requestAnimationFrame(animate);
                 return;
@@ -569,6 +568,7 @@ try {
   const result = {
     protocol: {
       warmUpRunsDiscarded: warmUpRuns,
+      warmUpSettleMs,
       measuredRuns: measuredRunCount,
       gesture:
         `${gestureFrames}-frame top-right-corner drag, then pointercancel and ` +

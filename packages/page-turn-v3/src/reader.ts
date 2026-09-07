@@ -2795,6 +2795,7 @@ function renderMarginalia(
         ),
         gap: compact ? 5 : 8,
         groupHeight: compact ? 22 : 28,
+        maximumVisibleNotes: compact ? 4 : 20,
       },
     );
     const layer = marginaliaLayer(sheet, side, decorative);
@@ -6706,7 +6707,9 @@ function beginTurn(
   const curveMinimumWidth = page.width * (0.08 + foldRadius * 0.12);
   const shadowOpacityScale = 0.28 + foldShadow * 0.42;
   const curveOpacityScale = 0.25 + foldRadius * 0.28;
-  const solve = createPageTurnFrameSolver(page, corner);
+  const solve = createPageTurnFrameSolver(page, corner, {
+    includeRevealedClip: false,
+  });
   const cachedVisual =
     turnVisualCache?.spreadStart === spreadStart &&
     turnVisualCache.direction === direction &&

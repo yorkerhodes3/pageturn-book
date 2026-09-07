@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createPageTurnFrameSolver,
   solvePageTurn,
   type PageTurnFrame,
   type PageTurnPoint,
@@ -331,5 +332,25 @@ describe("solvePageTurn", () => {
       }
     }
     expect(solved).toBeGreaterThan(100);
+  });
+
+  it("lets the opaque-underlay runtime omit its unused revealed polygon", () => {
+    const pointer = { x: 260, y: 120 };
+    const complete = solvedFrame({
+      page,
+      direction: "forward",
+      corner: "top",
+      pointer,
+    });
+    const result = createPageTurnFrameSolver(page, "top", {
+      includeRevealedClip: false,
+    })("forward", pointer);
+    if (result.status !== "ok") {
+      throw new Error(`Expected solved frame, received ${result.reason}`);
+    }
+
+    expect(result.frame.revealedClip).toEqual([]);
+    expect(result.frame.movingClip).toEqual(complete.movingClip);
+    expect(result.frame.shadow).toEqual(complete.shadow);
   });
 });

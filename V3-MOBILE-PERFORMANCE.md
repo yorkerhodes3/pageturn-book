@@ -28,7 +28,8 @@ That result created V3-405 because the 4x result exceeded 22.2 ms.
   duplicates that record to 20 in one IndexedDB transaction, reloads, then
   verifies the styled image and marginalia/group marker are visible;
 - performs identical 42-frame top-corner drags, cancels and resets on the same
-  page, discards five warm-ups, and measures 30 runs;
+  page, discards five warm-ups, allows 750 ms for deferred warm-up work to
+  settle, and then measures 30 continuous runs;
 - pools only the 41 adjacent `data-v3-progress` intervals within each measured
   drag (1,230 raw intervals total). Pointer-down setup, cancellation/reset, and
   inter-run gaps are excluded from both frame and long-task windows;
