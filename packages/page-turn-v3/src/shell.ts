@@ -52,35 +52,6 @@ const shellMarkup = `
             aria-label="Increase book text size"
           >A+</button>
         </div>
-        <div class="v3-media-picker" data-v3-media-picker hidden>
-          <label>
-            <span>Display</span>
-            <select
-              data-v3-media-display
-              data-v3-media-treatment
-              aria-label="Image display"
-            >
-              <option value="off">Off</option>
-              <option value="on">On page</option>
-              <option value="popout">Pop-out</option>
-            </select>
-          </label>
-          <label>
-            <span>Style</span>
-            <select data-v3-media-style aria-label="Image style">
-              <option value="original">Original</option>
-              <option value="book-toned">Book-toned</option>
-              <option value="monochrome">Monochrome</option>
-              <option value="duotone">Duotone</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          class="v3-share"
-          data-v3-share
-          aria-label="Share location"
-        >Share</button>
         <button
           type="button"
           class="v3-selection-entry"
@@ -315,16 +286,16 @@ const shellMarkup = `
       </div>
       <h2 id="v3-appearance-title">Book appearance</h2>
       <p>
-        Test material, paper, typography, and physical-page combinations.
+        Test material, paper, typography, physical-page, and graphic combinations.
         Changes affect this reader session only.
       </p>
 
-      <label class="v3-appearance-wide">
+      <label class="v3-appearance-wide" data-v3-appearance-only>
         <span>Preset</span>
         <select data-v3-appearance-preset></select>
       </label>
 
-      <fieldset>
+      <fieldset data-v3-appearance-only>
         <legend>Paper</legend>
         <label>
           <span>Paper color</span>
@@ -377,33 +348,60 @@ const shellMarkup = `
         </label>
       </fieldset>
 
-      <fieldset>
-        <legend>Typography</legend>
-        <label>
-          <span>Typeface</span>
-          <select data-v3-typeface>
-            <option value="classic">Classic serif</option>
-            <option value="antique">Antique serif</option>
-            <option value="modern">Modern sans serif</option>
-            <option value="technical">Technical monospace</option>
-            <option value="handwritten">Handwritten notebook</option>
-          </select>
-        </label>
-        <label>
-          <span>Line height</span>
-          <input type="range" min="1.25" max="1.8" step="0.01" data-v3-line-height>
-        </label>
-        <label>
-          <span>Base type scale</span>
-          <input type="range" min="0.75" max="1.35" step="0.01" data-v3-base-type-scale>
-        </label>
-        <label class="v3-appearance-checkbox">
-          <input type="checkbox" data-v3-drop-cap>
-          <span>Decorative opening initial</span>
-        </label>
-      </fieldset>
+      <div class="v3-appearance-stack">
+        <fieldset class="v3-appearance-typography" data-v3-appearance-only>
+          <legend>Typography</legend>
+          <label>
+            <span>Typeface</span>
+            <select data-v3-typeface>
+              <option value="classic">Classic serif</option>
+              <option value="antique">Antique serif</option>
+              <option value="modern">Modern sans serif</option>
+              <option value="technical">Technical monospace</option>
+              <option value="handwritten">Handwritten notebook</option>
+            </select>
+          </label>
+          <label>
+            <span>Line height</span>
+            <input type="range" min="1.25" max="1.8" step="0.01" data-v3-line-height>
+          </label>
+          <label>
+            <span>Base type scale</span>
+            <input type="range" min="0.75" max="1.35" step="0.01" data-v3-base-type-scale>
+          </label>
+          <label class="v3-appearance-checkbox">
+            <input type="checkbox" data-v3-drop-cap>
+            <span>Decorative opening initial</span>
+          </label>
+        </fieldset>
 
-      <fieldset>
+        <fieldset class="v3-media-picker" data-v3-media-picker hidden>
+          <legend>Graphic handling</legend>
+          <label>
+            <span>Display</span>
+            <select
+              data-v3-media-display
+              data-v3-media-treatment
+              aria-label="Image display"
+            >
+              <option value="off">Off</option>
+              <option value="on">On page</option>
+              <option value="popout">Pop-out</option>
+            </select>
+          </label>
+          <label>
+            <span>Style</span>
+            <select data-v3-media-style aria-label="Image style">
+              <option value="original">Original</option>
+              <option value="book-toned">Book-toned</option>
+              <option value="monochrome">Monochrome</option>
+              <option value="duotone">Duotone</option>
+            </select>
+          </label>
+        </fieldset>
+      </div>
+
+      <fieldset data-v3-appearance-only>
         <legend>Page geometry</legend>
         <label>
           <span>Gutter lift</span>
@@ -435,7 +433,7 @@ const shellMarkup = `
         </label>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-v3-appearance-only>
         <legend>Binding</legend>
         <label>
           <span>Material</span>
@@ -488,7 +486,7 @@ const shellMarkup = `
       </fieldset>
 
       <div class="v3-appearance-actions">
-        <button type="button" data-v3-reset-appearance>
+        <button type="button" data-v3-reset-appearance data-v3-appearance-only>
           Reset publication appearance
         </button>
         <output data-v3-appearance-status role="status">

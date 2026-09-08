@@ -85,7 +85,7 @@ V3 currently:
 
 - accepts a 2 to 2,000 character selection within one composed sheet;
 - records chapter, source anchor, and normalized quote;
-- changes the permanent Share control to **Share selection**;
+- exposes **Share** only in the contextual selected-text actions;
 - stores local annotations with a quote, note, source anchor, and timestamp;
 - marks the entire source block when it contains an annotation;
 - manages and exports annotations through Explore.
@@ -665,7 +665,8 @@ programmatic name and a short visual tooltip.
 - Do not cover selection text, page-turn corners, or the binding.
 - When no collision-free adjacent placement exists, use the bottom dock. If the
   dock would also cover the selection or native controls, keep actions available
-  through the permanent reader toolbar and hide the contextual pill.
+  through the **Selection actions** entry in the reader toolbar and hide the
+  contextual pill.
 
 ### 8.4 Touch placement
 

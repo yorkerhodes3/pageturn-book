@@ -410,6 +410,7 @@ const canCreateDurableLinks =
 const resolvedSharePolicy = resolvePageTurnSharePolicy(options.sharePolicy);
 const shareCapabilities = pageTurnShareCapabilities(resolvedSharePolicy);
 const shareComposerEnabled = options.shareComposer ?? false;
+const appearanceControlsEnabled = options.appearanceControls ?? managesUrl;
 const originalDocumentTitle = document.title;
 const managesDocumentTitle = options.updateDocumentTitle ?? managesUrl;
 let assignedDocumentTitle: string | undefined;
@@ -529,6 +530,8 @@ function applyPublicationIdentity(publication: PageTurnBookManifest): void {
   );
   applyPageTurnAppearance(reader, currentAppearance);
   renderAppearanceControls();
+  appearanceButton.hidden =
+    !appearanceControlsEnabled && mediaConfig === undefined;
   mediaPicker.hidden = mediaConfig === undefined;
   mediaSelect.disabled = mediaConfig === undefined;
   mediaSelect.value = mediaTreatment;
@@ -599,21 +602,6 @@ function refreshTurnAccessibilityProxy(): void {
   }
   turnAccessibilityProxy.replaceChildren(...Array.from(clone.childNodes));
   turnAccessibilityProxy.hidden = true;
-}
-
-function decorativeSheetClone(sheet: HTMLElement): HTMLElement {
-  const clone = sheet.cloneNode(true) as HTMLElement;
-  stripInteractiveIdentity(clone);
-  clone.setAttribute("aria-hidden", "true");
-  clone.inert = true;
-  for (const button of clone.querySelectorAll<HTMLButtonElement>(
-    "[data-v3-marginalia] button",
-  )) {
-    const note = createElement("span", button.className, button.textContent ?? "");
-    note.style.cssText = button.style.cssText;
-    button.replaceWith(note);
-  }
-  return clone;
 }
 
 function chapterOpeningLabel(text: string): HTMLElement {
@@ -1883,7 +1871,6 @@ const increaseFont = requiredElement<HTMLButtonElement>(
 const fontStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-font-status]",
 );
-const shareButton = requiredElement<HTMLButtonElement>("[data-v3-share]");
 const shareStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-share-status]",
 );
@@ -2077,6 +2064,9 @@ const appearanceMutationControls = Array.from(
     HTMLButtonElement | HTMLInputElement | HTMLSelectElement
   >("button, input, select"),
 ).filter((control) => control !== closeAppearance);
+const appearanceOnlyControls = Array.from(
+  appearanceForm.querySelectorAll<HTMLElement>("[data-v3-appearance-only]"),
+);
 const appearanceStatus = requiredElement<HTMLOutputElement>(
   "[data-v3-appearance-status]",
 );
@@ -2186,11 +2176,10 @@ const next = requiredElement<HTMLButtonElement>("[data-v3-next]");
 const corners = Array.from(
   root.querySelectorAll<HTMLButtonElement>("[data-v3-direction]"),
 );
-shareButton.hidden = !canCreateDurableLinks;
-shareButton.title = resolvedSharePolicy.message;
 shareStatus.value = resolvedSharePolicy.message;
 shareEmbedNote.hidden = options.embedded !== true;
-appearanceButton.hidden = !(options.appearanceControls ?? managesUrl);
+appearanceButton.hidden =
+  !appearanceControlsEnabled && mediaConfig === undefined;
 const singlePageMedia = globalThis.matchMedia("(max-width: 48rem)");
 const reducedMotion = globalThis.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -4701,30 +4690,6 @@ function renderFontControls(): void {
 }
 
 function renderSelectionControls(): void {
-  const selectionPending =
-    pendingSelection !== undefined && pendingSelection.target === undefined;
-  shareButton.textContent =
-    selectionPending
-      ? shareCapabilities.quote
-        ? "Preparing selection"
-        : "Preparing passage"
-      : pendingSelection
-        ? shareCapabilities.quote
-          ? "Share selection"
-          : "Share passage"
-        : "Share";
-  shareButton.setAttribute(
-    "aria-label",
-    selectionPending
-      ? shareCapabilities.quote
-        ? "Preparing selected text"
-        : "Preparing passage location"
-      : pendingSelection
-        ? shareCapabilities.quote
-          ? "Share selected text and location"
-          : "Share passage location"
-        : "Share location",
-  );
   updateSelectionActionCapabilities();
 }
 
@@ -4857,6 +4822,9 @@ function presetDescription(presetId: PageTurnAppearancePresetId): string {
 }
 
 function renderAppearanceControls(): void {
+  for (const control of appearanceOnlyControls) {
+    control.hidden = !appearanceControlsEnabled;
+  }
   if (appearancePreset.options.length === 0) {
     appearancePreset.append(
       ...PAGE_TURN_APPEARANCE_PRESETS.map(
@@ -5105,16 +5073,6 @@ function renderControls(): void {
       !canTurn(direction) ||
       !turnTargetReady(direction);
   }
-  shareButton.disabled =
-    !canCreateDurableLinks ||
-    !shareCapabilities.location ||
-    opening ||
-    pendingTurn ||
-    resizing ||
-    activeTurn !== undefined ||
-    sharing ||
-    manifest === undefined ||
-    (pendingSelection !== undefined && pendingSelection.target === undefined);
   renderFontControls();
   renderSelectionControls();
 }
@@ -5931,7 +5889,7 @@ async function openShareComposer(
 }
 
 async function shareCurrentLocation(
-  requestedSelection: V3Selection | undefined = pendingSelection,
+  requestedSelection: V3Selection,
   preparedSelection?: Readonly<{
     value: V3PermittedShareSelection | undefined;
   }>,
@@ -6031,17 +5989,6 @@ async function shareValidatedSelection(
       );
     }
   }
-}
-
-async function shareFromPrimaryControl(): Promise<void> {
-  const current = pendingSelection?.target
-    ? currentSelectionAction()
-    : undefined;
-  if (current) {
-    await shareValidatedSelection(current);
-    return;
-  }
-  await shareCurrentLocation(undefined);
 }
 
 function sourceLocalUrl(
@@ -6663,6 +6610,7 @@ async function goToChapter(
 function turnPages(direction: PageTurnDirection): {
   moving: PrototypePage;
   movingIndex: number;
+  movingSide: "left" | "right";
   revealed: PrototypePage;
   revealedIndex: number;
   revealedSide: "left" | "right";
@@ -6673,6 +6621,7 @@ function turnPages(direction: PageTurnDirection): {
     return {
       moving: pageAt(movingIndex),
       movingIndex,
+      movingSide: "right",
       revealed: pageAt(target),
       revealedIndex: target,
       revealedSide: "right",
@@ -6680,15 +6629,17 @@ function turnPages(direction: PageTurnDirection): {
   }
   return direction === "forward"
     ? {
-        moving: pageAt(target),
-        movingIndex: target,
+        moving: pageAt(spreadStart + 1),
+        movingIndex: spreadStart + 1,
+        movingSide: "right",
         revealed: pageAt(target + 1),
         revealedIndex: target + 1,
         revealedSide: "right",
       }
     : {
-        moving: pageAt(target + 1),
-        movingIndex: target + 1,
+        moving: pageAt(spreadStart),
+        movingIndex: spreadStart,
+        movingSide: "left",
         revealed: pageAt(target),
         revealedIndex: target,
         revealedSide: "left",
@@ -6789,19 +6740,14 @@ function beginTurn(
       direction === "forward" ? "90deg" : "270deg",
     );
   }
-  const stationarySheet = singlePage
-    ? stationary.querySelector<HTMLElement>(".v3-sheet")
-    : undefined;
   const movingSheet =
     cachedVisual?.movingSheet ??
-    (stationarySheet
-      ? decorativeSheetClone(stationarySheet)
-      : createSheet(
-          selected.moving,
-          direction === "forward" ? "left" : "right",
-          selected.movingIndex + 1,
-          true,
-        ));
+    createSheet(
+      selected.moving,
+      selected.movingSide,
+      selected.movingIndex + 1,
+      true,
+    );
   if (!cachedVisual) {
     movingClip.append(
       createElement("div", "v3-paper-occluder"),
@@ -6859,9 +6805,7 @@ function beginTurn(
     turnLayer.replaceChildren(revealed, moving, shadow, curve);
   }
   if (!cachedVisual) {
-    if (!stationarySheet) {
-      renderMarginalia(moving, true);
-    }
+    renderMarginalia(moving, true);
     renderMarginalia(revealed, true);
   }
 
@@ -8593,11 +8537,6 @@ increaseFont.addEventListener(
   () => setFontScale(fontScale + 0.1),
   listenerOptions,
 );
-shareButton.addEventListener(
-  "click",
-  () => void shareFromPrimaryControl(),
-  listenerOptions,
-);
 shareDialog.addEventListener(
   "close",
   () => {
@@ -9014,7 +8953,7 @@ document.addEventListener(
       event.target instanceof Element
         ? event.target.closest(
             "[data-v3-selection-actions], [data-v3-selection-entry], " +
-              "[data-v3-share], [data-v3-explore]",
+              "[data-v3-explore]",
           )
         : null;
     if (

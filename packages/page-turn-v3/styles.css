@@ -137,7 +137,7 @@
 
 .v3-reader-toolbar {
   display: grid;
-  grid-template-columns: auto auto auto minmax(14rem, 1fr) auto auto auto auto auto;
+  grid-template-columns: auto auto auto minmax(14rem, 1fr) auto auto auto;
   gap: 0.55rem;
   align-items: center;
   min-height: 2.8rem;
@@ -165,7 +165,6 @@
 .v3-explore,
 .v3-appearance,
 .v3-font-controls button,
-.v3-share,
 .v3-selection-entry {
   min-height: 1.9rem;
   border: 1px solid #a7864c;
@@ -338,8 +337,7 @@
   border: 1px solid rgb(211 179 116 / 32%);
 }
 
-.v3-font-controls button,
-.v3-share {
+.v3-font-controls button {
   padding: 0.35rem 0.58rem;
 }
 
@@ -377,32 +375,8 @@
   font: 650 0.68rem/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-.v3-media-picker {
-  display: flex;
-  gap: 0.55rem;
-  align-items: center;
-  color: #9f988b;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.v3-media-picker label {
-  display: flex;
-  gap: 0.3rem;
-  align-items: center;
-}
-
 .v3-media-picker[hidden] {
   display: none;
-}
-
-.v3-media-picker select {
-  padding: 0.35rem 0.4rem;
-  border: 1px solid rgb(211 179 116 / 32%);
-  background: #111817;
-  color: #e7ddca;
-  font: 650 0.68rem/1.2 Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 .v3-resume-notice {
@@ -1513,6 +1487,11 @@ button.v3-marginalia-group {
   border-bottom-left-radius: 0;
 }
 
+.v3-turn-surface .v3-sheet {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 .v3-fold-shadow {
   position: absolute;
   z-index: 5;
@@ -1667,7 +1646,6 @@ button.v3-marginalia-group {
 }
 
 .v3-font-controls button,
-.v3-share,
 .v3-controls button,
 .v3-placeholder-retry {
   background: #17211f;
@@ -2204,6 +2182,24 @@ button.v3-marginalia-group {
   border: 1px solid rgb(211 179 116 / 22%);
 }
 
+.v3-appearance-frame [hidden] {
+  display: none;
+}
+
+.v3-appearance-stack {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.v3-appearance-typography,
+.v3-appearance-frame .v3-media-picker {
+  align-self: start;
+  gap: 0.5rem;
+  padding: 0.7rem;
+}
+
 .v3-appearance-frame legend {
   padding: 0 0.4rem;
   color: #e5cc97;
@@ -2590,27 +2586,9 @@ button.v3-marginalia-group {
     text-align: end;
   }
 
-  .v3-media-picker {
-    grid-row: 3;
-    grid-column: 2 / 4;
-  }
-
-  .v3-media-picker select {
-    width: 100%;
-  }
-
-  .v3-media-picker label > span {
-    display: none;
-  }
-
   .v3-font-controls {
     grid-row: 3;
     grid-column: 1;
-  }
-
-  .v3-reader-toolbar > .v3-share {
-    grid-row: 3;
-    grid-column: 4;
   }
 
   .v3-reader-toolbar > .v3-selection-entry {
@@ -2671,24 +2649,9 @@ button.v3-marginalia-group {
     column-gap: 0.35rem;
   }
 
-  .v3-media-picker {
-    grid-row: 4;
-    grid-column: 1 / -1;
-  }
-
   .v3-appearance {
     grid-row: 1;
     grid-column: 3;
-  }
-
-  .v3-media-picker select {
-    width: 100%;
-  }
-
-  .v3-reader-toolbar > .v3-share {
-    overflow: hidden;
-    padding-inline: 0.4rem;
-    text-overflow: ellipsis;
   }
 }
 

@@ -375,7 +375,8 @@ reproduce the numeric profile with
 Set `selectionActions: true` to enable the accessible Copy, Share, Highlight,
 and Annotate toolbar. The hosted reader enables it; SDK consumers opt in.
 Share appears only when `urlMode: "managed"` or `locationUrl` provides durable
-links, and Annotate appears after local IndexedDB storage is available.
+links, and Annotate appears after local IndexedDB storage is available. Share is
+contextual to selected text; there is no separate header Share button.
 Highlights store a resolved `PageTurnAnnotationV2` locally and render the exact
 range.
 
@@ -488,8 +489,11 @@ Available presets are:
 - `handwritten-notebook`
 
 `appearanceControls: true` exposes the same fields through the compact Style
-gear and session-only overlay. Typeface and line-height changes repaginate
-around the current source anchor; paint-only changes apply immediately.
+gear and session-only overlay. The overlay also contains the publication's
+Graphic handling display/style controls when figures are configured; those
+controls are intentionally absent from the reading toolbar. Typeface and
+line-height changes repaginate around the current source anchor; paint-only
+changes apply immediately.
 
 `annotationAppearance` independently configures marginalia. The zero-download
 handwriting fallback is `"Segoe Print", "Bradley Hand", cursive`; Explore also

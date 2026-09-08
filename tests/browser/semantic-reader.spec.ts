@@ -83,6 +83,97 @@ async function selectLeadingText(
   }, maximumCharacters);
 }
 
+async function exposeSelectionActions(page: Page): Promise<void> {
+  const entry = page.getByRole("button", { name: "Selection actions" });
+  if (await entry.isVisible()) {
+    await entry.click();
+  }
+}
+
+async function openGraphicHandling(page: Page): Promise<{
+  dialog: Locator;
+  display: Locator;
+  style: Locator;
+}> {
+  await page.getByRole("button", { name: "Book appearance settings" }).click();
+  const dialog = page.getByRole("dialog", { name: "Book appearance" });
+  await expect(dialog).toBeVisible();
+  const group = dialog.getByRole("group", { name: "Graphic handling" });
+  await expect(group).toBeVisible();
+  return {
+    dialog,
+    display: group.getByLabel("Image display"),
+    style: group.getByLabel("Image style"),
+  };
+}
+
+async function expectGrabbedPageFace(
+  page: Page,
+  direction: "forward" | "backward",
+  corner: "top" | "bottom",
+): Promise<void> {
+  const reader = page.locator("[data-v3-reader]");
+  const singlePage = await page
+    .locator("[data-v3-spread]")
+    .evaluate((spread) => spread.classList.contains("v3-spread-single"));
+  const stationarySheet = page.locator(
+    singlePage
+      ? "[data-v3-stationary] .v3-sheet"
+      : `[data-v3-stationary] .v3-sheet-${
+          direction === "forward" ? "right" : "left"
+        }`,
+  );
+  const expected = await stationarySheet.evaluate((sheet) => ({
+    label: sheet.getAttribute("aria-label"),
+    text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+    side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
+  }));
+  expect(expected.label).toBeTruthy();
+  expect(expected.text.length).toBeGreaterThan(0);
+
+  const turn = page.getByRole("button", {
+    name:
+      `Turn the ${direction === "forward" ? "next" : "previous"} page ` +
+      `from its ${corner} corner`,
+  });
+  await expect(turn).toBeEnabled();
+  const bounds = await turn.boundingBox();
+  const spreadBounds = await page.locator("[data-v3-spread]").boundingBox();
+  if (!bounds || !spreadBounds) {
+    throw new Error("Expected a visible page-turn corner");
+  }
+  await page.mouse.move(
+    bounds.x + bounds.width / 2,
+    bounds.y + bounds.height / 2,
+  );
+  await page.mouse.down();
+  await expect(reader).toHaveAttribute("data-v3-turning", "true");
+  await page.mouse.move(
+    spreadBounds.x +
+      spreadBounds.width *
+        (singlePage
+          ? direction === "forward"
+            ? 0.25
+            : 0.75
+          : direction === "forward"
+            ? 0.55
+            : 0.45),
+    spreadBounds.y + spreadBounds.height * (corner === "top" ? 0.2 : 0.8),
+    { steps: 6 },
+  );
+  await expect(page.locator(".v3-turn-surface")).toBeVisible();
+  const movingSheet = page.locator(".v3-turn-surface .v3-sheet");
+  await expect(movingSheet).toHaveAttribute("aria-label", expected.label ?? "");
+  expect(
+    await movingSheet.evaluate((sheet) => ({
+      text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+      side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
+    })),
+  ).toEqual({ text: expected.text, side: expected.side });
+  await page.mouse.up();
+  await expect(reader).toHaveAttribute("data-v3-turning", "false");
+}
+
 test("presents V3 as the supported reader from the landing page", async ({
   page,
 }) => {
@@ -123,7 +214,9 @@ test("documents implemented and planned capabilities on the dashboard", async ({
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("row", { name: /Share current reading location Implemented/ }),
+    page.getByRole("row", {
+      name: /Share selected passage and exact location Implemented/,
+    }),
   ).toBeVisible();
   await expect(
     page.getByRole("row", { name: /Bounded chapter-window loading V3 implemented/ }),
@@ -242,6 +335,9 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   expect(physicalGeometry.spreadZIndex).toBe("auto");
   expect(physicalGeometry.spreadIsolation).toBe("auto");
 
+  const grabbedFaceText = await page
+    .locator("[data-v3-stationary] .v3-sheet-right")
+    .evaluate((sheet) => sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "");
   const bounds = await spread.boundingBox();
   const corner = page.getByRole("button", {
   name: "Turn the next page from its top corner",
@@ -310,7 +406,11 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   const revealed = page.locator(".v3-revealed-page");
   await expect(moving).toBeVisible();
   await expect(revealed).toBeVisible();
-  await expect(moving).toContainText("The question");
+  expect(
+    await moving.evaluate(
+      (surface) => surface.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+    ),
+  ).toBe(grabbedFaceText);
   await expect(revealed).toContainText("Executive Summary");
   await expect(moving).toHaveAttribute("aria-hidden", "true");
   await expect(revealed).toHaveAttribute("aria-hidden", "true");
@@ -523,8 +623,8 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   "Publication record",
   );
   await expect(
-    page.locator(".v3-turn-surface .v3-sheet-right"),
-  ).toHaveCSS("border-bottom-left-radius", "0px");
+    page.locator(".v3-turn-surface .v3-sheet-left"),
+  ).toHaveCSS("border-bottom-right-radius", "0px");
   await expect(
     page.locator(".v3-revealed-page .v3-sheet-left"),
   ).toHaveCSS("border-bottom-right-radius", "0px");
@@ -708,7 +808,7 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     .evaluate((moving) => {
       const layer = moving.closest("[data-v3-turn-layer]");
       const spread = moving.closest("[data-v3-spread]");
-      const sheet = moving.querySelector<HTMLElement>(".v3-sheet-left");
+      const sheet = moving.querySelector<HTMLElement>(".v3-sheet-right");
       const revealedSheet = layer?.querySelector<HTMLElement>(
         ".v3-revealed-page .v3-sheet-right",
       );
@@ -794,7 +894,6 @@ test("uses the library as the direct-entry back destination", async ({
     const font = node
       .querySelector(".v3-font-controls")
       ?.getBoundingClientRect();
-    const share = node.querySelector("[data-v3-share]")?.getBoundingClientRect();
     const chapter = node
       .querySelector(".v3-chapter-picker")
       ?.getBoundingClientRect();
@@ -812,15 +911,12 @@ test("uses the library as the direct-entry back destination", async ({
         back.right <= explore.left &&
         explore.right <= appearance.left &&
         appearance.right <= counter.left,
-      thirdRowCenters: [font, share].map((bounds) =>
+      thirdRowCenters: [font].map((bounds) =>
         bounds ? bounds.top + bounds.height / 2 : undefined,
       ),
       chapterTop: chapter?.top,
       chapterBottom: chapter?.bottom,
-      thirdRowTop: Math.min(
-        font?.top ?? Number.POSITIVE_INFINITY,
-        share?.top ?? Number.POSITIVE_INFINITY,
-      ),
+      thirdRowTop: font?.top ?? Number.POSITIVE_INFINITY,
       overflow:
         document.documentElement.scrollWidth -
         document.documentElement.clientWidth,
@@ -850,7 +946,8 @@ test("uses the library as the direct-entry back destination", async ({
   expect(toolbarLayout.overflow).toBeLessThanOrEqual(1);
   await expect(
     page.getByRole("button", { name: "Share location" }),
-  ).toBeVisible();
+  ).toHaveCount(0);
+  await expect(toolbar.locator("[data-v3-media-picker]")).toHaveCount(0);
   await page.getByRole("button", { name: "Explore" }).click();
   await expect(
     page.getByRole("dialog", { name: "Explore this book" }),
@@ -930,27 +1027,25 @@ test("uses clean opening focus and compact mobile running heads", async ({
     const font = node
       .querySelector(".v3-font-controls")
       ?.getBoundingClientRect();
-    const share = node
-      .querySelector("[data-v3-share]")
-      ?.getBoundingClientRect();
-    const media = node
-      .querySelector(".v3-media-picker")
+    const chapter = node
+      .querySelector(".v3-chapter-picker")
       ?.getBoundingClientRect();
     return {
       rows: getComputedStyle(node).gridTemplateRows.trim().split(/\s+/).length,
-      mediaBelowControls:
-        media !== undefined &&
+      fontBelowChapter:
         font !== undefined &&
-        share !== undefined &&
-        media.top >= Math.max(font.bottom, share.bottom),
+        chapter !== undefined &&
+        font.top >= chapter.bottom,
+      hasMediaControls: node.querySelector("[data-v3-media-picker]") !== null,
       overflow:
         document.documentElement.scrollWidth -
         document.documentElement.clientWidth,
     };
   });
   expect(narrowLayout).toEqual({
-    rows: 4,
-    mediaBelowControls: true,
+    rows: 3,
+    fontBelowChapter: true,
+    hasMediaControls: false,
     overflow: 0,
   });
   await page.getByRole("button", { name: "Explore" }).click();
@@ -977,6 +1072,37 @@ test("previews typed book appearance presets from the gear dialog", async ({
   await expect(dialog).toBeVisible();
   const preset = dialog.getByLabel("Preset");
   await expect(preset.locator("option")).toHaveCount(8);
+  const typography = dialog.getByRole("group", { name: "Typography" });
+  const graphicHandling = dialog.getByRole("group", {
+    name: "Graphic handling",
+  });
+  await expect(typography).toBeVisible();
+  await expect(graphicHandling).toBeVisible();
+  await expect(graphicHandling.getByLabel("Image display")).toHaveValue("popout");
+  await expect(graphicHandling.getByLabel("Image style")).toHaveValue(
+    "book-toned",
+  );
+  const appearanceLayout = await dialog.evaluate((node) => {
+    const paper = node.querySelector("fieldset");
+    const typography = node.querySelector(".v3-appearance-typography");
+    const graphics = node.querySelector("[data-v3-media-picker]");
+    if (!paper || !typography || !graphics) {
+      throw new Error("Expected appearance control groups");
+    }
+    const paperBounds = paper.getBoundingClientRect();
+    const typographyBounds = typography.getBoundingClientRect();
+    const graphicsBounds = graphics.getBoundingClientRect();
+    return {
+      typographyIsCompact: typographyBounds.height < paperBounds.height,
+      graphicsBelowTypography: graphicsBounds.top >= typographyBounds.bottom,
+      sharedColumn: Math.abs(graphicsBounds.left - typographyBounds.left) <= 1,
+    };
+  });
+  expect(appearanceLayout).toEqual({
+    typographyIsCompact: true,
+    graphicsBelowTypography: true,
+    sharedColumn: true,
+  });
 
   await preset.selectOption("antique-greek");
   await expect(reader).toHaveAttribute(
@@ -1233,6 +1359,31 @@ test("turns backward with distinct current and destination phone faces", async (
   expect(progress).toMatch(/^path\(/);
   await page.mouse.up();
   await expect(page.locator("[data-v3-counter]")).toHaveText(/Page 1 of/);
+});
+
+test("keeps the grabbed page face stable in spread and phone turns", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=off#responsible-ai",
+    ),
+  );
+  const reader = page.locator("[data-v3-reader]");
+  await expect(reader).toHaveAttribute("data-v3-opening", "false");
+
+  await expectGrabbedPageFace(page, "forward", "top");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.getByRole("button", { name: "Next spread" }).click();
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await expectGrabbedPageFace(page, "backward", "bottom");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(reader).toHaveAttribute("data-v3-ready", "true");
+  await expectGrabbedPageFace(page, "forward", "bottom");
+  await expectGrabbedPageFace(page, "backward", "top");
 });
 
 test("keeps mobile turn semantics exposed and drops stale resize visuals", async ({
@@ -1542,8 +1693,12 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
   await expect(reader).toHaveAttribute("data-v3-media-mode", "popout");
-  const treatment = page.getByLabel("Image display");
+  let graphics = await openGraphicHandling(page);
+  const treatment = graphics.display;
   await expect(treatment).toHaveValue("popout");
+  await graphics.dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   expect(mediaResponses).toEqual([]);
 
   const open = page.getByRole("button", {
@@ -1605,7 +1760,11 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: "The Ethical Tech CoLab" }),
   ).toBeVisible();
-  await treatment.selectOption("off");
+  graphics = await openGraphicHandling(page);
+  await graphics.display.selectOption("off");
+  await graphics.dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   await expect(reader).toHaveAttribute("data-v3-media-mode", "off");
   await expect(page).toHaveURL(/media=off/);
   await expect(page.locator("[data-v3-stationary] .v3-media-figure")).toHaveCount(
@@ -1613,7 +1772,11 @@ test("loads configured Ethical AI figures only when a pop-out opens", async ({
   );
   await page.goBack();
   await expect(reader).toHaveAttribute("data-v3-media-mode", "popout");
-  await expect(treatment).toHaveValue("popout");
+  graphics = await openGraphicHandling(page);
+  await expect(graphics.display).toHaveValue("popout");
+  await graphics.dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   await expect(page).toHaveURL(/chapter=responsible-ai.*media=popout/);
 });
 
@@ -1723,12 +1886,16 @@ test("styles one neutral figure without repagination or raster variants", async 
     pageIndex: node.getAttribute("data-v3-page-index"),
     pagination: node.getAttribute("data-v3-pagination-version"),
   }));
-  const style = page.getByLabel("Image style");
+  const graphics = await openGraphicHandling(page);
+  const style = graphics.style;
   for (const expected of ["original", "monochrome", "duotone", "book-toned"]) {
     await style.selectOption(expected);
     await expect(figure).toHaveClass(new RegExp(`v3-media-style-${expected}`));
     await expect(figure).toHaveAttribute("data-v3-media-style", expected);
   }
+  await graphics.dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   expect(
     await reader.evaluate((node) => ({
       pageCount: node.getAttribute("data-v3-page-count"),
@@ -1793,7 +1960,11 @@ test("fails closed for media rights while allowing a gated essential preview", a
   );
   await expect(essential).toBeVisible();
   await expect(essential).toHaveAttribute("data-v3-media-style", "original");
-  await page.getByLabel("Image style").selectOption("duotone");
+  const graphics = await openGraphicHandling(page);
+  await graphics.style.selectOption("duotone");
+  await graphics.dialog
+    .getByRole("button", { name: "Close book appearance settings" })
+    .click();
   await expect(essential).toHaveAttribute("data-v3-media-style", "duotone");
   await expect(
     page.locator("[data-v3-media-download], [data-v3-media-export]"),
@@ -2067,8 +2238,9 @@ test("shares selected text and exports local-only annotations", async ({
   }));
   const selected = await selectLeadingText(page, paragraph);
   expect(selected.length).toBeGreaterThan(10);
+  await exposeSelectionActions(page);
   await page
-    .getByRole("button", { name: "Share selected text and location" })
+    .getByRole("button", { name: "Share selected text" })
     .click();
   const sharePreview = page.getByRole("dialog", { name: "Share preview" });
   await expect(
@@ -2628,8 +2800,9 @@ test("restores an exact quote from a continuation page", async ({ page }) => {
     end: Number((node as HTMLElement).dataset.v3SourceEnd),
   }));
   const selected = await selectLeadingText(page, fragment, 38);
+  await exposeSelectionActions(page);
   const shareSelection = page.getByRole("button", {
-    name: "Share selected text and location",
+    name: "Share selected text",
   });
   await expect(shareSelection).toBeEnabled();
   await shareSelection.click();
@@ -3003,8 +3176,9 @@ test("shares a selection across both pages of one chapter spread", async ({
     return selection?.toString().replace(/\s+/g, " ").trim() ?? "";
   });
   expect(selected.length).toBeGreaterThan(10);
+  await exposeSelectionActions(page);
   const shareSelection = page.getByRole("button", {
-    name: "Share selected text and location",
+    name: "Share selected text",
   });
   await expect(shareSelection).toBeEnabled();
   await shareSelection.click();
@@ -3563,61 +3737,6 @@ test("persists V3 typography without losing the semantic location", async ({
 
   await page.goto(route("/v3/?book=plurality&chapter=1&embed=1#1"));
   await expect(page.locator("[data-v3-font-status]")).toHaveText("100%");
-});
-
-test("shares a canonical V3 chapter and source anchor", async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "share", {
-      configurable: true,
-      value: undefined,
-    });
-    Object.defineProperty(navigator, "clipboard", {
-      configurable: true,
-      value: {
-        writeText: (url: string) => {
-          (
-            globalThis as typeof globalThis & {
-              __copiedV3Location?: string;
-            }
-          ).__copiedV3Location = url;
-          return Promise.resolve();
-        },
-      },
-    });
-  });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const anchor = "h-data-coalitions-for-environmental-action";
-  await page.goto(
-    route(
-      `/v3/?book=plurality&chapter=6-4&embed=1#${encodeURIComponent(anchor)}`,
-    ),
-  );
-  await page.getByRole("button", { name: "Share location" }).click();
-  await expect(page.locator("[data-v3-share-status]")).toHaveText(
-    "Reading link copied",
-  );
-  const shared = await page.evaluate(
-    () =>
-      (
-        globalThis as typeof globalThis & {
-          __copiedV3Location?: string;
-        }
-      ).__copiedV3Location,
-  );
-  if (!shared) {
-    throw new Error("Expected a copied V3 reading location");
-  }
-  const url = new URL(shared);
-  expect(url.pathname).toMatch(/\/v3\/$/);
-  expect(Array.from(url.searchParams.keys())).toEqual([
-    "book",
-    "edition",
-    "chapter",
-  ]);
-  expect(url.searchParams.get("book")).toBe("plurality");
-  expect(url.searchParams.get("edition")).toBe("2026-09");
-  expect(url.searchParams.get("chapter")).toBe("6-4");
-  expect(decodeURIComponent(url.hash.slice(1))).toBe(anchor);
 });
 
 test("renders the production library as optimized labeled bindings", async ({

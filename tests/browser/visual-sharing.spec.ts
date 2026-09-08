@@ -57,6 +57,10 @@ async function selectText(
 }
 
 async function openComposer(page: Page): Promise<Locator> {
+  const entry = page.getByRole("button", { name: "Selection actions" });
+  if (await entry.isVisible()) {
+    await entry.click();
+  }
   await page.locator('[data-v3-selection-action="share"]').click();
   const dialog = page.getByRole("dialog", { name: "Share preview" });
   await expect(dialog).toBeVisible();
@@ -293,9 +297,6 @@ test("visibly reduces quote-only, anchor-only, and missing-policy previews", asy
   for (const mode of ["anchor", "missing"] as const) {
     paragraph = await openShareFixture(page, mode);
     await selectText(page, paragraph, true, "Share passage location");
-    await expect(page.locator("[data-v3-share]")).toHaveAccessibleName(
-      "Share passage location",
-    );
     dialog = await openComposer(page);
     await waitForPreview(dialog);
     await expect(dialog.locator("[data-v3-share-quote]")).toBeHidden();
@@ -403,7 +404,7 @@ test("reports an anchor-only edition mismatch without silently relabeling it", a
   expect(new URL(page.url()).searchParams.get("edition")).toBe("older-edition");
 });
 
-test("emits only policy-approved share-selection details from both controls", async ({
+test("emits only policy-approved details from repeated contextual shares", async ({
   page,
 }) => {
   await page.goto(route("/sdk/?share=quote&quoteMax=12"));
@@ -454,8 +455,7 @@ test("emits only policy-approved share-selection details from both controls", as
     .click();
 
   await selectText(page, paragraph);
-  await page.locator("[data-v3-share]").click();
-  await expect(page.getByRole("dialog", { name: "Share preview" })).toBeVisible();
+  await openComposer(page);
   const second = await page.evaluate(
     () =>
       (globalThis as typeof globalThis & { __shareDetails?: unknown[] })
@@ -538,10 +538,15 @@ test("does not advertise downloads in a sandbox without download permission", as
     document.getSelection()?.addRange(range);
     document.dispatchEvent(new Event("selectionchange"));
   });
-  await expect(sandbox.locator("[data-v3-share]")).toHaveAccessibleName(
-    "Share selected text and location",
-  );
-  await sandbox.locator("[data-v3-share]").click();
+  const selectionEntry = sandbox.getByRole("button", {
+    name: "Selection actions",
+  });
+  if (await selectionEntry.isVisible()) {
+    await selectionEntry.click();
+  }
+  const shareAction = sandbox.locator('[data-v3-selection-action="share"]');
+  await expect(shareAction).toHaveAccessibleName("Share selected text");
+  await shareAction.evaluate((button) => (button as HTMLButtonElement).click());
   const dialog = sandbox.getByRole("dialog", { name: "Share preview" });
   await waitForPreview(dialog);
   await expect(
@@ -560,11 +565,9 @@ test("invalid policy disables sharing while local copy remains available", async
   await expect(
     page.getByRole("button", { name: "Share selected text", exact: true }),
   ).toHaveCount(0);
-  const primary = page.getByRole("button", {
-    name: "Share passage location",
-  });
-  await expect(primary).toBeDisabled();
-  await expect(primary).toHaveAttribute(
+  const contextualShare = page.locator('[data-v3-selection-action="share"]');
+  await expect(contextualShare).toBeHidden();
+  await expect(contextualShare).toHaveAttribute(
     "title",
     /share policy is invalid/i,
   );

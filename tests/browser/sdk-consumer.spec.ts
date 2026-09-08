@@ -120,6 +120,16 @@ test("resolves host media from the document base captured at attach time", async
     "data-v3-media-src",
     /changed-after-attach/,
   );
+  const style = page.getByRole("button", {
+    name: "Book appearance settings",
+  });
+  await expect(style).toBeVisible();
+  await style.click();
+  const dialog = page.getByRole("dialog", { name: "Book appearance" });
+  await expect(
+    dialog.getByRole("group", { name: "Graphic handling" }),
+  ).toBeVisible();
+  await expect(dialog.getByRole("group", { name: "Typography" })).toBeHidden();
 });
 
 test("fails when any host replacement anchor is missing", async ({ page }) => {

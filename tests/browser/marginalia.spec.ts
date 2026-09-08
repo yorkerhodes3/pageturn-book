@@ -346,7 +346,6 @@ test("groups deterministic collisions and keeps page-turn copies decorative", as
     )
     .toBe(14);
 
-  await page.getByRole("button", { name: "Next spread" }).click();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect
     .poll(() =>
@@ -355,10 +354,17 @@ test("groups deterministic collisions and keeps page-turn copies decorative", as
       ),
     )
     .toBe(false);
-  const previousCorner = page.getByRole("button", {
-    name: "Turn the previous page from its top corner",
+  const nextCorner = page.getByRole("button", {
+    name: "Turn the next page from its top corner",
   });
-  await previousCorner.hover();
+  const cornerBounds = await nextCorner.boundingBox();
+  if (!cornerBounds) {
+    throw new Error("Expected a visible forward page corner");
+  }
+  await page.mouse.move(
+    cornerBounds.x + cornerBounds.width * 0.75,
+    cornerBounds.y + cornerBounds.height * 0.25,
+  );
   await page.mouse.down();
   await expect(
     page.locator("[data-v3-turn-layer] [data-v3-marginalia]"),
@@ -380,7 +386,5 @@ test("groups deterministic collisions and keeps page-turn copies decorative", as
     "data-v3-turning",
     "false",
   );
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByRole("button", { name: "Previous spread" }).click();
   await expect(page.locator("[data-v3-stationary] [data-v3-marginalia]")).not.toHaveCount(0);
 });
