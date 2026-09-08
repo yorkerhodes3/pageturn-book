@@ -495,6 +495,11 @@ controls are intentionally absent from the reading toolbar. Typeface and
 line-height changes repaginate around the current source anchor; paint-only
 changes apply immediately.
 
+During a turn, the stationary semantic page remains the current front until the
+fold uncovers it. The moving clipped surface renders the landing page on the
+leaf's back, and a separate bounded clip progressively reveals the other
+destination page; a zero-drag grab does not replace the current page.
+
 `annotationAppearance` independently configures marginalia. The zero-download
 handwriting fallback is `"Segoe Print", "Bradley Hand", cursive`; Explore also
 provides a persistent readable standard-font preference and **Show marginalia**

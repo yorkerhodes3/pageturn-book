@@ -6601,7 +6601,7 @@ function turnPages(direction: PageTurnDirection): {
 } {
   const target = targetSpread(direction);
   if (singlePageMedia.matches) {
-    const movingIndex = spreadStart;
+    const movingIndex = target;
     return {
       moving: pageAt(movingIndex),
       movingIndex,
@@ -6613,17 +6613,17 @@ function turnPages(direction: PageTurnDirection): {
   }
   return direction === "forward"
     ? {
-        moving: pageAt(spreadStart + 1),
-        movingIndex: spreadStart + 1,
-        movingSide: "right",
+        moving: pageAt(target),
+        movingIndex: target,
+        movingSide: "left",
         revealed: pageAt(target + 1),
         revealedIndex: target + 1,
         revealedSide: "right",
       }
     : {
-        moving: pageAt(spreadStart),
-        movingIndex: spreadStart,
-        movingSide: "left",
+        moving: pageAt(target + 1),
+        movingIndex: target + 1,
+        movingSide: "right",
         revealed: pageAt(target),
         revealedIndex: target,
         revealedSide: "left",

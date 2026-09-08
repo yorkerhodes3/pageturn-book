@@ -138,11 +138,15 @@ async function revealedPageAreaRatio(page: Page): Promise<{
   });
 }
 
-async function expectGrabbedPageFace(
+async function expectTurningLeafBackside(
   page: Page,
   direction: "forward" | "backward",
   corner: "top" | "bottom",
-): Promise<void> {
+): Promise<{
+  current: { label: string | null; text: string; side: string };
+  moving: { label: string | null; text: string; side: string };
+  revealed: { label: string | null; text: string; side: string };
+}> {
   const reader = page.locator("[data-v3-reader]");
   const singlePage = await page
     .locator("[data-v3-spread]")
@@ -154,13 +158,13 @@ async function expectGrabbedPageFace(
           direction === "forward" ? "right" : "left"
         }`,
   );
-  const expected = await stationarySheet.evaluate((sheet) => ({
+  const current = await stationarySheet.evaluate((sheet) => ({
     label: sheet.getAttribute("aria-label"),
     text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
     side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
   }));
-  expect(expected.label).toBeTruthy();
-  expect(expected.text.length).toBeGreaterThan(0);
+  expect(current.label).toBeTruthy();
+  expect(current.text.length).toBeGreaterThan(0);
 
   const turn = page.getByRole("button", {
     name:
@@ -187,27 +191,66 @@ async function expectGrabbedPageFace(
       spreadBounds.width *
         (singlePage
           ? direction === "forward"
-            ? 0.25
-            : 0.75
+            ? 0.05
+            : 0.95
           : direction === "forward"
-            ? 0.55
-            : 0.45),
+            ? 0.35
+            : 0.65),
     spreadBounds.y + spreadBounds.height * (corner === "top" ? 0.2 : 0.8),
     { steps: 6 },
   );
   await expect(page.locator(".v3-turn-surface")).toBeVisible();
   const draggedReveal = await revealedPageAreaRatio(page);
   expect(draggedReveal.ratio).toBeGreaterThan(initialReveal.ratio);
+  const draggedProgress = Number(
+    await page.locator(".v3-turn-surface").getAttribute("data-v3-progress"),
+  );
+  expect(draggedProgress).toBeGreaterThanOrEqual(0.34);
   const movingSheet = page.locator(".v3-turn-surface .v3-sheet");
-  await expect(movingSheet).toHaveAttribute("aria-label", expected.label ?? "");
-  expect(
-    await movingSheet.evaluate((sheet) => ({
+  const moving = await movingSheet.evaluate((sheet) => ({
       text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+      label: sheet.getAttribute("aria-label"),
       side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
-    })),
-  ).toEqual({ text: expected.text, side: expected.side });
+  }));
+  const revealed = await page
+    .locator(".v3-revealed-page .v3-sheet")
+    .evaluate((sheet) => ({
+      text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+      label: sheet.getAttribute("aria-label"),
+      side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
+    }));
+  expect(moving.text).not.toBe(current.text);
   await page.mouse.up();
   await expect(reader).toHaveAttribute("data-v3-turning", "false");
+  const landedMoving = page.locator(
+    singlePage
+      ? "[data-v3-stationary] .v3-sheet"
+      : `[data-v3-stationary] .v3-sheet-${
+          direction === "forward" ? "left" : "right"
+        }`,
+  );
+  const landedRevealed = page.locator(
+    singlePage
+      ? "[data-v3-stationary] .v3-sheet"
+      : `[data-v3-stationary] .v3-sheet-${
+          direction === "forward" ? "right" : "left"
+        }`,
+  );
+  expect(
+    await landedMoving.evaluate((sheet) => ({
+      text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+      label: sheet.getAttribute("aria-label"),
+      side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
+    })),
+  ).toEqual(moving);
+  expect(
+    await landedRevealed.evaluate((sheet) => ({
+      text: sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "",
+      label: sheet.getAttribute("aria-label"),
+      side: sheet.classList.contains("v3-sheet-left") ? "left" : "right",
+    })),
+  ).toEqual(revealed);
+  return { current, moving, revealed };
 }
 
 test("presents V3 as the supported reader from the landing page", async ({
@@ -371,9 +414,6 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   expect(physicalGeometry.spreadZIndex).toBe("auto");
   expect(physicalGeometry.spreadIsolation).toBe("auto");
 
-  const grabbedFaceText = await page
-    .locator("[data-v3-stationary] .v3-sheet-right")
-    .evaluate((sheet) => sheet.textContent?.replace(/\s+/gu, " ").trim() ?? "");
   const bounds = await spread.boundingBox();
   const corner = page.getByRole("button", {
   name: "Turn the next page from its top corner",
@@ -442,11 +482,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   const revealed = page.locator(".v3-revealed-page");
   await expect(moving).toBeVisible();
   await expect(revealed).toBeVisible();
-  expect(
-    await moving.evaluate(
-      (surface) => surface.textContent?.replace(/\s+/gu, " ").trim() ?? "",
-    ),
-  ).toBe(grabbedFaceText);
+  await expect(moving).toContainText("The question");
   await expect(revealed).toContainText("Executive Summary");
   await expect(moving).toHaveAttribute("aria-hidden", "true");
   await expect(revealed).toHaveAttribute("aria-hidden", "true");
@@ -659,8 +695,8 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   "Publication record",
   );
   await expect(
-    page.locator(".v3-turn-surface .v3-sheet-left"),
-  ).toHaveCSS("border-bottom-right-radius", "0px");
+    page.locator(".v3-turn-surface .v3-sheet-right"),
+  ).toHaveCSS("border-bottom-left-radius", "0px");
   await expect(
     page.locator(".v3-revealed-page .v3-sheet-left"),
   ).toHaveCSS("border-bottom-right-radius", "0px");
@@ -844,7 +880,7 @@ test("keeps a precise bottom fold while the leaf overhangs naturally", async ({
     .evaluate((moving) => {
       const layer = moving.closest("[data-v3-turn-layer]");
       const spread = moving.closest("[data-v3-spread]");
-      const sheet = moving.querySelector<HTMLElement>(".v3-sheet-right");
+      const sheet = moving.querySelector<HTMLElement>(".v3-sheet-left");
       const revealedSheet = layer?.querySelector<HTMLElement>(
         ".v3-revealed-page .v3-sheet-right",
       );
@@ -1321,7 +1357,7 @@ test("repaginates V3 semantic pages for a narrow review viewport", async ({
     { steps: 6 },
   );
   await expect(page.locator(".v3-turn-surface")).toContainText(
-    "Publication record",
+    "What Is Ethical AI?",
   );
   await expect(page.locator(".v3-revealed-page")).toContainText(
     "What Is Ethical AI?",
@@ -1381,9 +1417,6 @@ test("turns backward with distinct current and destination phone faces", async (
     { steps: 6 },
   );
   await expect(page.locator(".v3-turn-surface")).toContainText(
-    "What Is Ethical AI?",
-  );
-  await expect(page.locator(".v3-turn-surface")).not.toContainText(
     "Publication record",
   );
   await expect(page.locator(".v3-revealed-page")).toContainText(
@@ -1397,7 +1430,7 @@ test("turns backward with distinct current and destination phone faces", async (
   await expect(page.locator("[data-v3-counter]")).toHaveText(/Page 1 of/);
 });
 
-test("keeps the grabbed page face stable in spread and phone turns", async ({
+test("shows the landing page on the leaf back in spread and phone turns", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -1410,27 +1443,29 @@ test("keeps the grabbed page face stable in spread and phone turns", async ({
   const reader = page.locator("[data-v3-reader]");
   await expect(reader).toHaveAttribute("data-v3-opening", "false");
 
-  await expectGrabbedPageFace(page, "forward", "top");
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.getByRole("button", { name: "Next spread" }).click();
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await expectGrabbedPageFace(page, "backward", "bottom");
+  await expectTurningLeafBackside(page, "forward", "top");
+  await expectTurningLeafBackside(page, "backward", "bottom");
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(
+    route(
+      "/v3/?book=what-is-ethical-ai&chapter=responsible-ai&media=off#responsible-ai",
+    ),
+  );
   await expect(page.locator("[data-v3-spread]")).toHaveClass(/v3-spread-single/);
-  await expect(reader).toHaveAttribute("data-v3-ready", "true");
-  await expectGrabbedPageFace(page, "forward", "bottom");
-  await expectGrabbedPageFace(page, "backward", "top");
+  await expect(reader).toHaveAttribute("data-v3-opening", "false");
+  await expectTurningLeafBackside(page, "forward", "bottom");
+  await expectTurningLeafBackside(page, "backward", "top");
 });
 
-test("keeps the exact Plurality page visible until its corner moves", async ({
+test("shows the numbered landing page on the folded leaf back", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto(
     route(
-      "/v3/?book=plurality&from=shelf&chapter=4-1#note-ref-4-1-1",
+      "/v3/?book=plurality&chapter=4-0#notes-4-0",
     ),
   );
   await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
@@ -1465,7 +1500,27 @@ test("keeps the exact Plurality page visible until its corner moves", async ({
     "false",
   );
   await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
-  await expectGrabbedPageFace(page, "forward", "top");
+  const before = {
+    left: await page
+      .locator("[data-v3-stationary] .v3-sheet-left")
+      .textContent(),
+    right: await page
+      .locator("[data-v3-stationary] .v3-sheet-right")
+      .textContent(),
+  };
+  expect(before.left).toContain("Note 1");
+  expect(before.right).toContain("Note 7");
+  const turn = await expectTurningLeafBackside(page, "forward", "top");
+  expect(turn.current.text).toContain("Note 7");
+  expect(turn.moving.text).toContain("Note 13");
+  expect(turn.moving.text).not.toContain("Note 7");
+  expect(turn.revealed.text).toContain("Note 17");
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet-left"),
+  ).toContainText("Note 13");
+  await expect(
+    page.locator("[data-v3-stationary] .v3-sheet-right"),
+  ).toContainText("Note 17");
 });
 
 test("keeps mobile turn semantics exposed and drops stale resize visuals", async ({

@@ -115,7 +115,9 @@ to progress, moving/revealed clips, and fold transform/opacity writes. The
 stationary current page remains visible and semantic while a preallocated
 analytic clip reveals only the portion of the destination exposed by the fold.
 This prevents a zero-drag grab from replacing the current page with the
-underlying page.
+underlying page. The clipped moving surface is the physical back of the lifted
+leaf: it renders the destination side that lands after the turn, while the
+separately clipped underlay renders the other destination page.
 
 The moving leaf no longer adds a second full-surface CSS `drop-shadow`; the
 bounded analytic fold shadow remains the authoritative physical shadow. This
