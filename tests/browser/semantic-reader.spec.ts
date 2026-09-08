@@ -1381,6 +1381,7 @@ test("keeps the grabbed page face stable in spread and phone turns", async ({
   await expectGrabbedPageFace(page, "backward", "bottom");
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator("[data-v3-spread]")).toHaveClass(/v3-spread-single/);
   await expect(reader).toHaveAttribute("data-v3-ready", "true");
   await expectGrabbedPageFace(page, "forward", "bottom");
   await expectGrabbedPageFace(page, "backward", "top");
