@@ -1398,21 +1398,6 @@ button.v3-marginalia-group {
   pointer-events: none;
 }
 
-.v3-reader[data-v3-turning="true"] .v3-spread-single .v3-stationary {
-  content-visibility: hidden;
-  visibility: hidden;
-}
-
-.v3-turn-accessibility-proxy:not([hidden]) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: normal;
-}
-
 .v3-paper-occluder {
   position: absolute;
   z-index: 0;

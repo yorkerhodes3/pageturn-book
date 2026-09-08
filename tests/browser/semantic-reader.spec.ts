@@ -107,6 +107,37 @@ async function openGraphicHandling(page: Page): Promise<{
   };
 }
 
+async function revealedPageAreaRatio(page: Page): Promise<{
+  clipPath: string;
+  ratio: number;
+}> {
+  return page.locator(".v3-revealed-page-clip").evaluate((clip) => {
+    const clipPath = getComputedStyle(clip).clipPath;
+    if (clipPath === "none") {
+      return { clipPath, ratio: 1 };
+    }
+    const points = Array.from(
+      clipPath.matchAll(
+        /(-?\d+(?:\.\d+)?)(?:px)?[ ,]+(-?\d+(?:\.\d+)?)(?:px)?/g,
+      ),
+      (match) => ({ x: Number(match[1]), y: Number(match[2]) }),
+    );
+    if (points.length === 0) {
+      return { clipPath, ratio: 0 };
+    }
+    const xs = points.map(({ x }) => x);
+    const ys = points.map(({ y }) => y);
+    const bounds = clip.getBoundingClientRect();
+    const area =
+      (Math.max(...xs) - Math.min(...xs)) *
+      (Math.max(...ys) - Math.min(...ys));
+    return {
+      clipPath,
+      ratio: area / Math.max(1, bounds.width * bounds.height),
+    };
+  });
+}
+
 async function expectGrabbedPageFace(
   page: Page,
   direction: "forward" | "backward",
@@ -148,6 +179,9 @@ async function expectGrabbedPageFace(
   );
   await page.mouse.down();
   await expect(reader).toHaveAttribute("data-v3-turning", "true");
+  const initialReveal = await revealedPageAreaRatio(page);
+  expect(initialReveal.clipPath).not.toBe("none");
+  expect(initialReveal.ratio).toBeLessThan(0.01);
   await page.mouse.move(
     spreadBounds.x +
       spreadBounds.width *
@@ -162,6 +196,8 @@ async function expectGrabbedPageFace(
     { steps: 6 },
   );
   await expect(page.locator(".v3-turn-surface")).toBeVisible();
+  const draggedReveal = await revealedPageAreaRatio(page);
+  expect(draggedReveal.ratio).toBeGreaterThan(initialReveal.ratio);
   const movingSheet = page.locator(".v3-turn-surface .v3-sheet");
   await expect(movingSheet).toHaveAttribute("aria-label", expected.label ?? "");
   expect(
@@ -581,7 +617,7 @@ test("renders isolated V3 geometry with real semantic page faces", async ({
   await revealed
     .locator(".v3-revealed-page-clip")
     .evaluate((node) => getComputedStyle(node).clipPath),
-  ).toBe("none");
+  ).toMatch(/^path\(/);
   await expect(page.locator(".v3-turn-layer [id]")).toHaveCount(0);
 
   await page.mouse.up();
@@ -1387,6 +1423,51 @@ test("keeps the grabbed page face stable in spread and phone turns", async ({
   await expectGrabbedPageFace(page, "backward", "top");
 });
 
+test("keeps the exact Plurality page visible until its corner moves", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto(
+    route(
+      "/v3/?book=plurality&from=shelf&chapter=4-1#note-ref-4-1-1",
+    ),
+  );
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-ready",
+    "true",
+  );
+  await page
+    .getByRole("button", {
+      name: "Turn the next page from its top corner",
+    })
+    .evaluate((button) => {
+      const spread = document.querySelector("[data-v3-spread]");
+      const bounds = spread?.getBoundingClientRect();
+      if (!bounds) {
+        throw new Error("Expected Plurality spread bounds");
+      }
+      button.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          cancelable: true,
+          isPrimary: true,
+          button: 0,
+          pointerId: 71,
+          pointerType: "mouse",
+          clientX: bounds.right,
+          clientY: bounds.top,
+        }),
+      );
+    });
+  await expect(page.locator("[data-v3-reader]")).toHaveAttribute(
+    "data-v3-turning",
+    "false",
+  );
+  await expect(page.locator(".v3-turn-surface")).toHaveCount(0);
+  await expectGrabbedPageFace(page, "forward", "top");
+});
+
 test("keeps mobile turn semantics exposed and drops stale resize visuals", async ({
   page,
 }) => {
@@ -1420,35 +1501,32 @@ test("keeps mobile turn semantics exposed and drops stale resize visuals", async
     .locator("[data-v3-reader]")
     .evaluate((root) => {
       const stationary = root.querySelector<HTMLElement>("[data-v3-stationary]");
-      const proxy = root.querySelector<HTMLElement>(
-        "[data-v3-turn-accessibility-proxy]",
-      );
-      if (!stationary || !proxy) {
-        throw new Error("Expected mobile turn semantic layers");
+      if (!stationary) {
+        throw new Error("Expected the mobile stationary semantic layer");
       }
       return {
         stationaryVisibility: getComputedStyle(stationary).visibility,
-        proxyHidden: proxy.hidden,
-        proxyAriaHidden: proxy.getAttribute("aria-hidden"),
-        proxyInert: proxy.inert,
-        proxyHasHeading: proxy.querySelector("h1, h2, h3") !== null,
+        stationaryContentVisibility:
+          getComputedStyle(stationary).contentVisibility,
+        stationaryAriaHidden: stationary.getAttribute("aria-hidden"),
+        stationaryInert: stationary.inert,
       };
     });
   expect(activeSemantics).toEqual({
-    stationaryVisibility: "hidden",
-    proxyHidden: false,
-    proxyAriaHidden: null,
-    proxyInert: false,
-    proxyHasHeading: true,
+    stationaryVisibility: "visible",
+    stationaryContentVisibility: "visible",
+    stationaryAriaHidden: null,
+    stationaryInert: false,
   });
   await expect(
-    page.getByRole("region", { name: "Current page during page turn" }),
-  ).toHaveCount(1);
+    page.getByRole("heading", {
+      level: 1,
+      name: "Humanity's Relationship with Power",
+    }),
+  ).toBeVisible();
+  await expect(page.locator("[data-v3-turn-accessibility-proxy]")).toHaveCount(0);
   await page.mouse.up();
   await expect(reader).toHaveAttribute("data-v3-turning", "false");
-  await expect(
-    page.locator("[data-v3-turn-accessibility-proxy]"),
-  ).toBeHidden();
   await expect(page.locator("[data-v3-turn-layer]")).toHaveAttribute(
     "data-v3-prepared",
     "true",

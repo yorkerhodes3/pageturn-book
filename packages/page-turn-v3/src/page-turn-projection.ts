@@ -365,6 +365,7 @@ export function projectPageTurn(
  */
 export function createPageTurnRuntimeProjector(
   foldCurvature = 0.72,
+  includeRevealedClip = false,
 ): (frame: PageTurnFrame) => ProjectedPageTurn {
   const movingPointPool = Array.from(
     { length: 5 },
@@ -372,6 +373,12 @@ export function createPageTurnRuntimeProjector(
   );
   const movingPoints = [...movingPointPool];
   const movingCurve = Array.from({ length: 3 }, () => ({ x: 0, y: 0 }));
+  const revealedPointPool = Array.from(
+    { length: 6 },
+    () => ({ x: 0, y: 0 }),
+  );
+  const revealedPoints = [...revealedPointPool];
+  const revealedCurve = Array.from({ length: 3 }, () => ({ x: 0, y: 0 }));
   const emptyMovingClip: PageTurnPoint[] = [];
   const emptyRevealedClip: PageTurnPoint[] = [];
   const projection: MutableProjectedPageTurn = {
@@ -473,16 +480,18 @@ export function createPageTurnRuntimeProjector(
       cosine,
       sine,
     );
-    curveControl.x = clamp(
+    const curveControlX = clamp(
       shadowStart.x + curveDx / 2 + curveNormalX * bend * 2,
       0,
       frame.page.width,
     );
-    curveControl.y = clamp(
+    const curveControlY = clamp(
       shadowStart.y + curveDy / 2 + curveNormalY * bend * 2,
       0,
       frame.page.height,
     );
+    curveControl.x = curveControlX;
+    curveControl.y = curveControlY;
     projectMovingPoint(
       frame,
       curveControl,
@@ -498,6 +507,45 @@ export function createPageTurnRuntimeProjector(
       sine,
     );
     projection.moving.path = curvedPath(movingPoints, movingCurve);
+
+    if (includeRevealedClip) {
+      revealedPoints.length = 0;
+      for (let index = 0; index < frame.revealedClip.length; index += 1) {
+        const source = frame.revealedClip[index];
+        const target = revealedPointPool[index];
+        if (source === undefined || target === undefined) {
+          throw new Error("Page-turn revealed clip exceeds runtime capacity");
+        }
+        target.x = forward ? source.x : frame.page.width - source.x;
+        target.y = source.y;
+        revealedPoints[index] = target;
+      }
+      const revealedCurveStart = revealedCurve[0];
+      const revealedCurveControl = revealedCurve[1];
+      const revealedCurveEnd = revealedCurve[2];
+      if (
+        revealedCurveStart === undefined ||
+        revealedCurveControl === undefined ||
+        revealedCurveEnd === undefined
+      ) {
+        throw new Error("Page-turn revealed runtime curve is incomplete");
+      }
+      revealedCurveStart.x = forward
+        ? shadowStart.x
+        : frame.page.width - shadowStart.x;
+      revealedCurveStart.y = shadowStart.y;
+      revealedCurveControl.x = forward
+        ? curveControlX
+        : frame.page.width - curveControlX;
+      revealedCurveControl.y = curveControlY;
+      revealedCurveEnd.x = forward
+        ? shadowEnd.x
+        : frame.page.width - shadowEnd.x;
+      revealedCurveEnd.y = shadowEnd.y;
+      projection.revealed.path = curvedPath(revealedPoints, revealedCurve);
+    } else {
+      projection.revealed.path = "";
+    }
 
     const shadowOriginX = forward
       ? frame.page.width + shadowStart.x

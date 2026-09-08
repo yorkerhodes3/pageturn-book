@@ -110,10 +110,12 @@ overlapping long task.
 The turn path now initializes invariant page/effect dimensions, directions,
 appearance scalars, and reveal placement once at `beginTurn`. It reuses the
 page solver and decorative semantic faces across cancelled turns, resolves
-duplicate annotation targets once per marginalia render, hides the duplicate
-stationary phone face during the turn, and limits `applyFrame` to progress,
-moving transform/clip, and fold transform/opacity writes. The opaque revealed
-page is a fixed underlay, so it needs no changing clip.
+duplicate annotation targets once per marginalia render, and limits `applyFrame`
+to progress, moving/revealed clips, and fold transform/opacity writes. The
+stationary current page remains visible and semantic while a preallocated
+analytic clip reveals only the portion of the destination exposed by the fold.
+This prevents a zero-drag grab from replacing the current page with the
+underlying page.
 
 The moving leaf no longer adds a second full-surface CSS `drop-shadow`; the
 bounded analytic fold shadow remains the authoritative physical shadow. This
@@ -132,6 +134,12 @@ projector reuses projection and curve points; the reader also reuses its pending
 pointer rather than allocating a point and callback per input frame. These
 objects are ephemeral and consumed synchronously. Public `solvePageTurn` and
 `projectPageTurn` continue to return independent immutable-shaped object graphs.
+
+A post-fix dirty-tree run with the restored revealed-page clip retained all
+1,230 intervals at 4x CPU throttle, measured 16.7 ms median and 20.5 ms p95,
+and reported no long tasks. The direct zero-drag Plurality check retained
+identical center-page pixels while the destination clip covered only 0.032% of
+the page at progress 0.01. Clean evidence requirements remain unchanged.
 
 ## Reproduction
 

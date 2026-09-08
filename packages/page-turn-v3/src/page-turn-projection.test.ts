@@ -155,12 +155,17 @@ describe("projectPageTurn", () => {
     expect(projection.revealed.path).toBe("");
   });
 
-  it("matches reusable runtime projections across the reference grid", () => {
-    const runtimeProject = createPageTurnRuntimeProjector(0.72);
+  it.each([false, true])(
+    "matches reusable runtime projections across the reference grid with revealed clips %s",
+    (includeRevealedClip) => {
+    const runtimeProject = createPageTurnRuntimeProjector(
+      0.72,
+      includeRevealedClip,
+    );
     const options = {
       foldCurvature: 0.72,
       includeClipPoints: false,
-      includeRevealedClip: false,
+      includeRevealedClip,
     };
     let firstProjection;
 
@@ -182,5 +187,6 @@ describe("projectPageTurn", () => {
         projectPageTurn(result.frame, options),
       );
     }
-  });
+    },
+  );
 });

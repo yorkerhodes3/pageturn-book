@@ -592,18 +592,6 @@ function cloneNodes(
   });
 }
 
-function refreshTurnAccessibilityProxy(): void {
-  const clone = stationary.cloneNode(true) as HTMLElement;
-  stripInteractiveIdentity(clone);
-  clone.removeAttribute("data-v3-stationary");
-  for (const image of clone.querySelectorAll("img")) {
-    image.removeAttribute("src");
-    image.removeAttribute("data-v3-media-src");
-  }
-  turnAccessibilityProxy.replaceChildren(...Array.from(clone.childNodes));
-  turnAccessibilityProxy.hidden = true;
-}
-
 function chapterOpeningLabel(text: string): HTMLElement {
   const label = createElement(
     "span",
@@ -1804,9 +1792,6 @@ const spread = requiredElement<HTMLElement>("[data-v3-spread]");
 const spine = requiredElement<HTMLElement>(".v3-spine");
 const stationary = requiredElement<HTMLElement>("[data-v3-stationary]");
 const turnLayer = requiredElement<HTMLElement>("[data-v3-turn-layer]");
-const turnAccessibilityProxy = requiredElement<HTMLElement>(
-  "[data-v3-turn-accessibility-proxy]",
-);
 const entryCover = requiredElement<HTMLElement>("[data-v3-entry-cover]");
 const measure = requiredElement<HTMLElement>("[data-v3-measure]");
 const measureContent = requiredElement<HTMLElement>(
@@ -5104,7 +5089,6 @@ function renderStationary(locationUpdate: LocationUpdate = "replace"): void {
   renderMarginalia();
   renderSharedTextHighlight();
   renderPersonalTextHighlights();
-  refreshTurnAccessibilityProxy();
   const visiblePages = pages.slice(spreadStart, spreadStart + pageStep());
   const focusedPage =
     visiblePages.filter((page) => page?.kind === "content").at(-1) ??
@@ -6703,10 +6687,12 @@ function beginTurn(
   const curveMinimumWidth = page.width * (0.08 + foldRadius * 0.12);
   const shadowOpacityScale = 0.28 + foldShadow * 0.42;
   const curveOpacityScale = 0.25 + foldRadius * 0.28;
-  const solve = createPageTurnRuntimeFrameSolver(page, corner, {
-    includeRevealedClip: false,
-  });
-  const project = createPageTurnRuntimeProjector(foldCurvature);
+  const solve = createPageTurnRuntimeFrameSolver(page, corner);
+  const project = createPageTurnRuntimeProjector(foldCurvature, true);
+  const initialFrame = solve(direction, pointer);
+  if (initialFrame.status !== "ok") {
+    return undefined;
+  }
   const cachedVisual =
     turnVisualCache?.spreadStart === spreadStart &&
     turnVisualCache.direction === direction &&
@@ -6760,6 +6746,7 @@ function beginTurn(
   const revealedClip =
     cachedVisual?.revealedClip ??
     createElement("div", "v3-turn-clip v3-revealed-page-clip");
+  revealedClip.style.clipPath = "inset(0 100% 100% 0)";
   if (!cachedVisual) {
     revealed.setAttribute("aria-hidden", "true");
     revealed.inert = true;
@@ -6843,13 +6830,12 @@ function beginTurn(
     shadow,
   };
   reader.dataset.v3Turning = "true";
-  turnAccessibilityProxy.hidden = !singlePage;
   if (pageRoot) {
     pageRoot.dataset.v3Turning = "true";
   }
   counter.value = "Turning semantic leaf";
   renderControls();
-  applyTurn(pointer);
+  applyFrame(initialFrame.frame);
   return activeTurn;
 }
 
@@ -6870,6 +6856,7 @@ function applyFrame(frame: PageTurnFrame): void {
     `${projection.moving.translate.y.toFixed(2)}px, 0) ` +
     `rotate(${projection.moving.angleRadians.toFixed(4)}rad)`;
   turn.movingClip.style.clipPath = projection.moving.path;
+  turn.revealedClip.style.clipPath = projection.revealed.path;
 
   const shadow = projection.foldShadow;
   const shadowWidth = Math.max(3, shadow.width * turn.shadowScale);
@@ -6940,7 +6927,6 @@ function finishTurn(commit: boolean): void {
     spreadStart = turn.targetSpread;
   }
   activeTurn = undefined;
-  turnAccessibilityProxy.hidden = true;
   if (!commit && !turnVisualCacheInvalidated) {
     turnVisualCache = {
       spreadStart,
@@ -9057,8 +9043,6 @@ function destroy(): void {
     cancelAnimationFrame(activeTurn.pointerFrame);
   }
   activeTurn = undefined;
-  turnAccessibilityProxy.replaceChildren();
-  turnAccessibilityProxy.hidden = true;
   discardTurnVisualCache();
   if (
     assignedDocumentTitle &&
