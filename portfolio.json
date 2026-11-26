@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "pageturn-book",
+  "title": "PageTurn Book V3",
+  "repo": "yorkerhodes3/pageturn-book",
+  "summary": "A framework-neutral semantic book reader and publication library that keeps text as native HTML while adding page-turn geometry, for publishing scholarly books and reports on the web.",
+  "kind": "tool",
+  "methodTags": [
+    "collaboration-tools"
+  ],
+  "domainTags": [
+    "education"
+  ],
+  "contribution": {
+    "date": "2026-09-08",
+    "role": "built",
+    "credits": []
+  },
+  "narrative": {
+    "problem": "Fixed-page book viewers rasterize publication text, which costs native, accessible and searchable HTML and durable links to individual passages. Scholarly publications need a reader that still turns like a book while keeping text semantic and citable.",
+    "decision": "Publications are compiled from metadata and Markdown into immutable manifests and directly readable chapter HTML; the reader loads only a bounded current and adjacent chapter window and projects StPageFlip-derived page-turn geometry onto accessible semantic page faces.",
+    "tradeoff": "Keeping text as live HTML preserves accessibility, search and durable source anchors, but every book must go through the publication compiler, and the older V2 reader and V1 fixed-page viewer are kept as compatibility paths that still need testing.",
+    "limitation": "Public npm registry publication is blocked until the project license is approved, so consumers must build and install a tarball; quote sharing, share composing and external previews stay off unless the host supplies an explicit policy."
+  },
+  "evidence": {
+    "level": "working-demo",
+    "links": [
+      {
+        "label": "Latest commit",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/commit/9b0b94052e57caff72647bb496b254d4eaff5f4f",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "README",
+        "url": "https://github.com/yorkerhodes3/pageturn-book#readme",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "V3 SDK guide",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/blob/main/packages/page-turn-v3/README.md",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "Specification and migration record",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/blob/main/SPECIFICATION.md",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "Architecture review",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/blob/main/ARCHITECTURE-REVIEW.md",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "V3 mobile performance",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/blob/main/V3-MOBILE-PERFORMANCE.md",
+        "date": "2026-09-08"
+      },
+      {
+        "label": "V3 local-data privacy review",
+        "url": "https://github.com/yorkerhodes3/pageturn-book/blob/main/V3-LOCAL-DATA-PRIVACY-REVIEW.md",
+        "date": "2026-09-08"
+      }
+    ]
+  },
+  "links": {
+    "source": "https://github.com/yorkerhodes3/pageturn-book"
+  },
+  "images": [
+    {
+      "id": "semantic-reader",
+      "src": ".portfolio/semantic-reader.webp",
+      "alt": "Document excerpt card headed 'PageTurn Book V3' quoting the README: it keeps text as native HTML, loads only a bounded chapter window and projects page-turn geometry onto accessible semantic page faces.",
+      "caption": "The core idea: book-like page turns without giving up native, accessible text.",
+      "credit": "Excerpt from the PageTurn Book README",
+      "source": "README excerpt"
+    },
+    {
+      "id": "build-publication",
+      "src": ".portfolio/build-publication.webp",
+      "alt": "Document excerpt card headed 'Build a publication' quoting the README: publications are compiled from metadata and Markdown into immutable manifests and directly readable chapter HTML.",
+      "caption": "Books are built ahead of time into immutable editions, which is what makes durable chapter and passage links possible.",
+      "credit": "Excerpt from the PageTurn Book README",
+      "source": "README excerpt"
+    },
+    {
+      "id": "publication-figure",
+      "src": "apps/demo/media/what-is-ethical-ai/ai-ethics-frameworks.webp",
+      "alt": "Figure titled 'Figure 4. Ten landmark resources for building an AI ethics framework': a dark central circle ringed by ten numbered nodes linked to labels such as IEEE Ethically Aligned Design, OECD AI Principles and Toronto Declaration.",
+      "caption": "A figure from the demo 'What is Ethical AI?' publication: optional media the reader shows from validated publication manifests, with attribution and hash-verified local bytes.",
+      "credit": "Image from the pageturn-book repository",
+      "source": "repository file apps/demo/media/what-is-ethical-ai/ai-ethics-frameworks.webp"
+    }
+  ],
+  "defaultImageId": "semantic-reader"
+}
